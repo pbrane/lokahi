@@ -27,6 +27,7 @@
         
         <module>assemblies</module>
         <module>docker-it</module>
+        <module>minion</module>
     </modules>
 
     <properties>

@@ -205,7 +205,6 @@ public class AcknowledgmentDaoHibernate extends AbstractDaoHibernate<OnmsAcknowl
     public Optional<OnmsAcknowledgment> findLatestAckForRefId(Integer refId) {
         TypedQuery<OnmsAcknowledgment> query = getEntityManager().createQuery("SELECT a FROM OnmsAcknowledgment  a WHERE a.refId=:refId ORDER BY a.ackTime, a.id DESC ", OnmsAcknowledgment.class);
         query.setParameter("refId", refId);
-        query.setMaxResults(1);
         try {
             return Optional.of(query.getSingleResult());
         }  catch (NoResultException e) {

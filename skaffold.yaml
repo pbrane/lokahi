@@ -64,6 +64,9 @@ portForward:
     resourceName: api-gateway
     port: 80
     localPort: 48080
+  - resourceType: deployment
+    resourceName: my-postgres
+    port: 5432
 
 deploy:
   kubectl:
