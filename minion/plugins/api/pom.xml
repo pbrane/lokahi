@@ -14,10 +14,6 @@
   <artifactId>plugins-api</artifactId>
   <name>OpenNms Horizon :: Minion :: Plugins API</name>
 
-  <properties>
-    <java.version>11</java.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.opennms.horizon.core</groupId>

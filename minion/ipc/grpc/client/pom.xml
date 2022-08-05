@@ -24,7 +24,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.opennms.poc.ipc.grpc</groupId>
+            <groupId>org.opennms.horizon</groupId>
             <artifactId>contract</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -33,14 +33,14 @@
             <artifactId>grpc-netty-shaded</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opennms.poc.ipc</groupId>
+            <groupId>org.opennms.horizon</groupId>
             <artifactId>echo</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.opennms.poc.ipc</groupId>
+            <groupId>org.opennms.horizon</groupId>
             <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>

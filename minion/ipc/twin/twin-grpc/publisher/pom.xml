@@ -15,18 +15,18 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.opennms.poc.ipc.grpc</groupId>
+            <groupId>org.opennms.horizon</groupId>
             <artifactId>contract</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.opennms.poc.ipc.twin</groupId>
-            <artifactId>common</artifactId>
+            <groupId>org.opennms.horizon</groupId>
+            <artifactId>twin-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.opennms.poc.ipc.grpc</groupId>
+            <groupId>org.opennms.horizon</groupId>
             <artifactId>server</artifactId>
             <version>${project.version}</version>
         </dependency>

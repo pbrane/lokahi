@@ -27,7 +27,7 @@
             <version>${opennms-horizon.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.opennms.poc.ipc</groupId>
+            <groupId>org.opennms.horizon</groupId>
             <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>

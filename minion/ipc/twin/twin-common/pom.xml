@@ -15,7 +15,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.opennms.poc.ipc.grpc</groupId>
+            <groupId>org.opennms.horizon</groupId>
             <artifactId>contract</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -37,8 +37,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.opennms.poc.ipc.twin</groupId>
-            <artifactId>api</artifactId>
+            <groupId>org.opennms.horizon</groupId>
+            <artifactId>twin-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 

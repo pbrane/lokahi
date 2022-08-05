@@ -16,8 +16,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.opennms.poc.ipc.twin</groupId>
-            <artifactId>common</artifactId>
+            <groupId>org.opennms.horizon</groupId>
+            <artifactId>twin-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
