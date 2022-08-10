@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opennms.horizon.minion</groupId>
+        <artifactId>opentelemetry</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.opennms.horizon.minion.opentelemetry</groupId>
+    <artifactId>core</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>OpenNms Horizon :: Minion :: opentelemetry :: core</name>
+
+    <properties>
+        <osgi.private>org.opennms.horizon.minion.opentelemetry.core.internal.*</osgi.private>
+        <osgi.import>
+            !io.opentelemetry.sdk.autoconfigure*,
+            *
+        </osgi.import>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-metrics</artifactId>
+        </dependency>
+    </dependencies>
+
+
+</project>

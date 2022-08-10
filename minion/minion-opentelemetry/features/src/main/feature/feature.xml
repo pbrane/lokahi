@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<features name="minion-opentelemetry-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.6.0">
+
+    <feature name="opentelemetry" version="${opentelemetry.version}">
+        <bundle>mvn:org.opennms.horizon.minion.opentelemetry.bundles/opentelemetry-context/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.minion.opentelemetry.bundles/opentelemetry-api/${project.version}</bundle>
+    </feature>
+
+    <feature name="opentelemetry-sdk-common" version="${opentelemetry.version}">
+        <feature version="${opentelemetry.version}">opentelemetry</feature>
+
+        <bundle>mvn:org.opennms.horizon.minion.opentelemetry.bundles/opentelemetry-sdk-common/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.minion.opentelemetry.bundles/opentelemetry-semconv/${project.version}</bundle>
+    </feature>
+
+    <feature name="opentelemetry-metrics" version="${opentelemetry.version}">
+        <feature version="${opentelemetry.version}">opentelemetry-sdk-common</feature>
+
+        <bundle>mvn:org.opennms.horizon.minion.opentelemetry.bundles/opentelemetry-sdk-metrics/${project.version}</bundle>
+    </feature>
+
+    <feature name="opentelemetry-prometheus" version="${opentelemetry.version}">
+        <feature>aries-blueprint</feature>
+        <feature version="${opentelemetry.version}">opentelemetry-metrics</feature>
+
+        <bundle>mvn:org.opennms.horizon.minion.opentelemetry.bundles/opentelemetry-exporter-prometheus/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.minion.opentelemetry/prometheus/${project.version}</bundle>
+    </feature>
+
+    <feature name="opentelemetry-core" version="${project.version}">
+        <feature>aries-blueprint</feature>
+        <feature version="${opentelemetry.version}">opentelemetry-metrics</feature>
+
+        <bundle>mvn:org.opennms.horizon.minion.opentelemetry/core/${project.version}</bundle>
+    </feature>
+
+</features>

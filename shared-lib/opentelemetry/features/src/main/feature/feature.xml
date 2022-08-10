@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<features name="opentelemetry-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.6.0">
+
+    <!--
+    <feature name="opentelemetry" version="${opentelemetry.version}">
+        <bundle>mvn:com.google.code.findbugs/jsr305/3.0.2</bundle>
+
+        <bundle>mvn:io.opentelemetry/opentelemetry-context/${opentelemetry.version}</bundle>
+        <bundle>mvn:io.opentelemetry/opentelemetry-sdk-extension-autoconfigure/${opentelemetry-alpha.version}</bundle>
+        <bundle>mvn:io.opentelemetry/opentelemetry-semconv/${opentelemetry-alpha.version}</bundle>
+        <bundle>mvn:io.opentelemetry/opentelemetry-sdk-extension-autoconfigure-spi/${opentelemetry.version}</bundle>
+        <bundle>mvn:io.opentelemetry/opentelemetry-sdk/${opentelemetry.version}</bundle>
+        <bundle>mvn:io.opentelemetry/opentelemetry-sdk-metrics/${opentelemetry.version}</bundle>
+        <bundle>mvn:io.opentelemetry/opentelemetry-sdk-common/${opentelemetry.version}</bundle>
+        <bundle>mvn:io.opentelemetry/opentelemetry-api/${opentelemetry.version}</bundle>
+        <bundle>mvn:io.opentelemetry/opentelemetry-exporter-otlp-common/${opentelemetry.version}</bundle>
+
+        <bundle>mvn:com.fasterxml.jackson.core/jackson-core/2.13.0</bundle>
+
+        <bundle>mvn:com.google.guava/guava/31.1-jre</bundle>
+        <bundle dependency="true">mvn:com.google.guava/failureaccess/1.0.1</bundle>
+    </feature>
+    -->
+
+    <!--
+    <bundle>mvn:org.opennms.horizon.shared.opentelemetry.bundles/opentelemetry-sdk-extension-autoconfigure/${project.version}</bundle>
+    <bundle>mvn:org.opennms.horizon.shared.opentelemetry.bundles/opentelemetry-exporter-otlp/${project.version}</bundle>
+    -->
+
+    <feature name="opentelemetry" version="${opentelemetry.version}">
+        <bundle>mvn:org.opennms.horizon.shared.opentelemetry.bundles/opentelemetry-context/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.shared.opentelemetry.bundles/opentelemetry-api/${project.version}</bundle>
+    </feature>
+
+    <feature name="opentelemetry-sdk-common" version="${opentelemetry.version}">
+        <feature version="${opentelemetry.version}">opentelemetry</feature>
+
+        <bundle>mvn:org.opennms.horizon.shared.opentelemetry.bundles/opentelemetry-sdk-common/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.shared.opentelemetry.bundles/opentelemetry-semconv/${project.version}</bundle>
+    </feature>
+
+    <feature name="opentelemetry-metrics" version="${opentelemetry.version}">
+        <feature version="${opentelemetry.version}">opentelemetry-sdk-common</feature>
+
+        <bundle>mvn:org.opennms.horizon.shared.opentelemetry.bundles/opentelemetry-sdk-metrics/${project.version}</bundle>
+    </feature>
+
+    <feature name="opentelemetry-prometheus" version="${opentelemetry.version}">
+        <feature>aries-blueprint</feature>
+        <feature version="${opentelemetry.version}">opentelemetry-metrics</feature>
+
+        <bundle>mvn:org.opennms.horizon.shared.opentelemetry.bundles/opentelemetry-exporter-prometheus/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.shared.opentelemetry/prometheus/${project.version}</bundle>
+    </feature>
+
+    <feature name="opentelemetry-core" version="${project.version}">
+        <feature>aries-blueprint</feature>
+        <feature version="${opentelemetry.version}">opentelemetry-metrics</feature>
+
+        <bundle>mvn:org.opennms.horizon.shared.opentelemetry/core/${project.version}</bundle>
+    </feature>
+
+</features>
