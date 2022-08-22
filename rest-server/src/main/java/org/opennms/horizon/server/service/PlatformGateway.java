@@ -55,6 +55,7 @@ public class PlatformGateway {
     public static final String URL_PATH_ALARMS_CLEAR = URL_PATH_ALARMS + "/%d/clear";
     public static final String URL_PATH_MINIONS = "/minions";
     public static final String URL_PATH_MINIONS_ID = "/minions/%s";
+    public static final String URL_PATH_GRAPHS = "/graphs";
     private final String baseUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();

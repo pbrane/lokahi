@@ -9,6 +9,6 @@ curl -X POST \
 	-d 'password=admin' \
 	-d 'grant_type=password' \
 	-d 'scope=openid' \
-	-d 'client_id=admin-cli' \
-	http://localhost:9000/realms/master/protocol/openid-connect/token
+	-d 'client_id=horizon-stream' \
+	http://localhost:28080/realms/opennms/protocol/openid-connect/token
 
