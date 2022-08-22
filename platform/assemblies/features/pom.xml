@@ -104,6 +104,7 @@
                                 <feature>camel-activemq</feature>
                                 <feature>horizon-metrics-prometheus</feature>
                                 <feature>horizon-core-monitor</feature>
+                                <feature>horizon-graph-rest</feature>
                             </features>
                         </configuration>
                     </execution>
@@ -395,6 +396,11 @@
         <dependency>
             <groupId>org.opennms.horizon.minion</groupId>
             <artifactId>org.opennms.horizon.minion.rest</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.graph</groupId>
+            <artifactId>rest</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

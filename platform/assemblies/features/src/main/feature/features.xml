@@ -322,6 +322,18 @@
         <bundle>mvn:org.opennms.horizon.ipc.grpc/heartbeat/${project.version}</bundle>
     </feature>
 
+    <!--        -->
+    <!-- GRAPH -->
+    <!--        -->
+    <feature name="horizon-graph-rest" version="${project.version}" description="Horizon: Graph :: Rest">
+        <feature>horizon-db</feature>
+        <feature>horizon-core-rest</feature>
+        <bundle>mvn:org.opennms.horizon.graph/api/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.graph/jung/${jung.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.shared/dto-model/${horizon.shared.lib.version}</bundle>
+        <bundle start-level="80">mvn:org.opennms.horizon.graph/rest/${project.version}</bundle>
+    </feature>
+
     <feature name="minion-icmp" version="${project.version}" description="Minion :: ICMP">
         <feature>java-native-access</feature>
         <feature>guava</feature>
@@ -455,7 +467,7 @@
             osgi.service;effective:=active;objectClass=org.ops4j.pax.jdbc.pool.common.PooledDataSourceFactory
         </capability>
     </feature>
-    
+
     <!-- inventory -->
     <feature name="horizon-inventory" version="${project.version}">
         <feature>horizon-db</feature>

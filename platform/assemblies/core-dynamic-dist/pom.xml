@@ -125,6 +125,7 @@
                         <feature>horizon-minion-rest</feature>
                         <feature>horizon-metrics-prometheus</feature>
                         <feature>horizon-core-monitor</feature>
+                        <feature>horizon-graph-rest</feature>
                     </bootFeatures>
                     <libraries>
                     </libraries>
