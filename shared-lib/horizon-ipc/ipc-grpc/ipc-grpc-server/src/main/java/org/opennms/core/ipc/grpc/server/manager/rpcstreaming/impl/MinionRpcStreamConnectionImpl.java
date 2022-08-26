@@ -117,7 +117,7 @@ public class MinionRpcStreamConnectionImpl implements MinionRpcStreamConnection 
         // Handle response from the Minion.
         RpcResponseHandler responseHandler = rpcRequestTracker.lookup(message.getRpcId());
 
-        if (responseHandler != null && message.getRpcContent() != null) {
+        if (responseHandler != null) {
             responseHandler.sendResponse(message);
         } else {
             log.debug("Received a response for request for module: {} with RpcId:{}, but no outstanding request was found with this id." +

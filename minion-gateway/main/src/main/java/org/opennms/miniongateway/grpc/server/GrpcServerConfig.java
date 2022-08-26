@@ -120,7 +120,6 @@ public class GrpcServerConfig {
             new MeteringInterceptorFactory(metricRegistry)
         ));
 
-
         server.setRpcConnectionTracker(rpcConnectionTracker);
         server.setRpcRequestTracker(rpcRequestTracker);
         server.setRpcRequestTimeoutManager(rpcRequestTimeoutManager);

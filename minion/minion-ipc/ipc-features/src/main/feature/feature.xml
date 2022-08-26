@@ -38,8 +38,8 @@
     <feature name="ipc-api" version="${project.version}">
         <feature>observability-minion</feature>
         <feature>ipc-guava-internal</feature>
-        <feature>grpc-contract</feature>
-        <feature>grpc-ratelimitter</feature>
+        <feature>protobuf</feature>
+        <feature>grpc-minion</feature>
         <bundle>mvn:org.opennms.horizon.shared/horizon-common-logging/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.shared/ipc-api/${project.version}</bundle>
     </feature>

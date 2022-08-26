@@ -36,14 +36,10 @@ import com.google.protobuf.Message;
 import io.opentracing.Tracer;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -59,10 +55,8 @@ import org.opennms.cloud.grpc.minion.MinionToCloudMessage;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
 import org.opennms.cloud.grpc.minion.SinkMessage;
+import org.opennms.core.ipc.grpc.client.rpc.RpcRequestHandler;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcModule;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcRequest;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcResponse;
 import org.opennms.horizon.shared.ipc.rpc.api.client.ClientRequestDispatcher;
 import org.opennms.horizon.shared.ipc.sink.api.MessageConsumerManager;
 import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
@@ -115,17 +109,14 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
     private ConnectivityState currentChannelState;
 
     private final AtomicLong counter = new AtomicLong();
-    private final ThreadFactory requestHandlerThreadFactory = (runnable) -> new Thread(runnable, "rpc-request-handler-" + counter.incrementAndGet());
     private final ThreadFactory blockingSinkMessageThreadFactory = (runnable) -> new Thread(runnable, "blocking-sink-message-" + counter.incrementAndGet());
     // Each request is handled in a new thread which unmarshals and executes the request.
-    private final ExecutorService requestHandlerExecutor = Executors.newCachedThreadPool(requestHandlerThreadFactory);
-    // Maintain the map of RPC modules and their ID.
-    private final Map<String, RpcModule<RpcRequest, RpcResponse>> registerdModules = new ConcurrentHashMap<>();
     // This maintains a blocking thread for each dispatch module when OpenNMS is not in active state.
     private final ScheduledExecutorService blockingSinkMessageScheduler = Executors.newScheduledThreadPool(SINK_BLOCKING_THREAD_POOL_SIZE,
             blockingSinkMessageThreadFactory);
     private ReconnectStrategy reconnectStrategy;
     private Tracer tracer;
+    private RpcRequestHandler rpcRequestHandler;
     private CloudMessageHandler cloudMessageHandler;
 
     public MinionGrpcClient(IpcIdentity ipcIdentity, ConfigurationAdmin configAdmin) {
@@ -222,27 +213,6 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
         this.cloudMessageHandler = cloudMessageHandler;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void bind(RpcModule module) throws Exception {
-        if (module != null) {
-            final RpcModule<RpcRequest, RpcResponse> rpcModule = (RpcModule<RpcRequest, RpcResponse>) module;
-            if (registerdModules.containsKey(rpcModule.getId())) {
-                LOG.warn(" {} module is already registered", rpcModule.getId());
-            } else {
-                registerdModules.put(rpcModule.getId(), rpcModule);
-                LOG.info("Registered module {} with gRPC IPC client", rpcModule.getId());
-            }
-        }
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void unbind(RpcModule module) throws Exception {
-        if (module != null) {
-            final RpcModule<RpcRequest, RpcResponse> rpcModule = (RpcModule<RpcRequest, RpcResponse>) module;
-            registerdModules.remove(rpcModule.getId());
-            LOG.info("Removing module {} from gRPC IPC client.", rpcModule.getId());
-        }
-    }
 
     private boolean hasChangedToReadyState() {
         ConnectivityState prevState = currentChannelState;
@@ -250,9 +220,7 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
     }
 
     public void shutdown() {
-        requestHandlerExecutor.shutdown();
         blockingSinkMessageScheduler.shutdown();
-        registerdModules.clear();
         if (rpcStream != null) {
             rpcStream.onCompleted();
         }
@@ -364,51 +332,15 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
     }
 
     private void processRpcRequest(RpcRequestProto requestProto) {
-        long currentTime = requestProto.getExpirationTime();
-        if (requestProto.getExpirationTime() < currentTime) {
-            LOG.debug("ttl already expired for the request id = {}, won't process.", requestProto.getRpcId());
-            return;
+        if (rpcRequestHandler != null) {
+            rpcRequestHandler.handle(requestProto).whenComplete((response, error) -> {
+                if (error != null) {
+                    LOG.warn("Failed to handle request {}", requestProto, error);
+                    return;
+                }
+                sendRpcResponse(response);
+            });
         }
-        String moduleId = requestProto.getModuleId();
-        if (moduleId.isBlank()) {
-            return;
-        }
-        LOG.debug("Received RPC request with RpcID:{} for module {}", requestProto.getRpcId(), requestProto.getModuleId());
-        RpcModule<RpcRequest, RpcResponse> rpcModule = registerdModules.get(moduleId);
-        if (rpcModule == null) {
-            return;
-        }
-
-        RpcRequest rpcRequest = rpcModule.unmarshalRequest(requestProto.getRpcContent().toStringUtf8());
-        CompletableFuture<RpcResponse> future = rpcModule.execute(rpcRequest);
-        future.whenComplete((res, ex) -> {
-            final RpcResponse rpcResponse;
-            if (ex != null) {
-                // An exception occurred, store the exception in a new response
-                LOG.warn("An error occured while executing a call in {}.", rpcModule.getId(), ex);
-                rpcResponse = rpcModule.createResponseWithException(ex);
-            } else {
-                // No exception occurred, use the given response
-                rpcResponse = res;
-            }
-            // Construct response using the same rpcId;
-            String responseAsString = rpcModule.marshalResponse(rpcResponse);
-            RpcResponseProto responseProto = RpcResponseProto.newBuilder()
-                    .setRpcId(requestProto.getRpcId())
-                    .setSystemId(ipcIdentity.getId())
-                    .setLocation(requestProto.getLocation())
-                    .setModuleId(requestProto.getModuleId())
-                    .setRpcContent(ByteString.copyFrom(responseAsString, StandardCharsets.UTF_8))
-                    .build();
-
-            try {
-                sendRpcResponse(responseProto);
-                LOG.debug("Request with RpcId:{} for module {} handled successfully, and response was sent",
-                        responseProto.getRpcId(), responseProto.getModuleId());
-            } catch (Throwable e) {
-                LOG.error("Error while sending RPC response {}", responseProto, e);
-            }
-        });
     }
 
     private synchronized void sendRpcResponse(RpcResponseProto rpcResponseProto) {
@@ -452,13 +384,7 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
 
         @Override
         public void onNext(RpcRequestProto rpcRequestProto) {
-
-            try {
-                // Run processing of RPC request in a different thread.
-                requestHandlerExecutor.execute(() -> processRpcRequest(rpcRequestProto));
-            } catch (Throwable e) {
-                LOG.error("Error while processing the RPC Request {}", rpcRequestProto, e);
-            }
+            processRpcRequest(rpcRequestProto);
         }
 
         @Override

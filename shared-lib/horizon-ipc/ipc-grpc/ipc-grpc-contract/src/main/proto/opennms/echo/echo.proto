@@ -7,7 +7,6 @@ option java_package = "org.opennms.horizon.grpc.echo.contract";
 import "opennms_minion_ipc.proto";
 
 message EchoRequest {
-  minion.Identity identity = 1;
   uint64 id = 2;
   string message = 3;
   optional string body = 4;
@@ -16,8 +15,6 @@ message EchoRequest {
 }
 
 message EchoResponse {
-  // to be moved to envelope
-  minion.Identity identity = 1;
   int64 id = 2;
   string error =3 ;
   string message = 4;
