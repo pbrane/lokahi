@@ -28,30 +28,15 @@
 
 package org.opennms.horizon.minion.ipc.echo;
 
-
-//import javax.xml.bind.annotation.XmlAccessType;
-//import javax.xml.bind.annotation.XmlAccessorType;
-//import javax.xml.bind.annotation.XmlAttribute;
-//import javax.xml.bind.annotation.XmlElement;
-//import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Objects;
 import org.opennms.horizon.shared.ipc.rpc.api.RemoteExecutionException;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcResponse;
 
-//@XmlRootElement(name="echo-response")
-//@XmlAccessorType(XmlAccessType.NONE)
 public class EchoResponse implements RpcResponse {
 
-//    @XmlAttribute(name="id")
     private Long id;
-
-//    @XmlAttribute(name="error")
     private String error;
-
-//    @XmlAttribute(name="message")
     private String message;
-
-//    @XmlElement(name="body", required=false)
     private String body;
 
     public EchoResponse() { }

@@ -1,5 +1,6 @@
 package org.opennms.core.ipc.grpc.client.rpc;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -40,17 +41,17 @@ public class LegacyRpcHandler implements RpcRequestHandler {
             return CompletableFuture.failedFuture(new IllegalArgumentException("Could not find requested module id"));
         }
 
-        RpcRequest rpcRequest = rpcModule.unmarshalRequest(requestProto.getRpcContent().toStringUtf8());
+        RpcRequest rpcRequest = rpcModule.unmarshalRequest(requestProto.getPayload());
         CompletableFuture<RpcResponse> future = rpcModule.execute(rpcRequest);
         future.thenApply((rpcResponse) -> {
             // Construct response using the same rpcId;
-            String responseAsString = rpcModule.marshalResponse(rpcResponse);
+            Any responsePayload = rpcModule.marshalResponse(rpcResponse);
             RpcResponseProto responseProto = RpcResponseProto.newBuilder()
                 .setRpcId(requestProto.getRpcId())
                 .setSystemId(ipcIdentity.getId())
                 .setLocation(requestProto.getLocation())
                 .setModuleId(requestProto.getModuleId())
-                .setRpcContent(ByteString.copyFrom(responseAsString, StandardCharsets.UTF_8))
+                .setPayload(responsePayload)
                 .build();
 
             return responseProto;

@@ -1,5 +1,6 @@
 package org.opennms.horizon.shared.ipc.rpc.api.server;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -7,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 public interface CallFactory {
 
     <Request extends Message, Response extends Message>
-    CallBuilder<Response> create(Request request, Deserializer<byte[], Response> response);
+    CallBuilder<Response> create(Request request, Deserializer<Any, Response> response);
 
     interface CallBuilder<T extends Message> {
         CallBuilder<T> withTimeToLive(long ttl);

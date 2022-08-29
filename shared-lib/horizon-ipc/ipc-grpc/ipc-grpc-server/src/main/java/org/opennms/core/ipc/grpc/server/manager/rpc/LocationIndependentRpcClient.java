@@ -2,6 +2,7 @@ package org.opennms.core.ipc.grpc.server.manager.rpc;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Strings;
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import java.util.Objects;
@@ -133,7 +134,7 @@ public class LocationIndependentRpcClient<REQUEST extends RpcRequest, RESPONSE e
     }
 
     private CompletableFuture<RESPONSE> executeRemotely(REQUEST request) {
-        String marshalRequest = localModule.marshalRequest(request);
+        Any marshalRequest = localModule.marshalRequest(request);
 
         CompletableFuture<RESPONSE> future = new CompletableFuture<>();
         long expirationTime = this.calcuateExpiration(request);
@@ -143,8 +144,7 @@ public class LocationIndependentRpcClient<REQUEST extends RpcRequest, RESPONSE e
                 .setRpcId(rpcId)
                 .setLocation(request.getLocation())
                 .setModuleId(localModule.getId())
-                .setRpcContent(ByteString.copyFrom(marshalRequest.getBytes())
-                );
+                .setPayload(marshalRequest);
 
         if (!Strings.isNullOrEmpty(request.getSystemId())) {
             builder.setSystemId(request.getSystemId());

@@ -51,7 +51,7 @@ class EchoRequester implements Runnable {
                 .setId(1)
                 .setDelay(1000)
                 .build();
-            Call<EchoResponse> call = callFactory.create(request, EchoResponse::parseFrom)
+            Call<EchoResponse> call = callFactory.create(request, (any) -> any.unpack(EchoResponse.class))
                 .withLocation("cloud")
                 .withSystem("")
                 .withModule("echo")

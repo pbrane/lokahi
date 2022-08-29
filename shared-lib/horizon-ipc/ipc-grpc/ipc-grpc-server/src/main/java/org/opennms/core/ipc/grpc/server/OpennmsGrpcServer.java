@@ -30,6 +30,7 @@ package org.opennms.core.ipc.grpc.server;
 
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
 import com.google.protobuf.Message;
 import io.grpc.BindableService;
@@ -404,7 +405,7 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
                 return;
             }
 
-            String message = payload.getRpcContent().toStringUtf8();
+            Any message = payload.getPayload();
             try {
                 T response = rpcModule.unmarshalResponse(message);
                 if (response.getErrorMessage() != null) {

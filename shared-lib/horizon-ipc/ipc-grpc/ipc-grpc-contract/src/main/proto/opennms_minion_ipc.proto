@@ -84,7 +84,7 @@ message CloudToMinionMessage {
 
 message RpcRequestProto {
   string rpc_id = 1;
-  bytes rpc_content = 2;
+  google.protobuf.Any payload = 2;
   string system_id = 3;
   string location = 4;
   string module_id = 5;
@@ -95,7 +95,7 @@ message RpcRequestProto {
 
 message RpcResponseProto {
   string rpc_id = 1;
-  bytes rpc_content = 2;
+  google.protobuf.Any payload = 2;
   string system_id = 3;
   string location = 4;
   string module_id = 5;

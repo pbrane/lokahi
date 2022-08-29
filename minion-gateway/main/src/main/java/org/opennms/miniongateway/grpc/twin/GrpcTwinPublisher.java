@@ -28,6 +28,7 @@
 
 package org.opennms.miniongateway.grpc.twin;
 
+import com.google.protobuf.Any;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +42,7 @@ import java.util.function.BiConsumer;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
+import org.opennms.cloud.grpc.minion.TwinRequestProto;
 import org.opennms.cloud.grpc.minion.TwinResponseProto;
 import org.opennms.core.grpc.common.GrpcIpcUtils;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
@@ -202,16 +204,16 @@ public class GrpcTwinPublisher extends AbstractTwinPublisher {
                     try {
                         CompletableFuture.runAsync(() -> {
                             try {
-                                TwinRequest twinRequest = mapTwinRequestProto(request.getRpcContent().toByteArray());
+                                TwinRequestProto twinRequest = request.getPayload().unpack(TwinRequestProto.class);
                                 TwinUpdate twinUpdate = getTwin(twinRequest);
                                 TwinResponseProto twinResponseProto = mapTwinResponse(twinUpdate);
-                                LOG.debug("Sent Twin response for key {} at location {}", twinRequest.getKey(), twinRequest.getLocation());
+                                LOG.debug("Sent Twin response for key {} at location {}", twinRequest.getConsumerKey(), twinRequest.getLocation());
                                 RpcResponseProto rpcResponse = RpcResponseProto.newBuilder()
                                     .setModuleId("twin")
                                     .setRpcId(request.getRpcId())
                                     .setSystemId(request.getSystemId())
                                     .setLocation(request.getLocation())
-                                    .setRpcContent(twinResponseProto.toByteString())
+                                    .setPayload(Any.pack(twinResponseProto))
                                     .build();
                                 responseObserver.onNext(rpcResponse);
                             } catch (Exception e) {

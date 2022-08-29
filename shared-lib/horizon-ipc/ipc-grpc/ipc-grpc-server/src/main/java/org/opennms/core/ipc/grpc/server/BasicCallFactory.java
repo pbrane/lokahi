@@ -1,5 +1,6 @@
 package org.opennms.core.ipc.grpc.server;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 import java.io.IOException;
 import java.util.UUID;
@@ -28,7 +29,7 @@ public class BasicCallFactory implements CallFactory {
     }
 
     @Override
-    public <Request extends Message, Response extends Message> CallBuilder<Response> create(Request request, Deserializer<byte[], Response> unmarshaller) {
+    public <Request extends Message, Response extends Message> CallBuilder<Response> create(Request request, Deserializer<Any, Response> unmarshaller) {
         return new BasicCallBuilder<>(server, request, unmarshaller);
     }
 }
@@ -37,13 +38,13 @@ class BasicCallBuilder<T extends Message> implements CallBuilder<T> {
 
     private final RpcRequestDispatcher server;
     private final Message request;
-    private final Deserializer<byte[], T> unmarshaller;
+    private final Deserializer<Any, T> unmarshaller;
     private long ttl = 3600L;
     private String module;
     private String location;
     private String system;
 
-    public BasicCallBuilder(RpcRequestDispatcher server, Message request, Deserializer<byte[], T> unmarshaller) {
+    public BasicCallBuilder(RpcRequestDispatcher server, Message request, Deserializer<Any, T> unmarshaller) {
         this.server = server;
         this.request = request;
         this.unmarshaller = unmarshaller;
@@ -84,13 +85,13 @@ class BasicCall<T extends Message> implements Call<T> {
 
     private final RpcRequestDispatcher server;
     private final Message request;
-    private final Deserializer<byte[], T> unmarshaller;
+    private final Deserializer<Any, T> unmarshaller;
     private final String module;
     private final String system;
     private final String location;
     private final long ttl;
 
-    public BasicCall(RpcRequestDispatcher server, Message request, Deserializer<byte[], T> unmarshaller, String module, String system, String location, long ttl) {
+    public BasicCall(RpcRequestDispatcher server, Message request, Deserializer<Any, T> unmarshaller, String module, String system, String location, long ttl) {
         this.server = server;
         this.request = request;
         this.unmarshaller = unmarshaller;
@@ -107,13 +108,13 @@ class BasicCall<T extends Message> implements Call<T> {
             .setRpcId(UUID.randomUUID().toString())
             .setSystemId(system)
             .setLocation(location)
-            .setRpcContent(request.toByteString())
+            .setPayload(Any.pack(request))
             .setExpirationTime(System.currentTimeMillis() + ttl)
             .build();
 
         Function<RpcResponseProto, T> responseHandler = response -> {
             try {
-                return unmarshaller.apply(response.getRpcContent().toByteArray());
+                return unmarshaller.apply(response.getPayload());
             } catch (IOException e) {
                 throw new RuntimeException("Could not deserialize message", e);
             }

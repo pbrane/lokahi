@@ -30,6 +30,9 @@ package org.opennms.horizon.minion.ipc.echo;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import java.io.StringReader;
 import java.io.StringWriter;
 
@@ -94,23 +97,51 @@ public class EchoRpcModule implements RpcModule<EchoRequest, EchoResponse> {
     }
 
     @Override
-    public String marshalRequest(EchoRequest echoRequest) {
-        return marshal(echoRequest);
+    public Any marshalRequest(EchoRequest echoRequest) {
+        return marshal(org.opennms.horizon.grpc.echo.contract.EchoRequest.newBuilder()
+            .setId(echoRequest.getId())
+            .setMessage(echoRequest.getMessage())
+            .setBody(echoRequest.getBody())
+            .setDelay(echoRequest.getDelay())
+            .setThrow(echoRequest.shouldThrow())
+            .build());
     }
 
     @Override
-    public EchoRequest unmarshalRequest(String payload) {
-        return unmarshal(EchoRequest.class, payload);
+    public EchoRequest unmarshalRequest(Any request) {
+        org.opennms.horizon.grpc.echo.contract.EchoRequest echoRequest = unmarshal(org.opennms.horizon.grpc.echo.contract.EchoRequest.class, request);
+        EchoRequest wrapper = new EchoRequest();
+        wrapper.setId(echoRequest.getId());
+        wrapper.setMessage(echoRequest.getMessage());
+        wrapper.setBody(echoRequest.getBody());
+        wrapper.setDelay(echoRequest.getDelay());
+        wrapper.shouldThrow(echoRequest.getThrow());
+        return wrapper;
     }
 
     @Override
-    public String marshalResponse(EchoResponse echoResponse) {
-        return marshal(echoResponse);
+    public Any marshalResponse(EchoResponse response) {
+        return marshal(org.opennms.horizon.grpc.echo.contract.EchoResponse.newBuilder()
+            .setId(response.getId())
+            .setError(response.getErrorMessage())
+            .setMessage(response.getMessage())
+            .setBody(response.getBody())
+            .build());
     }
 
     @Override
-    public EchoResponse unmarshalResponse(String payload) {
-        return unmarshal(EchoResponse.class, payload);
+    public EchoResponse unmarshalResponse(Any response) {
+        org.opennms.horizon.grpc.echo.contract.EchoResponse echoResponse = unmarshal(org.opennms.horizon.grpc.echo.contract.EchoResponse.class, response);
+        EchoResponse wrapper;
+        if (!echoResponse.getError().isBlank()) {
+            wrapper = new EchoResponse(new IllegalArgumentException(echoResponse.getError()));
+        } else {
+            wrapper = new EchoResponse(echoResponse.getMessage());
+        }
+        wrapper.setId(echoResponse.getId());
+        wrapper.setMessage(echoResponse.getMessage());
+        wrapper.setBody(echoResponse.getBody());
+        return wrapper;
     }
 
     @Override
@@ -118,30 +149,16 @@ public class EchoRpcModule implements RpcModule<EchoRequest, EchoResponse> {
         return new EchoResponse(ex);
     }
 
-    private <T> T unmarshal(Class<T> type, String payload) {
-//        TODO: re-implmplement
-        throw new UnsupportedOperationException();
-//        try {
-//            Object unmarshal = context.createUnmarshaller().unmarshal(new StringReader(payload));
-//            if (type.isInstance(unmarshal)) {
-//                return type.cast(unmarshal);
-//            }
-//            throw new IllegalArgumentException("Unexpected value " + unmarshal.getClass().getName() + "  received");
-//        } catch (JAXBException e) {
-//            throw new RuntimeException("Could not ");
-//        }
+    private <T extends Message> T unmarshal(Class<T> type, Any payload) {
+        try {
+            return payload.unpack(type);
+        } catch (InvalidProtocolBufferException e) {
+            throw new RuntimeException("Could not unmarshall value", e);
+        }
     }
 
-    private <T> String marshal(T payload) {
-        //        TODO: re-implmplement
-        throw new UnsupportedOperationException();
-//        try {
-//            StringWriter writer = new StringWriter();
-//            context.createMarshaller().marshal(payload, writer);
-//            return writer.toString();
-//        } catch (JAXBException e) {
-//            throw new RuntimeException("Could not serialize " + payload.getClass().getName());
-//        }
+    private <T extends Message> Any marshal(T payload) {
+        return Any.pack(payload);
     }
 
 }

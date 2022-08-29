@@ -28,6 +28,7 @@
 package org.opennms.horizon.minion.ipc.twin.core.internal;
 
 
+import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import java.io.IOException;
@@ -117,7 +118,7 @@ public class GrpcTwinSubscriber extends AbstractTwinSubscriber implements CloudM
     private synchronized boolean sendTwinRpcRequest(TwinRequestProto twinRequestProto) {
         String rpcId = UUID.randomUUID().toString();
         RpcRequestProto rpcRequestProto = RpcRequestProto.newBuilder()
-            .setRpcContent(twinRequestProto.toByteString())
+            .setPayload(Any.pack(twinRequestProto))
             .setModuleId("twin")
             .setRpcId(rpcId)
             .build();
@@ -128,7 +129,7 @@ public class GrpcTwinSubscriber extends AbstractTwinSubscriber implements CloudM
             }
             if (rpcId.equals(response.getRpcId())) {
                 try {
-                    TwinResponseProto twinResponseProto = TwinResponseProto.parseFrom(response.getRpcContent());
+                    TwinResponseProto twinResponseProto = response.getPayload().unpack(TwinResponseProto.class);
                     handle(twinResponseProto);
                 } catch (InvalidProtocolBufferException e) {
 

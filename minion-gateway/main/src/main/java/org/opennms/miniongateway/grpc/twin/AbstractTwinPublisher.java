@@ -81,15 +81,15 @@ public abstract class AbstractTwinPublisher implements TwinPublisher {
         }
     }
 
-    protected TwinUpdate getTwin(TwinRequest twinRequest) {
-        TwinTracker twinTracker = getTwinTracker(twinRequest.getKey(), twinRequest.getLocation());
+    protected TwinUpdate getTwin(TwinRequestProto twinRequest) {
+        TwinTracker twinTracker = getTwinTracker(twinRequest.getConsumerKey(), twinRequest.getLocation());
         TwinUpdate twinUpdate;
         if (twinTracker == null) {
             // No twin object exists for this key yet, return with null object.
-            twinUpdate = new TwinUpdate(twinRequest.getKey(), twinRequest.getLocation(), null);
+            twinUpdate = new TwinUpdate(twinRequest.getConsumerKey(), twinRequest.getLocation(), null);
         } else {
             // Fill TwinUpdate fields from TwinTracker.
-            twinUpdate = new TwinUpdate(twinRequest.getKey(), twinRequest.getLocation(), twinTracker.getObj());
+            twinUpdate = new TwinUpdate(twinRequest.getConsumerKey(), twinRequest.getLocation(), twinTracker.getObj());
             twinUpdate.setPatch(false);
             twinUpdate.setVersion(twinTracker.getVersion());
             twinUpdate.setSessionId(twinTracker.getSessionId());

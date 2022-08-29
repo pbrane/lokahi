@@ -28,6 +28,8 @@
 
 package org.opennms.horizon.shared.ipc.rpc.api;
 
+import com.google.protobuf.Any;
+
 /**
  * Provides the ability to execute the RPCs and defines how the requests/responses will
  * be marshaled/unmarshaled over the wire.
@@ -48,22 +50,22 @@ public interface RpcModule<S extends RpcRequest, T extends RpcResponse> extends 
     /**
      * Marshals the request to a string.
      */
-    String marshalRequest(S request);
+    Any marshalRequest(S request);
 
     /**
      * Unmarshals the request from a string.
      */
-    S unmarshalRequest(String request);
+    S unmarshalRequest(Any request);
 
     /**
      * Marshals the response to a string.
      */
-    String marshalResponse(T response);
+    Any marshalResponse(T response);
 
     /**
      * Unmarshals the response from a string.
      */
-    T unmarshalResponse(String response);
+    T unmarshalResponse(Any response);
 
     /**
      * Called when the {@link RpcModule} throws an exception while executing a request.

@@ -1,5 +1,6 @@
 package org.opennms.core.ipc.grpc.client.rpc;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 import java.nio.charset.StandardCharsets;
@@ -14,16 +15,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcModule;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcRequest;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcResponse;
 import org.opennms.horizon.shared.ipc.rpc.api.client.RpcHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThinHandler implements RpcRequestHandler {
+public class ThinRpcRequestHandler implements RpcRequestHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(ThinHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ThinRpcRequestHandler.class);
 
     private final AtomicLong counter = new AtomicLong();
     private final ThreadFactory requestHandlerThreadFactory = (runnable) -> new Thread(runnable, "rpc-request-handler-" + counter.incrementAndGet());
@@ -52,13 +50,12 @@ public class ThinHandler implements RpcRequestHandler {
         CompletableFuture<Message> future = handler.execute(handler.unmarshal(requestProto));
         future.thenApply((rpcResponse) -> {
             // Construct response using the same rpcId;
-            String responseAsString = rpcResponse.toByteString().toStringUtf8();
             RpcResponseProto responseProto = RpcResponseProto.newBuilder()
                 .setRpcId(requestProto.getRpcId())
                 .setSystemId(ipcIdentity.getId())
                 .setLocation(requestProto.getLocation())
                 .setModuleId(requestProto.getModuleId())
-                .setRpcContent(ByteString.copyFrom(responseAsString, StandardCharsets.UTF_8))
+                .setPayload(Any.pack(rpcResponse))
                 .build();
 
             return responseProto;
