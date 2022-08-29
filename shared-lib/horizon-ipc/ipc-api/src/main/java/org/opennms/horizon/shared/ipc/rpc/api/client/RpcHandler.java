@@ -10,5 +10,5 @@ public interface RpcHandler<S extends Message, T extends Message> {
 
     String getId();
 
-    T unmarshal(RpcRequestProto request);
+    S unmarshal(RpcRequestProto request);
 }

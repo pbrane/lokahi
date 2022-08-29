@@ -10,7 +10,7 @@ message EchoRequest {
   uint64 id = 2;
   string message = 3;
   optional string body = 4;
-  int64 delay = 5;
+  optional int64 delay = 5;
   bool throw = 6;
 }
 

@@ -1,6 +1,8 @@
 package org.opennms.miniongateway.grpc.server;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import org.opennms.core.ipc.grpc.server.OpennmsGrpcServer;
 import org.opennms.horizon.grpc.echo.contract.EchoRequest;
 import org.opennms.horizon.grpc.echo.contract.EchoResponse;
@@ -26,7 +28,7 @@ class EchoRequester implements Runnable {
     private final Logger logger = LoggerFactory.getLogger(EchoRequester.class);
     private final OpennmsGrpcServer server;
     private AtomicBoolean run = new AtomicBoolean(true);
-
+    private AtomicLong counter = new AtomicLong(0);
 
     public EchoRequester(OpennmsGrpcServer server) {
         this.server = server;
@@ -48,13 +50,13 @@ class EchoRequester implements Runnable {
 
             EchoRequest request = EchoRequest.newBuilder()
                 .setBody("foo")
-                .setId(1)
+                .setId(counter.incrementAndGet())
                 .setDelay(1000)
                 .build();
             Call<EchoResponse> call = callFactory.create(request, (any) -> any.unpack(EchoResponse.class))
                 .withLocation("cloud")
                 .withSystem("")
-                .withModule("echo")
+                .withModule("Echo")
                 .build();
 
             call.execute().whenComplete((echo, err) -> {

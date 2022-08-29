@@ -228,10 +228,9 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
         LOG.info("Minion at location {} with systemId {} stopped", ipcIdentity.getLocation(), ipcIdentity.getId());
     }
 
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
+    public void setRpcRequestHandler(RpcRequestHandler rpcRequestHandler) {
+        this.rpcRequestHandler = rpcRequestHandler;
     }
-
 
     @Override
     public String getMetricDomain() {
@@ -340,7 +339,9 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
                 }
                 sendRpcResponse(response);
             });
+            return;
         }
+        LOG.warn("Ignored RPC request {}, client has no rpc request handler set", requestProto);
     }
 
     private synchronized void sendRpcResponse(RpcResponseProto rpcResponseProto) {

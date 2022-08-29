@@ -118,6 +118,8 @@ public class GrpcTwinSubscriber extends AbstractTwinSubscriber implements CloudM
     private synchronized boolean sendTwinRpcRequest(TwinRequestProto twinRequestProto) {
         String rpcId = UUID.randomUUID().toString();
         RpcRequestProto rpcRequestProto = RpcRequestProto.newBuilder()
+            .setSystemId(getIdentity().getId())
+            .setLocation(getIdentity().getLocation())
             .setPayload(Any.pack(twinRequestProto))
             .setModuleId("twin")
             .setRpcId(rpcId)

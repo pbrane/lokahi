@@ -44,12 +44,18 @@
         <bundle>mvn:org.opennms.horizon.shared/ipc-api/${project.version}</bundle>
     </feature>
 
+    <feature name="ipc-echo" version="${project.version}">
+        <feature>ipc-api</feature>
+        <bundle>mvn:org.opennms.horizon.minion/ipc-echo/${project.version}</bundle>
+    </feature>
+
     <feature name="ipc-minion" version="${project.version}">
         <feature>grpc-minion</feature>
         <feature>ipc-jackson-internal</feature>
         <feature>ipc-json-patch-internal</feature>
         <feature>ipc-whiteboard-internal</feature>
         <feature>ipc-api</feature>
+        <feature>ipc-echo</feature>
 
         <bundle>mvn:org.opennms.horizon.minion/twin-api/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.minion/twin-common/${project.version}</bundle>

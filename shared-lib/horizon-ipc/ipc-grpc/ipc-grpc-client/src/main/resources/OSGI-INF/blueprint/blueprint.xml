@@ -1,7 +1,7 @@
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.3.0"
-   xsi:schemaLocation="
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.3.0"
+    xsi:schemaLocation="
         http://www.osgi.org/xmlns/blueprint/v1.0.0
         https://osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
         http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.3.0
@@ -35,13 +35,22 @@
     <bean id="metricRegistry" class="com.codahale.metrics.MetricRegistry"/>
     <bean id="tracer" class="io.opentracing.noop.NoopTracerFactory" factory-method="create"/>
 
+    <bean id="thinRpcRequestHandler" class="org.opennms.core.ipc.grpc.client.rpc.ThinRpcRequestHandler">
+        <argument ref="ipcIdentity" />
+    </bean>
+
     <bean id="minionClient" class="org.opennms.core.ipc.grpc.client.MinionGrpcClient" init-method="start" destroy-method="shutdown">
         <argument ref="ipcIdentity"/>
         <argument ref="configAdmin"/>
         <argument ref="metricRegistry"/>
         <argument ref="tracer"/>
         <property name="cloudMessageHandler" ref="cloudMessageHandler" />
+        <property name="rpcRequestHandler" ref="thinRpcRequestHandler" />
     </bean>
+
+    <reference-list interface="org.opennms.horizon.shared.ipc.rpc.api.client.RpcHandler" availability="optional">
+        <reference-listener ref="thinRpcRequestHandler" bind-method="bind" unbind-method="unbind" />
+    </reference-list>
 
     <service ref="minionClient">
         <interfaces>

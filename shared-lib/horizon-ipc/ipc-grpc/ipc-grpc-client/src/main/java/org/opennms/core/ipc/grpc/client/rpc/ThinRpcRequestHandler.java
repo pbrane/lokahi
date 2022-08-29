@@ -28,7 +28,11 @@ public class ThinRpcRequestHandler implements RpcRequestHandler {
     private final ExecutorService requestHandlerExecutor = Executors.newCachedThreadPool(requestHandlerThreadFactory);
     // Maintain the map of RPC modules and their ID.
     private final Map<String, RpcHandler<Message, Message>> registeredModules = new ConcurrentHashMap<>();
-    private IpcIdentity ipcIdentity;
+    private final IpcIdentity ipcIdentity;
+
+    public ThinRpcRequestHandler(IpcIdentity ipcIdentity) {
+        this.ipcIdentity = ipcIdentity;
+    }
 
     @Override
     public CompletableFuture<RpcResponseProto> handle(RpcRequestProto requestProto) {
@@ -48,7 +52,7 @@ public class ThinRpcRequestHandler implements RpcRequestHandler {
         }
 
         CompletableFuture<Message> future = handler.execute(handler.unmarshal(requestProto));
-        future.thenApply((rpcResponse) -> {
+        return future.thenApply((rpcResponse) -> {
             // Construct response using the same rpcId;
             RpcResponseProto responseProto = RpcResponseProto.newBuilder()
                 .setRpcId(requestProto.getRpcId())
@@ -60,8 +64,6 @@ public class ThinRpcRequestHandler implements RpcRequestHandler {
 
             return responseProto;
         });
-
-        return null;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
