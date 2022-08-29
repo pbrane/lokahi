@@ -1,0 +1,102 @@
+syntax = "proto3";
+package opennms.rpc.snmp;
+
+option java_multiple_files = true;
+option java_package = "org.opennms.horizon.grpc.snmp.contract";
+
+import "opennms_minion_ipc.proto";
+
+message SnmpRequest {
+  string agent = 1;
+  string description = 2;
+  repeated SnmpGetRequest gets = 3;
+  repeated SnmpWalkRequest walks = 4;
+  int64 ttl = 5;
+}
+
+message SnmpMultiResponse {
+  string error = 1;
+  repeated SnmpResponse responses = 2;
+}
+
+message SnmpGetRequest {
+  string correlationId = 1;
+  repeated string oids = 2;
+}
+
+message SnmpWalkRequest {
+  string correlationId = 1;
+  repeated string oids = 2;
+  optional int32 maxRepetitions = 3;
+  optional string instance = 5;
+}
+
+message SnmpResponse {
+  string correlationId = 1;
+  repeated SnmpResult results = 2;
+}
+
+message SnmpResult {
+  string base = 1;
+  string instance = 2;
+  // TODO switch to SnmpValue
+  string value = 3;
+}
+
+
+enum SnmpValueType {
+  NONE = 0x0 [ deprecated = true ];
+  INT32 = 0x02;
+  OCTET_STRING = 0x04;
+  NULL = 0x05;
+  OBJECT_IDENTIFIER = 0x06;
+  IPADDRESS = 0x40;         // 64
+  COUNTER32 = 0x41;         // 65
+  GAUGE32 = 0x42;           // 66
+  TIMETICKS = 0x43;         // 67
+  OPAQUE = 0x44;            // 68
+  COUNTER64 = 0x46;         // 70
+  NO_SUCH_OBJECT = 0x80;    // 128
+  NO_SUCH_INSTANCE = 0x81;  // 129
+  END_OF_MIB = 0x82;        // 8*16 + 2 = 130
+}
+
+message SnmpValue {
+  SnmpValueType type = 1;
+  string value = 2;
+}
+
+enum Version {
+  v1 = 0;
+  v2 = 1;
+  v3 = 2;
+}
+
+message SnmpConfiguration {
+  int32 timeout = 1;
+  int32 retries = 2;
+  int32 port = 3;
+  Version version = 4;
+  int32 maxRequestSize = 5;
+  int64 ttl = 6;
+  oneof v3 {
+    SnmpV3Configuration config = 7;
+  }
+}
+
+message SnmpV3Configuration {
+  int32 securityLevel = 1;
+  string securityName = 2;
+  string readCommunity = 3;
+  int32 maxVarsPerPdu = 4;
+  int32 maxRepetitions = 5;
+  string writeCommunity = 6;
+  string authPassPhrase = 7;
+  string authProtocol = 8;
+  string privProtocol = 9;
+  string privPassPhrase = 10;
+  string engineId = 11;
+  string contextEngineId = 12;
+  string contextName = 13;
+  string enterpriseId = 14;
+}

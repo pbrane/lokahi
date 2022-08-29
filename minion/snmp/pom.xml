@@ -14,7 +14,8 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>rpc-impl</module>
+    <module>snmp4j</module>
+    <module>snmp-ipc</module>
   </modules>
 
 </project>

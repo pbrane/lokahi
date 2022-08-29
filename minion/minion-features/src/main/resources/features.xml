@@ -18,6 +18,7 @@
         <feature>icmp-plugins</feature>
         <feature>icmp-rpc</feature>
         <feature>snmp-plugins</feature>
+        <feature>snmp-rpc</feature>
     </feature>
 
     <feature name="minion-heartbeat">
