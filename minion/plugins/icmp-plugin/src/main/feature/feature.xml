@@ -41,6 +41,12 @@
         <bundle>mvn:org.opennms.horizon.minion/icmp-best/${project.version}</bundle>
     </feature>
 
+    <feature name="icmp-rpc" version="${project.version}">
+        <feature>icmp-jna</feature>
+        <feature>ipc-api</feature>
+        <bundle>mvn:org.opennms.horizon.minion/icmp-ipc/${project.version}</bundle>
+    </feature>
+
     <feature name="icmp-plugins" version="${project.version}">
         <feature>icmp-jna</feature>
         <feature>plugins-api</feature>

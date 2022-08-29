@@ -44,6 +44,12 @@
             <artifactId>icmp-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.minion</groupId>
+            <artifactId>icmp-ipc</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
 
     </dependencies>
 
