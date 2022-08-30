@@ -7,7 +7,7 @@ option java_package = "org.opennms.horizon.grpc.snmp.contract";
 import "opennms_minion_ipc.proto";
 
 message SnmpRequest {
-  string agent = 1;
+  SnmpConfiguration agent = 1;
   string description = 2;
   repeated SnmpGetRequest gets = 3;
   repeated SnmpWalkRequest walks = 4;
@@ -39,8 +39,7 @@ message SnmpResponse {
 message SnmpResult {
   string base = 1;
   string instance = 2;
-  // TODO switch to SnmpValue
-  string value = 3;
+  SnmpValue value = 3;
 }
 
 
@@ -63,40 +62,41 @@ enum SnmpValueType {
 
 message SnmpValue {
   SnmpValueType type = 1;
-  string value = 2;
+  bytes value = 2;
 }
 
 enum Version {
-  v1 = 0;
-  v2 = 1;
-  v3 = 2;
+  none = 0 [ deprecated = true ];
+  v1 = 1;
+  v2 = 2;
+  v3 = 3;
 }
 
 message SnmpConfiguration {
-  int32 timeout = 1;
-  int32 retries = 2;
-  int32 port = 3;
-  Version version = 4;
-  int32 maxRequestSize = 5;
-  int64 ttl = 6;
-  oneof v3 {
-    SnmpV3Configuration config = 7;
-  }
+  Version version = 1;
+  string address = 2;
+  optional string proxyForAddress = 3;
+  optional int32 port = 4;
+  optional int32 timeout = 5;
+  optional int32 retries = 6;
+  optional int32 maxVarsPerPdu = 7;
+  optional int32 maxRepetitions = 8;
+  optional int32 maxRequestSize = 9;
+  optional int64 ttl = 10;
+  optional string readCommunity = 11;
+  optional string writeCommunity = 12;
+  optional SnmpV3Configuration config = 13;
 }
 
 message SnmpV3Configuration {
-  int32 securityLevel = 1;
-  string securityName = 2;
-  string readCommunity = 3;
-  int32 maxVarsPerPdu = 4;
-  int32 maxRepetitions = 5;
-  string writeCommunity = 6;
-  string authPassPhrase = 7;
-  string authProtocol = 8;
-  string privProtocol = 9;
-  string privPassPhrase = 10;
-  string engineId = 11;
-  string contextEngineId = 12;
-  string contextName = 13;
-  string enterpriseId = 14;
+  optional int32 securityLevel = 1;
+  optional string securityName = 2;
+  optional string authPassPhrase = 3;
+  optional string authProtocol = 4;
+  optional string privPassPhrase = 5;
+  optional string privProtocol = 6;
+  optional string contextName = 7;
+  optional string engineId = 8;
+  optional string contextEngineId = 9;
+  optional string enterpriseId = 10;
 }

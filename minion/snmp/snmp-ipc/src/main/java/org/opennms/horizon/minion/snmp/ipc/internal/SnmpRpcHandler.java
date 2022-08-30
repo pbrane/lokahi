@@ -1,22 +1,30 @@
 package org.opennms.horizon.minion.snmp.ipc.internal;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
+import org.opennms.horizon.grpc.snmp.contract.SnmpConfiguration;
 import org.opennms.horizon.grpc.snmp.contract.SnmpGetRequest;
 import org.opennms.horizon.grpc.snmp.contract.SnmpMultiResponse;
 import org.opennms.horizon.grpc.snmp.contract.SnmpRequest;
 import org.opennms.horizon.grpc.snmp.contract.SnmpResponse;
 import org.opennms.horizon.grpc.snmp.contract.SnmpResult.Builder;
+import org.opennms.horizon.grpc.snmp.contract.SnmpV3Configuration;
+import org.opennms.horizon.grpc.snmp.contract.SnmpValueType;
 import org.opennms.horizon.grpc.snmp.contract.SnmpWalkRequest;
 import org.opennms.horizon.shared.ipc.rpc.api.client.RpcHandler;
 import org.opennms.horizon.shared.snmp.AggregateTracker;
@@ -50,6 +58,14 @@ public class SnmpRpcHandler implements RpcHandler<SnmpRequest, SnmpMultiResponse
 
     @Override
     public CompletableFuture<SnmpMultiResponse> execute(SnmpRequest request) {
+        try {
+            return doExecute(request);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    private CompletableFuture<SnmpMultiResponse> doExecute(SnmpRequest request) throws Exception {
         CompletableFuture<List<SnmpResponse>> combinedFuture = CompletableFuture.completedFuture(new ArrayList<>());
         for (SnmpGetRequest getRequest : request.getGetsList()) {
             CompletableFuture<SnmpResponse> future = get(request, getRequest);
@@ -87,7 +103,7 @@ public class SnmpRpcHandler implements RpcHandler<SnmpRequest, SnmpMultiResponse
         }
     }
 
-    private CompletableFuture<List<SnmpResponse>> walk(SnmpRequest request, List<SnmpWalkRequest> walks) {
+    private CompletableFuture<List<SnmpResponse>> walk(SnmpRequest request, List<SnmpWalkRequest> walks) throws Exception {
         final CompletableFuture<List<SnmpResponse>> future = new CompletableFuture<>();
         final Map<String, SnmpResponse.Builder> responsesByCorrelationId = new LinkedHashMap<>();
 
@@ -155,8 +171,40 @@ public class SnmpRpcHandler implements RpcHandler<SnmpRequest, SnmpMultiResponse
         return future;
     }
 
-    private SnmpAgentConfig mapAgent(String agent) {
-        return null;
+    private SnmpAgentConfig mapAgent(SnmpConfiguration agent) throws Exception {
+        SnmpAgentConfig agentConfig = new SnmpAgentConfig();
+        agentConfig.setVersion(agent.getVersion().getNumber());
+        if (agent.hasConfig()) {
+            SnmpV3Configuration v3config = agent.getConfig();
+            agentOption(v3config.hasSecurityLevel(), agentConfig::setSecurityLevel, v3config::getSecurityLevel);
+            agentOption(v3config.hasSecurityName(), agentConfig::setSecurityName, v3config::getSecurityName);
+            agentOption(v3config.hasAuthPassPhrase(), agentConfig::setAuthPassPhrase, v3config::getAuthPassPhrase);
+            agentOption(v3config.hasAuthProtocol(), agentConfig::setAuthProtocol, v3config::getAuthProtocol);
+            agentOption(v3config.hasPrivPassPhrase(), agentConfig::setPrivPassPhrase, v3config::getPrivPassPhrase);
+            agentOption(v3config.hasPrivProtocol(), agentConfig::setPrivProtocol, v3config::getPrivProtocol);
+            agentOption(v3config.hasContextName(), agentConfig::setContextName, v3config::getContextName);
+            agentOption(v3config.hasEnterpriseId(), agentConfig::setEnterpriseId, v3config::getEnterpriseId);
+            agentOption(v3config.hasContextEngineId(), agentConfig::setContextEngineId, v3config::getContextEngineId);
+            agentOption(v3config.hasEngineId(), agentConfig::setEngineId, v3config::getEngineId);
+        }
+        agentConfig.setAddress(InetAddress.getByName(agent.getAddress()));
+        agentOption(agent.hasProxyForAddress(), agentConfig::setProxyFor, () -> InetAddress.getByName(agent.getProxyForAddress()));
+        agentOption(agent.hasPort(), agentConfig::setPort, agent::getPort);
+        agentOption(agent.hasTimeout(), agentConfig::setTimeout, agent::getTimeout);
+        agentOption(agent.hasRetries(), agentConfig::setRetries, agent::getRetries);
+        agentOption(agent.hasMaxVarsPerPdu(), agentConfig::setMaxVarsPerPdu, agent::getMaxVarsPerPdu);
+        agentOption(agent.hasMaxRepetitions(), agentConfig::setMaxRepetitions, agent::getMaxRepetitions);
+        agentOption(agent.hasMaxRequestSize(), agentConfig::setMaxRequestSize, agent::getMaxRequestSize);
+        agentOption(agent.hasTtl(), agentConfig::setTTL, agent::getTtl);
+        agentOption(agent.hasReadCommunity(), agentConfig::setReadCommunity, agent::getReadCommunity);
+        agentOption(agent.hasWriteCommunity(), agentConfig::setWriteCommunity, agent::getWriteCommunity);
+        return agentConfig;
+    }
+
+    private <T> void agentOption(boolean provided, Consumer<T> setter, Callable<T> getter) throws Exception {
+        if (provided) {
+            setter.accept(getter.call());
+        }
     }
 
     private static final void addResult(SnmpResult result, String correlationId, Map<String, SnmpResponse.Builder> responsesByCorrelationId) {
@@ -173,13 +221,21 @@ public class SnmpRpcHandler implements RpcHandler<SnmpRequest, SnmpMultiResponse
         return org.opennms.horizon.grpc.snmp.contract.SnmpResult.newBuilder()
             .setBase(result.getBase().toString())
             .setInstance(result.getInstance().toString())
-            // TODO make sure value encoding is honored
-            .setValue(result.getValue().toString())
+            .setValue(mapValue(result.getValue()))
             .build();
     }
 
-    private CompletableFuture<SnmpResponse> get(SnmpRequest request, SnmpGetRequest get) {
-        final SnmpObjId[] oids = get.getOidsList().toArray(new SnmpObjId[get.getOidsCount()]);
+    private static org.opennms.horizon.grpc.snmp.contract.SnmpValue mapValue(SnmpValue value) {
+        return org.opennms.horizon.grpc.snmp.contract.SnmpValue.newBuilder()
+            .setType(SnmpValueType.forNumber(value.getType()))
+            .setValue(ByteString.copyFrom(value.getBytes()))
+            .build();
+    }
+
+    private CompletableFuture<SnmpResponse> get(SnmpRequest request, SnmpGetRequest get) throws Exception {
+        final SnmpObjId[] oids = get.getOidsList().stream()
+            .map(SnmpObjId::get)
+            .toArray(SnmpObjId[]::new);
         final CompletableFuture<SnmpValue[]> future = SnmpUtils.getAsync(mapAgent(request.getAgent()), oids);
 
         return future.thenApply(values -> {
@@ -192,7 +248,7 @@ public class SnmpRpcHandler implements RpcHandler<SnmpRequest, SnmpMultiResponse
                 for (int i = 0; i < oids.length; i++) {
                     Builder valueBuilder = org.opennms.horizon.grpc.snmp.contract.SnmpResult.newBuilder()
                         .setBase(oids[i].toString())
-                        .setValue(values[i].toString());
+                        .setValue(mapValue(values[i]));
                     response.addResults(valueBuilder.build());
                 }
             }

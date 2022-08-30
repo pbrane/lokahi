@@ -48,9 +48,10 @@ class EchoRequester implements Runnable {
         while (run.get()) {
             CallFactory callFactory = server.getCallFactory();
 
+            long counter = this.counter.incrementAndGet();
             EchoRequest request = EchoRequest.newBuilder()
-                .setBody("foo")
-                .setId(counter.incrementAndGet())
+                .setBody("test-" + counter)
+                .setId(counter)
                 .setDelay(1000)
                 .build();
             Call<EchoResponse> call = callFactory.create(request, (any) -> any.unpack(EchoResponse.class))
@@ -64,7 +65,7 @@ class EchoRequester implements Runnable {
                     logger.error("Could not perform request", err);
                     return;
                 }
-                logger.info("Received echo answer {}", echo);
+                logger.info("Received echo answer {}", echo.getBody());
             });
 
             try {
