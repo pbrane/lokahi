@@ -2,17 +2,14 @@
 apiVersion: skaffold/v2beta28
 kind: Config
 metadata:
-  name: shared-lib
-requires:
-  - configs: ["parent-pom"]
-    path: ../parent-pom/skaffold.yaml
+  name: parent-pom
 build:
   local:
     push: false
   artifacts:
-  - image: shared-lib
+  - image: parent-pom
     custom:
-      # shared-lib builds only a jar, not an image.
+      # parent-pom builds only a jar, not an image.
       # Skaffold requires that artifacts produce images. This is a workaround that builds a dummy image.
       buildCommand: |
         mvn clean install &&
@@ -22,6 +19,3 @@ build:
         ignore: [
           "**/target/**"
         ]
-    requires:
-      - image: parent-pom
-        alias: unused
