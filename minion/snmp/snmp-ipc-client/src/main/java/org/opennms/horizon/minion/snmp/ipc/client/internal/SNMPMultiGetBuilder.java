@@ -26,42 +26,37 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.shared.snmp.proxy;
+package org.opennms.horizon.minion.snmp.ipc.client.internal;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.opennms.horizon.shared.snmp.CollectionTracker;
+import org.opennms.horizon.grpc.snmp.contract.SnmpGetRequest;
+import org.opennms.horizon.grpc.snmp.contract.SnmpGetRequest.Builder;
+import org.opennms.horizon.grpc.snmp.contract.SnmpMultiResponse;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
-import org.opennms.horizon.shared.snmp.SnmpResult;
-import org.opennms.horizon.shared.snmp.SnmpStrategy;
 import org.opennms.horizon.shared.snmp.SnmpValue;
+import org.opennms.horizon.shared.snmp.SnmpValueFactory;
 
-/**
- * Asynchronous SNMP client API that either executes the request locally, delegating
- * the request to the current {@link SnmpStrategy}, or dispatches
- * the request to a Minion at the given location.
- *
- * @author jwhite
- */
-public interface LocationAwareSnmpClient {
+public class SNMPMultiGetBuilder extends AbstractSNMPRequestBuilder<List<SnmpValue>> {
 
-    SNMPRequestBuilder<List<SnmpResult>> walk(SnmpAgentConfig agent, String... oids);
+    public SNMPMultiGetBuilder(LocationAwareSnmpClientRpcImpl client, SnmpAgentConfig agent, SnmpValueFactory valueFactory, List<SnmpObjId> oids) {
+        super(client, agent, valueFactory, buildGetRequests(oids), Collections.emptyList());
+    }
 
-    SNMPRequestBuilder<List<SnmpResult>> walk(SnmpAgentConfig agent, SnmpObjId... oids);
+    @Override
+    protected List<SnmpValue> processResponse(SnmpMultiResponse response) {
+        return response.getResponsesList().stream()
+            .flatMap(res -> res.getResultsList().stream())
+            .map(result -> mapValue(result.getValue()))
+            .collect(Collectors.toList());
+    }
 
-    SNMPRequestBuilder<List<SnmpResult>> walk(SnmpAgentConfig agent, List<SnmpObjId> oids);
-
-    <T extends CollectionTracker> SNMPRequestBuilder<T> walk(SnmpAgentConfig agent, T tracker);
-
-    SNMPRequestBuilder<SnmpValue> get(SnmpAgentConfig agent, String oid);
-
-    SNMPRequestBuilder<SnmpValue> get(SnmpAgentConfig agent, SnmpObjId oid);
-
-    SNMPRequestBuilder<List<SnmpValue>> get(SnmpAgentConfig agent, String... oids);
-
-    SNMPRequestBuilder<List<SnmpValue>> get(SnmpAgentConfig agent, SnmpObjId... oids);
-
-    SNMPRequestBuilder<List<SnmpValue>> get(SnmpAgentConfig agent, List<SnmpObjId> oids);
-
+    private static List<SnmpGetRequest> buildGetRequests(List<SnmpObjId> oids) {
+        Builder getRequest = SnmpGetRequest.newBuilder();
+        oids.forEach(oid -> getRequest.addOids(oid.toString()));
+        return Collections.singletonList(getRequest.build());
+    }
 }

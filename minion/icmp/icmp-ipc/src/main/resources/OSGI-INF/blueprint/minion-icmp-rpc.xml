@@ -8,7 +8,7 @@
     <reference id="pingerFactory" interface="org.opennms.netmgt.icmp.PingerFactory" />
 
     <service interface="org.opennms.horizon.shared.ipc.rpc.api.client.RpcHandler">
-        <bean class="org.opennms.horizon.minion.icmp.ipc.internal.IcmpRpcHandler">
+        <bean class="org.opennms.horizon.minion.icmp.ipc.internal.PingRpcHandler">
             <argument ref="pingerFactory" />
         </bean>
     </service>

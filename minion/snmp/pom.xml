@@ -16,6 +16,7 @@
   <modules>
     <module>snmp4j</module>
     <module>snmp-ipc</module>
+    <module>snmp-ipc-client</module>
   </modules>
 
 </project>

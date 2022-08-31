@@ -9,13 +9,13 @@ import org.opennms.horizon.grpc.ping.contract.PingResponse;
 import org.opennms.horizon.shared.ipc.rpc.api.client.RpcHandler;
 import org.opennms.netmgt.icmp.PingerFactory;
 
-public class IcmpRpcHandler implements RpcHandler<PingRequest, PingResponse> {
+public class PingRpcHandler implements RpcHandler<PingRequest, PingResponse> {
 
     public static final String RPC_MODULE_ID = "PING";
 
     private final PingerFactory pingerFactory;
 
-    public IcmpRpcHandler(PingerFactory pingerFactory) {
+    public PingRpcHandler(PingerFactory pingerFactory) {
         this.pingerFactory = pingerFactory;
     }
 
