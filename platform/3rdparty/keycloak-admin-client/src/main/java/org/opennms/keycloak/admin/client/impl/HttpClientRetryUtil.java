@@ -3,6 +3,7 @@ package org.opennms.keycloak.admin.client.impl;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 
@@ -30,14 +31,15 @@ public class HttpClientRetryUtil {
             HttpUriRequest request,
             PostRequestOp postRequestOp) throws IOException {
 
-        HttpResponse response = httpClient.execute(request);
+        HttpResponse httpResponse = httpClient.execute(request);
 
-        boolean retryInd = postRequestOp.process(request, response);
+        boolean retryInd = postRequestOp.process(request, httpResponse);
 
         if (retryInd) {
-            response = httpClient.execute(request);
+            EntityUtils.consumeQuietly(httpResponse.getEntity());
+            httpResponse = httpClient.execute(request);
         }
 
-        return response;
+        return httpResponse;
     }
 }

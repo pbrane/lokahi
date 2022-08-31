@@ -89,6 +89,7 @@ func TestCheckForExistingCoreCreds(t *testing.T) {
 		Data: map[string][]byte{
 			"adminPwd": []byte(adminPwd),
 			"userPwd":  []byte(userPwd),
+			"realmId":  []byte(uuid.New().String()),
 			"clientId": []byte(uuid.New().String()),
 			"adminId":  []byte(uuid.New().String()),
 			"userId":   []byte(uuid.New().String()),

@@ -6,11 +6,11 @@ Operator:
   imageUpdateFreq: 60
   resources:
     limits:
-      cpu: 0m
-      memory: 50Mi
+      cpu: 100m
+      memory: 500Mi
     requests:
-      cpu: 0m
-      memory: 50Mi
+      cpu: 100m
+      memory: 500Mi
   devMode: false
 customErrors:
   image: quay.io/kubernetes-ingress-controller/custom-error-pages-amd64:0.4

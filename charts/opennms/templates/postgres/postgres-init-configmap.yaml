@@ -7,7 +7,7 @@ metadata:
   namespace: {{ .Values.Namespace }}
 data:
   postgres.initial.script.sql: |
-    CREATE USER opennms with password '{{ .Values.Postgres.AdminPassword }}';
+    CREATE USER opennms with password '{{ .Values.Postgres.OpenNMSPassword }}';
     CREATE DATABASE horizon_stream;
     GRANT ALL ON DATABASE horizon_stream TO opennms;
   postgres.keycloak.initial.script.sql: |

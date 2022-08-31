@@ -31,6 +31,12 @@ type OpenNMSSpec struct {
 	// Deploy an instance in a nonoperative testing mode
 	TestDeploy bool `json:"testDeploy,omitempty"` //TODO I don't think this is needed anymore
 
+	// Only deploy the instance, do not run recurring updates on it
+	DeployOnly bool `json:"deployOnly,omitempty"`
+
+	// Set the default credentials for the instance
+	Credentials Credentials `json:"credentials,omitempty"`
+
 	// Defines service values for Core service
 	Core BaseServiceResources `json:"core,omitempty"`
 
@@ -39,6 +45,12 @@ type OpenNMSSpec struct {
 
 	// Defines service values for UI service
 	UI BaseServiceResources `json:"ui,omitempty"`
+
+	// Defines service values for the Minion
+	Minion BaseServiceResources `json:"minion,omitempty"`
+
+	// Defines service values for Notification service
+	Notification BaseServiceResources `json:"notification,omitempty"`
 
 	// Defines service values for Postgres
 	Postgres BaseServiceResources `json:"postgres,omitempty"`
@@ -58,10 +70,15 @@ type Timeseries struct {
 //BaseServiceResources - defines basic resource needs of a service
 type BaseServiceResources struct {
 	// Image tag version of OpenNMS.
-	Version string `json:"version,omitempty"`
-	MEM     string `json:"mem,omitempty"`
-	Disk    string `json:"disk,omitempty"`
-	CPU     string `json:"cpu,omitempty"`
+	Image string `json:"image,omitempty"`
+	MEM   string `json:"mem,omitempty"`
+	Disk  string `json:"disk,omitempty"`
+	CPU   string `json:"cpu,omitempty"`
+}
+
+type Credentials struct {
+	AdminPassword string `json:"adminPassword"`
+	UserPassword  string `json:"userPassword"`
 }
 
 // +kubebuilder:object:generate=true

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.OpenNMS.Notification.ServiceName }}
+  labels:
+    app: {{ .Values.OpenNMS.Notification.ServiceName }}
+  namespace: {{ .Values.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      run: {{ .Values.OpenNMS.Notification.ServiceName }}
+  replicas: {{ .Values.OpenNMS.Notification.Replicas }}
+  template:
+    metadata:
+      labels:
+        run: {{ .Values.OpenNMS.Notification.ServiceName }}
+    spec:
+      containers:
+        - name: {{ .Values.OpenNMS.Notification.ServiceName }}
+          image: {{ .Values.OpenNMS.Notification.Image }}
+          imagePullPolicy: {{ .Values.OpenNMS.Notification.ImagePullPolicy }}
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y" # Permanent debug port in `skaffold dev`
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "{{ .Values.Kafka.URL }}:9092"
+          ports:
+            - name: http
+              containerPort: {{ .Values.OpenNMS.Notification.Port }}

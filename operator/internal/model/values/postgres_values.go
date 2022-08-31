@@ -15,10 +15,9 @@ limitations under the License.
 package values
 
 type PostgresValues struct {
-	ServiceName      string `yaml:"ServiceName"`
-	Image            string `yaml:"Image"`
+	ServiceValues    `yaml:",inline"`
 	AdminPassword    string `yaml:"AdminPassword"`
+	OpenNMSPassword  string `yaml:"OpenNMSPassword"`
 	KeycloakPassword string `yaml:"KeycloakPassword"`
 	NotificationPassword string `yaml:"NotificationPassword"`
-	VolumeSize       string `yaml:"VolumeSize"`
 }

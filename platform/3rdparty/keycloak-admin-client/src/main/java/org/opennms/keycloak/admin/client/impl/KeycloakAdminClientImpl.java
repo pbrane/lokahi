@@ -5,6 +5,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -51,8 +52,16 @@ public class KeycloakAdminClientImpl implements KeycloakAdminClient {
         }
 
         if (httpClient == null) {
+
+            int timeout = 5;
+            RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(timeout * 1000)
+                .setConnectionRequestTimeout(timeout * 1000)
+                .setSocketTimeout(timeout * 1000).build();
+
             httpClient =
                     HttpClientBuilder.create()
+                            .setDefaultRequestConfig(config)
                             .build();
         }
     }
@@ -136,7 +145,7 @@ public class KeycloakAdminClientImpl implements KeycloakAdminClient {
         // Format the URL
         //
         String encodedRealm = surprisinglyHardToFindUtils.encodeUrlPathSegment(realm);
-        String path = "/realms/" + encodedRealm + "/protocol/openid-connect/token";
+        String path = "realms/" + encodedRealm + "/protocol/openid-connect/token";
         URL fullUrl = this.formatUrl(path);
 
         HttpEntity httpEntity = prepareLoginRequestEntity(user, password);
@@ -146,10 +155,18 @@ public class KeycloakAdminClientImpl implements KeycloakAdminClient {
         tokenPostRequest.setURI(fullUrl.toURI());
         tokenPostRequest.setEntity(httpEntity);
 
-        HttpResponse httpResponse = httpClient.execute(tokenPostRequest);
+        HttpResponse httpResponse = null;
+        AccessTokenResponse accessTokenResponse = null;
 
-        AccessTokenResponse accessTokenResponse = keycloakResponseUtil.parseAccessTokenResponse(httpResponse);
-        EntityUtils.consumeQuietly(httpResponse.getEntity());  //make sure the connection is closed
+        try {
+            httpResponse = httpClient.execute(tokenPostRequest);
+            accessTokenResponse = keycloakResponseUtil.parseAccessTokenResponse(httpResponse);
+        } finally {
+            if (httpResponse != null) {
+                EntityUtils.consumeQuietly(httpResponse.getEntity());  //make sure the connection is closed
+            }
+        }
+
         KeycloakAdminClientSessionImpl result = new KeycloakAdminClientSessionImpl();
         result.setClientId(clientId);
         result.setScope(scope);

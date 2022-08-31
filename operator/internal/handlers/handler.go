@@ -26,12 +26,22 @@ type ServiceHandler interface {
 	//ProvideConfig - provide k8s config for the service
 	ProvideConfig(values values.TemplateValues) []client.Object
 
-	//HandleUpdate - handle the update process for the service ???
-	//HandleUpdate(values values.TemplateValues) ???
+	GetDeployed() bool
+
+	SetDeployed(tf bool)
 }
 
 type ServiceHandlerObject struct {
-	Config []client.Object
+	Config   []client.Object
+	Deployed bool
+}
+
+func (o *ServiceHandlerObject) GetDeployed() bool {
+	return o.Deployed
+}
+
+func (o *ServiceHandlerObject) SetDeployed(tf bool) {
+	o.Deployed = tf
 }
 
 func filepath(filename string) string {

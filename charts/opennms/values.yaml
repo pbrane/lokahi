@@ -1,64 +1,137 @@
 Namespace: opennms-instance
-Host: localhost
+Host: onmshs
 TestDeploy: false
 OpenNMS:
   Core:
     Path: /core
     ServiceName: opennms-core
     Image: opennms/horizon-stream-core
+    Replicas: 1
+    HttpPort: 8181
+    SshPort: 8101
+    GrpcPort: 8990
+    Resources:
+      Limits:
+        Cpu: 2
+        Memory: 4Gi
+      Requests:
+        Cpu: 2
+        Memory: 2Gi
+  API:
+    Path: /api
+    ServiceName: opennms-rest-server
+    Image: opennms/horizon-stream-rest-server
+    Replicas: 1
+    Port: 9090
     Resources:
       Limits:
         Cpu: 2
         Memory: 2Gi
       Requests:
-        Cpu: 100m
-        Memory: 1Gi
-  API:
-    Path: /api
-    ServiceName: opennms-rest-server
-    Image: opennms/horizon-stream-rest-server
-    Resources:
-      Limits:
-        Cpu: 100m
-        Memory: 1Gi
-      Requests:
-        Cpu: 100m
+        Cpu: 1
         Memory: 1Gi
   UI:
     Path: /
     ServiceName: opennms-ui
     Image: opennms/horizon-stream-ui
+    Replicas: 1
+    Port: 3000
     Resources:
       Limits:
         Cpu: 1
-        Memory: 1Gi
+        Memory: 500Mi
       Requests:
         Cpu: 100m
+        Memory: 250Mi
+  Minion:
+    ServiceName: opennms-minion
+    Image: opennms/minion:29.0.10
+    Replicas: 1
+    SshPort: 8201
+    SnmpPort: 1162
+    SyslogPort: 1514
+    Resources:
+      Limits:
+        Cpu: 2
         Memory: 1Gi
+      Requests:
+        Cpu: 1
+        Memory: 512Mi
+  Notification: 
+    ServiceName: opennms-notifications
+    Image: opennms/horizon-stream-notification
+    Replicas: 1
+    Port: 8080
+    Resources:
+      Limits:
+        Cpu: 1
+        Memory: 500Mi
+      Requests:
+        Cpu: 100m
+        Memory: 250Mi
 Postgres:
   ServiceName: postgres
-  Image: postgres:13.3-alpine
+  Image: postgres
+  Replicas: 1
   AdminPassword: notset
+  OpenNMSPassword: notset
   KeycloakPassword: notset
   NotificationPassword: notset
   VolumeSize: 10Gi
 Keycloak:
   Path: /auth
+  Port: 8080
+  Replicas: 1
   ServiceName: onms-keycloak
-  AdminUsername: keycloak-admin
+  AdminUsername: admin
   AdminPassword: notset
-  UserUseranme: user001
+  UserUsername: user001
   UserPassword: notset
-  Image: opennms/horizon-stream-keycloak:latest
+  Image: opennms/horizon-stream-keycloak:test
+  RealmName: opennms
   UUID:
+    RealmId: 00000000-0000-0000-0000-000000000000
     ClientId: 00000000-0000-0000-0000-000000000000
     BaseUserId: 00000000-0000-0000-0000-000000000000
     AdminUserId: 00000000-0000-0000-0000-000000000000
 Grafana:
   Image: placeholder
-Ingress:
-  ControllerImage: k8s.gcr.io/ingress-nginx/controller:v1.1.0
-  SecretJobImage: k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
-  WebhookPatchJobImage: k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
-
-
+Prometheus:
+  Enabled: true
+  Server:
+    ServiceName: prometheus
+    Port: 9090
+    Image: prom/prometheus
+    Replicas: 1
+    Resources:
+      Limits:
+        Cpu: "1"
+        Memory: 512Mi
+      Requests:
+        Cpu: 100m
+        Memory: 100Mi
+  PushGateway:
+    ServiceName: prometheus-pushgateway
+    Port: 9091
+    Image: prom/pushgateway
+    Replicas: 1
+    Resources:
+      Limits:
+        Cpu: "1"
+        Memory: 512Mi
+      Requests:
+        Cpu: 100m
+        Memory: 100Mi
+MailServer:
+  ServiceName: mail-server
+  Image: mailhog/mailhog:latest
+  Replicas: 1 
+  Port: 8025
+  SmtpPort: 1025
+  Resources:
+    Limits:
+      Cpu: 100m
+      Memory: 200Mi
+    Requests:
+      Cpu: 100m
+      Memory: 100Mi

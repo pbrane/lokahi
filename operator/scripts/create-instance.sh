@@ -4,5 +4,6 @@
 echo
 echo ____________Installing Local Instance______________
 echo
-kubectl apply -f local-instance.yaml
+kubectl apply -f scripts/local-onms-instance.yaml
+if [ $? -ne 0 ]; then exit; fi
 
