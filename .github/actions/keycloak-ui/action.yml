@@ -18,5 +18,5 @@ runs:
 
         # Create the docker image.
         docker build -t opennms/horizon-stream-keycloak:local -f ./Dockerfile .
-
       shell: bash
+

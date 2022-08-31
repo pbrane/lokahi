@@ -108,7 +108,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - opennms.k8s.opennms.com
+      - k8s.opennms.com
     resources:
       - opennms
     verbs:
@@ -120,7 +120,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - opennms.k8s.opennms.com
+      - k8s.opennms.com
     resources:
       - opennms/status
     verbs:
@@ -177,3 +177,24 @@ rules:
       - patch
       - update
       - watch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - coordination.k8s.io
+    resourceNames:
+      - ingress-controller-leader
+    resources:
+      - leases
+    verbs:
+      - get
+      - update

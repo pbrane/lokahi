@@ -40,7 +40,7 @@ func (h *IngressHandler) ProvideConfig(values values.TemplateValues) []client.Ob
 	var controllerRoleBinding rbacv1.RoleBinding
 	var controllerConfigMap corev1.ConfigMap
 	var controllerService corev1.Service
-	var controllerServiceWebhook corev1.Service
+	var controllerServiceAdmission corev1.Service
 	var controllerIngressClass netv1.IngressClass
 	var controllerDeployment appsv1.Deployment
 
@@ -51,7 +51,7 @@ func (h *IngressHandler) ProvideConfig(values values.TemplateValues) []client.Ob
 	yaml.LoadYaml(filepath("ingress/nginx-controller/controller-rolebinding.yaml"), values, &controllerRoleBinding)
 	yaml.LoadYaml(filepath("ingress/nginx-controller/controller-configmap.yaml"), values, &controllerConfigMap)
 	yaml.LoadYaml(filepath("ingress/nginx-controller/controller-service.yaml"), values, &controllerService)
-	yaml.LoadYaml(filepath("ingress/nginx-controller/controller-service-webhook.yaml"), values, &controllerServiceWebhook)
+	yaml.LoadYaml(filepath("ingress/nginx-controller/controller-service-admission.yaml"), values, &controllerServiceAdmission)
 	yaml.LoadYaml(filepath("ingress/nginx-controller/controller-ingress-class.yaml"), values, &controllerIngressClass)
 	yaml.LoadYaml(filepath("ingress/nginx-controller/controller-deployment.yaml"), values, &controllerDeployment)
 
@@ -79,10 +79,8 @@ func (h *IngressHandler) ProvideConfig(values values.TemplateValues) []client.Ob
 
 	//INGRESSES
 	var opennmsIngress netv1.Ingress
-	var rejectipsslIngress netv1.Ingress
 
 	yaml.LoadYaml(filepath("ingress/ingresses/opennms-ingress.yaml"), values, &opennmsIngress)
-	yaml.LoadYaml(filepath("ingress/ingresses/rejectipssl-ingress.yaml"), values, &rejectipsslIngress)
 
 	h.Config = []client.Object{
 		&controllerServiceAccount,
@@ -92,8 +90,7 @@ func (h *IngressHandler) ProvideConfig(values values.TemplateValues) []client.Ob
 		&controllerRoleBinding,
 		&controllerConfigMap,
 		&controllerService,
-		&controllerServiceWebhook,
-		&controllerIngressClass,
+		&controllerServiceAdmission,
 
 		&webhookServiceAccount,
 		&webhookRole,
@@ -101,12 +98,12 @@ func (h *IngressHandler) ProvideConfig(values values.TemplateValues) []client.Ob
 		&webhookClusterRole,
 		&webhookClusterRoleBinding,
 
-		&createSecret, // must be before controller deployment
+		&createSecret,
 		&controllerDeployment,
 		&validatingWebhook,
-		&patchWebhook, // must be after validating-webhook and controller deployment
+		&patchWebhook,
 
-		&rejectipsslIngress,
+		&controllerIngressClass,
 		&opennmsIngress,
 	}
 

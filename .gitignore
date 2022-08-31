@@ -37,4 +37,5 @@ idea
 java/bin/
 *.swp
 *.iml
+idea/
 

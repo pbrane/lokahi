@@ -103,6 +103,7 @@ if [[ $ENV_RUN == "local" ]]; then
   echo "Pulls public repos."
 
 elif [[ $ENV_RUN == "dev" ]]; then
+  DOCKER_BUILDKIT=1
 
   # Build shared-lib/
   cd ../shared-lib/; mvn clean install

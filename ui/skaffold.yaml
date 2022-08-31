@@ -1,0 +1,43 @@
+# nonk8s
+apiVersion: skaffold/v2beta28
+kind: Config
+metadata:
+  name: horizon-stream-ui
+build:
+  local:
+    useBuildkit: true
+  artifacts:
+  - image: opennms/horizon-stream-ui
+    sync:
+      manual: # Inferred file sync is limited for multi-stage builds, use manual sync.
+        - src: 'src/**'
+          dest: .
+        - src: 'public/**'
+          dest: .
+        - src: 'tests/**'
+          dest: .
+        - src: 'index.html'
+          dest: .
+        - src: '*.ts'
+          dest: .
+    docker:
+      dockerfile: Dockerfile
+      target: development
+      buildArgs:
+        VITE_BASE_URL: "http://localhost:48080"
+        VITE_KEYCLOAK_URL: "http://localhost:28080"
+portForward:
+  - resourceType: deployment
+    resourceName: my-horizon-stream-ui
+    port: 80 # nginx HTTP
+    localPort: 3000
+profiles:
+  - name: prod
+    build:
+      artifacts:
+      - image: opennms/horizon-stream-ui
+        docker:
+          dockerfile: Dockerfile
+          buildArgs:
+            VITE_BASE_URL: "http://localhost:48080"
+            VITE_KEYCLOAK_URL: "http://localhost:28080"

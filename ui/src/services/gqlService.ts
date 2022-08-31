@@ -12,7 +12,7 @@ const getGqlClient = (kc: KeycloakInstance) => {
   }
 
   return createClient({
-    url: `${process.env.API_BASE_URL || import.meta.env.VITE_BASE_URL?.toString()}/graphql`,
+    url: `${import.meta.env.VITE_BASE_URL}/graphql`,
     use: [authPlugin, errorNotificationPlugin, ...defaultPlugins()],
     cachePolicy: 'cache-and-network'
   })

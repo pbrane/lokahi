@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: opennms.opennms.k8s.opennms.com
+  name: opennms.k8s.opennms.com
 spec:
-  group: opennms.k8s.opennms.com
+  group: k8s.opennms.com
   names:
     kind: OpenNMS
     listKind: OpenNMSList
@@ -35,7 +35,7 @@ spec:
                       type: string
                     mem:
                       type: string
-                    version:
+                    image:
                       description: Docker Image tag for the service
                       type: string
                 api:
@@ -48,7 +48,7 @@ spec:
                       type: string
                     mem:
                       type: string
-                    version:
+                    image:
                       description: Docker Image tag for the service
                       type: string
                 ui:
@@ -61,8 +61,42 @@ spec:
                       type: string
                     mem:
                       type: string
-                    version:
+                    image:
                       description: Docker Image tag for the service
+                      type: string
+                minion:
+                  description: Defines cpu,mem and disk size for the Minion
+                  type: object
+                  properties:
+                    cpu:
+                      type: string
+                    disk:
+                      type: string
+                    mem:
+                      type: string
+                    image:
+                      description: Docker Image tag for the service
+                      type: string
+                notification:
+                  description: Defines cpu,mem and disk size for the Notification service
+                  type: object
+                  properties:
+                    cpu:
+                      type: string
+                    disk:
+                      type: string
+                    mem:
+                      type: string
+                    image:
+                      description: Docker Image tag for the service
+                      type: string
+                credentials:
+                  description: Set the default credentials for the instance
+                  type: object
+                  properties:
+                    adminPassword:
+                      type: string
+                    userPassword:
                       type: string
                 postgres:
                   description: Resource definitions for Postgres
@@ -74,7 +108,7 @@ spec:
                       type: string
                     mem:
                       type: string
-                    version:
+                    image:
                       description: Docker Image tag for the service
                       type: string
                 host:
@@ -110,6 +144,9 @@ spec:
                       enum: [ now, none ]
                 testDeploy:
                   description: Deploy the instance in a nonoperative testing mode
+                  type: boolean
+                deployOnly:
+                  description: Only deploy the instance, do not run recurring updates on it
                   type: boolean
             status:
               description: OpenNMSStatus defines the observed state of OpenNMS

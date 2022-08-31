@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.OpenNMS.API.ServiceName }}
+  namespace: {{ .Values.Namespace }}
+  labels:
+    app: {{ .Values.OpenNMS.API.ServiceName }}
+    app.kubernetes.io/name: {{ .Values.OpenNMS.API.ServiceName }}
+  annotations:
+    autoupdate: "true"
+spec:
+  replicas: {{ .Values.OpenNMS.API.Replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.OpenNMS.API.ServiceName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.OpenNMS.API.ServiceName }}
+    spec:
+      {{ if .Values.NodeRestrictions.Enabled }}
+      tolerations:
+        - effect: "NoSchedule"
+          key: "{{ .Values.NodeRestrictions.Key }}"
+          operator: "Equal"
+          value: {{ .Values.NodeRestrictions.Value }}
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: "{{ .Values.NodeRestrictions.Key }}"
+                    operator: In
+                    values:
+                      - {{ .Values.NodeRestrictions.Value }}
+      {{ end }}
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: {{ .Values.OpenNMS.API.ServiceName }}
+          image: {{ .Values.OpenNMS.API.Image }}
+          imagePullPolicy: {{ .Values.OpenNMS.API.ImagePullPolicy }}
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y" # Permanent debug port in `skaffold dev`
+            - name: SPRING_CACHE_CAFFEINE_SPEC
+              value: "maximumSize=10000,expireAfterWrite=60s"
+            - name: HORIZON_STREAM_CORE_URL
+              value: "http://{{ .Values.OpenNMS.Core.ServiceName }}:{{ .Values.OpenNMS.Core.HttpPort }}"
+            - name: TSDB_URL
+              value: "http://{{ .Values.Prometheus.Server.ServiceName }}:{{ .Values.Prometheus.Server.Port }}/api/v1/query"
+            - name: SERVER_SERVLET_CONTEXT_PATH
+              value: /api
+          ports:
+            - containerPort: {{ .Values.OpenNMS.API.Port }}
+          {{ if not .Values.TestDeploy }}
+          {{/*  TODO    livenessProbe:*/}}
+          {{/*          readinessProbe:*/}}
+          {{/*          startupProbe:*/}}
+          {{ end }}
+          resources:
+            limits:
+              cpu: "{{ .Values.OpenNMS.API.Resources.Limits.Cpu }}"
+              memory: "{{ .Values.OpenNMS.API.Resources.Limits.Memory }}"
+            requests:
+              cpu: "{{ .Values.OpenNMS.API.Resources.Requests.Cpu }}"
+              memory: "{{ .Values.OpenNMS.API.Resources.Requests.Memory }}"

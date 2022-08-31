@@ -38,6 +38,12 @@ func ConvertCRDToValues(crd v1alpha1.OpenNMS, defaultValues values.TemplateValue
 	//ONMS UI
 	v.OpenNMS = getUIValues(spec, v.OpenNMS)
 
+	//ONMS Minion
+	v.OpenNMS = getMinionValues(spec, v.OpenNMS)
+
+	//ONMS Notification
+	v.OpenNMS = getNotificationValues(spec, v.OpenNMS)
+
 	//Postgres
 	v.Postgres = getPostgresValues(spec, v.Postgres)
 
@@ -53,8 +59,8 @@ func ConvertCRDToValues(crd v1alpha1.OpenNMS, defaultValues values.TemplateValue
 
 //getCoreValues - get ONMS core values from the crd
 func getCoreValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
-	if spec.Core.Version != "" {
-		v.Core.Image = spec.Core.Version
+	if spec.Core.Image != "" {
+		v.Core.Image = spec.Core.Image
 	}
 	if spec.Core.CPU != "" {
 		v.Core.Resources.Requests.Cpu = spec.Core.CPU
@@ -70,10 +76,10 @@ func getCoreValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.Ope
 	return v
 }
 
-//getAPIValues - get ONMS core values from the crd
+//getAPIValues - get ONMS API values from the crd
 func getAPIValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
-	if spec.API.Version != "" {
-		v.API.Image = spec.API.Version
+	if spec.API.Image != "" {
+		v.API.Image = spec.API.Image
 	}
 	if spec.API.CPU != "" {
 		v.API.Resources.Requests.Cpu = spec.API.CPU
@@ -89,10 +95,10 @@ func getAPIValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.Open
 	return v
 }
 
-//getUIValues - get ONMS core values from the crd
+//getUIValues - get ONMS UI values from the crd
 func getUIValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
-	if spec.UI.Version != "" {
-		v.UI.Image = spec.UI.Version
+	if spec.UI.Image != "" {
+		v.UI.Image = spec.UI.Image
 	}
 	if spec.UI.CPU != "" {
 		v.UI.Resources.Requests.Cpu = spec.UI.CPU
@@ -104,6 +110,44 @@ func getUIValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenN
 	}
 	if spec.UI.Disk != "" {
 		v.UI.VolumeSize = spec.UI.Disk
+	}
+	return v
+}
+
+//getMinionValues - get ONMS Minion values from the crd
+func getMinionValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
+	if spec.Minion.Image != "" {
+		v.Minion.Image = spec.Minion.Image
+	}
+	if spec.Minion.CPU != "" {
+		v.Minion.Resources.Requests.Cpu = spec.Minion.CPU
+		v.Minion.Resources.Limits.Cpu = spec.Minion.CPU
+	}
+	if spec.Minion.MEM != "" {
+		v.Minion.Resources.Requests.Memory = spec.Minion.MEM
+		v.Minion.Resources.Limits.Memory = spec.Minion.MEM
+	}
+	if spec.Minion.Disk != "" {
+		v.Minion.VolumeSize = spec.Minion.Disk
+	}
+	return v
+}
+
+//getNotificationValues - get ONMS Notification values from the crd
+func getNotificationValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
+	if spec.Notification.Image != "" {
+		v.Notification.Image = spec.Notification.Image
+	}
+	if spec.Notification.CPU != "" {
+		v.Notification.Resources.Requests.Cpu = spec.Notification.CPU
+		v.Notification.Resources.Limits.Cpu = spec.Notification.CPU
+	}
+	if spec.Notification.MEM != "" {
+		v.Notification.Resources.Requests.Memory = spec.Notification.MEM
+		v.Notification.Resources.Limits.Memory = spec.Notification.MEM
+	}
+	if spec.Notification.Disk != "" {
+		v.Notification.VolumeSize = spec.Notification.Disk
 	}
 	return v
 }

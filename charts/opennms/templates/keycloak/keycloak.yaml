@@ -6,16 +6,20 @@ metadata:
   labels:
     app: keycloak
 spec:
-  instances: 1
+  instances: {{ .Values.Keycloak.Replicas }}
   hostname: {{ .Values.Host }}
   tlsSecret: {{ .Values.TLS.Cert.Name }}
   image: {{ .Values.Keycloak.Image }}
   disableDefaultIngress: true
   serverConfiguration:
+    - name: hostname
+      value: {{ .Values.Host }}
     - name: db
       value: postgres
     - name: db-url-host
       value: {{ .Values.Postgres.ServiceName }}
+    - name: http-relative-path
+      value: {{ .Values.Keycloak.Path }}
     - name: db-username
       secret:
         name: postgres
@@ -24,3 +28,11 @@ spec:
       secret:
         name: postgres
         key: keycloakPwd
+    - name: hostname-strict
+      value: "false"
+    - name: hostname-strict-backchannel
+      value: "false"
+    - name: proxy
+      value: passthrough
+    - name: http-enabled
+      value: 'true'

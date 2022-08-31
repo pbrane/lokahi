@@ -15,28 +15,25 @@ limitations under the License.
 package values
 
 type OpenNMSValues struct {
-	Core ServiceValues `yaml:"Core"`
-	API  ServiceValues `yaml:"API"`
-	UI   ServiceValues `yaml:"UI"`
+	Core         CoreValues    `yaml:"Core"`
+	API          ServiceValues `yaml:"API"`
+	UI           ServiceValues `yaml:"UI"`
+	Minion       MinionValues  `yaml:"Minion"`
+	Notification ServiceValues `yaml:"Notification"`
 }
 
-type ServiceValues struct {
-	Path               string         `yaml:"Path"`
-	ServiceName        string         `yaml:"ServiceName"`
-	Image              string         `yaml:"Image"`
-	VolumeSize         string         `yaml:"VolumeSize"`
-	InitContainerImage string         `yaml:"InitContainerImage"`
-	Resources          ResourceValues `yaml:"Resources"`
+type CoreValues struct {
+	ServiceValues `yaml:",inline"`
+	HttpPort      int `yaml:"HttpPort"`
+	SshPort       int `yaml:"SshPort"`
+	GrpcPort      int `yaml:"GrpcPort"`
 }
 
-type ResourceValues struct {
-	Limits   ResourceDefinition `yaml:"Limits"`
-	Requests ResourceDefinition `yaml:"Requests"`
-}
-
-type ResourceDefinition struct {
-	Cpu    string `yaml:"Cpu"`
-	Memory string `yaml:"Memory"`
+type MinionValues struct {
+	ServiceValues `yaml:",inline"`
+	SshPort       int `yaml:"SshPort"`
+	SnmpPort      int `yaml:"SnmpPort"`
+	SyslogPort    int `yaml:"SyslogPort"`
 }
 
 type TimeseriesValues struct {

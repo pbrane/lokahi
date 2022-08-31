@@ -47,7 +47,6 @@ public class DeviceService extends AbstractService<OnmsNode, DeviceDTO, Integer>
 
     private IpInterfaceDao ipInterfaceDao;
 
-
     public DeviceCollectionDTO searchDevices() {
         List<DeviceDTO> deviceDTOS = findAll();
         deviceDTOS.forEach(this::setManagementIp);

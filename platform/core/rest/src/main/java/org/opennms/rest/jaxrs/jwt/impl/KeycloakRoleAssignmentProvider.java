@@ -8,6 +8,7 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.opennms.keycloak.admin.client.KeycloakAdminClient;
 import org.opennms.keycloak.admin.client.KeycloakAdminClientSession;
+import org.opennms.keycloak.admin.client.impl.KeycloakAdminClientImpl;
 import org.opennms.rest.jaxrs.jwt.RoleAssignmentProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,7 +136,7 @@ public class KeycloakRoleAssignmentProvider implements RoleAssignmentProvider {
         KeycloakAdminClientSession session = null;
         try {
             session = this.keycloakAdminClient.login(keycloakAdminRealm, keycloakAdminUsername, keycloakAdminPassword);
-
+            log.info("login keycloak at {} with admin realm [{}], admin user [{}] and admin password [{}]", ((KeycloakAdminClientImpl)keycloakAdminClient).getBaseUrl(), keycloakAdminRealm, keycloakAdminUsername, keycloakAdminPassword);
             UserRepresentation userRepresentation = session.getUserByUsername(realm, username);
 
             List<String> result;
@@ -151,6 +152,7 @@ public class KeycloakRoleAssignmentProvider implements RoleAssignmentProvider {
 
             return result;
         } catch (Exception exc) {
+	    log.error("failed load user roles with realm {} for user {}", realm, username, exc);
             throw new RuntimeException("failed to load user roles from keycloak", exc);
         } finally {
             try {

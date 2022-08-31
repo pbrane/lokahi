@@ -1,12 +1,5 @@
 # your helm chart values here
 Operator:
-  image: opennms/operator:bleeding
-  resources:
-    limits:
-      cpu: 0
-      memory: 50Mi
-    requests:
-      cpu: 0
-      memory: 50Mi
+  image: opennms/operator:latest
 TLS:
-  Enabled: false
+  Enabled: true
