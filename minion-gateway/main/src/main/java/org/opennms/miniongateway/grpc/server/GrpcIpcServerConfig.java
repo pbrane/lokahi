@@ -21,12 +21,15 @@ public class GrpcIpcServerConfig {
     @Value("${" + GRPC_MAX_INBOUND_SIZE + ":" + DEFAULT_MAX_MESSAGE_SIZE + "}")
     private long maxMessageSize;
 
+    @Value("${grpc.port}")
+    private int grpcPort;
+
     @Bean(destroyMethod = "stopServer")
     public GrpcIpcServer prepareGrpcIpcServer() {
         Properties properties = new Properties();
         properties.setProperty(GrpcIpcUtils.GRPC_MAX_INBOUND_SIZE, Long.toString(maxMessageSize));
 
-        return new GrpcIpcServerBuilder(properties, 8990, "PT10S", Arrays.asList(
+        return new GrpcIpcServerBuilder(properties, grpcPort, "PT10S", Arrays.asList(
             new LoggingInterceptor()
         ));
     }
