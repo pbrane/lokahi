@@ -29,11 +29,12 @@
 package org.opennms.horizon.minion.snmp;
 
 import java.net.InetAddress;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
-//import org.opennms.horizon.core.lib.timeout.TimeoutTracker;
+import java.util.concurrent.TimeUnit;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl.ServiceMonitorResponseImplBuilder;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
 import org.opennms.horizon.shared.snmp.SnmpUtils;
@@ -133,68 +134,44 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
         svcParams.setProperty("port", String.valueOf(agentConfig.getPort()));
         svcParams.setProperty("hex", hexstr);
 
-        CompletableFuture<Status> future = null;
-        // Establish SNMP session with interface
-        //
         try {
-
-//            TODO: Removing to decouple from horizon core
-//            TimeoutTracker tracker = new TimeoutTracker(parameters, agentConfig.getRetries(), agentConfig.getTimeout());
-//            tracker.reset();
-//            tracker.startAttempt();
-
             SnmpObjId snmpObjectId = SnmpObjId.get(oid);
+            return SnmpUtils.getAsync(agentConfig, new SnmpObjId[] {snmpObjectId})
+                .<ServiceMonitorResponse>thenApply(result -> {
+                    ServiceMonitorResponseImplBuilder builder = ServiceMonitorResponseImpl.builder()
+                        .status(Status.Unknown);
 
-            // This if block will count the number of matches within a walk and mark the service
-            // as up if it is between the minimum and maximum number, down if otherwise. Setting
-            // the parameter "matchall" to "count" will act as if "walk" has been set to "true".
-
-                if (DEFAULT_REASON_TEMPLATE.equals(reasonTemplate)) {
-                    if (operator != null) {
-                        reasonTemplate = "Observed value '${observedValue}' does not meet criteria '${operator} ${operand}'";
-                    } else {
-                        reasonTemplate = "Observed value '${observedValue}' was null";
-                    }
-                }
-
-            future = SnmpUtils.getAsync(agentConfig, (SnmpObjId[]) Arrays.asList(snmpObjectId).toArray()).
-                thenApply(result -> {
-
-                    Status status = Status.Unknown;
-
+                    Map<String, Number> properties = new HashMap<>();
                     if (result[0] != null) {
-                        svcParams.setProperty("observedValue", getStringValue(result[0]));
                         LOG.debug("poll: SNMP poll succeeded, addr={} oid={} value={}", hostAddress, oid, result);
 
+                        if (result[0].isNumeric()) {
+                            properties.put("observedValue", result[0].toLong());
+                        }
+
                         if (meetsCriteria(result[0], operator, operand)) {
-                            status = Status.Up;
+                            builder.status(Status.Up);
                         } else {
-                            status = Status.Down;
+                            builder.status(Status.Down);
                         }
                     } else {
-                        String reason = "SNMP poll failed, addr=" + hostAddress + " oid=" + oid;
-                        LOG.debug(reason);
-                        status = Status.Unknown;
+                        LOG.debug("SNMP poll failed, addr={} oid={}", hostAddress, oid);
+                        builder.status(Status.Unknown);
                     }
 
-                    return status;
-                });
-
+                    builder.properties(properties);
+                    return builder.build();
+                }).orTimeout(agentConfig.getTimeout(), TimeUnit.MILLISECONDS);
         } catch (NumberFormatException e) {
-            String reason = "Number operator used on a non-number " + e.getMessage();
-            LOG.debug(reason);
-            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.unknown());
+            LOG.debug("Number operator used in a non-number evaluation", e);
+            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder().reason(e.getMessage()).status(Status.Unknown).build());
         } catch (IllegalArgumentException e) {
-            String reason = "Invalid SNMP Criteria: " + e.getMessage();
-            LOG.debug(reason);
-            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.unknown());
+            LOG.debug("Invalid SNMP Criteria", e);
+            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder().reason(e.getMessage()).status(Status.Unknown).build());
         } catch (Throwable t) {
-            String reason = "Unexpected exception during SNMP poll of interface " + hostAddress;
-            LOG.debug(reason, t);
-            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.unknown());
+            LOG.debug("Unexpected exception during SNMP poll of interface {}", hostAddress, t);
+            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder().reason(t.getMessage()).status(Status.Unknown).build());
         }
-
-        return future.thenApply(status -> ServiceMonitorResponseImpl.builder().status(status).build());
     }
 
 }

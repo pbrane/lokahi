@@ -191,7 +191,7 @@ public abstract class SnmpUtils {
 
     public static String getStrategyClassName() {
         // Use SNMP4J as the default SNMP strategy
-        return getConfig().getProperty("org.opennms.snmp.strategyClass", "org.opennms.netmgt.snmp.snmp4j.Snmp4JStrategy");
+        return getConfig().getProperty("org.opennms.snmp.strategyClass", "org.opennms.horizon.minion.snmp.snmp4j.Snmp4JStrategy");
     }
 
     public static void registerForTraps(final TrapNotificationListener listener, final InetAddress address, final int snmpTrapPort, final List<SnmpV3User> snmpUsers) throws IOException {

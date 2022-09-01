@@ -12,7 +12,7 @@
 
   <bean id="snmpDetectorManager" class="org.opennms.horizon.minion.snmp.SnmpDetectorManager"/>
 
-  <service ref="snmpDetectorManager" interface="ServiceDetectorManager">
+  <service ref="snmpDetectorManager" interface="org.opennms.horizon.minion.plugin.api.ServiceDetectorManager">
     <service-properties>
       <entry key="detector.name" value="SNMPDetector"/>
     </service-properties>
@@ -20,10 +20,16 @@
 
   <bean id="snmpMonitorManager" class="org.opennms.horizon.minion.snmp.SnmpMonitorManager"/>
 
-  <service ref="snmpMonitorManager" interface="ServiceMonitorManager">
+  <service ref="snmpMonitorManager" interface="org.opennms.horizon.minion.plugin.api.ServiceMonitorManager">
     <service-properties>
       <entry key="monitor.name" value="SNMPMonitor"/>
     </service-properties>
   </service>
+
+  <reference id="strategyResolver" interface="org.opennms.horizon.shared.snmp.StrategyResolver" />
+
+  <bean class="org.opennms.horizon.minion.snmp.UtilInitializer">
+    <argument ref="strategyResolver" />
+  </bean>
 
 </blueprint>
