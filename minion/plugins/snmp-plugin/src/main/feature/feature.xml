@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <features name="minion-plugin-snmp-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.6.0">
 
-    <feature name="snmp-minion" version="${project.version}" description="Horizon :: SNMP">
-        <bundle dependency="true">mvn:commons-io/commons-io/${commons.io.version}</bundle>
-        <bundle dependency="true">mvn:commons-lang/commons-lang/${commons.lang.version}</bundle>
-
-        <bundle>mvn:org.opennms.horizon.shared/horizon-common-logging/${project.version}</bundle>
-        <feature version="${project.version}">snmp-api</feature>
-    </feature>
-
-    <feature name="snmp-snmp4" version="${project.version}" description="Horizon :: SNMP4j">
+    <feature name="snmp-snmp4j" version="${project.version}" description="Horizon :: SNMP4j">
         <feature prerequisite="true">wrap</feature>
         <feature version="${project.version}">snmp-api</feature>
         <bundle>wrap:mvn:org.snmp4j/snmp4j/${snmp4j.version}</bundle>
         <bundle>mvn:commons-lang/commons-lang/${commons.lang.version}</bundle>
+        <bundle>mvn:commons-io/commons-io/${commons.io.version}</bundle>
         <bundle>mvn:org.opennms.horizon.shared/horizon-common-logging/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.minion/snmp4j/${project.version}</bundle>
     </feature>
 
     <feature name="snmp-plugins" description="OpenNMS SNMP Plugins" version="${project.version}">
         <feature version="${project.version}">plugins-api</feature>
-        <feature version="${project.version}">snmp-minion</feature>
+        <feature version="${project.version}">snmp-snmp4j</feature>
         <bundle>wrap:mvn:com.googlecode.concurrent-locks/concurrent-locks/1.0.0</bundle>
         <bundle>mvn:org.opennms.horizon.minion/snmp-plugin/${project.version}</bundle>
     </feature>
