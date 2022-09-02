@@ -63,14 +63,15 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
         UUID nodeId = findNodeIdToUse();
 
-        if (nodeId == null) {
-            return CompletableFuture.failedFuture(
-                new Exception("cannot (currently) reach a minion at location=" + location + ", system-id=" + systemId));
-        }
+//        if (nodeId == null) {
+//            return CompletableFuture.failedFuture(
+//                new Exception("cannot (currently) reach a minion at location=" + location + ", system-id=" + systemId));
+//        }
 
         IgniteDetectorRemoteOperation remoteOperation = prepareRemoteOperation();
 
-        ClusterGroup clusterGroup = ignite.cluster().forNodeId(nodeId);
+        ClusterGroup clusterGroup = ignite.cluster();//.forNodeId(nodeId);
+
         CompletableFuture future = igniteRemoteAsyncManager.submit(clusterGroup, remoteOperation);
 
         return future;

@@ -57,31 +57,31 @@
         <property name="tokenSignaturePublicKeyPath" value="${keycloak.static-pubkey-path}"/>
     </bean>
 
-    <service ref="keycloakJaxrsFeature" interface="javax.ws.rs.container.ContainerRequestFilter">
-        <service-properties>
-            <entry key="osgi.jaxrs.extension" value="true"/>
-        </service-properties>
-    </service>
+<!--    <service ref="keycloakJaxrsFeature" interface="javax.ws.rs.container.ContainerRequestFilter">-->
+<!--        <service-properties>-->
+<!--            <entry key="osgi.jaxrs.extension" value="true"/>-->
+<!--        </service-properties>-->
+<!--    </service>-->
 
 
     <!-- @RolesAllowed Support -->
     <bean id="rolesAllowedDynamicFeature" class="org.opennms.rest.jaxrs.RolesAllowedDynamicFeature" />
 
-    <service ref="rolesAllowedDynamicFeature" interface="javax.ws.rs.container.DynamicFeature">
-        <service-properties>
-            <entry key="osgi.jaxrs.extension" value="true"/>
-        </service-properties>
-    </service>
+<!--    <service ref="rolesAllowedDynamicFeature" interface="javax.ws.rs.container.DynamicFeature">-->
+<!--        <service-properties>-->
+<!--            <entry key="osgi.jaxrs.extension" value="true"/>-->
+<!--        </service-properties>-->
+<!--    </service>-->
 
 
     <!-- Map authentication failure to 403 -->
     <bean id="authenticationFailureExceptionMapper" class="org.opennms.rest.AuthenticationFailureExceptionMapper"/>
 
-    <service ref="authenticationFailureExceptionMapper" interface="javax.ws.rs.ext.ExceptionMapper">
-        <service-properties>
-            <entry key="osgi.jaxrs.extension" value="true"/>
-        </service-properties>
-    </service>
+<!--    <service ref="authenticationFailureExceptionMapper" interface="javax.ws.rs.ext.ExceptionMapper">-->
+<!--        <service-properties>-->
+<!--            <entry key="osgi.jaxrs.extension" value="true"/>-->
+<!--        </service-properties>-->
+<!--    </service>-->
 
     <!--                  -->
     <!-- OPEN API DETAILS -->

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.ignite.IgniteCache;
 
 // TBD888: push routing down into gateways only (LATER)
 public class DetectorRequestRouteManager {
@@ -34,21 +35,27 @@ public class DetectorRequestRouteManager {
     public UUID findNodeIdToUseForLocation(String location) {
         Object nodeList;
 
-        nodeList = ignite.cache(LOCATION_ROUTE_MAP_CACHENAME).get(location);
+        IgniteCache cache = ignite.cache(LOCATION_ROUTE_MAP_CACHENAME);
 
-        if (nodeList != null)  {
-            //
-            // PERFORMANCE NOTE: if the number of gateway nodes per location gets large (e.g. 1000) then it may be
-            //  necessary to change this from a List to another structure for faster updates.  Not anticipating that
-            //  many gateway nodes per location at the time of this writing - on the order of 3-10 seems likely.
-            //
-            List<UUID> nodes = (List<UUID>) nodeList;
+        if (cache != null) {
+            nodeList = cache.get(location);
 
-            if (! nodes.isEmpty()) {
-                locationCycle.putIfAbsent(location, new AtomicInteger(0));
-                int cycleNumber = locationCycle.get(location).getAndIncrement();
+            if (nodeList != null) {
+                //
+                // PERFORMANCE NOTE: if the number of gateway nodes per location gets large (e.g. 1000) then it may be
+                //  necessary to change this from a List to another structure for faster updates.  Not anticipating that
+                //  many gateway nodes per location at the time of this writing - on the order of 3-10 seems likely.
+                //
+                List<UUID> nodes = (List<UUID>) nodeList;
 
-                return nodes.get(cycleNumber % nodes.size());
+                if (!nodes.isEmpty()) {
+                    locationCycle.putIfAbsent(location, new AtomicInteger(0));
+                    int cycleNumber = locationCycle.get(location).getAndIncrement();
+
+                    return nodes.get(cycleNumber % nodes.size());
+                } else {
+                    return null;
+                }
             } else {
                 return null;
             }

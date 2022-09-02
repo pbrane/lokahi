@@ -114,6 +114,7 @@ public class IgniteRemoteAsyncManagerImpl implements IgniteRemoteAsyncManager {
         remoteOperationWrapper.setIgnite(ignite);
         remoteOperationWrapper.setRemoteOperation(remoteOperation);
         remoteOperationWrapper.setId(id);
+        remoteOperationWrapper.setRequestingNode(ignite.cluster().localNode().id());
 
         return remoteOperationWrapper;
     }
