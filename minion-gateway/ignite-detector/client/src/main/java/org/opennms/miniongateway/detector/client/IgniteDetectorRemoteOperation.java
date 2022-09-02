@@ -30,6 +30,10 @@ public class IgniteDetectorRemoteOperation implements RemoteOperation<Boolean> {
 
     @Override
     public CompletableFuture<Boolean> apply() {
-        return localDetectorAdapter.detect(location, systemId, serviceName, detectorName, address, nodeId);
+//        return localDetectorAdapter.detect(location, systemId, serviceName, detectorName, address, nodeId);
+//        return CompletableFuture.failedFuture(new UnsupportedOperationException("NOT YET IMPLEMENTED"));
+        
+        return CompletableFuture.completedFuture(true);
+        // create a future, new thread with sleep, then call future.complete, look at locationAwarePingClient
     }
 }

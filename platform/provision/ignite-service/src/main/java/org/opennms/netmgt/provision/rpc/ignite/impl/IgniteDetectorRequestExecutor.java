@@ -93,13 +93,13 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
     private IgniteDetectorRemoteOperation prepareRemoteOperation() {
         IgniteDetectorRemoteOperation result = new IgniteDetectorRemoteOperation();
-        result.setLocation(location);
-        result.setSystemId(systemId);
-        result.setServiceName(serviceName);
-        result.setDetectorName(detectorName);
-        result.setAddress(address);
-        result.setAttributes(attributes);
-        result.setNodeId(nodeId);
+//        result.setLocation(location);
+//        result.setSystemId(systemId);
+//        result.setServiceName(serviceName);
+//        result.setDetectorName(detectorName);
+//        result.setAddress(address);
+//        result.setAttributes(attributes);
+//        result.setNodeId(nodeId);
 
         return result;
     }
