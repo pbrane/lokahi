@@ -40,13 +40,20 @@
         <argument ref="configAdmin"/>
         <argument ref="metricRegistry"/>
         <argument ref="tracer"/>
+        <property name="cloudMessageHandler" ref="cloudMessageHandler" />
     </bean>
 
     <service ref="minionClient">
         <interfaces>
             <value>org.opennms.core.ipc.grpc.client.MinionGrpcClient</value>
             <value>org.opennms.horizon.shared.ipc.sink.api.MessageDispatcherFactory</value>
+            <value>org.opennms.horizon.shared.ipc.rpc.api.client.ClientRequestDispatcher</value>
         </interfaces>
     </service>
+
+    <bean id="cloudMessageHandler" class="org.opennms.core.ipc.grpc.client.message.ThinCloudMessageHandler" />
+    <reference-list id="cloudMessageReceivers" interface="org.opennms.horizon.shared.ipc.rpc.api.client.CloudMessageReceiver" availability="optional">
+        <reference-listener ref="cloudMessageHandler" bind-method="bind" unbind-method="unbind" />
+    </reference-list>
 
 </blueprint>
