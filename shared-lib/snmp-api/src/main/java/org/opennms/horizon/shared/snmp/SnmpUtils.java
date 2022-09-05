@@ -42,6 +42,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public abstract class SnmpUtils {
 
     private static final transient Logger LOG = LoggerFactory.getLogger(SnmpUtils.class);

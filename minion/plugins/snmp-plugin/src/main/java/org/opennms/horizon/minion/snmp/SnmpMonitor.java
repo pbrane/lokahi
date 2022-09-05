@@ -36,8 +36,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl.ServiceMonitorResponseImplBuilder;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
+import org.opennms.horizon.shared.snmp.SnmpHelper;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
-import org.opennms.horizon.shared.snmp.SnmpUtils;
+import org.opennms.horizon.shared.snmp.SnmpStrategy;
+import org.opennms.horizon.shared.snmp.StrategyResolver;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ParameterMap;
@@ -75,6 +77,11 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
                                                                                 // Id
 
     private static final String DEFAULT_REASON_TEMPLATE = "Observed value '${observedValue}' does not meet criteria '${operator} ${operand}'";
+    private final StrategyResolver strategyResolver;
+
+    public SnmpMonitor(StrategyResolver strategyResolver) {
+        this.strategyResolver = strategyResolver;
+    }
 
     /**
      * {@inheritDoc}
@@ -136,7 +143,7 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
 
         try {
             SnmpObjId snmpObjectId = SnmpObjId.get(oid);
-            return SnmpUtils.getAsync(agentConfig, new SnmpObjId[] {snmpObjectId})
+            return new SnmpHelper(strategyResolver).getAsync(agentConfig, new SnmpObjId[] {snmpObjectId})
                 .<ServiceMonitorResponse>thenApply(result -> {
                     ServiceMonitorResponseImplBuilder builder = ServiceMonitorResponseImpl.builder()
                         .status(Status.Unknown);

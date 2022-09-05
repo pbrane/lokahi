@@ -18,7 +18,9 @@
     </service-properties>
   </service>
 
-  <bean id="snmpMonitorManager" class="org.opennms.horizon.minion.snmp.SnmpMonitorManager"/>
+  <bean id="snmpMonitorManager" class="org.opennms.horizon.minion.snmp.SnmpMonitorManager">
+      <argument ref="strategyResolver" />
+  </bean>
 
   <service ref="snmpMonitorManager" interface="org.opennms.horizon.minion.plugin.api.ServiceMonitorManager">
     <service-properties>
@@ -27,9 +29,5 @@
   </service>
 
   <reference id="strategyResolver" interface="org.opennms.horizon.shared.snmp.StrategyResolver" />
-
-  <bean class="org.opennms.horizon.minion.snmp.UtilInitializer">
-    <argument ref="strategyResolver" />
-  </bean>
 
 </blueprint>
