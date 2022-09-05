@@ -47,6 +47,13 @@
             <classifier>features</classifier>
             <type>xml</type>
         </dependency>
+        <dependency>
+            <groupId>org.apache.karaf.features</groupId>
+            <artifactId>spring</artifactId>
+            <version>${karaf.version}</version>
+            <classifier>features</classifier>
+            <type>xml</type>
+        </dependency>
 
         <dependency>
             <groupId>org.opennms.horizon.minion</groupId>

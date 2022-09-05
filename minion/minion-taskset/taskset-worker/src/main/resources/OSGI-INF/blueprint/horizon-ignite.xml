@@ -30,6 +30,8 @@
 
   <bean id="ignite" class="org.opennms.horizon.minion.taskset.worker.ignite.IgnitionFactory" factory-method="create" destroy-method="close">
     <argument ref="workerIgniteConfiguration"/>
+    <argument ref="blueprintContainer" />
+    <argument ref="blueprintBundleContext" />
   </bean>
 
   <bean id="ignitePocRestServiceImpl" class="org.opennms.horizon.minion.taskset.worker.rest.IgniteWorkerRestControllerImpl" scope="singleton">
