@@ -2,6 +2,7 @@ package org.opennms.miniongateway.detector.client;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.resources.SpringResource;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.model.RemoteOperation;
 import org.opennms.miniongateway.detector.api.LocalDetectorAdapter;
@@ -15,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * Note this is a very thin implementation with loose coupling to the server internals.  This is critical!
  */
+@Slf4j
 public class IgniteDetectorRemoteOperation implements RemoteOperation<Boolean> {
     @SpringResource(resourceName = "localDetectorAdapter")
     private transient LocalDetectorAdapter localDetectorAdapter;
@@ -31,9 +33,14 @@ public class IgniteDetectorRemoteOperation implements RemoteOperation<Boolean> {
     @Override
     public CompletableFuture<Boolean> apply() {
 //        return localDetectorAdapter.detect(location, systemId, serviceName, detectorName, address, nodeId);
-//        return CompletableFuture.failedFuture(new UnsupportedOperationException("NOT YET IMPLEMENTED"));
-        
-        return CompletableFuture.completedFuture(true);
-        // create a future, new thread with sleep, then call future.complete, look at locationAwarePingClient
+
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(30000);
+            } catch (InterruptedException e) {
+            }
+            log.info("################## CompletableFuture test! returning false");
+            return false;
+        });
     }
 }
