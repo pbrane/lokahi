@@ -73,16 +73,6 @@
     <argument ref="pluginConfigInjector"/>
   </bean>
 
-<!--  Creating an instance here just to get the static fields set, but we don't really need to reference this instance -->
-  <bean id="osgiServiceHolder" class="org.opennms.horizon.minion.taskset.worker.ignite.registries.OsgiServiceHolder">
-    <argument ref="opennmsScheduler"/>
-    <argument ref="monitorRegistry" />
-    <argument ref="detectorRegistry" />
-    <argument ref="workflowExecutorLocalServiceFactory"/>
-    <argument ref="listenerFactoryRegistry"/>
-    <argument ref="serviceConnectorFactoryRegistry"/>
-  </bean>
-
   <bean id="workflowLifecycleManager" class="org.opennms.horizon.minion.taskset.worker.impl.TaskLifecycleManagerImpl" destroy-method="close">
     <property name="ignite" ref="ignite"/>
   </bean>
@@ -95,9 +85,6 @@
   <bean id="workflowLifecycleAdapter" class="org.opennms.horizon.minion.taskset.worker.impl.TwinToWorkflowLifecycleManagerAdapter">
     <argument ref="meteredWorkflowLifecycleManager" />
   </bean>
-
-<!--  TODO: will we need this as an OSGi service anywhere now?-->
-<!--  <service id="detectorRegistry" ref="detectorRegistryImpl" interface="org.opennms.poc.ignite.worker.ignite.registries.DetectorRegistry"/>-->
 
   <service ref="workflowLifecycleAdapter" interface="org.opennms.horizon.minion.ipc.twin.api.TwinListener">
     <service-properties>

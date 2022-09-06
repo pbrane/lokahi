@@ -4,7 +4,7 @@ import org.apache.ignite.IgniteLogger;
 import org.apache.ignite.resources.LoggerResource;
 import org.apache.ignite.resources.SpringResource;
 import org.apache.ignite.services.Service;
-import org.opennms.horizon.minion.taskset.worker.ignite.registries.OsgiServiceHolder;
+import org.opennms.horizon.minion.plugin.api.registries.MonitorRegistry;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutorLocalService;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutorLocalServiceFactory;
 import org.opennms.taskset.model.TaskDefinition;
@@ -22,6 +22,10 @@ public class TaskExecutorIgniteService implements Service {
 
     @SpringResource(resourceClass = TaskExecutorLocalServiceFactory.class)
     private transient TaskExecutorLocalServiceFactory workflowExecutorLocalServiceFactory;
+
+    @SpringResource(resourceClass = MonitorRegistry.class)
+    private transient MonitorRegistry monitorRegistry;
+
     private transient TaskExecutorLocalService localService;
     private transient boolean shutdown;
 
@@ -48,7 +52,7 @@ public class TaskExecutorIgniteService implements Service {
             return;
         }
 
-        TaskExecutorLocalService newLocalService = workflowExecutorLocalServiceFactory.create(taskDefinition);
+        TaskExecutorLocalService newLocalService = workflowExecutorLocalServiceFactory.create(taskDefinition, monitorRegistry);
         synchronized (sync) {
             if (! shutdown) {
                 localService = newLocalService;
