@@ -43,9 +43,10 @@ import org.slf4j.LoggerFactory;
 /**
  * A snmp helper which contains handful set of snmp-related operations.
  *
- * This is a port of {@link SnmpUtils} which heavily rely on static access to methods. This class assumes no-static
- * access in order to introduce strict control over @{@link StrategyResolver} and created @{@link SnmpStrategy}.
- * This small change allows better control over lifecycle and startup.
+ * This is a port of {@link SnmpUtils} which relied on static access to methods. This class assumes no-static
+ * access in order to introduce strict control over {@link StrategyResolver} and created {@link SnmpStrategy}.
+ * This small change allows better control over lifecycle and startup of components which intend to interface with
+ * snmp daemons/agents.
  *
  * @author ldywicki
  */
@@ -272,11 +273,11 @@ public class SnmpHelper {
         return strategy;
     }
 
-    private static final class TooBigReportingAggregator extends AggregateTracker {
+    static final class TooBigReportingAggregator extends AggregateTracker {
         private final Logger logger = LoggerFactory.getLogger(TooBigReportingAggregator.class);
         private final InetAddress address;
 
-        private TooBigReportingAggregator(CollectionTracker[] children, InetAddress address) {
+        TooBigReportingAggregator(CollectionTracker[] children, InetAddress address) {
             super(children);
             this.address = address;
         }
