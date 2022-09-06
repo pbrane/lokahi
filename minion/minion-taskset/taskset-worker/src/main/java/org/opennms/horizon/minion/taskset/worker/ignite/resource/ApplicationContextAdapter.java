@@ -16,6 +16,18 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 
+/**
+ * A trimmed implementation of Spring framework {@link ApplicationContext} interface.
+ *
+ * This adapter is being used as bridge between custom {@link BeanRegistry} SPI needed to inject beans, and internal ioc
+ * infrastructure build by Ignite. Since Ignite assumes Spring as only one supported tool it built whole infrastructure
+ * around it.
+ * Note - only two methods of {@link ApplicationContext} are being implemented: {@link #getBean(String)} and
+ * {@link #getBean(Class)}. These two are only ones required to get handling of {@link org.apache.ignite.resources.SpringResource}
+ * annotation in place.
+ *
+ * @author ldywicki
+ */
 public class ApplicationContextAdapter implements ApplicationContext {
 
     private BeanRegistry registry;
