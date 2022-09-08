@@ -13,8 +13,6 @@ import org.opennms.core.ipc.grpc.server.manager.LocationIndependentRpcClientFact
 import org.opennms.core.ipc.grpc.server.manager.MinionManager;
 import org.opennms.core.ipc.grpc.server.manager.RpcConnectionTracker;
 import org.opennms.core.ipc.grpc.server.manager.RpcRequestTracker;
-import org.opennms.core.ipc.grpc.server.manager.impl.MinionManagerImpl;
-import org.opennms.core.ipc.grpc.server.manager.impl.RpcConnectionTrackerImpl;
 import org.opennms.core.ipc.grpc.server.manager.impl.RpcRequestTrackerImpl;
 import org.opennms.core.ipc.grpc.server.manager.rpc.LocationIndependentRpcClientFactoryImpl;
 import org.opennms.core.ipc.grpc.server.manager.rpcstreaming.MinionRpcStreamConnectionManager;
@@ -24,7 +22,6 @@ import org.opennms.miniongateway.grpc.server.stub.StubMinionToCloudProcessor;
 import org.opennms.miniongateway.grpc.server.stub.TaskResultsConsumer;
 import org.opennms.miniongateway.grpc.twin.GrpcTwinPublisher;
 import org.opennms.taskset.service.api.TaskSetForwarder;
-import org.opennms.taskset.service.api.TaskSetListener;
 import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

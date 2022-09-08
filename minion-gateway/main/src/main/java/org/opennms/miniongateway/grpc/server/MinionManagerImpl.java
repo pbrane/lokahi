@@ -1,4 +1,4 @@
-package org.opennms.core.ipc.grpc.server.manager.impl;
+package org.opennms.miniongateway.grpc.server;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -10,10 +10,21 @@ import org.opennms.core.ipc.grpc.server.manager.MinionManager;
 import org.opennms.core.ipc.grpc.server.manager.MinionManagerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 
 /**
  * Manager that tracks known minions that are connected to this server.
+ *
+ *  1. For this location, which minions are connected locally
+ *  2. Is Minion X connected locally, Is SystemId X connected locally
+ *  3. Node singleton service will use this to route
+ *  THIS bean is.... Spring Bean, NOT an Ignite service.
+ *  Add node singleton as a listener to this
+ *
+ *  - Need a router (core entry point), top level guy, "send this to X (location or id)".
+ *  -   - needs to ask "is this locally connected"
  */
+
 public class MinionManagerImpl implements MinionManager {
 
     private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(MinionManagerImpl.class);

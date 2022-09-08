@@ -1,4 +1,4 @@
-package org.opennms.core.ipc.grpc.server.manager.impl;
+package org.opennms.miniongateway.grpc.server;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
@@ -12,9 +12,11 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
+import org.opennms.core.ipc.grpc.server.manager.MinionManager;
 import org.opennms.core.ipc.grpc.server.manager.RpcConnectionTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class RpcConnectionTrackerImpl implements RpcConnectionTracker {
 
@@ -24,6 +26,10 @@ public class RpcConnectionTrackerImpl implements RpcConnectionTracker {
 
     private final Object lock = new Object();
 
+    @Autowired
+    private MinionManager minionManager;
+
+    // Remove location tracking here, keep it in the minion manager
     private Map<StreamObserver<RpcRequestProto>, String> locationByConnection = new IdentityHashMap<>();
     private Map<StreamObserver<RpcRequestProto>, String> minionIdByConnection = new IdentityHashMap<>();
 
@@ -34,7 +40,7 @@ public class RpcConnectionTrackerImpl implements RpcConnectionTracker {
     /**
      * Semaphore per connection that is used to ensure thread-safe sending to each connection.
      */
-    private Map<StreamObserver<RpcRequestProto>, Semaphore> sempahoreByConnection = new IdentityHashMap<>();
+    private Map<StreamObserver<RpcRequestProto>, Semaphore> semaphoreByConnection = new IdentityHashMap<>();
 
     @Override
     public boolean addConnection(String location, String minionId, StreamObserver<RpcRequestProto> connection) {
@@ -52,9 +58,12 @@ public class RpcConnectionTrackerImpl implements RpcConnectionTracker {
                 locationByConnection.put(connection, location);
                 minionIdByConnection.put(connection, minionId);
 
-                sempahoreByConnection.put(connection, new Semaphore(1, true));
+                semaphoreByConnection.put(connection, new Semaphore(1, true));
 
                 updateIteratorLocked(location);
+                
+                //TODO: need the data
+                minionManager.addMinion(new MinionInfo());
 
                 added = true;
             } else {
@@ -109,7 +118,7 @@ public class RpcConnectionTrackerImpl implements RpcConnectionTracker {
                 removedMinionInfo.setLocation(locationId);
             }
 
-            sempahoreByConnection.remove(connection);
+            semaphoreByConnection.remove(connection);
         }
 
         return removedMinionInfo;
@@ -118,7 +127,7 @@ public class RpcConnectionTrackerImpl implements RpcConnectionTracker {
     @Override
     public Semaphore getConnectionSemaphore(StreamObserver<RpcRequestProto> connection) {
         synchronized (lock) {
-            return sempahoreByConnection.get(connection);
+            return semaphoreByConnection.get(connection);
         }
     }
 
@@ -131,7 +140,7 @@ public class RpcConnectionTrackerImpl implements RpcConnectionTracker {
             connectionListByLocation.clear();
             locationByConnection.clear();
             minionIdByConnection.clear();
-            sempahoreByConnection.clear();
+            semaphoreByConnection.clear();
         }
     }
 

@@ -57,13 +57,13 @@ public class MinionRpcStreamConnectionImpl implements MinionRpcStreamConnection 
         this.minionManager = minionManager;
     }
 
-    private boolean isMinionIndentityHeaders(RpcResponseProto rpcMessage) {
+    private boolean isMinionIdentityHeaders(RpcResponseProto rpcMessage) {
         return Objects.equals(MINION_HEADERS_MODULE, rpcMessage.getModuleId());
     }
 
     @Override
     public void handleRpcStreamInboundMessage(RpcResponseProto message) {
-        if (isMinionIndentityHeaders(message)) {
+        if (isMinionIdentityHeaders(message)) {
             String location = message.getLocation();
             String systemId = message.getSystemId();
 

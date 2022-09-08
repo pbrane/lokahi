@@ -30,7 +30,7 @@
   </bean>
   <service ref="grpcIpcServer" interface="org.opennms.core.grpc.common.GrpcIpcServer"/>
 
-  <bean id="minionManager" class="org.opennms.core.ipc.grpc.server.manager.impl.MinionManagerImpl" />
+  <bean id="minionManager" class="org.opennms.miniongateway.grpc.server.MinionManagerImpl" />
   <service ref="minionManager" interface="org.opennms.core.ipc.grpc.server.manager.MinionManager" />
 
   <bean id="locationIndependentRpcClientFactory" class="org.opennms.core.ipc.grpc.server.manager.rpc.LocationIndependentRpcClientFactoryImpl">
@@ -41,7 +41,7 @@
     <property name="ttl" value="${org.opennms.core.ipc.rpc.ttl}"/>
   </bean>
 
-  <bean id="rpcConnectionTracker" class="org.opennms.core.ipc.grpc.server.manager.impl.RpcConnectionTrackerImpl" />
+  <bean id="rpcConnectionTracker" class="org.opennms.miniongateway.grpc.server.RpcConnectionTrackerImpl" />
   <bean id="rpcRequestTracker" class="org.opennms.core.ipc.grpc.server.manager.impl.RpcRequestTrackerImpl"/>
 
   <bean id="rpcRequestTimeoutManager" class="org.opennms.core.ipc.grpc.server.manager.impl.RpcRequestTimeoutManagerImpl" init-method="start" destroy-method="shutdown">

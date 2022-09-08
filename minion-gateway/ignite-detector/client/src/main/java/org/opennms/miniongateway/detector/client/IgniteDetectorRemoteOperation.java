@@ -36,11 +36,11 @@ public class IgniteDetectorRemoteOperation implements RemoteOperation<Boolean> {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Thread.sleep(30000);
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
             }
-            log.info("################## CompletableFuture test! returning false");
-            return false;
+            log.info("################## CompletableFuture test! returning true");
+            return true;
         });
     }
 }
