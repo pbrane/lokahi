@@ -12,7 +12,7 @@
     <cm:property-placeholder persistent-id="org.opennms.core.ignite.client" update-strategy="reload">
         <cm:default-properties>
             <cm:property name="useKubernetes" value="true"/>
-            <cm:property name="kubernetesServiceName" value="horizon-stream-ignite-core"/>
+            <cm:property name="kubernetesServiceName" value="minion-gateway"/>
             <cm:property name="addresses" value="ignored"/>
         </cm:default-properties>
     </cm:property-placeholder>
