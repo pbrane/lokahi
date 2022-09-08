@@ -225,7 +225,6 @@
                 <configuration>
                     <instructions>
                         <Bundle-RequiredExecutionEnvironment>JavaSE-${java.version}</Bundle-RequiredExecutionEnvironment>
-                        <Karaf-Commands>*</Karaf-Commands>
                     </instructions>
                 </configuration>
             </plugin>
