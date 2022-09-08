@@ -58,6 +58,7 @@ public class MinionRouterImpl implements MinionRouter {
     @Override
     public void init() throws Exception {
         igniteLogger.info("############ MINION ROUTER SERVICE INITIALIZED");
+        //TODO: handle existing cache?
         minionByIdCache = ignite.createCache(MINIONS_BY_ID);
         minionByLocationCache = ignite.createCache(MINIONS_BY_LOCATION);
     }
