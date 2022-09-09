@@ -1,7 +1,6 @@
-package org.opennms.miniongateway.registry;
+package org.opennms.miniongateway.router;
 
 import java.util.List;
-import lombok.Data;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteLogger;
@@ -17,6 +16,7 @@ public class MinionRouterImpl implements MinionRouter {
 
     public static final String MINIONS_BY_ID = "minionsById";
     public static final String MINIONS_BY_LOCATION = "minionsByLocation";
+
     @LoggerResource
     private IgniteLogger igniteLogger;
 
@@ -38,7 +38,7 @@ public class MinionRouterImpl implements MinionRouter {
 
         MinionInfo foundMinion = minionsList.stream().filter(m1 -> m1.equals(minionInfo.getId())).findFirst().get();
 
-        //TODO: do we really just try both? Or is the request more specific?
+        //TODO MMF: do we really just try both? Or is the request more specific?
         if (foundMinion == null) {
             foundMinion = minionByIdCache.get(minionInfo.getId());
         }
@@ -46,7 +46,7 @@ public class MinionRouterImpl implements MinionRouter {
             foundMinion = minionByLocationCache.get(minionInfo.getLocation());
         }
 
-        // Now use that minion to send the message, probably a call to
+        // TODO MMF: Now use that minion to send the message, probably a call to
         // IgniteDetectorRequestExecutor or IgniteRemoteAsyncManagerImpl???
     }
 
@@ -58,9 +58,9 @@ public class MinionRouterImpl implements MinionRouter {
     @Override
     public void init() throws Exception {
         igniteLogger.info("############ MINION ROUTER SERVICE INITIALIZED");
-        //TODO: handle existing cache?
-        minionByIdCache = ignite.createCache(MINIONS_BY_ID);
-        minionByLocationCache = ignite.createCache(MINIONS_BY_LOCATION);
+
+        minionByIdCache = ignite.getOrCreateCache(MINIONS_BY_ID);
+        minionByLocationCache = ignite.getOrCreateCache(MINIONS_BY_LOCATION);
     }
 
     @Override

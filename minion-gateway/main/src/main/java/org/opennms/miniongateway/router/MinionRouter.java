@@ -1,4 +1,4 @@
-package org.opennms.miniongateway.registry;
+package org.opennms.miniongateway.router;
 
 import org.apache.ignite.services.Service;
 import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
