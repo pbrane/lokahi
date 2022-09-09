@@ -168,6 +168,9 @@
         <feature>horizon-shared-task-set-publisher</feature>
         <feature>horizon-core-camel</feature>
 
+        <bundle>mvn:org.opennms.horizon.3rdparty/grpc/${project.version}</bundle>
+        <bundle>mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
+
         <bundle>mvn:org.opennms.horizon.shared/ipc-api/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.shared/ipc-grpc-contract/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.core/monitor/${project.version}</bundle>
@@ -455,7 +458,7 @@
         <bundle>mvn:org.eclipse.persistence/org.eclipse.persistence.antlr/${eclipselink.version}</bundle>
     </feature>
 
-    <feature name="rate-limited-logger" version="${rateLimitedLoggerVersion}" description="Rate Limited Logger">
+    <feature name="rate-limited-logger" version="${rate.limitted.logger.version}" description="Rate Limited Logger">
         <bundle>mvn:joda-time/joda-time/2.1</bundle>
         <bundle>wrap:mvn:com.swrve/rate-limited-logger/${rate.limitted.logger.version}</bundle>
     </feature>
