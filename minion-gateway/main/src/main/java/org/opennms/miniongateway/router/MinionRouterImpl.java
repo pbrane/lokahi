@@ -27,7 +27,7 @@ public class MinionRouterImpl implements MinionRouter {
     private ServiceContext serviceContext;
 
     @SpringResource(resourceName = "minionManager")
-    MinionManager minionManager;
+    private transient MinionManager minionManager;
 
     private IgniteCache<String, MinionInfo> minionByIdCache;
     private IgniteCache<String, MinionInfo> minionByLocationCache;

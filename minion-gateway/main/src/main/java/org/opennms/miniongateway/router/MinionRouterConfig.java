@@ -1,16 +1,19 @@
 package org.opennms.miniongateway.router;
 
+import javax.annotation.PostConstruct;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.resources.IgniteInstanceResource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MinionRouterConfig {
 
-    @IgniteInstanceResource
+    @Autowired
     private Ignite ignite;
 
-    public MinionRouterConfig() {
+    @PostConstruct
+    public void startService() {
         ignite.services().deployNodeSingleton("minionRouter", new MinionRouterImpl());
     }
 }

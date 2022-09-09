@@ -17,11 +17,12 @@ public class GrpcIpcServerConfig {
 
     public static final String GRPC_MAX_INBOUND_SIZE = "max.message.size";
     public static final long DEFAULT_MAX_MESSAGE_SIZE = 100 * ( 1024 * 1024 );
+    public static final int DEFAULT_GRPC_PORT = 8990;
 
     @Value("${" + GRPC_MAX_INBOUND_SIZE + ":" + DEFAULT_MAX_MESSAGE_SIZE + "}")
     private long maxMessageSize;
 
-    @Value("${grpc.port}")
+    @Value("${grpc.port:" + DEFAULT_GRPC_PORT + "}")
     private int grpcPort;
 
     @Bean(destroyMethod = "stopServer")

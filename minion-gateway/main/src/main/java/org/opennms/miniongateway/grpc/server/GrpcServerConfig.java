@@ -40,11 +40,6 @@ public class GrpcServerConfig {
     private MetricRegistry metricRegistry;
 
     @Bean
-    MinionManager minionManager() {
-        return new MinionManagerImpl();
-    }
-
-    @Bean
     public RpcConnectionTracker rpcConnectionTracker() {
         return new RpcConnectionTrackerImpl();
     }
