@@ -25,6 +25,11 @@
             <artifactId>taskset-worker</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.minion</groupId>
+            <artifactId>shaded-ignite</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.opennms.horizon.minion</groupId>
@@ -66,6 +71,7 @@
                             <descriptors>
                                 <descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features</descriptor>
+                                <descriptor>mvn:org.apache.karaf.features/spring/${karaf.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.opennms.horizon.minion/grpc-features/${project.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.opennms.horizon.minion/ipc-features/${project.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.opennms.horizon.minion/observability-features/${project.version}/xml/features</descriptor>

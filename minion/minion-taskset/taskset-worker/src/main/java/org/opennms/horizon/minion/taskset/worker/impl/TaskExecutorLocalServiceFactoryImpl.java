@@ -1,6 +1,7 @@
 package org.opennms.horizon.minion.taskset.worker.impl;
 
 import org.opennms.horizon.minion.plugin.api.config.ConfigInjector;
+import org.opennms.horizon.minion.plugin.api.registries.MonitorRegistry;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutionResultProcessor;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutorLocalService;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutorLocalServiceFactory;
@@ -38,10 +39,10 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
 //----------------------------------------
 
     @Override
-    public TaskExecutorLocalService create(TaskDefinition taskDefinition) {
+    public TaskExecutorLocalService create(TaskDefinition taskDefinition, MonitorRegistry monitorRegistry) {
         switch (taskDefinition.getType()) {
             case MONITOR:
-                return new TaskExecutorLocalMonitorServiceImpl(scheduler, taskDefinition, resultProcessor, pluginConfigInjector);
+                return new TaskExecutorLocalMonitorServiceImpl(scheduler, taskDefinition, resultProcessor, pluginConfigInjector, monitorRegistry);
 
             case LISTENER:
                 TaskistenerRetriable listenerService = new TaskistenerRetriable(taskDefinition, resultProcessor);

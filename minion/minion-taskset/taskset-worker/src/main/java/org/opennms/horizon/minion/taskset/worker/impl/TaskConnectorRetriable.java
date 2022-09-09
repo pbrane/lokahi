@@ -2,9 +2,10 @@ package org.opennms.horizon.minion.taskset.worker.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.ignite.resources.SpringResource;
+import org.opennms.horizon.minion.plugin.api.registries.ServiceConnectorFactoryRegistry;
 import org.opennms.horizon.minion.taskset.worker.RetriableExecutor;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutionResultProcessor;
-import org.opennms.horizon.minion.taskset.worker.ignite.registries.OsgiServiceHolder;
 import org.opennms.horizon.minion.plugin.api.ServiceConnector;
 import org.opennms.horizon.minion.plugin.api.ServiceConnectorFactory;
 import org.opennms.taskset.model.TaskDefinition;
@@ -19,6 +20,9 @@ public class TaskConnectorRetriable implements RetriableExecutor {
     private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskConnectorRetriable.class);
 
     private Logger log = DEFAULT_LOGGER;
+
+    @SpringResource(resourceClass = ServiceConnectorFactoryRegistry.class)
+    private transient ServiceConnectorFactoryRegistry serviceConnectorFactoryRegistry;
 
     private TaskDefinition taskDefinition;
     private TaskExecutionResultProcessor resultProcessor;
@@ -69,7 +73,7 @@ public class TaskConnectorRetriable implements RetriableExecutor {
     private ServiceConnectorFactory lookupServiceConnectorFactory(TaskDefinition workflow) throws Exception {
         String pluginName = workflow.getPluginName();
 
-        ServiceConnectorFactory result = OsgiServiceHolder.getServiceConnectorFactoryRegistry().getService(pluginName);
+        ServiceConnectorFactory result = serviceConnectorFactoryRegistry.getService(pluginName);
 
         if (result == null) {
             log.error("Failed to locate connector factory for workflow: plugin-name={}; workflow-uuid={}",

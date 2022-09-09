@@ -39,9 +39,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
+import org.opennms.horizon.shared.snmp.SnmpHelper.TooBigReportingAggregator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A handful set of utilities to interact with snmp daemons.
+ *
+ * @deprecated Please switch to {@link SnmpHelper} which offers same functionality but with explicit control over
+ * {@link StrategyResolver}.
+ */
+@Deprecated
 public abstract class SnmpUtils {
 
     private static final transient Logger LOG = LoggerFactory.getLogger(SnmpUtils.class);
@@ -51,20 +59,6 @@ public abstract class SnmpUtils {
     private static Properties sm_config;
     private static StrategyResolver s_strategyResolver;
     private static final boolean canUseClassBasedStrategy = checkIfClassBasedStrategyIsInstantiable();
-
-    private static final class TooBigReportingAggregator extends AggregateTracker {
-        private final InetAddress address;
-
-        private TooBigReportingAggregator(CollectionTracker[] children, InetAddress address) {
-            super(children);
-            this.address = address;
-        }
-
-        @Override
-        protected void reportTooBigErr(String msg) {
-            LOG.info("Received tooBig response from {}. {}", address, msg);
-        }
-    }
 
     public static SnmpWalker createWalker(SnmpAgentConfig agentConfig, String name, CollectionTracker... trackers) {
         return getStrategy().createWalker(agentConfig, name, createTooBigTracker(agentConfig, trackers));
@@ -191,7 +185,7 @@ public abstract class SnmpUtils {
 
     public static String getStrategyClassName() {
         // Use SNMP4J as the default SNMP strategy
-        return getConfig().getProperty("org.opennms.snmp.strategyClass", "org.opennms.netmgt.snmp.snmp4j.Snmp4JStrategy");
+        return getConfig().getProperty("org.opennms.snmp.strategyClass", "org.opennms.horizon.minion.snmp.snmp4j.Snmp4JStrategy");
     }
 
     public static void registerForTraps(final TrapNotificationListener listener, final InetAddress address, final int snmpTrapPort, final List<SnmpV3User> snmpUsers) throws IOException {

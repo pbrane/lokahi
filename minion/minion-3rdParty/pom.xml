@@ -16,6 +16,7 @@
 
     <modules>
         <module>shaded-grpc</module>
+        <module>shaded-ignite</module>
     </modules>
 
 </project>

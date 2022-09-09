@@ -8,8 +8,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.ignite.resources.SpringResource;
 import org.opennms.horizon.minion.plugin.api.config.ConfigInjector;
-import org.opennms.horizon.minion.taskset.worker.ignite.registries.OsgiServiceHolder;
+import org.opennms.horizon.minion.plugin.api.registries.MonitorRegistry;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutionResultProcessor;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutorLocalService;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
@@ -37,16 +38,19 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
     private OpennmsScheduler scheduler;
     private TaskExecutionResultProcessor resultProcessor;
     private final ConfigInjector pluginConfigInjector;
+    private MonitorRegistry monitorRegistry;
     private ServiceMonitor monitor=null;
 
     private AtomicBoolean active = new AtomicBoolean(false);
 
     public TaskExecutorLocalMonitorServiceImpl(OpennmsScheduler scheduler, TaskDefinition taskDefinition,
-        TaskExecutionResultProcessor resultProcessor, ConfigInjector pluginConfigInjector) {
+        TaskExecutionResultProcessor resultProcessor, ConfigInjector pluginConfigInjector,
+        MonitorRegistry monitorRegistry) {
         this.taskDefinition = taskDefinition;
         this.scheduler = scheduler;
         this.resultProcessor = resultProcessor;
         this.pluginConfigInjector = pluginConfigInjector;
+        this.monitorRegistry = monitorRegistry;
     }
 
 //========================================
@@ -83,19 +87,16 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
 //========================================
 // Setup Internals
 //----------------------------------------
-
     private Optional<ServiceMonitor> lookupMonitor(TaskDefinition workflow) {
         String pluginName = workflow.getPluginName();
 
-        Optional<ServiceMonitorManager> result = OsgiServiceHolder.getMonitorManager(pluginName);
+        ServiceMonitorManager result = monitorRegistry.getService(pluginName);
 
-        if (result.isPresent()) {
-            ServiceMonitorManager foundMonitorManager = result.get();
-
-            pluginConfigInjector.injectConfigs(foundMonitorManager, workflow.getParameters());
+        if (result != null) {
+            pluginConfigInjector.injectConfigs(result, workflow.getParameters());
 
             //TODO: what parameters (if any) to pass on creation? Probably none since we want to inject everything from schema.
-            return Optional.of(foundMonitorManager.create(null));
+            return Optional.of(result.create(null));
         }
         else return Optional.empty();
     }
