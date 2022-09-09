@@ -7,7 +7,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.ignite.IgniteCache;
+import org.apache.ignite.client.ClientCache;
+import org.apache.ignite.client.IgniteClient;
 
 // TBD888: push routing down into gateways only (LATER)
 public class DetectorRequestRouteManager {
@@ -15,7 +16,7 @@ public class DetectorRequestRouteManager {
     public final String MINION_ROUTE_MAP_CACHENAME = "MINION-ROUTE-MAP";
     public final String LOCATION_ROUTE_MAP_CACHENAME = "LOCATION-ROUTE-MAP";
 
-    private final Ignite ignite;
+    private final IgniteClient igniteClient;
 
     private final Map<String, AtomicInteger> locationCycle = new ConcurrentHashMap<>();
     private final Map<String, AtomicInteger> systemIdCycle = new ConcurrentHashMap<>();
@@ -24,8 +25,8 @@ public class DetectorRequestRouteManager {
 // Constructor
 //----------------------------------------
 
-    public DetectorRequestRouteManager(Ignite ignite) {
-        this.ignite = ignite;
+    public DetectorRequestRouteManager(IgniteClient igniteClient) {
+        this.igniteClient = igniteClient;
     }
 
 //========================================
@@ -35,7 +36,7 @@ public class DetectorRequestRouteManager {
     public UUID findNodeIdToUseForLocation(String location) {
         Object nodeList;
 
-        IgniteCache cache = ignite.cache(LOCATION_ROUTE_MAP_CACHENAME);
+        ClientCache<Object, Object> cache = igniteClient.cache(LOCATION_ROUTE_MAP_CACHENAME);
 
         if (cache != null) {
             nodeList = cache.get(location);
@@ -51,23 +52,19 @@ public class DetectorRequestRouteManager {
                 if (!nodes.isEmpty()) {
                     locationCycle.putIfAbsent(location, new AtomicInteger(0));
                     int cycleNumber = locationCycle.get(location).getAndIncrement();
-
                     return nodes.get(cycleNumber % nodes.size());
-                } else {
-                    return null;
                 }
             } else {
                 return null;
             }
-        } else {
-            return null;
         }
+        return null;
     }
 
     public UUID findNodeIdToUseForSystemId(String systemId) {
         Object nodeList;
 
-        nodeList = ignite.cache(MINION_ROUTE_MAP_CACHENAME).get(systemId);
+        nodeList = igniteClient.cache(MINION_ROUTE_MAP_CACHENAME).get(systemId);
 
         if (nodeList != null)  {
             //
@@ -85,8 +82,8 @@ public class DetectorRequestRouteManager {
             } else {
                 return null;
             }
-        } else {
-            return null;
         }
+        return null;
     }
+
 }

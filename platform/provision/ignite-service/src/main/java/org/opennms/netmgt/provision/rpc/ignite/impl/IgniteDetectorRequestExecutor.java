@@ -2,7 +2,10 @@ package org.opennms.netmgt.provision.rpc.ignite.impl;
 
 import io.opentracing.Span;
 import org.apache.ignite.Ignite;
+import org.apache.ignite.client.IgniteClient;
 import org.apache.ignite.cluster.ClusterGroup;
+import org.opennms.horizon.shared.ignite.remoteasync.Broadcast;
+import org.opennms.horizon.shared.ignite.remoteasync.RequestDispatcher;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
 import org.opennms.miniongateway.detector.client.IgniteDetectorRemoteOperation;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
@@ -15,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
-    private final Ignite ignite;
+    private final IgniteClient igniteClient;
     private final String location;
     private final String systemId;
     private final String serviceName;
@@ -30,7 +33,7 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
     private final DetectorRequestRouteManager detectorRequestRouteManager;
 
     public IgniteDetectorRequestExecutor(
-        Ignite ignite,
+        IgniteClient igniteClient,
         String location,
         String systemId,
         String serviceName,
@@ -44,7 +47,7 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
         DetectorRequestRouteManager detectorRequestRouteManager
     ) {
 
-        this.ignite = ignite;
+        this.igniteClient = igniteClient;
         this.location = location;
         this.systemId = systemId;
         this.serviceName = serviceName;
@@ -60,21 +63,29 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
     @Override
     public CompletableFuture<Boolean> execute() {
-
+        /*
         UUID nodeId = findNodeIdToUse();
 
-//        if (nodeId == null) {
-//            return CompletableFuture.failedFuture(
-//                new Exception("cannot (currently) reach a minion at location=" + location + ", system-id=" + systemId));
-//        }
+        if (nodeId == null) {
+            return CompletableFuture.failedFuture(
+                new Exception("cannot (currently) reach a minion at location=" + location + ", system-id=" + systemId));
+        }
 
         IgniteDetectorRemoteOperation remoteOperation = prepareRemoteOperation();
-
-        ClusterGroup clusterGroup = ignite.cluster();//.forNodeId(nodeId);
-
+        ClusterGroup clusterGroup = igniteClient.cluster().forNodeId(nodeId);
         CompletableFuture future = igniteRemoteAsyncManager.submit(clusterGroup, remoteOperation);
+        */
 
-        return future;
+        RequestDispatcher dispatcher = igniteClient.services().serviceProxy(RequestDispatcher.class.getName(), RequestDispatcher.class);
+        if (systemId != null) {
+            Broadcast broadcast = new Broadcast(UUID.randomUUID(), "twin", "asdf!");
+            dispatcher.sendToMinion(systemId, broadcast);
+            return CompletableFuture.completedFuture(true);
+        }
+
+        Broadcast broadcast = new Broadcast(UUID.randomUUID(), "twin", "asdf!");
+        dispatcher.sendToLocation(location, broadcast);
+        return CompletableFuture.completedFuture(true);
     }
 
     /**
@@ -82,6 +93,7 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
      *
      * @return
      */
+    /*
     private UUID findNodeIdToUse() {
         // If system-id was specified, send downstream to that system only
         if (systemId != null) {
@@ -103,4 +115,6 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
         return result;
     }
+    //*/
+
 }

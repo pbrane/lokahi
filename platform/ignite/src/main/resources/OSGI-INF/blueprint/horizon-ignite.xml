@@ -9,22 +9,24 @@
 		http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.3.0.xsd
 ">
 
-    <cm:property-placeholder persistent-id="org.opennms.core.monitor"
-                             update-strategy="reload">
+    <cm:property-placeholder persistent-id="org.opennms.core.ignite.client" update-strategy="reload">
         <cm:default-properties>
-            <cm:property name="ignite.useKubernetes" value="true"/>
-            <cm:property name="ignite.kubernetesServiceName" value="horizon-stream-ignite-core"/>
+            <cm:property name="useKubernetes" value="true"/>
+            <cm:property name="kubernetesServiceName" value="horizon-stream-ignite-core"/>
+            <cm:property name="addresses" value="ignored"/>
         </cm:default-properties>
     </cm:property-placeholder>
 
-    <bean id="workerIgniteConfiguration" class="org.opennms.horizon.core.ignite.WorkerIgniteConfiguration">
-        <property name="useKubernetes" value="${ignite.useKubernetes}"/>
-        <property name="kubernetesServiceName" value="${ignite.kubernetesServiceName}"/>
+    <bean id="igniteClientConfiguration" class="org.opennms.horizon.core.ignite.IgniteClientConfiguration">
+        <argument value="${useKubernetes}"/>
+        <argument value="${kubernetesServiceName}"/>
+        <argument value="${addresses}"/>
     </bean>
 
-    <bean id="ignite" class="org.opennms.horizon.core.ignite.IgnitionFactory" factory-method="create" destroy-method="close">
-        <argument ref="workerIgniteConfiguration"/>
+    <bean id="igniteClient" class="org.opennms.horizon.core.ignite.IgnitionFactory" factory-method="createClient" destroy-method="close">
+        <argument ref="igniteClientConfiguration"/>
     </bean>
 
-    <service ref="ignite" interface="org.apache.ignite.Ignite"/>
+    <service ref="igniteClient" interface="org.apache.ignite.client.IgniteClient"/>
+
 </blueprint>
