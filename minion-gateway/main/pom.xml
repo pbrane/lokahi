@@ -53,6 +53,16 @@
             <artifactId>task-set-service-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.shared</groupId>
+            <artifactId>ignite-remote-async</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.minion.gateway</groupId>
+            <artifactId>minion-gateway-ignite-detector-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>

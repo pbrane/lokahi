@@ -11,6 +11,6 @@ public class MinionRouterConfig {
     private Ignite ignite;
 
     public MinionRouterConfig() {
-        ignite.services().deployNodeSingleton("minionRouter", new MinionRouterImpl());
+        ignite.services().deployNodeSingleton(MinionRouterIgniteServiceImpl.IGNITE_SERVICE_NAME, new MinionRouterIgniteServiceImpl());
     }
 }

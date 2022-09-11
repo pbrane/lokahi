@@ -2,6 +2,7 @@ package org.opennms.core.ipc.grpc.server.manager;
 
 import java.util.List;
 
+@Deprecated
 public interface MinionManager {
     void addMinion(MinionInfo minionInfo);
     void removeMinion(String minionId);

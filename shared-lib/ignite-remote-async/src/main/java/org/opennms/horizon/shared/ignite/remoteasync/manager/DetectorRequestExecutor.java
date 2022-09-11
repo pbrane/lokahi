@@ -26,11 +26,10 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.netmgt.provision;
+package org.opennms.horizon.shared.ignite.remoteasync.manager;
 
 import java.util.concurrent.CompletableFuture;
 
-@Deprecated
 public interface DetectorRequestExecutor {
 
     CompletableFuture<Boolean> execute();
