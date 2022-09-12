@@ -5,7 +5,9 @@
 >
 
   <bean id="strategyResolver" class="org.opennms.horizon.shared.snmp.internal.ServiceBasedStrategyResolver" factory-method="register" destroy-method="unregister"/>
-    
+
+  <service ref="strategyResolver" interface="org.opennms.horizon.shared.snmp.StrategyResolver" />
+
   <reference-list interface="org.opennms.horizon.shared.snmp.SnmpStrategy" availability="optional">
     <reference-listener bind-method="onBind" unbind-method="onUnbind" ref="strategyResolver" />
   </reference-list>

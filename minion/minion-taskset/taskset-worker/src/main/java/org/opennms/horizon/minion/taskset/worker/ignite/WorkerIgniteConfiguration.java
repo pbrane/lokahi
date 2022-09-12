@@ -4,7 +4,6 @@ import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.ignite.Ignite;
-import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.cache.CacheRebalanceMode;
 import org.apache.ignite.cache.CacheWriteSynchronizationMode;
@@ -12,6 +11,7 @@ import org.apache.ignite.cache.PartitionLossPolicy;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.DataStorageConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.internal.processors.resource.GridResourceProcessor;
 import org.apache.ignite.kubernetes.configuration.KubernetesConnectionConfiguration;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKubernetesIpFinder;
@@ -50,10 +50,6 @@ public class WorkerIgniteConfiguration {
         return igniteConfiguration;
     }
 
-    public Ignite startIgnite(IgniteConfiguration igniteConfiguration) {
-        return Ignition.start(igniteConfiguration);
-    }
-
 //========================================
 // Internals
 //----------------------------------------
@@ -64,7 +60,7 @@ public class WorkerIgniteConfiguration {
 
         CompoundClassLoader compoundClassLoader =
                 new CompoundClassLoader(this,
-                        Arrays.asList(this.getClass().getClassLoader(), Ignite.class.getClassLoader()));
+                        Arrays.asList(this.getClass().getClassLoader(), Ignite.class.getClassLoader(), GridResourceProcessor.class.getClassLoader()));
 
         igniteConfiguration.setClassLoader(compoundClassLoader);
     }

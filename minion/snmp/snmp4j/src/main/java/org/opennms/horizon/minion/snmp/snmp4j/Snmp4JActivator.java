@@ -35,22 +35,25 @@ import org.opennms.horizon.shared.snmp.SnmpStrategy;
 import org.opennms.horizon.shared.snmp.SnmpUtils;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
 public class Snmp4JActivator implements BundleActivator {
 
+    private ServiceRegistration<?> serviceRegistration;
+
     @Override
     public void start(BundleContext context) throws Exception {
-        if (!SnmpUtils.isClassBasedStrategyInstantiable()) {
-            Dictionary<String, String> props = new Hashtable<String, String>();
-            props.put("implementation", Snmp4JStrategy.class.getName());
-            Snmp4JStrategy strategy = new Snmp4JStrategy();
-            context.registerService(SnmpStrategy.class.getName(), strategy, props);
-        }
+        Dictionary<String, String> props = new Hashtable<>();
+        props.put("implementation", Snmp4JStrategy.class.getName());
+        Snmp4JStrategy strategy = new Snmp4JStrategy();
+        serviceRegistration = context.registerService(SnmpStrategy.class.getName(), strategy, props);
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
-
+        if (serviceRegistration != null) {
+            serviceRegistration.unregister();
+        }
     }
 
 }

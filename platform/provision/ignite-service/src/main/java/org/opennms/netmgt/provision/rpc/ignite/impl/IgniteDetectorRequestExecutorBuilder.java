@@ -2,6 +2,7 @@ package org.opennms.netmgt.provision.rpc.ignite.impl;
 
 import io.opentracing.Span;
 import org.apache.ignite.Ignite;
+import org.apache.ignite.client.IgniteClient;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
 import org.opennms.netmgt.provision.DetectorRequestExecutorBuilder;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 public class IgniteDetectorRequestExecutorBuilder implements DetectorRequestExecutorBuilder {
 
-    private final Ignite ignite;
+    private final IgniteClient igniteClient;
     private final IgniteRemoteAsyncManager igniteRemoteAsyncManager;
     private final DetectorRequestRouteManager detectorRequestRouteManager;
 
@@ -28,11 +29,11 @@ public class IgniteDetectorRequestExecutorBuilder implements DetectorRequestExec
     private PreDetectCallback preDetectCallback;
 
     public IgniteDetectorRequestExecutorBuilder(
-        Ignite ignite,
+        IgniteClient igniteClient,
         IgniteRemoteAsyncManager igniteRemoteAsyncManager,
         DetectorRequestRouteManager detectorRequestRouteManager) {
 
-        this.ignite = ignite;
+        this.igniteClient = igniteClient;
         this.igniteRemoteAsyncManager = igniteRemoteAsyncManager;
         this.detectorRequestRouteManager = detectorRequestRouteManager;
     }
@@ -110,7 +111,7 @@ public class IgniteDetectorRequestExecutorBuilder implements DetectorRequestExec
     public DetectorRequestExecutor build() {
         return
             new IgniteDetectorRequestExecutor(
-                ignite,
+                igniteClient,
                 location,
                 systemId,
                 serviceName,

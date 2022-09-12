@@ -33,19 +33,23 @@
         <bundle>wrap:mvn:com.swrve/rate-limited-logger/2.0.2$Bundle-SymbolicName=com.swrve.rate-limited-logger&amp;Bundle-Name=Rate Limited Logger</bundle>
     </feature>
 
+    <feature name="grpc-contract" version="2.0.2">
+        <feature>protobuf</feature>
+        <feature>grpc</feature>
+        <bundle>mvn:org.opennms.horizon.shared/ipc-grpc-contract/${project.version}</bundle>
+    </feature>
+
     <feature name="grpc-minion" version="${project.version}">
         <feature>aries-blueprint</feature>
 
         <feature>internal-grpc-metrics</feature>
         <feature>internal-grpc-opentracing</feature>
         <feature>internal-grpc-guava</feature>
-        <feature>protobuf</feature>
-        <feature>grpc</feature>
         <feature>grpc-ratelimitter</feature>
+        <feature>grpc-contract</feature>
 
         <bundle>mvn:org.opennms.horizon.shared/horizon-common-logging/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.shared/ipc-api/${project.version}</bundle>
-        <bundle>mvn:org.opennms.horizon.shared/ipc-grpc-contract/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.shared/ipc-grpc-client/${project.version}</bundle>
     </feature>
 

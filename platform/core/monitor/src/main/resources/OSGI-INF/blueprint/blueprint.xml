@@ -18,7 +18,7 @@
     </cm:property-placeholder>
 
     <!--<reference id="rpcClientFactory" interface="org.opennms.horizon.ipc.rpc.api.RpcClientFactory"/>-->
-    <!--<reference id="minionManager" interface="org.opennms.core.ipc.grpc.server.manager.MinionManager"/>-->
+    <reference id="minionManager" interface="org.opennms.core.ipc.grpc.server.manager.MinionManager"/>
     <reference id="metricsAdapter" interface="org.opennms.horizon.metrics.api.OnmsMetricsAdapter"/>
     <reference id="eventSubscriptionService" interface="org.opennms.horizon.events.api.EventSubscriptionService" availability="mandatory"/>
     <reference id="sessionUtils" interface="org.opennms.horizon.db.dao.api.SessionUtils" />
@@ -27,7 +27,7 @@
     <reference id="minionDao" interface="org.opennms.horizon.db.dao.api.MinionDao"/>
     <!--<reference id="locationAwarePingClient" interface="org.opennms.netmgt.icmp.proxy.LocationAwarePingClient"/>-->
 
-    <reference id="ignite" interface="org.apache.ignite.Ignite"/>
+    <reference id="igniteClient" interface="org.apache.ignite.client.IgniteClient"/>
     <reference id="igniteTaskSetClientFactory" interface="org.opennms.taskset.service.igniteclient.TaskSetIgnitePublisherFactory"/>
 
     <bean id="minionRpcMonitorManager" class="org.opennms.horizon.core.monitor.MinionRpcMonitorManager" init-method="init">
@@ -47,7 +47,7 @@
     </bean>
 
     <bean id="taskSetIgniteClient" factory-ref="igniteTaskSetClientFactory" factory-method="create">
-        <argument ref="ignite"/>
+        <argument ref="igniteClient"/>
     </bean>
 
     <bean id="deviceMonitorManager" class="org.opennms.horizon.core.monitor.DeviceMonitorManager"
@@ -58,4 +58,26 @@
         <argument ref="sessionUtils"/>
         <argument ref="taskSetIgniteClient"/>
     </bean>
+
+    <!--       -->
+    <!-- CAMEL -->
+    <!--       -->
+
+    <bean id="deviceMonitorResultProcessor" class="org.opennms.horizon.core.monitor.DeviceMonitorResultProcessor">
+        <argument ref="metricsAdapter"/>
+    </bean>
+
+    <camelContext autoStartup="true" id="monitorCamelContext" xmlns="http://camel.apache.org/schema/blueprint"
+                  allowUseOriginalMessage="false">
+        <propertyPlaceholder id="properties" location="blueprint:monitorProperties"/>
+
+        <route id="consumeKafkaTaskSetResults">
+            <from uri="kafka:{{monitor.task-set.kafka-topic}}?brokers={{kafkaBrokers}}&amp;valueDeserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer"/>
+            <unmarshal>
+                <protobuf instanceClass="org.opennms.horizon.grpc.tasksets.contract.TaskSetResults"/>
+            </unmarshal>
+            <process ref="deviceMonitorResultProcessor"/>
+        </route>
+    </camelContext>
+
 </blueprint>

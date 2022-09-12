@@ -2,9 +2,10 @@ package org.opennms.horizon.minion.taskset.worker.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.ignite.resources.SpringResource;
+import org.opennms.horizon.minion.plugin.api.registries.ListenerFactoryRegistry;
 import org.opennms.horizon.minion.taskset.worker.RetriableExecutor;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutionResultProcessor;
-import org.opennms.horizon.minion.taskset.worker.ignite.registries.OsgiServiceHolder;
 import org.opennms.horizon.minion.plugin.api.Listener;
 import org.opennms.horizon.minion.plugin.api.ListenerFactory;
 import org.opennms.taskset.model.TaskDefinition;
@@ -21,6 +22,9 @@ import org.slf4j.LoggerFactory;
 public class TaskistenerRetriable implements RetriableExecutor {
 
     private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskistenerRetriable.class);
+
+    @SpringResource(resourceClass = ListenerFactoryRegistry.class)
+    private transient ListenerFactoryRegistry listenerFactoryRegistry;
 
     private Logger log = DEFAULT_LOGGER;
 
@@ -76,11 +80,10 @@ public class TaskistenerRetriable implements RetriableExecutor {
 //========================================
 // Setup Internals
 //----------------------------------------
-
     private ListenerFactory lookupListenerFactory(TaskDefinition workflow) {
         String pluginName = workflow.getPluginName();
 
-        ListenerFactory result = OsgiServiceHolder.getListenerFactoryRegistry().getService(pluginName);
+        ListenerFactory result = listenerFactoryRegistry.getService(pluginName);
 
         return result;
     }

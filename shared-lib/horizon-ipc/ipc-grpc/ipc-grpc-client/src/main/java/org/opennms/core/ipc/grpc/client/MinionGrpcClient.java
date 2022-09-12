@@ -53,6 +53,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.opennms.cloud.grpc.minion.CloudServiceGrpc;
 import org.opennms.cloud.grpc.minion.CloudServiceGrpc.CloudServiceStub;
+import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
+import org.opennms.cloud.grpc.minion.Identity;
 import org.opennms.cloud.grpc.minion.MinionToCloudMessage;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
@@ -61,6 +63,7 @@ import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcModule;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcRequest;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcResponse;
+import org.opennms.horizon.shared.ipc.rpc.api.client.ClientRequestDispatcher;
 import org.opennms.horizon.shared.ipc.sink.api.MessageConsumerManager;
 import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
 import org.opennms.horizon.shared.ipc.sink.common.AbstractMessageDispatcherFactory;
@@ -94,7 +97,7 @@ import org.slf4j.MDC.MDCCloseable;
  * Sink: Sink runs in uni-directional streaming mode. If the sink module is async and OpenNMS Server is not active, the
  * messages are buffered and blocked till minion is able to connect to OpenNMS.
  */
-public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> {
+public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> implements ClientRequestDispatcher {
 
     static final String SINK_METRIC_PRODUCER_DOMAIN = "org.opennms.core.ipc.sink.producer";
 
@@ -123,6 +126,7 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> {
             blockingSinkMessageThreadFactory);
     private ReconnectStrategy reconnectStrategy;
     private Tracer tracer;
+    private CloudMessageHandler cloudMessageHandler;
 
     public MinionGrpcClient(IpcIdentity ipcIdentity, ConfigurationAdmin configAdmin) {
         this(ipcIdentity, ConfigUtils.getPropertiesFromConfig(configAdmin, GRPC_CLIENT_PID), new MetricRegistry(), null);
@@ -167,6 +171,7 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> {
         reconnectStrategy = new SimpleReconnectStrategy(channel, () -> {
             initializeRpcStub();
             initializeSinkStub();
+            initializeCloudReceiver();
         }, () -> {
             rpcStream = null;
             sinkStream = null;
@@ -204,6 +209,18 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> {
         LOG.info("Initialized Sink stream");
     }
 
+    private void initializeCloudReceiver() {
+        Identity identity = Identity.newBuilder()
+            .setLocation(ipcIdentity.getLocation())
+            .setSystemId(ipcIdentity.getId())
+            .build();
+        asyncStub.cloudToMinionMessages(identity, new CloudMessageObserver(cloudMessageHandler));
+        LOG.info("Initialized cloud receiver stream");
+    }
+
+    public void setCloudMessageHandler(CloudMessageHandler cloudMessageHandler) {
+        this.cloudMessageHandler = cloudMessageHandler;
+    }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void bind(RpcModule module) throws Exception {
@@ -407,6 +424,30 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> {
         }
     }
 
+    @Override
+    public CompletableFuture<RpcResponseProto> call(RpcRequestProto requestProto) {
+        CompletableFuture<RpcResponseProto> future = new CompletableFuture<>();
+        asyncStub.minionToCloudRPC(requestProto, new StreamObserver<>() {
+            @Override
+            public void onNext(RpcResponseProto value) {
+                future.complete(value);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                future.completeExceptionally(throwable);
+            }
+
+            @Override
+            public void onCompleted() {
+                if (!future.isDone() && !future.isCancelled()) {
+                    future.cancel(false);
+                }
+            }
+        });
+        return future;
+    }
+
     private class RpcMessageHandler implements StreamObserver<RpcRequestProto> {
 
         @Override
@@ -432,6 +473,32 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> {
             reconnectStrategy.activate();
         }
 
+    }
+
+    private class CloudMessageObserver implements StreamObserver<CloudToMinionMessage> {
+
+        private final CloudMessageHandler cloudRequestHandler;
+
+        public CloudMessageObserver(CloudMessageHandler cloudRequestHandler) {
+            this.cloudRequestHandler = cloudRequestHandler;
+        }
+
+        @Override
+        public void onNext(CloudToMinionMessage value) {
+            cloudRequestHandler.handle(value);
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            LOG.error("Error in cloud message receiver", throwable);
+            reconnectStrategy.activate();
+        }
+
+        @Override
+        public void onCompleted() {
+            LOG.error("Closing cloud message receiver");
+            reconnectStrategy.activate();
+        }
     }
 
 }
