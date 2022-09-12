@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 public class MinionManagerConfig {
     @Bean("minionManager")
     public MinionManager localDetectorAdapter() {
-        return new MinionManagerImpl();
+        MinionManager minionManager =  new MinionManagerImpl();
+        minionManager.addMinionListener(new MinionRegistrationCacheListener());
+        return minionManager;
     }
 }

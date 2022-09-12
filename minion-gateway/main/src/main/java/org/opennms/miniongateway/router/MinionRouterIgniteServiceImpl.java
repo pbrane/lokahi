@@ -1,6 +1,7 @@
 package org.opennms.miniongateway.router;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
@@ -13,6 +14,7 @@ import org.apache.ignite.resources.SpringResource;
 import org.apache.ignite.services.ServiceContext;
 import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
 import org.opennms.core.ipc.grpc.server.manager.MinionManager;
+import org.opennms.core.ipc.grpc.server.manager.MinionManagerListener;
 import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterIgniteService;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
 import org.opennms.miniongateway.detector.client.IgniteDetectorRemoteOperation;
@@ -34,35 +36,33 @@ public class MinionRouterIgniteServiceImpl implements MinionRouterIgniteService 
     @ServiceContextResource
     private ServiceContext serviceContext;
 
-    @SpringResource(resourceName = "minionManager")
-    MinionManager minionManager;
-
-    //TODO MMF: I don't think we have a spring config/factory for this yet
     @Autowired
     private IgniteRemoteAsyncManager igniteRemoteAsyncManager;
 
-    private IgniteCache<String, MinionInfo> minionByIdCache;
-    private IgniteCache<String, MinionInfo> minionByLocationCache;
+    private IgniteCache<String, UUID> minionByIdCache;
+    private IgniteCache<String, UUID> minionByLocationCache;
 
     @Override
-    public CompletableFuture<Boolean> sendToMinion(MinionInfo minionInfo) {
-        List<MinionInfo> minionsList = minionManager.getMinions();
+    public CompletableFuture<Boolean> sendToMinionUsingId(String id) {
 
-        //TODO MMF: for now, not clear we need to maintain the list in two places, and search in two places, just going straight to ignite cache for now.
-//        MinionInfo foundMinion = minionsList.stream().filter(m1 -> m1.equals(minionInfo.getId())).findFirst().get();
+        UUID foundMinion = minionByIdCache.get(id);
 
-        //TODO MMF: do we really just try both? Or is the request more specific?
-//        if (foundMinion == null) {
-            MinionInfo foundMinion = minionByIdCache.get(minionInfo.getId());
-        if (foundMinion == null) {
-            foundMinion = minionByLocationCache.get(minionInfo.getLocation());
-        }
+        return getBooleanCompletableFuture(foundMinion);
+    }
 
+    @Override
+    public CompletableFuture<Boolean> sendToMinionUsingLocation(String location) {
+
+        UUID foundMinion = minionByLocationCache.get(location);
+
+        return getBooleanCompletableFuture(foundMinion);
+    }
+
+    private CompletableFuture<Boolean> getBooleanCompletableFuture(UUID foundMinion) {
         CompletableFuture<Boolean> future;
 
         if (foundMinion != null) {
-            //TODO MMF: need mapping for UUID, not the id we are currently using!
-            ClusterGroup clusterGroup = ignite.cluster();//.forNodeId(foundMinion.getId());
+            ClusterGroup clusterGroup = ignite.cluster().forNodeId(foundMinion);
 
             future = igniteRemoteAsyncManager.submit(clusterGroup, prepareRemoteOperation());
         }

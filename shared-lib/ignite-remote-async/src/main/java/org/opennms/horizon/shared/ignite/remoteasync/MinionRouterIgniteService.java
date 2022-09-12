@@ -6,6 +6,8 @@ import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
 
 public interface MinionRouterIgniteService extends Service {
 
-    CompletableFuture<Boolean> sendToMinion(MinionInfo minionInfo);
+    CompletableFuture<Boolean> sendToMinionUsingId(String id);
+
+    CompletableFuture<Boolean> sendToMinionUsingLocation(String location);
 
 }

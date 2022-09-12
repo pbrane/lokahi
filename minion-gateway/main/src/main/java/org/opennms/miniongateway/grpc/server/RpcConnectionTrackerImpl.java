@@ -61,9 +61,8 @@ public class RpcConnectionTrackerImpl implements RpcConnectionTracker {
                 semaphoreByConnection.put(connection, new Semaphore(1, true));
 
                 updateIteratorLocked(location);
-                
-                //TODO: need the data
-                minionManager.addMinion(new MinionInfo());
+
+                minionManager.addMinion(new MinionInfo(minionId, location));
 
                 added = true;
             } else {

@@ -5,12 +5,12 @@ import org.apache.ignite.resources.IgniteInstanceResource;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MinionRouterConfig {
+public class MinionRouterIgniteServiceConfig {
 
     @IgniteInstanceResource
     private Ignite ignite;
 
-    public MinionRouterConfig() {
+    public MinionRouterIgniteServiceConfig() {
         ignite.services().deployNodeSingleton(MinionRouterIgniteServiceImpl.IGNITE_SERVICE_NAME, new MinionRouterIgniteServiceImpl());
     }
 }
