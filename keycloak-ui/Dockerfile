@@ -19,5 +19,6 @@ COPY --from=builder /opt/keycloak/ /opt/keycloak/
 WORKDIR /opt/keycloak
  
 COPY --chown=1000 themes themes
+COPY realm.json data/import/opennmsrealm.json
 
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "--verbose"]

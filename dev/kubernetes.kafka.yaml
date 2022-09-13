@@ -1,4 +1,9 @@
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: stream-trusted
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: horizon-stream-core
@@ -488,7 +493,17 @@ spec:
     metadata:
       labels:
         run: my-postgres
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "stream-trusted"
+        vault.hashicorp.com/agent-inject-secret-database-config.txt: "internal/data/database/config"
+        vault.hashicorp.com/agent-inject-template-database-config.txt: |
+          {{- with secret "internal/data/database/config" -}}
+            export PGSQL_ADMIN_USERNAME="{{ .Data.data.username }}"
+            export PGSQL_ADMIN_PASSWORD="{{ .Data.data.password }}"
+          {{- end -}}
     spec:
+      serviceAccountName: stream-trusted
       volumes:
         - name: postgres-volume
         - name: postgres-grafana-init-script
@@ -502,18 +517,13 @@ spec:
             name: postgres-notification-initial-sql
       containers:
         - name: postgres
+          command: [ 'sh' ]
+          args: [ '-c', 'source /vault/secrets/database-config.txt && /usr/local/bin/docker-entrypoint.sh postgres' ]
+          resources:
+            limits:
+              ephemeral-storage: 256Mi
           image: postgres:13.3-alpine
           env:
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-admin-secret
-                  key: username
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-admin-secret
-                  key: password
             - name: POSTGRES_HOST_AUTH_METHOD
               value: "trust"
           ports:
@@ -544,11 +554,26 @@ spec:
     metadata:
       labels:
         run: my-keycloak
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "stream-trusted"
+        vault.hashicorp.com/agent-inject-secret-database-config.txt: "internal/data/database/config"
+        vault.hashicorp.com/agent-inject-template-database-config.txt: |
+          {{- with secret "internal/data/database/config" -}}
+            export KC_DB_USERNAME="{{ .Data.data.username }}"
+            export KC_DB_PASSWORD="{{ .Data.data.password }}"
+          {{- end -}}
     spec:
+      serviceAccountName: stream-trusted
       containers:
         - name: keycloak
           image: opennms/horizon-stream-keycloak-dev
-          args: [ "start-dev" ]
+          resources:
+            limits:
+              ephemeral-storage: 256Mi
+          # args: [ "start-dev" ]
+          command: [ 'bash' ]
+          args: [ '-c', 'source /vault/secrets/database-config.txt && bin/kc.sh --verbose start-dev --import-realm' ]
           env:
             - name: KEYCLOAK_CREATE_ADMIN_USER
               value: "true"
@@ -569,16 +594,6 @@ spec:
             #
             # TODO: use keycloak user (and password) instead of the admin "postgres" user
             #
-            - name: KC_DB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-admin-secret
-                  key: username
-            - name: KC_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-admin-secret
-                  key: password
           ports:
             - containerPort: 8080
             - containerPort: 8443
@@ -592,11 +607,22 @@ spec:
     matchLabels:
       run: my-horizon-stream-core
   replicas: 1
+  revisionHistoryLimit: 0
   template:
     metadata:
       labels:
         run: my-horizon-stream-core
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "stream-trusted"
+        vault.hashicorp.com/agent-inject-secret-database-config.txt: "internal/data/database/config"
+        vault.hashicorp.com/agent-inject-template-database-config.txt: |
+          {{- with secret "internal/data/database/config" -}}
+            export PGSQL_ADMIN_USERNAME="{{ .Data.data.username }}"
+            export PGSQL_ADMIN_PASSWORD="{{ .Data.data.password }}"
+          {{- end -}}
     spec:
+      serviceAccountName: stream-trusted
       volumes:
         - name: config-volume
           configMap:
@@ -608,22 +634,17 @@ spec:
         - name: horizon-stream-core
           image: opennms/horizon-stream-core
           imagePullPolicy: Never
-          args: [ "-f" ]
+          resources:
+            limits:
+              ephemeral-storage: 256Mi
+          command: [ 'bash' ]
+          args: [ '-c', 'source /vault/secrets/database-config.txt && /entrypoint.sh -f' ]
+          # args: [ '-f' ]
           env:
             - name: JAVA_TOOL_OPTIONS # Presence of this var lets `skaffold debug` see that this is a jvm container
               value: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y" # Permanent debug port in `skaffold dev`
             - name: PGSQL_SERVICE_NAME
               value: "postgres"
-            - name: PGSQL_ADMIN_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-admin-secret
-                  key: username
-            - name: PGSQL_ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-admin-secret
-                  key: password
             - name: KAFKA_BROKER_HOST
               value: "kafka"
             - name: KAFKA_BROKER_PORT
@@ -1225,15 +1246,6 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: postgres-admin-secret
-type: Opaque
-stringData:
-  username: postgres
-  password: passw0rd
----
-apiVersion: v1
-kind: Secret
-metadata:
   name: zookeeper-secret
 type: Opaque
 stringData:
@@ -1258,92 +1270,4 @@ stringData:
   data: |
     admin=admin,_g_:admingroup
     _g_\:admingroup=group,admin,manager,viewer,systembundles,ssh
----
-apiVersion: k8s.keycloak.org/v2alpha1
-kind: KeycloakRealmImport
-metadata:
-  name: keycloak-realm-import-opennms
-  labels:
-    app: sso
-spec:
-  keycloakCRName: my-keycloak
-  realm:
-    accessTokenLifespan: 6000
-    id: opennms
-    realm: opennms
-    enabled: true
-    loginTheme: "horizon-stream"
-    emailTheme: "horizon-stream"
-    rememberMe: true
-    resetPasswordAllowed: true
-    attributes:
-      frontendUrl: "http://localhost:28080"
-    clients:
-      - id: b67dfe9a-36c2-42bc-bd23-b380023d4238
-        clientId: horizon-stream
-        standardFlowEnabled: true
-        enabled: true
-        webOrigins:
-          - "*"
-        redirectUris:
-          - "*"
-        publicClient: true
-        directAccessGrantsEnabled: true
-        defaultClientScopes:
-          - "web-origins"
-          - "roles"
-          - "profile"
-          - "email"
-        optionalClientScopes:
-          - "address"
-          - "phone"
-          - "offline_access"
-          - "microprofile-jwt"
-    roles:
-      realm:
-      - id: 50e6b594-e01b-426b-873d-873f632355b4
-        name: user
-        composite: false
-      - id: 76f0abc8-da17-4f57-8956-40cca624d62d
-        name: admin
-        composite: false
-    users:
-      - username: "admin"
-        email: "admin@test.opennms.org"
-        enabled: True
-        emailVerified: False
-        credentials:
-          - type: "password"
-            value: "admin"
-        realmRoles:
-          - "admin"
-        clientRoles:
-          account:
-            - "manage-account"
-            - "view-profile"
-          realm-management:
-            - "manage-users"
-            - "view-users"
-            - "query-users"
-            - "create-client"
-      - username: "user001"
-        firstName: "User001"
-        lastName: ""
-        email: "user001@test.opennms.org"
-        enabled: True
-        emailVerified: False
-        credentials:
-          - type: "password"
-            value: "passw0rd"
-        realmRoles:
-          - "user"
-        clientRoles:
-          account:
-            - "manage-account"
-            - "view-profile"
-    smtpServer:
-      auth: "false"
-      host: "mail-server"
-      port: "1025"
-      user: "admin@horizion.stream.com"
-      from: "admin@horizion.stream.com"
+

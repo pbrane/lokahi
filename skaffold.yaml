@@ -4,7 +4,6 @@ kind: Config
 metadata:
   name: horizon-stream
 requires:
-  - configs: ["keycloak-operator"]
   - configs: ["shared-lib"]
     path: shared-lib/skaffold.yaml
   - configs: ["horizon-stream-ui"]
@@ -123,15 +122,4 @@ deploy:
   kubectl:
     manifests:
       - dev/kubernetes.kafka.yaml
----
 
-apiVersion: skaffold/v2beta28
-kind: Config
-metadata:
-  name: keycloak-operator
-deploy:
-  kubectl:
-    manifests:
-      - https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/18.0.0/kubernetes/keycloaks.k8s.keycloak.org-v1.yml
-      - https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/18.0.0/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml
-      - https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/18.0.0/kubernetes/kubernetes.yml
