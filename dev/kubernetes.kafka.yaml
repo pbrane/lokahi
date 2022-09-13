@@ -376,37 +376,31 @@ spec:
     metadata:
       labels:
         run: my-zookeeper
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "stream-trusted"
+        vault.hashicorp.com/agent-inject-secret-database-config.txt: "internal/data/database/config"
+        vault.hashicorp.com/agent-inject-template-database-config.txt: |
+          {{- with secret "internal/data/database/config" -}}
+            export ZOO_SERVER_USERS="{{ .Data.data.zookeeperuser }}"
+            export ZOO_SERVER_PASSWORDS="{{ .Data.data.zookeeperpassword }}"
+            export ZOO_CLIENT_USER="{{ .Data.data.zookeeperuser }}"
+            export ZOO_CLIENT_PASSWORD="{{ .Data.data.zookeeperpassword }}"
+          {{- end -}}
     spec:
+      serviceAccountName: stream-trusted
       volumes:
         - name: zookeeper-volume
       containers:
         - name: zookeeper
           image: docker.io/bitnami/zookeeper:3.7
+          command: [ 'bash' ]
+          args: [ '-c', 'source /vault/secrets/database-config.txt && /opt/bitnami/scripts/zookeeper/entrypoint.sh /opt/bitnami/scripts/zookeeper/run.sh' ]
           env:
             - name: ALLOW_ANONYMOUS_LOGIN
               value: "no"
             - name: ZOO_ENABLE_AUTH
               value: "yes"
-            - name: ZOO_SERVER_USERS
-              valueFrom:
-                secretKeyRef:
-                  name: zookeeper-secret
-                  key: username
-            - name: ZOO_SERVER_PASSWORDS
-              valueFrom:
-                secretKeyRef:
-                  name: zookeeper-secret
-                  key: password
-            - name: ZOO_CLIENT_USER
-              valueFrom:
-                secretKeyRef:
-                  name: zookeeper-secret
-                  key: username
-            - name: ZOO_CLIENT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: zookeeper-secret
-                  key: password
           ports:
             - containerPort: 2181
           volumeMounts:
@@ -426,27 +420,31 @@ spec:
     metadata:
       labels:
         run: my-kafka
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "stream-trusted"
+        vault.hashicorp.com/agent-inject-secret-database-config.txt: "internal/data/database/config"
+        vault.hashicorp.com/agent-inject-template-database-config.txt: |
+          {{- with secret "internal/data/database/config" -}}
+            export KAFKA_ZOOKEEPER_USER="{{ .Data.data.zookeeperuser }}"
+            export KAFKA_ZOOKEEPER_PASSWORD="{{ .Data.data.zookeeperpassword }}"
+            export KAFKA_CLIENT_USERS="{{ .Data.data.kafkauser }}"
+            export KAFKA_CLIENT_PASSWORDS="{{ .Data.data.kafkapassword }}"
+          {{- end -}}
     spec:
+      serviceAccountName: stream-trusted
       volumes:
         - name: kafka-volume
       containers:
         - name: kafka
           image: docker.io/bitnami/kafka:3
+          command: [ 'bash' ]
+          args: [ '-c', 'source /vault/secrets/database-config.txt && /opt/bitnami/scripts/kafka/entrypoint.sh /opt/bitnami/scripts/kafka/run.sh' ]
           env:
             - name: KAFKA_CFG_ZOOKEEPER_CONNECT
               value: "zookeeper:2181"
             - name: KAFKA_ZOOKEEPER_PROTOCOL
               value: "SASL"
-            - name: KAFKA_ZOOKEEPER_USER
-              valueFrom:
-                secretKeyRef:
-                  name: zookeeper-secret
-                  key: username
-            - name: KAFKA_ZOOKEEPER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: zookeeper-secret
-                  key: password
             - name: ALLOW_PLAINTEXT_LISTENER
               value: "yes"
             - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
@@ -459,16 +457,6 @@ spec:
               value: "CLIENT"
             - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
               value: "true"
-            - name: KAFKA_CLIENT_USERS
-              valueFrom:
-                secretKeyRef:
-                  name: kafka-secret
-                  key: username
-            - name: KAFKA_CLIENT_PASSWORDS
-              valueFrom:
-                secretKeyRef:
-                  name: kafka-secret
-                  key: password
           ports:
             - name: client
               protocol: TCP
@@ -571,7 +559,6 @@ spec:
           resources:
             limits:
               ephemeral-storage: 256Mi
-          # args: [ "start-dev" ]
           command: [ 'bash' ]
           args: [ '-c', 'source /vault/secrets/database-config.txt && bin/kc.sh --verbose start-dev --import-realm' ]
           env:
@@ -1242,24 +1229,6 @@ data:
           - targets: ['prometheus-pushgateway:9091']
             labels:
               pushgateway_instance: horizon-core-pushgateway
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: zookeeper-secret
-type: Opaque
-stringData:
-  username: zookeeper-user
-  password: passw0rd
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kafka-secret
-type: Opaque
-stringData:
-  username: kafka-user
-  password: passw0rd
 ---
 apiVersion: v1
 kind: Secret
