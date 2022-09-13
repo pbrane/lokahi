@@ -15,9 +15,7 @@ public class LocalDetectorAdapterStubImpl implements LocalDetectorAdapter {
     private Logger log = DEFAULT_LOGGER;
 
     @Override
-    public
-    CompletableFuture<Boolean>
-    detect(
+    public CompletableFuture<Boolean> detect(
         String location,
         String systemId,
         String serviceName,
@@ -27,6 +25,13 @@ public class LocalDetectorAdapterStubImpl implements LocalDetectorAdapter {
 
         log.warn("STUBBED DETECTOR - NEED TO ROUTE TO MINION VIA GRPC");
 
-        return CompletableFuture.failedFuture(new UnsupportedOperationException("NOT YET IMPLEMENTED"));
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+            }
+            log.info("################## CompletableFuture test! returning true");
+            return true;
+        });
     }
 }

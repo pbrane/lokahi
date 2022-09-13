@@ -14,6 +14,6 @@ public class MinionRouterIgniteServiceConfig {
 
     @PostConstruct
     public void startService() {
-        ignite.services().deployNodeSingleton("minionRouter", new MinionRouterIgniteServiceImpl());
+        ignite.services().deployNodeSingleton(MinionRouterIgniteServiceImpl.IGNITE_SERVICE_NAME, new MinionRouterIgniteServiceImpl());
     }
 }

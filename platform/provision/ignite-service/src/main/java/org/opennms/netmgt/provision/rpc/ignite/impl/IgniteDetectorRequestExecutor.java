@@ -7,7 +7,6 @@ import org.apache.ignite.cluster.ClusterGroup;
 import org.opennms.horizon.shared.ignite.remoteasync.Broadcast;
 import org.opennms.horizon.shared.ignite.remoteasync.RequestDispatcher;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
-import org.opennms.miniongateway.detector.client.IgniteDetectorRemoteOperation;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
 import org.opennms.netmgt.provision.PreDetectCallback;
 

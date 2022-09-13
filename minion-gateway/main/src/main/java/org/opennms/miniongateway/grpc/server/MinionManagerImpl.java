@@ -1,16 +1,19 @@
 package org.opennms.miniongateway.grpc.server;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
 import org.opennms.core.ipc.grpc.server.manager.MinionManager;
 import org.opennms.core.ipc.grpc.server.manager.MinionManagerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 
 /**
  * Manager that tracks known minions that are connected to this server.
@@ -31,69 +34,55 @@ public class MinionManagerImpl implements MinionManager {
 
     private Logger log = DEFAULT_LOGGER;
 
-    private Map<String, MinionInfo> minionByIdMap = new HashMap<>();
-    private List<MinionManagerListener> listeners = new LinkedList<>();
+    private Map<String, MinionInfo> minionByIdMap = new ConcurrentHashMap<>();
+    private ConcurrentLinkedQueue<MinionManagerListener> listeners = new ConcurrentLinkedQueue<>();
+    
 
-    private final Object lock = new Object();
     private long sequence = 0L;
 
     @Override
     public void addMinion(MinionInfo minionInfo) {
         log.info("Minion Manager: adding minion: id={}; location={}", minionInfo.getId(), minionInfo.getLocation());
 
-        long opSeq;
-
-        synchronized (lock) {
-            if (minionByIdMap.containsKey(minionInfo.getId())) {
-                log.warn("Attempt to register minion with duplicate id; ignoring: id=" + minionInfo.getId() + "; location=" + minionInfo.getLocation());
-                return;
-            }
-
-            minionByIdMap.put(minionInfo.getId(), minionInfo);
-            opSeq = sequence;
-            sequence++;
+        if (minionByIdMap.containsKey(minionInfo.getId())) {
+            log.warn("Attempt to register minion with duplicate id; ignoring: id=" + minionInfo.getId() + "; location=" + minionInfo.getLocation());
+            return;
         }
 
-        foreachListener((listener) -> listener.onMinionAdded(opSeq, minionInfo));
+        minionByIdMap.put(minionInfo.getId(), minionInfo);
+
+        listeners.forEach(listener -> listener.onMinionAdded(sequence++, minionInfo));
     }
 
     @Override
     public void removeMinion(String minionId) {
         log.info("Minion Manager: removing minion: id={}", minionId);
 
-        long opSeq;
         MinionInfo removedMinionInfo;
 
-        synchronized (lock) {
-            removedMinionInfo = minionByIdMap.remove(minionId);
+        removedMinionInfo = minionByIdMap.remove(minionId);
 
-            if (removedMinionInfo == null) {
-                log.warn("Attempt to remove minion with unknown id; ignoring: id={}", minionId);
-                return;
-            }
-
-            minionByIdMap.remove(minionId);
-
-            opSeq = sequence;
-            sequence++;
+        if (removedMinionInfo == null) {
+            log.warn("Attempt to remove minion with unknown id; ignoring: id={}", minionId);
+            return;
         }
 
-        foreachListener((listener) -> listener.onMinionRemoved(opSeq, removedMinionInfo));
+        minionByIdMap.remove(minionId);
+
+        listeners.forEach(listener -> listener.onMinionRemoved(sequence++, removedMinionInfo));
     }
 
     @Override
     public void addMinionListener(MinionManagerListener listener) {
         log.info("Adding minion manager listener at {}: class={}", System.identityHashCode(listener), listener.getClass().getName());
-        synchronized (lock) {
-            listeners.add(listener);
-        }
+
+        listeners.add(listener);
     }
 
     @Override
     public void removeMinionListener(MinionManagerListener listener) {
-        synchronized (lock) {
-            listeners.remove(listener);
-        }
+
+        listeners.remove(listener);
     }
 
     /**
@@ -103,24 +92,6 @@ public class MinionManagerImpl implements MinionManager {
      */
     @Override
     public List<MinionInfo> getMinions() {
-        List<MinionInfo> result;
-        synchronized (lock) {
-            result = new LinkedList<>(minionByIdMap.values());
-        }
-
-        return result;
-    }
-
-//========================================
-// Internals
-//----------------------------------------
-
-    private void foreachListener(Consumer<? super MinionManagerListener> action) {
-        List<MinionManagerListener> listenerSnapshot;
-        synchronized (lock) {
-            listenerSnapshot = new LinkedList<>(listeners);
-        }
-
-        listenerSnapshot.forEach(action);
+        return new LinkedList<>(minionByIdMap.values());
     }
 }
