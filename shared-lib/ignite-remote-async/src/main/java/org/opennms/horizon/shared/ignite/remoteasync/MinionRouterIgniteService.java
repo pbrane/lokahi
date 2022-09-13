@@ -9,13 +9,12 @@ public interface MinionRouterIgniteService extends Service {
 
     CompletableFuture<Boolean> sendDetectorRequestToMinionUsingLocation(String location);
 
-    CompletableFuture<Boolean> sendMonitorRequestToMinionUsingId(String id);
-
-    CompletableFuture<Boolean> sendMonitorRequestToMinionUsingLocation(String location);
-
-    //TODO MMF: return type is probably not boolean
     CompletableFuture<Boolean> sendEchoRequestToMinionUsingId(String id);
 
     CompletableFuture<Boolean> sendEchoRequestToMinionUsingLocation(String location);
 
+    //TODO MMF: return type is probably not boolean
+    CompletableFuture<Boolean> sendMonitorRequestToMinionUsingId(String id);
+
+    CompletableFuture<Boolean> sendMonitorRequestToMinionUsingLocation(String location);
 }

@@ -32,15 +32,6 @@ public class IgniteEchoRemoteOperation implements RemoteOperation<Boolean> {
 
     @Override
     public CompletableFuture<Boolean> apply() {
-//        TODO MMF: this is a stub
-
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-            }
-            log.info("################## CompletableFuture test! returning true");
-            return true;
-        });
+        return localEchoAdapter.echo(location, systemId);
     }
 }
