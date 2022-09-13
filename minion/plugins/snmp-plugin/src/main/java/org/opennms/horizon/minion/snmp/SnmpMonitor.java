@@ -110,7 +110,7 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
 
             // Retrieve this interface's SNMP peer object
             //
-            SnmpAgentConfig agentConfig = getAgentConfig(svc);
+            SnmpAgentConfig agentConfig = getAgentConfig(svc, snmpRequest);
             hostAddress = snmpRequest.getHost();
 
             // Get configuration parameters
@@ -172,7 +172,7 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
 
             final String finalHostAddress = hostAddress;
             SnmpObjId snmpObjectId = SnmpObjId.get(oid);
-            future = SnmpUtils.getAsync(agentConfig, (SnmpObjId[]) Arrays.asList(snmpObjectId).toArray()).
+            future = SnmpUtils.getAsync(agentConfig, new SnmpObjId[]{ snmpObjectId }).
                 thenApply(result -> {
                     ServiceMonitorResponseImplBuilder builder = ServiceMonitorResponseImpl.builder()
                         .status(Status.Unknown);
