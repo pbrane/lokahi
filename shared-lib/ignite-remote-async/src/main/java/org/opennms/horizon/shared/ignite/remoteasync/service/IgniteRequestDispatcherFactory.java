@@ -21,7 +21,7 @@ public class IgniteRequestDispatcherFactory {
         this.ignite = ignite;
     }
 
-    protected void init() {
+    public void init() {
         IgniteRequestDispatcher dispatcher = new IgniteRequestDispatcher();
 
         ignite.services().deployClusterSingleton(RequestDispatcher.class.getName(), dispatcher);
