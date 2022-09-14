@@ -99,7 +99,9 @@ public class ProvisionRestServiceImpl implements ProvisionRestService {
 
     @Override
     public Response runIgniteTest(String foreignSource) {
-        DetectorRequestExecutorBuilder detectorRequestExecutorBuilder = locationAwareDetectorClient.detect();
+        DetectorRequestExecutorBuilder detectorRequestExecutorBuilder = locationAwareDetectorClient.detect()
+            .withLocation("foo")
+            .withServiceName("bar");
         CompletableFuture<Boolean> future = detectorRequestExecutorBuilder.build().execute();
         try {
             boolean results = future.get().booleanValue();

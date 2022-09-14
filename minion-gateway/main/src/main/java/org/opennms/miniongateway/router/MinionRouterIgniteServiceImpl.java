@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 //TODO MMF: Break this into an ignite service with routing impl injected?
 public class MinionRouterIgniteServiceImpl implements MinionRouterIgniteService {
 
-    public static final String IGNITE_SERVICE_NAME = "minionRouter";
     public static final String MINIONS_BY_ID = "minionsById";
     public static final String MINIONS_BY_LOCATION = "minionsByLocation";
 
@@ -41,7 +40,9 @@ public class MinionRouterIgniteServiceImpl implements MinionRouterIgniteService 
 
     @Override
     public CompletableFuture<Boolean> sendDetectorRequestToMinionUsingId(String id) {
-
+        if (id == null) {
+            return CompletableFuture.completedFuture(false);
+        }
         UUID foundMinion = minionByIdCache.get(id);
 
         return executeRemoteOperation(foundMinion, buildDetectorRemoteOperation());
@@ -49,7 +50,9 @@ public class MinionRouterIgniteServiceImpl implements MinionRouterIgniteService 
 
     @Override
     public CompletableFuture<Boolean> sendDetectorRequestToMinionUsingLocation(String location) {
-
+        if (location == null) {
+            return CompletableFuture.completedFuture(false);
+        }
         UUID nodeId = minionByLocationCache.get(location);
 
         return executeRemoteOperation(nodeId, buildDetectorRemoteOperation());
@@ -63,6 +66,11 @@ public class MinionRouterIgniteServiceImpl implements MinionRouterIgniteService 
     @Override
     public CompletableFuture<Boolean> sendMonitorRequestToMinionUsingLocation(String location) {
         return CompletableFuture.failedFuture(new Exception("not implemented"));
+    }
+
+    @Override
+    public void sendTwin(String location, String kind, Object payload) {
+
     }
 
     @Override

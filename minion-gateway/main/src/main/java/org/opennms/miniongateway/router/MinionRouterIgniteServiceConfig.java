@@ -3,6 +3,7 @@ package org.opennms.miniongateway.router;
 import javax.annotation.PostConstruct;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.resources.IgniteInstanceResource;
+import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterIgniteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +15,6 @@ public class MinionRouterIgniteServiceConfig {
 
     @PostConstruct
     public void startService() {
-        ignite.services().deployNodeSingleton(MinionRouterIgniteServiceImpl.IGNITE_SERVICE_NAME, new MinionRouterIgniteServiceImpl());
+        ignite.services().deployNodeSingleton(MinionRouterIgniteService.IGNITE_SERVICE_NAME, new MinionRouterIgniteServiceImpl());
     }
 }

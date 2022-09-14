@@ -1,19 +1,14 @@
 package org.opennms.netmgt.provision.rpc.ignite.impl;
 
 import io.opentracing.Span;
-import org.apache.ignite.Ignite;
+import java.net.InetAddress;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.apache.ignite.client.IgniteClient;
-import org.apache.ignite.cluster.ClusterGroup;
-import org.opennms.horizon.shared.ignite.remoteasync.Broadcast;
-import org.opennms.horizon.shared.ignite.remoteasync.RequestDispatcher;
+import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterIgniteService;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
 import org.opennms.netmgt.provision.PreDetectCallback;
-
-import java.net.InetAddress;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
@@ -75,16 +70,12 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
         CompletableFuture future = igniteRemoteAsyncManager.submit(clusterGroup, remoteOperation);
         */
 
-        RequestDispatcher dispatcher = igniteClient.services().serviceProxy(RequestDispatcher.class.getName(), RequestDispatcher.class);
+        MinionRouterIgniteService dispatcher = igniteClient.services().serviceProxy(MinionRouterIgniteService.IGNITE_SERVICE_NAME, MinionRouterIgniteService.class);
         if (systemId != null) {
-            Broadcast broadcast = new Broadcast(UUID.randomUUID(), "twin", "asdf!");
-            dispatcher.sendToMinion(systemId, broadcast);
-            return CompletableFuture.completedFuture(true);
+            return dispatcher.sendDetectorRequestToMinionUsingId(systemId);
         }
 
-        Broadcast broadcast = new Broadcast(UUID.randomUUID(), "twin", "asdf!");
-        dispatcher.sendToLocation(location, broadcast);
-        return CompletableFuture.completedFuture(true);
+        return dispatcher.sendDetectorRequestToMinionUsingLocation(location);
     }
 
     /**
