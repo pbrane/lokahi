@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.cluster.ClusterGroup;
+import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.lang.IgniteClosure;
 import org.apache.ignite.lang.IgniteOutClosure;
 import org.apache.ignite.resources.IgniteInstanceResource;
@@ -36,7 +37,7 @@ public class RemoteAsyncOperation<T> implements IgniteClosure<Void, UUID> {
 
     @Getter
     @Setter
-    private IgniteOutClosure<CompletableFuture<T>> remoteOperation;
+    private IgniteCallable<CompletableFuture<T>> remoteOperation;
 
     private transient CompletableFuture<T> future;
     private transient boolean canceled = false;
@@ -57,7 +58,7 @@ public class RemoteAsyncOperation<T> implements IgniteClosure<Void, UUID> {
     @Override
     public UUID apply(Void unused) {
         try {
-            future = remoteOperation.apply();
+            future = remoteOperation.call();
 
             if (future == null) {
                 log.warn("remote operation returned null CompletableFuture");

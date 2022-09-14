@@ -28,7 +28,7 @@ public class IgniteMonitorRemoteOperation implements RemoteOperation<Boolean> {
     //private Span span;
 
     @Override
-    public CompletableFuture<Boolean> apply() {
+    public CompletableFuture<Boolean> call() {
 //        TODO MMF: this is a stub
 
         return CompletableFuture.supplyAsync(() -> {

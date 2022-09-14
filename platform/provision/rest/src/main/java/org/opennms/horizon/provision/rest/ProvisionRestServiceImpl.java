@@ -4,6 +4,9 @@ import com.google.gson.Gson;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import lombok.RequiredArgsConstructor;
@@ -98,23 +101,19 @@ public class ProvisionRestServiceImpl implements ProvisionRestService {
     }
 
     @Override
-    public Response runIgniteTest(String foreignSource) {
+    public void runIgniteTest(final AsyncResponse callback) {
         DetectorRequestExecutorBuilder detectorRequestExecutorBuilder = locationAwareDetectorClient.detect()
-            .withLocation("foo")
+            .withLocation("Default")
             .withServiceName("bar");
         CompletableFuture<Boolean> future = detectorRequestExecutorBuilder.build().execute();
-        try {
-            boolean results = future.get().booleanValue();
-            if (results) {
-                return Response.ok().build();
+        future.orTimeout(10, TimeUnit.SECONDS).whenComplete((r, e) -> {
+            if (e != null) {
+                log.warn("Remote operation did not finish on time!");
+                callback.resume(e);
+                return;
             }
-            else {
-                return Response.serverError().build();
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+            log.info("Received answer {}, everything on time", r);
+            callback.resume(Response.ok().entity(r).build());
+        });
     }
 }
