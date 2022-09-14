@@ -401,6 +401,11 @@ spec:
               value: "no"
             - name: ZOO_ENABLE_AUTH
               value: "yes"
+# Uncomment for vault access external to the cluster
+#            - name: VAULT_ADDR
+#              value: "http://external-vault:8200"
+#            - name: VAULT_TOKEN
+#              value: root
           ports:
             - containerPort: 2181
           volumeMounts:
@@ -457,6 +462,11 @@ spec:
               value: "CLIENT"
             - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
               value: "true"
+# Uncomment for vault access external to the cluster
+#            - name: VAULT_ADDR
+#              value: "http://external-vault:8200"
+#            - name: VAULT_TOKEN
+#              value: root
           ports:
             - name: client
               protocol: TCP
@@ -514,6 +524,11 @@ spec:
           env:
             - name: POSTGRES_HOST_AUTH_METHOD
               value: "trust"
+# Uncomment for vault access external to the cluster
+#            - name: VAULT_ADDR
+#              value: "http://external-vault:8200"
+#            - name: VAULT_TOKEN
+#              value: root
           ports:
             - containerPort: 5432
           volumeMounts:
@@ -578,6 +593,11 @@ spec:
               value: postgres
             - name: KC_DB_URL
               value: jdbc:postgresql://postgres/keycloak
+# Uncomment for vault access external to the cluster
+#            - name: VAULT_ADDR
+#              value: "http://external-vault:8200"
+#            - name: VAULT_TOKEN
+#              value: root
             #
             # TODO: use keycloak user (and password) instead of the admin "postgres" user
             #
@@ -648,6 +668,11 @@ spec:
               value: "admin"
             - name: PROMETHEUS_PUSHGATEWAY_URL
               value: "http://prometheus-pushgateway:9091"
+# Uncomment for vault access external to the cluster
+#            - name: VAULT_ADDR
+#              value: "http://external-vault:8200"
+#            - name: VAULT_TOKEN
+#              value: root
           ports:
             - containerPort: 8101
             - containerPort: 8181
