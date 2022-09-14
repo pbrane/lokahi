@@ -34,12 +34,13 @@ done
 for project in ${dockers[*]}; do
   projectDir=$(echo $project | cut -d ':' -f 1)
   image=$(echo $project | cut -d ':' -f 2)
-  echo "Building $image from $projectDir"
+  echo "Building $image with $tag from $projectDir"
   cd $buildRoot/$projectDir
   if printf '%s\0' "${buildKits[@]}" | grep -Fxqz -- $projectDir; then
-    dockerArgs="buildx"
+    DOCKER_BUILDKIT=1 docker build . -t "opennms/$image:$tag"
+  else
+    docker build . -t "opennms/$image:$tag"
   fi
-  docker $dockerArgs build . -t "opennms/$image:$tag"
 done
 
 cd $buildRoot
