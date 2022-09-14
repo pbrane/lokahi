@@ -33,7 +33,11 @@ package opennms.echo;
 option java_multiple_files = true;
 option java_package = "org.opennms.echo.contract";
 
-message EchoRequest {
+message EchoMonitorRequest {
   string host = 1;
-  double timeout = 2;
+  int64 timeout = 2;
+  int32 dscp = 3;
+  bool allow_fragmentation = 4;
+  int32 packet_size = 5;
+  int32 retries = 6;
 }

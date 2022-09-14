@@ -39,7 +39,7 @@ import org.opennms.horizon.minion.plugin.api.AbstractServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.snmp.SnmpValue;
-import org.opennms.snmp.contract.SnmpRequest;
+import org.opennms.snmp.contract.SnmpMonitorRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,9 +82,9 @@ public abstract class SnmpMonitorStrategy extends AbstractServiceMonitor {
         return ImmutableMap.of("agent", SnmpPeerFactory.getInstance().getAgentConfig(svc.getAddress(), svc.getNodeLocation()));
     }
 
-    public SnmpAgentConfig getAgentConfig(MonitoredService svc, SnmpRequest snmpRequest) throws UnknownHostException {
+    public SnmpAgentConfig getAgentConfig(MonitoredService svc, SnmpMonitorRequest snmpMonitorRequest) throws UnknownHostException {
         // return getKeyedInstance(parameters, "agent", () -> { return new SnmpAgentConfig(svc.getAddress()); });
-        return new SnmpAgentConfig(InetAddress.getByName(snmpRequest.getHost()));
+        return new SnmpAgentConfig(InetAddress.getByName(snmpMonitorRequest.getHost()));
     }
 
     public String getStringValue(SnmpValue result) {

@@ -29,26 +29,33 @@
 package org.opennms.horizon.minion.snmp;
 
 import com.google.protobuf.Any;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
+import org.opennms.echo.contract.EchoMonitorRequest;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse.Status;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl.ServiceMonitorResponseImplBuilder;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
+import org.opennms.horizon.shared.snmp.SnmpConfiguration;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
 import org.opennms.horizon.shared.snmp.SnmpUtils;
+import org.opennms.horizon.shared.snmp.SnmpValue;
 import org.opennms.horizon.shared.snmp.StrategyResolver;
-import org.opennms.snmp.contract.SnmpRequest;
+import org.opennms.snmp.contract.SnmpMonitorRequest;
+import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * TBD888: is there lost logic here?  For example, counting
+ *
  * <P>
  * This class is designed to be used by the service poller framework to test the
  * availability of the SNMP service on remote interfaces. The class implements
@@ -78,8 +85,30 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
     private static final String DEFAULT_REASON_TEMPLATE = "Observed value '${observedValue}' does not meet criteria '${operator} ${operand}'";
     private final StrategyResolver strategyResolver;
 
+    private final Descriptors.FieldDescriptor communityFieldDescriptor;
+    private final Descriptors.FieldDescriptor hostFieldDescriptor;
+    private final Descriptors.FieldDescriptor hexFieldDescriptor;
+    private final Descriptors.FieldDescriptor oidFieldDescriptor;
+    private final Descriptors.FieldDescriptor operatorFieldDescriptor;
+    private final Descriptors.FieldDescriptor operandFieldDescriptor;
+    private final Descriptors.FieldDescriptor reasonTemplateFieldDescriptor;
+    private final Descriptors.FieldDescriptor retriesFieldDescriptor;
+    private final Descriptors.FieldDescriptor timeoutFieldDescriptor;
+
     public SnmpMonitor(StrategyResolver strategyResolver) {
         this.strategyResolver = strategyResolver;
+
+        Descriptors.Descriptor echoMonitorRequestDescriptor = EchoMonitorRequest.getDefaultInstance().getDescriptorForType();
+
+        communityFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.COMMUNITY_FIELD_NUMBER);
+        hexFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.HEX_FIELD_NUMBER);
+        hostFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.HOST_FIELD_NUMBER);
+        oidFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OID_FIELD_NUMBER);
+        operandFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OPERAND_FIELD_NUMBER);
+        operatorFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OPERATOR_FIELD_NUMBER);
+        reasonTemplateFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.REASON_TEMPLATE_FIELD_NUMBER);
+        retriesFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.RETRIES_FIELD_NUMBER);
+        timeoutFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.TIMEOUT_FIELD_NUMBER);
     }
 
     /**
@@ -102,38 +131,38 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
         // Establish SNMP session with interface
         //
         try {
-            if (! config.is(SnmpRequest.class)) {
+            if (! config.is(SnmpMonitorRequest.class)) {
                 throw new IllegalArgumentException("config must be an SnmpRequest; type-url=" + config.getTypeUrl());
             }
 
-            SnmpRequest snmpRequest = config.unpack(SnmpRequest.class);
+            SnmpMonitorRequest snmpMonitorRequest = config.unpack(SnmpMonitorRequest.class);
+            SnmpMonitorRequest effectiveSnmpMonitorRequest = populateDefaultsAsNeeded(snmpMonitorRequest);
 
             // Retrieve this interface's SNMP peer object
             //
-            SnmpAgentConfig agentConfig = getAgentConfig(svc, snmpRequest);
-            hostAddress = snmpRequest.getHost();
+            SnmpAgentConfig agentConfig = getAgentConfig(svc, effectiveSnmpMonitorRequest);
+            hostAddress = effectiveSnmpMonitorRequest.getHost();
 
             // Get configuration parameters
             //
-            String oid = snmpRequest.getOid();
-            // String operator = ParameterMap.getKeyedString(config, "operator", null);
-            String operator = null;
-            // String operand = ParameterMap.getKeyedString(config, "operand", null);
-            String operand = null;
+            String oid = effectiveSnmpMonitorRequest.getOid();
+            String operator = protobufDefaultNullHelper(effectiveSnmpMonitorRequest, operatorFieldDescriptor);
+            String operand = protobufDefaultNullHelper(effectiveSnmpMonitorRequest, operandFieldDescriptor);
+            String reasonTemplate = effectiveSnmpMonitorRequest.getReasonTemplate();
+            boolean hex = effectiveSnmpMonitorRequest.getHex();
+
+            agentConfig.setTimeout(effectiveSnmpMonitorRequest.getTimeout());
+            agentConfig.setRetries(effectiveSnmpMonitorRequest.getRetries());
+
+            // TBD888
             // String walkstr = ParameterMap.getKeyedString(config, "walk", "false");
             // String matchstr = ParameterMap.getKeyedString(config, "match-all", "true");
             // int countMin = ParameterMap.getKeyedInteger(config, "minimum", 0);
             // int countMax = ParameterMap.getKeyedInteger(config, "maximum", 0);
             // String reasonTemplate = ParameterMap.getKeyedString(config, "reason-template", DEFAULT_REASON_TEMPLATE);
-            String reasonTemplate = DEFAULT_REASON_TEMPLATE;
-            // String hexstr = ParameterMap.getKeyedString(config, "hex", "false");
-            String hexstr = "false";
 
-            hex = "true".equalsIgnoreCase(hexstr);
             // set timeout and retries on SNMP peer object
             //
-            agentConfig.setTimeout((int) snmpRequest.getTimeout());
-            agentConfig.setRetries(snmpRequest.getRetries());
             // agentConfig.setPort(ParameterMap.getKeyedInteger(config, "port", agentConfig.getPort()));
 
             // Squirrel the configuration parameters away in a Properties for later expansion if service is down
@@ -158,48 +187,14 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
 //            tracker.reset();
 //            tracker.startAttempt();
 
-            // This if block will count the number of matches within a walk and mark the service
-            // as up if it is between the minimum and maximum number, down if otherwise. Setting
-            // the parameter "matchall" to "count" will act as if "walk" has been set to "true".
-
-                if (DEFAULT_REASON_TEMPLATE.equals(reasonTemplate)) {
-                    if (operator != null) {
-                        reasonTemplate = "Observed value '${observedValue}' does not meet criteria '${operator} ${operand}'";
-                    } else {
-                        reasonTemplate = "Observed value '${observedValue}' was null";
-                    }
-                }
 
             final String finalHostAddress = hostAddress;
             SnmpObjId snmpObjectId = SnmpObjId.get(oid);
-            future = SnmpUtils.getAsync(agentConfig, new SnmpObjId[]{ snmpObjectId }).
-                thenApply(result -> {
-                    ServiceMonitorResponseImplBuilder builder = ServiceMonitorResponseImpl.builder()
-                        .status(Status.Unknown);
-
-                    Map<String, Number> metrics = new HashMap<>();
-
-                    if (result[0] != null) {
-                        // svcParams.setProperty("observedValue", getStringValue(result[0]));
-                        LOG.debug("poll: SNMP poll succeeded, addr={} oid={} value={}", finalHostAddress, oid, result);
-
-                        if (result[0].isNumeric()) {
-                            metrics.put("observedValue", result[0].toLong());
-                        }
-
-                        if (meetsCriteria(result[0], operator, operand)) {
-                            builder.status(Status.Up);
-                        } else {
-                            builder.status(Status.Down);
-                        }
-                    } else {
-                        String reason = "SNMP poll failed, addr=" + finalHostAddress + " oid=" + oid;
-                        LOG.debug(reason);
-                    }
-
-                    builder.properties(metrics);
-                    return (ServiceMonitorResponse) builder.build();
-                }).orTimeout(agentConfig.getTimeout(), TimeUnit.MILLISECONDS);
+            future =
+                SnmpUtils.getAsync(agentConfig, new SnmpObjId[]{ snmpObjectId })
+                    .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand))
+                    .orTimeout(agentConfig.getTimeout(), TimeUnit.MILLISECONDS)
+            ;
 
             return future;
         } catch (NumberFormatException e) {
@@ -214,4 +209,85 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
         }
     }
 
+//========================================
+// Internal Methods
+//----------------------------------------
+
+    private SnmpMonitorRequest populateDefaultsAsNeeded(SnmpMonitorRequest snmpMonitorRequest) {
+        SnmpMonitorRequest.Builder resultBuilder = SnmpMonitorRequest.newBuilder(snmpMonitorRequest);
+
+
+        if (! snmpMonitorRequest.hasField(communityFieldDescriptor)) {
+            resultBuilder.setCommunity(SnmpConfiguration.DEFAULT_READ_COMMUNITY);
+        }
+
+        if (! snmpMonitorRequest.hasField(hexFieldDescriptor)) {
+            resultBuilder.setHex(false);
+        }
+
+        if (! snmpMonitorRequest.hasField(oidFieldDescriptor)) {
+            resultBuilder.setOid(DEFAULT_OBJECT_IDENTIFIER);
+        }
+
+        if (! snmpMonitorRequest.hasField(reasonTemplateFieldDescriptor)) {
+            resultBuilder.setReasonTemplate(DEFAULT_REASON_TEMPLATE);
+        }
+
+        if (! snmpMonitorRequest.hasField(retriesFieldDescriptor)) {
+            resultBuilder.setRetries(SnmpConfiguration.DEFAULT_RETRIES);
+        }
+
+        if (! snmpMonitorRequest.hasField(timeoutFieldDescriptor)) {
+            resultBuilder.setTimeout(SnmpConfiguration.DEFAULT_TIMEOUT);
+        }
+
+        return resultBuilder.build();
+    }
+
+    private String protobufDefaultNullHelper(Message msg, Descriptors.FieldDescriptor fieldDescriptor) {
+        if (! msg.hasField(fieldDescriptor)) {
+            return null;
+        }
+
+        return (String) msg.getField(fieldDescriptor);
+    }
+
+    private ServiceMonitorResponse processSnmpResponse(SnmpValue[] result, String hostAddress, SnmpObjId oid, String operator, String operand) {
+        ServiceMonitorResponseImplBuilder builder = ServiceMonitorResponseImpl.builder()
+            .monitorType(MonitorType.SNMP)
+            .status(Status.Unknown)
+            ;
+
+        Map<String, Number> metrics = new HashMap<>();
+
+        if (result[0] != null) {
+            LOG.debug("poll: SNMP poll succeeded, addr={} oid={} value={}", hostAddress, oid, result);
+
+            if (result[0].isNumeric()) {
+                metrics.put("observedValue", result[0].toLong());
+            }
+
+            if (meetsCriteria(result[0], operator, operand)) {
+                builder.status(Status.Up);
+            } else {
+                builder.status(Status.Down);
+            }
+
+            // if (DEFAULT_REASON_TEMPLATE.equals(reasonTemplate)) {
+            //     if (operator != null) {
+            //         reasonTemplate = "Observed value '${observedValue}' does not meet criteria '${operator} ${operand}'";
+            //     } else {
+            //         reasonTemplate = "Observed value '${observedValue}' was null";
+            //     }
+            // }
+        } else {
+            String reason = "SNMP poll failed, addr=" + hostAddress + " oid=" + oid;
+            builder.reason(reason);
+
+            LOG.debug(reason);
+        }
+
+        builder.properties(metrics);
+        return builder.build();
+    }
 }

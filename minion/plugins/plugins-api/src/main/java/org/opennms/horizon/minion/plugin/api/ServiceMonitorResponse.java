@@ -1,8 +1,16 @@
 package org.opennms.horizon.minion.plugin.api;
 
+import org.opennms.taskset.contract.MonitorType;
+
 import java.util.Map;
 
 public interface ServiceMonitorResponse {
+    /**
+     *
+     * @return type of monitor that produced the response.
+     */
+    MonitorType getMonitorType();
+
     /**
      *
      * @return status whether service is Unknown/Up/Down/Unresponsive

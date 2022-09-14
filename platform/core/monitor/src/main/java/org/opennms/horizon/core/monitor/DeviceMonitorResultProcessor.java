@@ -5,6 +5,8 @@ import io.prometheus.client.Gauge;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.opennms.horizon.metrics.api.OnmsMetricsAdapter;
+import org.opennms.taskset.contract.DetectorResponse;
+import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 import org.slf4j.Logger;
@@ -26,8 +28,23 @@ public class DeviceMonitorResultProcessor implements Processor {
     private final OnmsMetricsAdapter onmsMetricsAdapter;
 
     private final CollectorRegistry collectorRegistry = new CollectorRegistry();
-    private final Gauge rttGauge = Gauge.build().name("icmp_round_trip_time").help("ICMP round trip time")
-        .unit("msec").labelNames(labelNames).register(collectorRegistry);
+
+    private final Gauge icmpResponseTimeGauge =
+        Gauge.build()
+            .name("icmp_round_trip_time")
+            .help("ICMP round trip time")
+            .unit("msec")
+            .labelNames(labelNames)
+            .register(collectorRegistry);
+
+    private final Gauge snmpResponseTimeGauge =
+        Gauge.build()
+            .name("snmp_round_trip_time")
+            .help("SNMP round trip time")
+            .unit("msec")
+            .labelNames(labelNames)
+            .register(collectorRegistry);
+
     private Logger log = DEFAULT_LOGGER;
     private Map<String, Gauge> gauges = new ConcurrentHashMap<>();
 
@@ -55,19 +72,28 @@ public class DeviceMonitorResultProcessor implements Processor {
             // TODO: support monitor results vs detector results
             try {
                 if (oneResult != null) {
-                    // Update the response time metric
-                    double responseTime = oneResult.getResponseTime();
+                    if (oneResult.hasMonitorResponse()) {
+                        MonitorResponse monitorResponse = oneResult.getMonitorResponse();
 
-                    // Convert from us to ms.  TODO: use consistent units
-                    double responseTimeMs = responseTime / 1000.0;
+                        switch (monitorResponse.getMonitorType()) {
+                            case ICMP:
+                                processIcmpMonitorResponse(oneResult, monitorResponse);
+                                break;
 
-                    updateIcmpMetrics(
-                        oneResult.getIpAddress(),
-                        oneResult.getLocation(),
-                        oneResult.getSystemId(),
-                        responseTimeMs,
-                        oneResult.getMetricsMap()
-                    );
+                            case SNMP:
+                                processSnmpMonitorResponse(oneResult, monitorResponse);
+                            break;
+
+                            default:
+                                log.warn("Have response for unrecognized monitor type: type={}", monitorResponse.getMonitorType());
+                                break;
+                        }
+                    } else if (oneResult.hasDetectorResponse()) {
+                        DetectorResponse detectorResponse = oneResult.getDetectorResponse();
+
+                        // TBD: how to process?
+                        log.info("Have detector response: task-id={}; detected={}", oneResult.getId(), detectorResponse.getDetected());
+                    }
                 } else {
                     log.warn("Task result appears to be missing the echo response details");
                 }
@@ -78,21 +104,53 @@ public class DeviceMonitorResultProcessor implements Processor {
         }
     }
 
-    //========================================
-    // Internals
-    //----------------------------------------
+//========================================
+// Internals
+//----------------------------------------
+
+    private void processIcmpMonitorResponse(TaskResult taskResult, MonitorResponse monitorResponse) {
+        double responseTimeMs = taskResult.getMonitorResponse().getResponseTimeMs();
+
+        updateIcmpMetrics(
+            monitorResponse.getIpAddress(),
+            taskResult.getLocation(),
+            taskResult.getSystemId(),
+            responseTimeMs,
+            monitorResponse.getMetricsMap()
+        );
+    }
+
+    private void processSnmpMonitorResponse(TaskResult taskResult, MonitorResponse monitorResponse) {
+        double responseTimeMs = taskResult.getMonitorResponse().getResponseTimeMs();
+
+        updateSnmpMetrics(
+            monitorResponse.getIpAddress(),
+            taskResult.getLocation(),
+            taskResult.getSystemId(),
+            responseTimeMs,
+            monitorResponse.getMetricsMap()
+        );
+    }
 
     private void updateIcmpMetrics(String ipAddress, String location, String systemId, double responseTime, Map<String, Double> metrics) {
+        commonUpdateMonitorMetrics(icmpResponseTimeGauge, ipAddress, location, systemId, responseTime, metrics);
+    }
+
+    private void updateSnmpMetrics(String ipAddress, String location, String systemId, double responseTime, Map<String, Double> metrics) {
+        commonUpdateMonitorMetrics(snmpResponseTimeGauge, ipAddress, location, systemId, responseTime, metrics);
+    }
+
+    private void commonUpdateMonitorMetrics(Gauge gauge, String ipAddress, String location, String systemId, double responseTime, Map<String, Double> metrics) {
         String[] labelValues = {ipAddress, location, systemId};
 
         // Update the response-time gauge
-        rttGauge.labels(labelValues).set(responseTime);
+        gauge.labels(labelValues).set(responseTime);
 
         // Also update the gauges for additional metrics from the monitor
         for (Map.Entry<String, Double> oneMetric : metrics.entrySet()) {
             try {
-                Gauge gauge = lookupGauge(oneMetric.getKey());
-                gauge.labels(labelValues).set(oneMetric.getValue());
+                Gauge dynamicMetricGauge = lookupGauge(oneMetric.getKey());
+                dynamicMetricGauge.labels(labelValues).set(oneMetric.getValue());
             } catch (Exception exc) {
                 log.warn("Failed to record metric: metric-name={}; value={}", oneMetric.getKey(), oneMetric.getValue(), exc);
             }

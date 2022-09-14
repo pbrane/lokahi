@@ -1,8 +1,8 @@
 package org.opennms.horizon.core.monitor.taskset;
 
 import com.google.protobuf.Any;
-import org.opennms.echo.contract.EchoRequest;
-import org.opennms.snmp.contract.SnmpRequest;
+import org.opennms.echo.contract.EchoMonitorRequest;
+import org.opennms.snmp.contract.SnmpMonitorRequest;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskSet;
 import org.opennms.taskset.contract.TaskType;
@@ -23,7 +23,7 @@ public class TaskSetManager {
             .build();
     }
 
-    public void addEchoTask(InetAddress inetAddress, String name, TaskType taskType, String pluginName, String schedule, EchoRequest echoRequest) {
+    public void addEchoTask(InetAddress inetAddress, String name, TaskType taskType, String pluginName, String schedule, EchoMonitorRequest echoRequest) {
         String taskId = monitorTaskSetIdentityUtil.identityForIpTask(inetAddress.getHostAddress(), name);
 
         TaskDefinition.Builder builder =
@@ -40,7 +40,7 @@ public class TaskSetManager {
         tasksById.put(taskId, taskDefinition);
     }
 
-    public void addSnmpTask(InetAddress inetAddress, String name, TaskType taskType, String pluginName, String schedule, SnmpRequest snmpRequest) {
+    public void addSnmpTask(InetAddress inetAddress, String name, TaskType taskType, String pluginName, String schedule, SnmpMonitorRequest snmpMonitorRequest) {
         String taskId = monitorTaskSetIdentityUtil.identityForIpTask(inetAddress.getHostAddress(), name);
 
         TaskDefinition.Builder builder =
@@ -49,7 +49,7 @@ public class TaskSetManager {
                 .setPluginName(pluginName)
                 .setSchedule(schedule)
                 .setId(taskId)
-                .setConfiguration(Any.pack(snmpRequest))
+                .setConfiguration(Any.pack(snmpMonitorRequest))
                 ;
 
         TaskDefinition taskDefinition = builder.build();

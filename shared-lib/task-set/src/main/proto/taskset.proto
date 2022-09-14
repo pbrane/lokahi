@@ -43,16 +43,18 @@ enum TaskType {
       CONNECTOR = 4;
 }
 
-//message DeprecatedParametersType {
-//  map<string, string> parameters = 1;
-//}
+enum MonitorType {
+  UNKNOWN = 0;
+  ICMP = 1;
+  SNMP = 2;
+}
 
 message TaskDefinition {
   string id = 1;
 
   string description = 2;
   TaskType type = 3;
-  string pluginName = 4;
+  string plugin_name = 4;
   string schedule = 5;
 
   google.protobuf.Any configuration = 6;
@@ -64,18 +66,30 @@ message TaskSet {
 
 message TaskResult {
   string id = 1;
-  string status = 2;
-  string reason = 3;
-  string ipAddress = 4;
   string location = 5;
   string systemId = 6;
 
-  // TBD888: monitor results, detector results, etc
-  double responseTime = 7;
-
-  map<string, double> metrics = 8;
+  oneof result {
+    MonitorResponse monitor_response = 7;
+    DetectorResponse detector_response = 8;
+  }
 }
 
 message TaskSetResults {
   repeated TaskResult results = 1;
+}
+
+message MonitorResponse {
+  string status = 2;
+  string reason = 3;
+  string ip_address = 4;
+
+  double response_time_ms = 7;
+  MonitorType monitor_type = 8;
+
+  map<string, double> metrics = 9;
+}
+
+message DetectorResponse {
+  bool detected = 1;
 }

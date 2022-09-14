@@ -2,6 +2,7 @@ package org.opennms.horizon.minion.taskset.worker.impl;
 
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.sink.api.SyncDispatcher;
+import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutionResultProcessor;
@@ -45,16 +46,14 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
 //----------------------------------------
 
     private TaskSetResults formatTaskSetResults(String id, ServiceMonitorResponse result) {
+        MonitorResponse monitorResponse = formatMonitorResponse(result);
+
         TaskResult taskResult =
             TaskResult.newBuilder()
                 .setId(id)
-                .setStatus(result.getStatus().toString())
-                .setReason(Optional.of(result).map(ServiceMonitorResponse::getReason).orElse(TaskResult.getDefaultInstance().getReason()))
-                .setIpAddress(result.getIpAddress())
+                .setMonitorResponse(monitorResponse)
                 .setLocation(identity.getLocation())
                 .setSystemId(identity.getId())
-                .setResponseTime(result.getResponseTime())
-                .putAllMetrics(Optional.of(result).map(ServiceMonitorResponse::getProperties).orElse(Collections.EMPTY_MAP))
                 .build();
 
         TaskSetResults taskSetResults =
@@ -64,7 +63,18 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
 
         return taskSetResults;
     }
-//                 .setReason(result.getReason() != null ?
-//                                result.getReason() :
-//                                TaskResult.getDefaultInstance().getReason())
+
+    private MonitorResponse formatMonitorResponse(ServiceMonitorResponse smr) {
+        MonitorResponse result =
+            MonitorResponse.newBuilder()
+                .setMonitorType(smr.getMonitorType())
+                .setIpAddress(smr.getIpAddress())
+                .setResponseTimeMs(smr.getResponseTime())
+                .setStatus(smr.getStatus().toString())
+                .setReason(Optional.of(smr).map(ServiceMonitorResponse::getReason).orElse(MonitorResponse.getDefaultInstance().getReason()))
+                .putAllMetrics(Optional.of(smr).map(ServiceMonitorResponse::getProperties).orElse(Collections.EMPTY_MAP))
+                .build();
+
+        return result;
+    }
 }
