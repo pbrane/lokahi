@@ -67,10 +67,10 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
     private MonitorResponse formatMonitorResponse(ServiceMonitorResponse smr) {
         MonitorResponse result =
             MonitorResponse.newBuilder()
-                .setMonitorType(smr.getMonitorType())
-                .setIpAddress(smr.getIpAddress())
+                .setMonitorType(Optional.of(smr).map(ServiceMonitorResponse::getMonitorType).orElse(MonitorResponse.getDefaultInstance().getMonitorType()))
+                .setIpAddress(Optional.of(smr).map(ServiceMonitorResponse::getIpAddress).orElse(MonitorResponse.getDefaultInstance().getIpAddress()))
                 .setResponseTimeMs(smr.getResponseTime())
-                .setStatus(smr.getStatus().toString())
+                .setStatus(Optional.of(smr).map(ServiceMonitorResponse::getStatus).map(Object::toString).orElse(MonitorResponse.getDefaultInstance().getStatus()))
                 .setReason(Optional.of(smr).map(ServiceMonitorResponse::getReason).orElse(MonitorResponse.getDefaultInstance().getReason()))
                 .putAllMetrics(Optional.of(smr).map(ServiceMonitorResponse::getProperties).orElse(Collections.EMPTY_MAP))
                 .build();

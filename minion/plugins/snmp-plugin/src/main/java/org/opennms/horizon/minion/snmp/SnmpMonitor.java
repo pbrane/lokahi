@@ -31,7 +31,6 @@ package org.opennms.horizon.minion.snmp;
 import com.google.protobuf.Any;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import org.opennms.echo.contract.EchoMonitorRequest;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse.Status;
@@ -71,6 +70,8 @@ import java.util.concurrent.TimeUnit;
  * @author <A HREF="http://www.opennms.org/">OpenNMS </A>
  */
 public class SnmpMonitor extends SnmpMonitorStrategy {
+
+    public static final long NANOSECOND_PER_MILLISECOND = 1_000_000;
     
     public static final Logger LOG = LoggerFactory.getLogger(SnmpMonitor.class);
 
@@ -98,17 +99,17 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
     public SnmpMonitor(StrategyResolver strategyResolver) {
         this.strategyResolver = strategyResolver;
 
-        Descriptors.Descriptor echoMonitorRequestDescriptor = EchoMonitorRequest.getDefaultInstance().getDescriptorForType();
+        Descriptors.Descriptor snmpMonitorRequestDescriptor = SnmpMonitorRequest.getDefaultInstance().getDescriptorForType();
 
-        communityFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.COMMUNITY_FIELD_NUMBER);
-        hexFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.HEX_FIELD_NUMBER);
-        hostFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.HOST_FIELD_NUMBER);
-        oidFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OID_FIELD_NUMBER);
-        operandFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OPERAND_FIELD_NUMBER);
-        operatorFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OPERATOR_FIELD_NUMBER);
-        reasonTemplateFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.REASON_TEMPLATE_FIELD_NUMBER);
-        retriesFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.RETRIES_FIELD_NUMBER);
-        timeoutFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.TIMEOUT_FIELD_NUMBER);
+        communityFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.COMMUNITY_FIELD_NUMBER);
+        hexFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.HEX_FIELD_NUMBER);
+        hostFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.HOST_FIELD_NUMBER);
+        oidFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OID_FIELD_NUMBER);
+        operandFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OPERAND_FIELD_NUMBER);
+        operatorFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OPERATOR_FIELD_NUMBER);
+        reasonTemplateFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.REASON_TEMPLATE_FIELD_NUMBER);
+        retriesFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.RETRIES_FIELD_NUMBER);
+        timeoutFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.TIMEOUT_FIELD_NUMBER);
     }
 
     /**
@@ -172,7 +173,19 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
             // svcParams.setProperty("operand", String.valueOf(operand));
             // svcParams.setProperty("walk", walkstr);
             // svcParams.setProperty("matchAll", matchstr);
-            // svcParams.setProperty("minimum", String.valueOf(countMin));
+            // svcParams.setProperty("minimum", String.valueOf(c
+    public static void main(String[] args) {
+        new SnmpMonitor(null).instanceMain(args);
+    }
+    public void instanceMain(String[] args) {
+        SnmpMonitorRequest request =
+            SnmpMonitorRequest.newBuilder()
+                .setHost("1.2.3.4")
+                .build()
+            ;
+        populateDefaultsAsNeeded(request);
+    }
+ountMin));
             // svcParams.setProperty("maximum", String.valueOf(countMax));
             // svcParams.setProperty("timeout", String.valueOf(agentConfig.getTimeout()));
             // svcParams.setProperty("retry", String.valueOf(agentConfig.getRetries()));
@@ -190,9 +203,12 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
 
             final String finalHostAddress = hostAddress;
             SnmpObjId snmpObjectId = SnmpObjId.get(oid);
+
+            long startTimestamp = System.nanoTime();
+
             future =
                 SnmpUtils.getAsync(agentConfig, new SnmpObjId[]{ snmpObjectId })
-                    .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand))
+                    .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand, startTimestamp))
                     .orTimeout(agentConfig.getTimeout(), TimeUnit.MILLISECONDS)
             ;
 
@@ -252,10 +268,24 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
         return (String) msg.getField(fieldDescriptor);
     }
 
-    private ServiceMonitorResponse processSnmpResponse(SnmpValue[] result, String hostAddress, SnmpObjId oid, String operator, String operand) {
+    private ServiceMonitorResponse
+    processSnmpResponse(
+        SnmpValue[] result,
+        String hostAddress,
+        SnmpObjId oid,
+        String operator,
+        String operand,
+        long startTimestamp
+    ) {
+        long endTimestamp = System.nanoTime();
+        long elapsedTimeNs = ( endTimestamp - startTimestamp );
+        double elapsedTimeMs = (double) elapsedTimeNs / NANOSECOND_PER_MILLISECOND;
+
         ServiceMonitorResponseImplBuilder builder = ServiceMonitorResponseImpl.builder()
             .monitorType(MonitorType.SNMP)
             .status(Status.Unknown)
+            .responseTime(elapsedTimeMs)
+            .ipAddress(hostAddress)
             ;
 
         Map<String, Number> metrics = new HashMap<>();

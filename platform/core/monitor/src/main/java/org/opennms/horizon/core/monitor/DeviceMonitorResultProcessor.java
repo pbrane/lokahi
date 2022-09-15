@@ -14,7 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -23,9 +25,12 @@ import java.util.stream.IntStream;
  */
 public class DeviceMonitorResultProcessor implements Processor {
 
+    public static final Long INVALID_UP_TIME = -1L;
+
     private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(DeviceMonitorResultProcessor.class);
     private static final String[] labelNames = {"instance", "location", "system_id"};
     private final OnmsMetricsAdapter onmsMetricsAdapter;
+    private final Map<String, Long> snmpUpTimeCache = new ConcurrentHashMap<>();
 
     private final CollectorRegistry collectorRegistry = new CollectorRegistry();
 
@@ -42,6 +47,14 @@ public class DeviceMonitorResultProcessor implements Processor {
             .name("snmp_round_trip_time")
             .help("SNMP round trip time")
             .unit("msec")
+            .labelNames(labelNames)
+            .register(collectorRegistry);
+
+    private final Gauge snmpUpTimeGauge =
+        Gauge.build()
+            .name("snmp_uptime_sec")
+            .help("SNMP UP time")
+            .unit("sec")
             .labelNames(labelNames)
             .register(collectorRegistry);
 
@@ -127,6 +140,7 @@ public class DeviceMonitorResultProcessor implements Processor {
             monitorResponse.getIpAddress(),
             taskResult.getLocation(),
             taskResult.getSystemId(),
+            monitorResponse.getStatus(),
             responseTimeMs,
             monitorResponse.getMetricsMap()
         );
@@ -136,11 +150,31 @@ public class DeviceMonitorResultProcessor implements Processor {
         commonUpdateMonitorMetrics(icmpResponseTimeGauge, ipAddress, location, systemId, responseTime, metrics);
     }
 
-    private void updateSnmpMetrics(String ipAddress, String location, String systemId, double responseTime, Map<String, Double> metrics) {
-        commonUpdateMonitorMetrics(snmpResponseTimeGauge, ipAddress, location, systemId, responseTime, metrics);
+    private void updateSnmpMetrics(String ipAddress, String location, String systemId, String status, double responseTime, Map<String, Double> metrics) {
+        String[] labelValues = commonUpdateMonitorMetrics(snmpResponseTimeGauge, ipAddress, location, systemId, responseTime, metrics);
+        updateSnmpUptime(ipAddress, location, systemId, status, labelValues);
     }
 
-    private void commonUpdateMonitorMetrics(Gauge gauge, String ipAddress, String location, String systemId, double responseTime, Map<String, Double> metrics) {
+    private void updateSnmpUptime(String ipAddress, String location, String systemId, String status, String[] labelValues) {
+        if ("Up".equalsIgnoreCase(status)) {
+            Long firstUpTime = snmpUpTimeCache.get(ipAddress);
+            long totalUpTimeInNanoSec = 0;
+            if ((firstUpTime != null) && (firstUpTime.longValue() != INVALID_UP_TIME)) {
+                totalUpTimeInNanoSec = System.nanoTime() - firstUpTime;
+            } else {
+                snmpUpTimeCache.put(ipAddress, System.nanoTime());
+            }
+            long totalUpTimeInSec = TimeUnit.NANOSECONDS.toSeconds(totalUpTimeInNanoSec);
+
+            snmpUpTimeGauge.labels(labelValues).set(totalUpTimeInSec);
+
+            log.info("Total upTime of SNMP for {} at location {} : {} sec", ipAddress, location, totalUpTimeInSec);
+        } else {
+            snmpUpTimeCache.put(ipAddress, INVALID_UP_TIME);
+        }
+    }
+
+    private String[] commonUpdateMonitorMetrics(Gauge gauge, String ipAddress, String location, String systemId, double responseTime, Map<String, Double> metrics) {
         String[] labelValues = {ipAddress, location, systemId};
 
         // Update the response-time gauge
@@ -157,6 +191,8 @@ public class DeviceMonitorResultProcessor implements Processor {
         }
 
         pushMetrics(labelValues);
+
+        return labelValues;
     }
 
     private void pushMetrics(String[] labelValues) {
