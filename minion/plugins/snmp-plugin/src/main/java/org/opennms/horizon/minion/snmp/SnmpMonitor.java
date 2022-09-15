@@ -173,19 +173,7 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
             // svcParams.setProperty("operand", String.valueOf(operand));
             // svcParams.setProperty("walk", walkstr);
             // svcParams.setProperty("matchAll", matchstr);
-            // svcParams.setProperty("minimum", String.valueOf(c
-    public static void main(String[] args) {
-        new SnmpMonitor(null).instanceMain(args);
-    }
-    public void instanceMain(String[] args) {
-        SnmpMonitorRequest request =
-            SnmpMonitorRequest.newBuilder()
-                .setHost("1.2.3.4")
-                .build()
-            ;
-        populateDefaultsAsNeeded(request);
-    }
-ountMin));
+            // svcParams.setProperty("minimum", String.valueOf(countMin));
             // svcParams.setProperty("maximum", String.valueOf(countMax));
             // svcParams.setProperty("timeout", String.valueOf(agentConfig.getTimeout()));
             // svcParams.setProperty("retry", String.valueOf(agentConfig.getRetries()));
