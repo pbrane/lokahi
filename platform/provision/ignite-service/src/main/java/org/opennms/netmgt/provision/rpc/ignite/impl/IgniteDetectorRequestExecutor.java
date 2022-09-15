@@ -10,6 +10,7 @@ import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncMa
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
 import org.opennms.netmgt.provision.PreDetectCallback;
 
+@Deprecated
 public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
     private final IgniteClient igniteClient;
