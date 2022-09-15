@@ -5,6 +5,8 @@ import org.apache.ignite.services.Service;
 
 public interface MinionRouterIgniteService extends Service {
 
+    String IGNITE_SERVICE_NAME = "minionRouter";
+
     CompletableFuture<Boolean> sendDetectorRequestToMinionUsingId(String id);
 
     CompletableFuture<Boolean> sendDetectorRequestToMinionUsingLocation(String location);
@@ -13,8 +15,10 @@ public interface MinionRouterIgniteService extends Service {
 
     CompletableFuture<Boolean> sendEchoRequestToMinionUsingLocation(String location);
 
-    //TODO MMF: return type is probably not boolean
+    //TODO MMF: return type is proably not boolean
     CompletableFuture<Boolean> sendMonitorRequestToMinionUsingId(String id);
 
     CompletableFuture<Boolean> sendMonitorRequestToMinionUsingLocation(String location);
+
+    void sendTwin(String location, String kind, Object payload);
 }

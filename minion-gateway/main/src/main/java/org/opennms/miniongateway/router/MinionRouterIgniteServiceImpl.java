@@ -9,6 +9,7 @@ import org.apache.ignite.cluster.ClusterGroup;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.apache.ignite.resources.LoggerResource;
 import org.apache.ignite.resources.ServiceContextResource;
+import org.apache.ignite.resources.SpringResource;
 import org.apache.ignite.services.ServiceContext;
 import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterIgniteService;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
@@ -20,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 //TODO MMF: Break this into an ignite service with routing impl injected?
 public class MinionRouterIgniteServiceImpl implements MinionRouterIgniteService {
 
-    public static final String IGNITE_SERVICE_NAME = "minionRouter";
     public static final String MINIONS_BY_ID = "minionsById";
     public static final String MINIONS_BY_LOCATION = "minionsByLocation";
 
@@ -33,26 +33,44 @@ public class MinionRouterIgniteServiceImpl implements MinionRouterIgniteService 
     @ServiceContextResource
     private ServiceContext serviceContext;
 
-    @Autowired
-    private IgniteRemoteAsyncManager igniteRemoteAsyncManager;
+    @SpringResource(resourceName = "igniteRemoteAsyncManager")
+    private transient IgniteRemoteAsyncManager igniteRemoteAsyncManager;
 
     private IgniteCache<String, UUID> minionByIdCache;
     private IgniteCache<String, UUID> minionByLocationCache;
 
     @Override
     public CompletableFuture<Boolean> sendDetectorRequestToMinionUsingId(String id) {
-
+        igniteLogger.info("Dispatching detector request to minion " + id);
+        if (id == null) {
+            return CompletableFuture.completedFuture(false);
+        }
         UUID foundMinion = minionByIdCache.get(id);
 
-        return executeRemoteOperation(foundMinion, buildDetectorRemoteOperation());
+        return executeRemoteOperation(foundMinion, buildDetectorRemoteOperation()).whenComplete((r, e) -> {
+            if (e != null) {
+                e.printStackTrace();
+                return;
+            }
+            igniteLogger.info("Finishing call " + id);
+        });
     }
 
     @Override
     public CompletableFuture<Boolean> sendDetectorRequestToMinionUsingLocation(String location) {
-
+        igniteLogger.info("Dispatching detector request to location " + location);
+        if (location == null) {
+            return CompletableFuture.completedFuture(false);
+        }
         UUID nodeId = minionByLocationCache.get(location);
 
-        return executeRemoteOperation(nodeId, buildDetectorRemoteOperation());
+        return executeRemoteOperation(nodeId, buildDetectorRemoteOperation()).whenComplete((r, e) -> {
+            if (e != null) {
+                e.printStackTrace();
+                return;
+            }
+            igniteLogger.info("Finishing call " + location);
+        });
     }
 
     @Override
@@ -63,6 +81,11 @@ public class MinionRouterIgniteServiceImpl implements MinionRouterIgniteService 
     @Override
     public CompletableFuture<Boolean> sendMonitorRequestToMinionUsingLocation(String location) {
         return CompletableFuture.failedFuture(new Exception("not implemented"));
+    }
+
+    @Override
+    public void sendTwin(String location, String kind, Object payload) {
+
     }
 
     @Override

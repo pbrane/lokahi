@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ignite.IgniteLogger;
+import org.apache.ignite.resources.LoggerResource;
 import org.apache.ignite.resources.SpringResource;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.model.RemoteOperation;
 import org.opennms.miniongateway.detector.api.LocalDetectorAdapter;
@@ -17,13 +19,12 @@ import java.util.concurrent.CompletableFuture;
  *
  * Note this is a very thin implementation with loose coupling to the server internals.  This is critical!
  */
-@Slf4j
-@Getter
-@Setter
 public class IgniteDetectorRemoteOperation implements RemoteOperation<Boolean> {
     @SpringResource(resourceName = "localDetectorAdapter")
-    @Setter(AccessLevel.NONE)
     private transient LocalDetectorAdapter localDetectorAdapter;
+
+    @LoggerResource
+    private transient IgniteLogger logger;
 
     private String location;
     private String systemId;
@@ -35,7 +36,8 @@ public class IgniteDetectorRemoteOperation implements RemoteOperation<Boolean> {
     //private Span span;
 
     @Override
-    public CompletableFuture<Boolean> apply() {
+    public CompletableFuture<Boolean> call() {
+        logger.info("About to execute remote operation with detector adapter " + localDetectorAdapter);
         return localDetectorAdapter.detect(location, systemId, serviceName, detectorName, address, nodeId);
     }
 }

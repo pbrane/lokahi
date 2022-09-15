@@ -1,6 +1,7 @@
 package org.opennms.horizon.shared.ignite.remoteasync.manager;
 
 import org.apache.ignite.cluster.ClusterGroup;
+import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.lang.IgniteOutClosure;
 
 import java.util.concurrent.CompletableFuture;
@@ -18,5 +19,5 @@ public interface IgniteRemoteAsyncManager {
      * @param <T> type of the return value on completion of the future.
      * @return a future tracking the state of the remote operation.
      */
-    <T> CompletableFuture<T> submit(ClusterGroup candidateTargets, IgniteOutClosure<CompletableFuture<T>> remoteOperation);
+    <T> CompletableFuture<T> submit(ClusterGroup candidateTargets, IgniteCallable<CompletableFuture<T>> remoteOperation);
 }

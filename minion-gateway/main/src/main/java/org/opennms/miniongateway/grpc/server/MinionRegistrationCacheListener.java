@@ -12,8 +12,11 @@ import org.opennms.core.ipc.grpc.server.manager.MinionManagerListener;
 
 public class MinionRegistrationCacheListener implements MinionManagerListener {
 
-    @IgniteInstanceResource
     private Ignite ignite;
+
+    public MinionRegistrationCacheListener(Ignite ignite) {
+        this.ignite = ignite;
+    }
 
     @Override
     public void onMinionAdded(long sequence, MinionInfo minionInfo) {

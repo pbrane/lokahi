@@ -4,6 +4,7 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.IgniteSpring;
 import org.apache.ignite.Ignition;
+import org.apache.ignite.configuration.ClientConnectorConfiguration;
 import org.apache.ignite.configuration.DataStorageConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.kubernetes.configuration.KubernetesConnectionConfiguration;
@@ -52,6 +53,7 @@ public class IgniteConfig {
 
         igniteConfiguration.setClientMode(false);
         igniteConfiguration.setMetricsLogFrequency(0);  // DISABLE IGNITE METRICS
+        igniteConfiguration.setClientConnectorConfiguration(new ClientConnectorConfiguration()); // enable client connector
 
         if (useKubernetes) {
             configureClusterNodeDiscoveryKubernetes(igniteConfiguration);

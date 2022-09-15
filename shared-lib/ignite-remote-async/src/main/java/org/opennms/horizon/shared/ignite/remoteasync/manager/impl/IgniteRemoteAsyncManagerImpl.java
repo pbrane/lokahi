@@ -3,6 +3,7 @@ package org.opennms.horizon.shared.ignite.remoteasync.manager.impl;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.cluster.ClusterGroup;
 import org.apache.ignite.lang.IgniteBiPredicate;
+import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.lang.IgniteOutClosure;
 import org.opennms.horizon.shared.ignite.remoteasync.IgniteRemoteAsyncConstants;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
@@ -64,7 +65,7 @@ public class IgniteRemoteAsyncManagerImpl implements IgniteRemoteAsyncManager {
     //  2. timeouts (solve the question of where to get the timeout)
     //  3. tie back into the Detector as a new LocationAwareDetectorClient impl for ignite
     @Override
-    public <T> CompletableFuture<T> submit(ClusterGroup candidateTargets, IgniteOutClosure<CompletableFuture<T>> remoteOperation) {
+    public <T> CompletableFuture<T> submit(ClusterGroup candidateTargets, IgniteCallable<CompletableFuture<T>> remoteOperation) {
         //
         // Prepare the resulting future and the tracking structure.
         //
@@ -109,7 +110,7 @@ public class IgniteRemoteAsyncManagerImpl implements IgniteRemoteAsyncManager {
 // Internals
 //----------------------------------------
 
-    private <T> RemoteAsyncOperation<T> prepareWrapper(IgniteOutClosure<CompletableFuture<T>> remoteOperation, long id) {
+    private <T> RemoteAsyncOperation<T> prepareWrapper(IgniteCallable<CompletableFuture<T>> remoteOperation, long id) {
         RemoteAsyncOperation<T> remoteOperationWrapper = new RemoteAsyncOperation<>();
         remoteOperationWrapper.setIgnite(ignite);
         remoteOperationWrapper.setRemoteOperation(remoteOperation);
@@ -133,6 +134,6 @@ public class IgniteRemoteAsyncManagerImpl implements IgniteRemoteAsyncManager {
             }
         }
 
-        return shutdownInd;
+        return !shutdownInd;
     }
 }

@@ -125,6 +125,22 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: ignite-minion-gateway
+  labels:
+    run: my-gateway
+spec:
+  type: ClusterIP
+  ports:
+    - port: 10800
+      protocol: TCP
+      name: ignite-client
+      targetPort: 10800
+  selector:
+    run: my-minion-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: zookeeper
   labels:
     run: my-zookeeper
@@ -856,6 +872,7 @@ spec:
               value: "kafka:9092"
           ports:
             - containerPort: 8080
+            - containerPort: 10800
             - containerPort: 47100
             - containerPort: 47500
 ---

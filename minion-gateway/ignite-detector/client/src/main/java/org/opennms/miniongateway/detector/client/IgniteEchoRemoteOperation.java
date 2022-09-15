@@ -31,7 +31,7 @@ public class IgniteEchoRemoteOperation implements RemoteOperation<Boolean> {
     //private Span span;
 
     @Override
-    public CompletableFuture<Boolean> apply() {
+    public CompletableFuture<Boolean> call() {
         return localEchoAdapter.echo(location, systemId);
     }
 }
