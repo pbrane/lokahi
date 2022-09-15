@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class IgniteDetectorRequestExecutorBuilder implements DetectorRequestExecutorBuilder {
 
     private final IgniteClient igniteClient;

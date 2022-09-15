@@ -11,6 +11,7 @@ import org.apache.ignite.client.ClientCache;
 import org.apache.ignite.client.IgniteClient;
 
 // TBD888: push routing down into gateways only (LATER)
+@Deprecated
 public class DetectorRequestRouteManager {
 
     public final String MINION_ROUTE_MAP_CACHENAME = "MINION-ROUTE-MAP";

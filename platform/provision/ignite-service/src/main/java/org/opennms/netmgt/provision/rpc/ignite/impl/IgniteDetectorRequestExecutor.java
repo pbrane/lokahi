@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+@Deprecated
 public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
     private final IgniteClient igniteClient;

@@ -17,8 +17,6 @@ public class MinionRegistrationCacheListener implements MinionManagerListener {
 
     @Override
     public void onMinionAdded(long sequence, MinionInfo minionInfo) {
-
-        // TODO MMF:should we do a getOrCreate() ?
         IgniteCache<String, UUID> minionByIdCache = ignite.cache(MINIONS_BY_ID);
         IgniteCache<String, UUID> minionByLocationCache = ignite.cache(MINIONS_BY_LOCATION);
 
