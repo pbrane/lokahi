@@ -1,12 +1,11 @@
 package org.opennms.miniongateway.grpc.server;
 
-import static org.opennms.miniongateway.router.MinionRouterIgniteServiceImpl.MINIONS_BY_ID;
-import static org.opennms.miniongateway.router.MinionRouterIgniteServiceImpl.MINIONS_BY_LOCATION;
+import static org.opennms.miniongateway.router.MinionRouterServiceImpl.MINIONS_BY_ID;
+import static org.opennms.miniongateway.router.MinionRouterServiceImpl.MINIONS_BY_LOCATION;
 
 import java.util.UUID;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.resources.IgniteInstanceResource;
 import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
 import org.opennms.core.ipc.grpc.server.manager.MinionManagerListener;
 

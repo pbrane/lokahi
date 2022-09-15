@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * Note this is a very thin implementation with loose coupling to the server internals.  This is critical!
  */
+@Deprecated
 public class IgniteDetectorRemoteOperation implements RemoteOperation<Boolean> {
     @SpringResource(resourceName = "localDetectorAdapter")
     private transient LocalDetectorAdapter localDetectorAdapter;

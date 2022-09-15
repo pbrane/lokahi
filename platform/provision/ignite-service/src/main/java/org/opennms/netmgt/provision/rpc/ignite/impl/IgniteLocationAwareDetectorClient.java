@@ -9,7 +9,6 @@ import org.opennms.netmgt.provision.LocationAwareDetectorClient;
 
 @Getter
 @Setter
-@Deprecated
 public class IgniteLocationAwareDetectorClient implements LocationAwareDetectorClient {
 
     private IgniteClient igniteClient;

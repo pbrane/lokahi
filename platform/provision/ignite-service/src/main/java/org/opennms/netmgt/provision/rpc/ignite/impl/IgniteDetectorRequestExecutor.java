@@ -5,7 +5,7 @@ import java.net.InetAddress;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.apache.ignite.client.IgniteClient;
-import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterIgniteService;
+import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterService;
 import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
 import org.opennms.netmgt.provision.PreDetectCallback;
@@ -71,12 +71,13 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
         CompletableFuture future = igniteRemoteAsyncManager.submit(clusterGroup, remoteOperation);
         */
 
-        MinionRouterIgniteService dispatcher = igniteClient.services().serviceProxy(MinionRouterIgniteService.IGNITE_SERVICE_NAME, MinionRouterIgniteService.class);
+        MinionRouterService dispatcher = igniteClient.services().serviceProxy(MinionRouterService.IGNITE_SERVICE_NAME, MinionRouterService.class);
         if (systemId != null) {
-            return dispatcher.sendDetectorRequestToMinionUsingId(systemId);
+//            return dispatcher.sendDetectorRequestToMinionUsingId(systemId);
         }
 
-        return dispatcher.sendDetectorRequestToMinionUsingLocation(location);
+//        return dispatcher.sendDetectorRequestToMinionUsingLocation(location);
+        return CompletableFuture.failedFuture(new Exception("DEPRECATED"));
     }
 
     /**

@@ -17,6 +17,7 @@ import org.opennms.miniongateway.detector.api.LocalEchoAdapter;
 @Slf4j
 @Getter
 @Setter
+@Deprecated
 public class IgniteMonitorRemoteOperation implements RemoteOperation<Boolean> {
     @SpringResource(resourceName = "localEchoAdapter")
     @Setter(AccessLevel.NONE)
