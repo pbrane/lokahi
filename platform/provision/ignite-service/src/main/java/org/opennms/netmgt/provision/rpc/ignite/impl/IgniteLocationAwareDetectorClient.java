@@ -12,11 +12,9 @@ import org.opennms.netmgt.provision.LocationAwareDetectorClient;
 public class IgniteLocationAwareDetectorClient implements LocationAwareDetectorClient {
 
     private IgniteClient igniteClient;
-    private IgniteRemoteAsyncManager igniteRemoteAsyncManager;
-    private DetectorRequestRouteManager detectorRequestRouteManager;
 
     @Override
     public DetectorRequestExecutorBuilder detect() {
-        return new IgniteDetectorRequestExecutorBuilder(igniteClient, igniteRemoteAsyncManager, detectorRequestRouteManager);
+        return new IgniteDetectorRequestExecutorBuilder(igniteClient);
     }
 }

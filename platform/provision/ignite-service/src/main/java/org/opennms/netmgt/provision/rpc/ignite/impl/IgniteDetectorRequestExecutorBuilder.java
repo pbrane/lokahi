@@ -1,9 +1,7 @@
 package org.opennms.netmgt.provision.rpc.ignite.impl;
 
 import io.opentracing.Span;
-import org.apache.ignite.Ignite;
 import org.apache.ignite.client.IgniteClient;
-import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
 import org.opennms.netmgt.provision.DetectorRequestExecutorBuilder;
 import org.opennms.netmgt.provision.PreDetectCallback;
@@ -16,8 +14,6 @@ import java.util.Map;
 public class IgniteDetectorRequestExecutorBuilder implements DetectorRequestExecutorBuilder {
 
     private final IgniteClient igniteClient;
-    private final IgniteRemoteAsyncManager igniteRemoteAsyncManager;
-    private final DetectorRequestRouteManager detectorRequestRouteManager;
 
     private String location;
     private String systemId;
@@ -25,18 +21,12 @@ public class IgniteDetectorRequestExecutorBuilder implements DetectorRequestExec
     private String detectorName;
     private InetAddress address;
     private Map<String, String> attributes = new HashMap<>();
+    private Map<String, String> runtimeAttributes = new HashMap<>();
     private Integer nodeId;
     private Span span;
-    private PreDetectCallback preDetectCallback;
 
-    public IgniteDetectorRequestExecutorBuilder(
-        IgniteClient igniteClient,
-        IgniteRemoteAsyncManager igniteRemoteAsyncManager,
-        DetectorRequestRouteManager detectorRequestRouteManager) {
-
+    public IgniteDetectorRequestExecutorBuilder(IgniteClient igniteClient) {
         this.igniteClient = igniteClient;
-        this.igniteRemoteAsyncManager = igniteRemoteAsyncManager;
-        this.detectorRequestRouteManager = detectorRequestRouteManager;
     }
 
     @Override
@@ -86,6 +76,18 @@ public class IgniteDetectorRequestExecutorBuilder implements DetectorRequestExec
 
     @Override
     public DetectorRequestExecutorBuilder withAttributes(Map<String, String> attributes) {
+        this.runtimeAttributes.putAll(attributes);
+        return this;
+    }
+
+    @Override
+    public DetectorRequestExecutorBuilder withRuntimeAttribute(String key, String value) {
+        this.runtimeAttributes.put(key, value);
+        return this;
+    }
+
+    @Override
+    public DetectorRequestExecutorBuilder withRuntimeAttributes(Map<String, String> attributes) {
         this.attributes.putAll(attributes);
         return this;
     }
@@ -103,12 +105,6 @@ public class IgniteDetectorRequestExecutorBuilder implements DetectorRequestExec
     }
 
     @Override
-    public DetectorRequestExecutorBuilder withPreDetectCallback(PreDetectCallback preDetectCallback) {
-        this.preDetectCallback = preDetectCallback;
-        return this;
-    }
-
-    @Override
     public DetectorRequestExecutor build() {
         return
             new IgniteDetectorRequestExecutor(
@@ -119,11 +115,9 @@ public class IgniteDetectorRequestExecutorBuilder implements DetectorRequestExec
                 detectorName,
                 address,
                 attributes,
+                runtimeAttributes,
                 nodeId,
-                span,
-                preDetectCallback,
-                igniteRemoteAsyncManager,
-                detectorRequestRouteManager
-                );
+                span
+            );
     }
 }

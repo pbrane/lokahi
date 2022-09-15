@@ -7,26 +7,10 @@
   </cm:property-placeholder>
 
     <reference id="igniteClient" interface="org.apache.ignite.client.IgniteClient"/>
-    <!--
-    <reference id="igniteRemoteAsyncManagerFactory" interface="org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManagerFactory"/>
 
-    <bean id="igniteRemoteAsyncManager" factory-ref="igniteRemoteAsyncManagerFactory" factory-method="create">
-        <argument ref="igniteClient"/>
-    </bean>
-    -->
-    <bean id="detectorRequestRouteManager" class="org.opennms.netmgt.provision.rpc.ignite.impl.DetectorRequestRouteManager">
-        <argument ref="igniteClient"/>
-    </bean>
-
-    <bean
-        id="igniteLocationAwareDetectorClient"
+    <bean id="igniteLocationAwareDetectorClient"
         class="org.opennms.netmgt.provision.rpc.ignite.impl.IgniteLocationAwareDetectorClient">
-
         <property name="igniteClient" ref="igniteClient"/>
-        <!--
-        <property name="igniteRemoteAsyncManager" ref="igniteRemoteAsyncManager"/>
-        -->
-        <property name="detectorRequestRouteManager" ref="detectorRequestRouteManager"/>
     </bean>
 
     <service ref="igniteLocationAwareDetectorClient" interface="org.opennms.netmgt.provision.LocationAwareDetectorClient">

@@ -35,9 +35,6 @@ import java.util.Map;
 
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
 import org.opennms.netmgt.provision.DetectorRequestExecutorBuilder;
-import java.util.concurrent.CompletableFuture;
-import org.opennms.horizon.ipc.rpc.api.RpcRequest;
-import org.opennms.netmgt.provision.DetectRequest;
 import org.opennms.netmgt.provision.PreDetectCallback;
 import org.opennms.netmgt.provision.ServiceDetector;
 import org.slf4j.Logger;
@@ -110,6 +107,18 @@ public class DetectorRequestBuilderImpl implements DetectorRequestExecutorBuilde
     }
 
     @Override
+    public DetectorRequestExecutorBuilder withRuntimeAttribute(String key, String value) {
+        // TODO determine if we need this
+        return this;
+    }
+
+    @Override
+    public DetectorRequestExecutorBuilder withRuntimeAttributes(Map<String, String> attributes) {
+        // TODO determine if we need this
+        return this;
+    }
+
+    @Override
     public DetectorRequestBuilderImpl withAttribute(String key, String value) {
         attributes.put(key, value);
         return this;
@@ -124,12 +133,6 @@ public class DetectorRequestBuilderImpl implements DetectorRequestExecutorBuilde
     @Override
     public DetectorRequestBuilderImpl withParentSpan(Span span) {
         this.span = span;
-        return this;
-    }
-
-    @Override
-    public DetectorRequestBuilderImpl withPreDetectCallback(PreDetectCallback preDetectCallback) {
-        this.preDetectCallback = preDetectCallback;
         return this;
     }
 

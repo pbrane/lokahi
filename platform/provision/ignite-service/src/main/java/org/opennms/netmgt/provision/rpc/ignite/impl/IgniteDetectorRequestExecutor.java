@@ -2,13 +2,21 @@ package org.opennms.netmgt.provision.rpc.ignite.impl;
 
 import io.opentracing.Span;
 import java.net.InetAddress;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import org.apache.ignite.client.IgniteClient;
+import org.apache.ignite.client.IgniteClientFuture;
+import org.jetbrains.annotations.NotNull;
+import org.opennms.cloud.grpc.minion.Identity;
+import org.opennms.horizon.grpc.detector.contract.Attribute;
+import org.opennms.horizon.grpc.detector.contract.DetectorRequest;
 import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterService;
-import org.opennms.horizon.shared.ignite.remoteasync.manager.IgniteRemoteAsyncManager;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
-import org.opennms.netmgt.provision.PreDetectCallback;
 
 @Deprecated
 public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
@@ -20,12 +28,10 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
     private final String detectorName;
     private final InetAddress address;
     private final Map<String, String> attributes;
+    private final Map<String, String> runtimeAttributes;
     private final Integer nodeId;
     private final Span span; // TODO: wire into the remote call
-    private final PreDetectCallback preDetectCallback; // TODO: what does this do?  If needed, wire it across ignite
 
-    private final IgniteRemoteAsyncManager igniteRemoteAsyncManager;
-    private final DetectorRequestRouteManager detectorRequestRouteManager;
 
     public IgniteDetectorRequestExecutor(
         IgniteClient igniteClient,
@@ -35,11 +41,9 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
         String detectorName,
         InetAddress address,
         Map<String, String> attributes,
+        Map<String, String> runtimeAttributes,
         Integer nodeId,
-        Span span,
-        PreDetectCallback preDetectCallback,
-        IgniteRemoteAsyncManager igniteRemoteAsyncManager,
-        DetectorRequestRouteManager detectorRequestRouteManager
+        Span span
     ) {
 
         this.igniteClient = igniteClient;
@@ -49,64 +53,46 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
         this.detectorName = detectorName;
         this.address = address;
         this.attributes = attributes;
+        this.runtimeAttributes = runtimeAttributes;
         this.nodeId = nodeId;
         this.span = span;
-        this.preDetectCallback = preDetectCallback;
-        this.igniteRemoteAsyncManager = igniteRemoteAsyncManager;
-        this.detectorRequestRouteManager = detectorRequestRouteManager;
     }
 
     @Override
     public CompletableFuture<Boolean> execute() {
-        /*
-        UUID nodeId = findNodeIdToUse();
+        Identity identity = Identity.newBuilder()
+            .setLocation(location)
+            .setSystemId(systemId)
+            .build();
 
-        if (nodeId == null) {
-            return CompletableFuture.failedFuture(
-                new Exception("cannot (currently) reach a minion at location=" + location + ", system-id=" + systemId));
-        }
-
-        IgniteDetectorRemoteOperation remoteOperation = prepareRemoteOperation();
-        ClusterGroup clusterGroup = igniteClient.cluster().forNodeId(nodeId);
-        CompletableFuture future = igniteRemoteAsyncManager.submit(clusterGroup, remoteOperation);
-        */
-
-        MinionRouterService dispatcher = igniteClient.services().serviceProxy(MinionRouterService.IGNITE_SERVICE_NAME, MinionRouterService.class);
-        if (systemId != null) {
-//            return dispatcher.sendDetectorRequestToMinionUsingId(systemId);
-        }
-
-//        return dispatcher.sendDetectorRequestToMinionUsingLocation(location);
-        return CompletableFuture.failedFuture(new Exception("DEPRECATED"));
+        // TODO make sure all required parameters are passed
+        DetectorRequest requestObj = DetectorRequest.newBuilder()
+            .setIdentity(identity)
+            .addAllDetectorAttributes(mapAttributes(attributes))
+            .addAllRuntimeAttributes(mapAttributes(runtimeAttributes))
+            .setClassName(detectorName)
+            .setAddress(Optional.ofNullable(address).map(Object::toString).orElse(""))
+            .build();
+        IgniteClientFuture<Boolean> dispatcher = igniteClient.compute().executeAsync2(MinionRouterService.IGNITE_SERVICE_NAME, requestObj);
+        return dispatcher.toCompletableFuture();
     }
 
-    /**
-     * Determine which Node ID to use for the next execution.
-     *
-     * @return
-     */
-    /*
-    private UUID findNodeIdToUse() {
-        // If system-id was specified, send downstream to that system only
-        if (systemId != null) {
-            return detectorRequestRouteManager.findNodeIdToUseForSystemId(systemId);
-        } else {
-            return detectorRequestRouteManager.findNodeIdToUseForLocation(location);
-        }
+    @NotNull
+    private List<Attribute> mapAttributes(Map<String, String> attributes) {
+        return Optional.ofNullable(attributes)
+            .map(Map::entrySet)
+            .map(entries -> entries.stream()
+                .map(this::createAttribute)
+                .collect(Collectors.toList())
+            ).orElse(Collections.emptyList());
     }
 
-    private IgniteDetectorRemoteOperation prepareRemoteOperation() {
-        IgniteDetectorRemoteOperation result = new IgniteDetectorRemoteOperation();
-//        result.setLocation(location);
-//        result.setSystemId(systemId);
-//        result.setServiceName(serviceName);
-//        result.setDetectorName(detectorName);
-//        result.setAddress(address);
-//        result.setAttributes(attributes);
-//        result.setNodeId(nodeId);
-
-        return result;
+    @NotNull
+    private Attribute createAttribute(Entry<String, String> entry) {
+        return Attribute.newBuilder()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
     }
-    //*/
 
 }

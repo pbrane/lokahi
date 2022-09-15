@@ -53,11 +53,13 @@ public interface DetectorRequestExecutorBuilder {
 
     DetectorRequestExecutorBuilder withAttributes(Map<String, String> attributes);
 
+    DetectorRequestExecutorBuilder withRuntimeAttribute(String key, String value);
+
+    DetectorRequestExecutorBuilder withRuntimeAttributes(Map<String, String> attributes);
+
     DetectorRequestExecutorBuilder withNodeId(Integer nodeId);
 
     DetectorRequestExecutorBuilder withParentSpan(Span span);
-
-    DetectorRequestExecutorBuilder withPreDetectCallback(PreDetectCallback preDetectCallback);
 
     DetectorRequestExecutor build();
 
