@@ -71,7 +71,7 @@ public class RpcRequestTimeoutManagerImpl implements RpcRequestTimeoutManager {
             try {
                 RpcResponseHandler responseHandler = rpcTimeoutQueue.take();
                 if (!responseHandler.isProcessed()) {
-                    log.warn("RPC request from module: {} with RpcId:{} timedout ", responseHandler.getRpcModule().getId(),
+                    log.warn("RPC request from module: {} with RpcId:{} timedout ", responseHandler.getRpcModuleId(),
                             responseHandler.getRpcId());
                     responseHandlerExecutor.execute(() -> responseHandler.sendResponse(null));
                 }

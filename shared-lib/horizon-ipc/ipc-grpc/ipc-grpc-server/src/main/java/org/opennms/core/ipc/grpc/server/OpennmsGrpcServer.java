@@ -58,6 +58,7 @@ import org.opennms.cloud.grpc.minion.RpcResponseProto;
 import org.opennms.cloud.grpc.minion.SinkMessage;
 import org.opennms.core.grpc.common.GrpcIpcServer;
 import org.opennms.core.grpc.interceptor.InterceptorFactory;
+import org.opennms.core.ipc.grpc.server.manager.BasicRpcResponseHandler;
 import org.opennms.core.ipc.grpc.server.manager.LocationIndependentRpcClientFactory;
 import org.opennms.core.ipc.grpc.server.manager.MinionManager;
 import org.opennms.core.ipc.grpc.server.manager.RpcConnectionTracker;
@@ -65,6 +66,7 @@ import org.opennms.core.ipc.grpc.server.manager.RpcRequestTimeoutManager;
 import org.opennms.core.ipc.grpc.server.manager.RpcRequestTracker;
 import org.opennms.core.ipc.grpc.server.manager.adapter.MinionRSTransportAdapter;
 import org.opennms.core.ipc.grpc.server.manager.rpc.RemoteRegistrationHandler;
+import org.opennms.core.ipc.grpc.server.manager.rpc.RpcProxyHandler;
 import org.opennms.core.ipc.grpc.server.manager.rpcstreaming.MinionRpcStreamConnectionManager;
 import org.opennms.horizon.shared.ipc.rpc.api.RemoteExecutionException;
 import org.opennms.horizon.shared.ipc.rpc.api.RequestTimedOutException;
@@ -100,7 +102,7 @@ import org.slf4j.MDC.MDCCloseable;
  */
 
 @SuppressWarnings("rawtypes")
-public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements RpcClientFactory {
+public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements RpcClientFactory, RpcProxyHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpennmsGrpcServer.class);
     private final GrpcIpcServer grpcIpcServer;
@@ -248,6 +250,30 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
         return locationIndependentRpcClientFactory.createClient(module, remoteRegistrationHandler);
     }
 
+    @Override
+    public CompletableFuture<RpcResponseProto> handle(RpcRequestProto request) {
+        CompletableFuture<RpcResponseProto> future = new CompletableFuture<>();
+
+        BasicRpcResponseHandler responseHandler = new BasicRpcResponseHandler(request.getExpirationTime(), request.getRpcId(),
+            request.getModuleId(), future);
+
+        rpcRequestTracker.addRequest(request.getRpcId(), responseHandler);
+        rpcRequestTimeoutManager.registerRequestTimeout(responseHandler);
+
+        if (!request.getSystemId().isBlank()) {
+            StreamObserver<RpcRequestProto> observer = rpcConnectionTracker.lookupByMinionId(request.getSystemId());
+            if (observer == null) {
+                return CompletableFuture.failedFuture(new IllegalArgumentException("Connection to minion " + request.getSystemId() + " not found"));
+            }
+            observer.onNext(request);
+        }
+        StreamObserver<RpcRequestProto> observer = rpcConnectionTracker.lookupByLocationRoundRobin(request.getLocation());
+        if (observer == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Connection to location " + request.getLocation() + " not found"));
+        }
+        observer.onNext(request);
+        return future;
+    }
 
 //========================================
 // Message Consumer Manager
@@ -359,10 +385,10 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
         }
 
         @Override
-        public void sendResponse(String message) {
+        public void sendResponse(RpcResponseProto message) {
             try {
                 if (message != null) {
-                    T response = rpcModule.unmarshalResponse(message);
+                    T response = rpcModule.unmarshalResponse(message.getRpcContent().toStringUtf8());
                     if (response.getErrorMessage() != null) {
                         responseFuture.completeExceptionally(new RemoteExecutionException(response.getErrorMessage()));
                     } else {
@@ -372,9 +398,10 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
                 } else {
                     responseFuture.completeExceptionally(new RequestTimedOutException(new TimeoutException()));
                 }
-                rpcRequestTracker.remove(rpcId);
             } catch (Throwable e) {
                 LOG.error("Error while processing RPC response {}", message, e);
+            } finally {
+                rpcRequestTracker.remove(rpcId);
             }
             if (isProcessed) {
                 LOG.debug("RPC Response from module: {} handled successfully for RpcId:{}.", rpcId, rpcModule.getId());
@@ -391,7 +418,6 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
             return rpcId;
         }
 
-
         @Override
         public int compareTo(Delayed other) {
             long myDelay = getDelay(TimeUnit.MILLISECONDS);
@@ -405,8 +431,9 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
             return unit.convert(expirationTime - now, TimeUnit.MILLISECONDS);
         }
 
-        public RpcModule<S, T> getRpcModule() {
-            return rpcModule;
+        @Override
+        public String getRpcModuleId() {
+            return rpcModule.getId();
         }
     }
 

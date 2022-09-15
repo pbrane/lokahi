@@ -29,14 +29,16 @@
 package org.opennms.horizon.shared.ipc.rpc.api;
 
 import java.util.concurrent.Delayed;
+import org.opennms.cloud.grpc.minion.RpcResponseProto;
 
 public interface RpcResponseHandler extends Delayed {
 
-    void sendResponse(String response);
+    void sendResponse(RpcResponseProto response);
 
     boolean isProcessed();
 
     String getRpcId();
 
-    RpcModule getRpcModule();
+    String getRpcModuleId();
+
 }
