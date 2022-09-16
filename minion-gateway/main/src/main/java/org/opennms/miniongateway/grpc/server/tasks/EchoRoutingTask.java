@@ -20,7 +20,7 @@ import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterService;
 import org.opennms.horizon.shared.ignite.remoteasync.compute.RoutingRequest;
 import org.opennms.miniongateway.detector.api.LocalEchoAdapter;
 
-@ComputeTaskName("echoRoutingTask")
+@ComputeTaskName(MinionRouterService.IGNITE_SERVICE_NAME)
 public class EchoRoutingTask implements ComputeTask<RoutingRequest, Object> {
 
     @SpringResource(resourceName = "minionRouterService")
@@ -56,7 +56,7 @@ public class EchoRoutingTask implements ComputeTask<RoutingRequest, Object> {
 
     @Override
     public @Nullable Object reduce(List<ComputeJobResult> results) throws IgniteException {
-        return results.get(0);
+        return results.get(0).getData();
     }
 
     @RequiredArgsConstructor
