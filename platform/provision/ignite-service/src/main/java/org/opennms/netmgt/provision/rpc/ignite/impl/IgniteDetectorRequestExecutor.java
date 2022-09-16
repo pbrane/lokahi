@@ -1,5 +1,7 @@
 package org.opennms.netmgt.provision.rpc.ignite.impl;
 
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.opentracing.Span;
 import java.net.InetAddress;
 import java.util.Collections;
@@ -7,19 +9,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.ignite.client.IgniteClient;
 import org.apache.ignite.client.IgniteClientFuture;
 import org.jetbrains.annotations.NotNull;
 import org.opennms.cloud.grpc.minion.Identity;
+import org.opennms.cloud.grpc.minion.Identity.Builder;
+import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.horizon.grpc.detector.contract.Attribute;
 import org.opennms.horizon.grpc.detector.contract.DetectorRequest;
+import org.opennms.horizon.grpc.detector.contract.DetectorResponse;
 import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterService;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Deprecated
 public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
+
+    private final Logger logger = LoggerFactory.getLogger(IgniteDetectorRequestExecutor.class);
 
     private final IgniteClient igniteClient;
     private final String location;
@@ -60,21 +70,45 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
     @Override
     public CompletableFuture<Boolean> execute() {
-        Identity identity = Identity.newBuilder()
-            .setLocation(location)
-            .setSystemId(systemId)
-            .build();
+        Builder identityBuilder = Identity.newBuilder().setLocation(location);
+        Optional.ofNullable(systemId).ifPresent(identityBuilder::setSystemId);
 
         // TODO make sure all required parameters are passed
         DetectorRequest requestObj = DetectorRequest.newBuilder()
-            .setIdentity(identity)
+            .setIdentity(identityBuilder.build())
             .addAllDetectorAttributes(mapAttributes(attributes))
             .addAllRuntimeAttributes(mapAttributes(runtimeAttributes))
-            .setClassName(detectorName)
+            .setClassName(Optional.ofNullable(detectorName).orElse(""))
             .setAddress(Optional.ofNullable(address).map(Object::toString).orElse(""))
             .build();
-        IgniteClientFuture<Boolean> dispatcher = igniteClient.compute().executeAsync2(MinionRouterService.IGNITE_SERVICE_NAME, requestObj);
-        return dispatcher.toCompletableFuture();
+
+        RpcRequestProto.Builder rpcRequest = RpcRequestProto.newBuilder()
+            .setLocation(location)
+            .setModuleId("detector")
+            .setExpirationTime(System.currentTimeMillis() + 10_000)
+            .setRpcContent(Any.pack(requestObj).getValue())
+            .setRpcId(UUID.randomUUID().toString());
+
+        Optional.ofNullable(systemId).ifPresent(rpcRequest::setSystemId);
+
+        IgniteClientFuture<RpcRequestProto> dispatcher = igniteClient.compute()
+            .executeAsync2(MinionRouterService.IGNITE_SERVICE_NAME, rpcRequest.build());
+
+        return dispatcher.toCompletableFuture()
+            .thenApply(response -> {
+                try {
+                    return Any.parseFrom(response.getRpcContent());
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .thenApply(any -> {
+                try {
+                    return any.unpack(DetectorResponse.class);
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RuntimeException(e);
+                }
+            }).thenApply(DetectorResponse::getDetected);
     }
 
     @NotNull

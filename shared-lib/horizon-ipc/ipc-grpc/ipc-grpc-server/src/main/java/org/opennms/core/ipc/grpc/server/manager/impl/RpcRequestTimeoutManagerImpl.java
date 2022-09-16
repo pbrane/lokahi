@@ -3,6 +3,7 @@ package org.opennms.core.ipc.grpc.server.manager.impl;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.PostConstruct;
 import org.opennms.core.ipc.grpc.server.manager.RpcRequestTimeoutManager;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcResponseHandler;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ public class RpcRequestTimeoutManagerImpl implements RpcRequestTimeoutManager {
 //----------------------------------------
 
     @Override
+    @PostConstruct
     public void start() {
         rpcTimeoutExecutor.execute(this::handleRpcTimeouts);
     }

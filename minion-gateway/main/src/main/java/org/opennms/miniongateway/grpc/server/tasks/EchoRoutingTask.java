@@ -5,39 +5,44 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
-import lombok.RequiredArgsConstructor;
 import org.apache.ignite.IgniteException;
+import org.apache.ignite.IgniteLogger;
 import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.compute.ComputeJob;
 import org.apache.ignite.compute.ComputeJobResult;
 import org.apache.ignite.compute.ComputeJobResultPolicy;
 import org.apache.ignite.compute.ComputeTask;
 import org.apache.ignite.compute.ComputeTaskName;
+import org.apache.ignite.resources.LoggerResource;
 import org.apache.ignite.resources.SpringResource;
 import org.jetbrains.annotations.NotNull;
+import org.opennms.cloud.grpc.minion.RpcRequestProto;
+import org.opennms.cloud.grpc.minion.RpcResponseProto;
+import org.opennms.core.ipc.grpc.server.manager.rpc.RpcProxyHandler;
 import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterService;
-import org.opennms.horizon.shared.ignite.remoteasync.compute.RoutingRequest;
 import org.opennms.miniongateway.detector.api.LocalEchoAdapter;
+import org.opennms.miniongateway.detector.server.IgniteRpcRequestDispatcher;
 
 @ComputeTaskName(MinionRouterService.IGNITE_SERVICE_NAME)
-public class EchoRoutingTask implements ComputeTask<RoutingRequest, Object> {
+public class EchoRoutingTask implements ComputeTask<RpcRequestProto, RpcResponseProto> {
 
     @SpringResource(resourceName = "minionRouterService")
-    private MinionRouterService minionRouterService;
+    private transient MinionRouterService minionRouterService;
 
     @Override
-    public @NotNull Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, @Nullable RoutingRequest arg) throws IgniteException {
-        UUID gatewayNodeId=null;
-        switch (arg.getType() ) {
-            case ID:
-                gatewayNodeId = minionRouterService.findGatewayNodeWithId(arg.getValue());
-                break;
-            case LOCATION:
-                gatewayNodeId = minionRouterService.findGatewayNodeWithLocation(arg.getValue());
-                break;
+    public @NotNull Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, @Nullable RpcRequestProto arg) throws IgniteException {
+        UUID gatewayNodeId = null;
+        if (!arg.getSystemId().isBlank()) {
+            gatewayNodeId = minionRouterService.findGatewayNodeWithId(arg.getSystemId());
+        } else {
+            gatewayNodeId = minionRouterService.findGatewayNodeWithLocation(arg.getLocation());
         }
-        RoutingJob job = new RoutingJob(arg.getValue(), null);
+        RoutingJob job = new RoutingJob(arg);
         Map<ComputeJob, ClusterNode> map = new HashMap<>();
         UUID finalGatewayNodeId = gatewayNodeId;
         ClusterNode node = subgrid.stream().filter(clusterNode -> finalGatewayNodeId.equals(clusterNode.id())).findFirst().get();
@@ -55,28 +60,65 @@ public class EchoRoutingTask implements ComputeTask<RoutingRequest, Object> {
     }
 
     @Override
-    public @Nullable Object reduce(List<ComputeJobResult> results) throws IgniteException {
-        return results.get(0).getData();
+    public @Nullable RpcResponseProto reduce(List<ComputeJobResult> results) throws IgniteException {
+        if (results.isEmpty()) {
+            return null;
+        }
+        ComputeJobResult jobResult = results.get(0);
+        if (jobResult.getException() != null) {
+            throw jobResult.getException();
+        }
+        return jobResult.getData();
     }
 
-    @RequiredArgsConstructor
-    private class RoutingJob implements ComputeJob {
-        //TODO MMF: do we really need both of these? Or just one?
-        private final String id;
-        private final String location;
-        
-        @SpringResource(resourceName = "localEchoAdapter")
-        private LocalEchoAdapter localEchoAdapter;
+    public static class RoutingJob implements ComputeJob {
+        private final RpcRequestProto request;
+
+        @LoggerResource
+        private transient IgniteLogger logger;
+
+        @SpringResource(resourceClass = IgniteRpcRequestDispatcher.class)
+        private transient IgniteRpcRequestDispatcher requestDispatcher;
+
+        private CompletableFuture<RpcResponseProto> responseFuture;
+
+        public RoutingJob(RpcRequestProto request) {
+            this.request = request;
+        }
 
         @Override
         public void cancel() {
-
+            if (responseFuture != null) {
+                responseFuture.cancel(true);
+            }
         }
 
         @Override
         public Object execute() throws IgniteException {
-            System.out.println(LocalDateTime.now() +  "Routing task executing");
-            return localEchoAdapter.echo(location, id);
+            try {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Dispatching RPC request " + request);
+                } else if (logger.isDebugEnabled()) {
+                    logger.debug("Dispatching rpc request " + request.getRpcId());
+                }
+                responseFuture = requestDispatcher.execute(request).whenComplete((response, error) -> {
+                    if (error != null) {
+                        logger.warning("Failure found while execution of " + request.getRpcId() + " " + error);
+                        return;
+                    }
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("Received RPC response " + response);
+                    } else if (logger.isDebugEnabled()) {
+                        logger.debug("Received answer for rpc request " + request.getRpcId());
+                    }
+                });
+                return responseFuture.get();
+            } catch (InterruptedException e) {
+                throw new IgniteException("Failed to dispatch request", e);
+            } catch (ExecutionException e) {
+                logger.warning("Failure while executing request " + request.getRpcId(), e);
+                return null;
+            }
         }
     }
 }

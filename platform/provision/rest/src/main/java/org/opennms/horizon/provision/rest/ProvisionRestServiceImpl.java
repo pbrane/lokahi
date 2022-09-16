@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Response;
@@ -106,9 +107,13 @@ public class ProvisionRestServiceImpl implements ProvisionRestService {
             .withLocation("Default")
             .withServiceName("bar");
         CompletableFuture<Boolean> future = detectorRequestExecutorBuilder.build().execute();
-        future.orTimeout(10, TimeUnit.SECONDS).whenComplete((r, e) -> {
+        future.orTimeout(2, TimeUnit.MINUTES).whenComplete((r, e) -> {
             if (e != null) {
-                log.warn("Remote operation did not finish on time!");
+                if (e instanceof TimeoutException) {
+                    log.warn("Remote operation did not finish on time!");
+                } else {
+                    log.warn("Remote failure while task execution", e);
+                }
                 callback.resume(e);
                 return;
             }

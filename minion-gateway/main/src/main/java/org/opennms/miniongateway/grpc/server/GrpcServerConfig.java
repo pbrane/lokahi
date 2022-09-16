@@ -12,7 +12,9 @@ import org.opennms.core.ipc.grpc.server.OpennmsGrpcServer;
 import org.opennms.core.ipc.grpc.server.manager.LocationIndependentRpcClientFactory;
 import org.opennms.core.ipc.grpc.server.manager.MinionManager;
 import org.opennms.core.ipc.grpc.server.manager.RpcConnectionTracker;
+import org.opennms.core.ipc.grpc.server.manager.RpcRequestTimeoutManager;
 import org.opennms.core.ipc.grpc.server.manager.RpcRequestTracker;
+import org.opennms.core.ipc.grpc.server.manager.impl.RpcRequestTimeoutManagerImpl;
 import org.opennms.core.ipc.grpc.server.manager.impl.RpcRequestTrackerImpl;
 import org.opennms.core.ipc.grpc.server.manager.rpc.LocationIndependentRpcClientFactoryImpl;
 import org.opennms.core.ipc.grpc.server.manager.rpcstreaming.MinionRpcStreamConnectionManager;
@@ -81,6 +83,11 @@ public class GrpcServerConfig {
     }
 
     @Bean
+    public RpcRequestTimeoutManager requestTimeoutManager() {
+        return new RpcRequestTimeoutManagerImpl();
+    }
+
+    @Bean
     public OpennmsGrpcServer opennmsServer(
         @Autowired GrpcIpcServer serverBuilder,
         @Autowired MinionManager minionManager,
@@ -90,7 +97,8 @@ public class GrpcServerConfig {
         @Autowired MinionRpcStreamConnectionManager minionRpcStreamConnectionManager,
         @Autowired @Qualifier("minionToCloudRPCProcessor") BiConsumer<RpcRequestProto, StreamObserver<RpcResponseProto>> minionToCloudRPCProcessor,
         @Autowired @Qualifier("cloudToMinionMessageProcessor") BiConsumer<Identity, StreamObserver<CloudToMinionMessage>> cloudToMinionMessageProcessor,
-        @Autowired TaskResultsKafkaForwarder taskResultsKafkaForwarder
+        @Autowired TaskResultsKafkaForwarder taskResultsKafkaForwarder,
+        @Autowired RpcRequestTimeoutManager rpcRequestTimeoutManager
     ) throws Exception {
 
         OpennmsGrpcServer server = new OpennmsGrpcServer(serverBuilder, Arrays.asList(
@@ -100,6 +108,7 @@ public class GrpcServerConfig {
 
         server.setRpcConnectionTracker(rpcConnectionTracker);
         server.setRpcRequestTracker(rpcRequestTracker);
+        server.setRpcRequestTimeoutManager(rpcRequestTimeoutManager);
         server.setMinionManager(minionManager);
         server.setLocationIndependentRpcClientFactory(locationIndependentRpcClientFactory);
         server.setMinionRpcStreamConnectionManager(minionRpcStreamConnectionManager);

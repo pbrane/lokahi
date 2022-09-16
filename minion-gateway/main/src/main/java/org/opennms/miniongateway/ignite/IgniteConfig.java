@@ -7,6 +7,7 @@ import org.apache.ignite.Ignition;
 import org.apache.ignite.configuration.ClientConnectorConfiguration;
 import org.apache.ignite.configuration.DataStorageConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.configuration.ThinClientConfiguration;
 import org.apache.ignite.kubernetes.configuration.KubernetesConnectionConfiguration;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKubernetesIpFinder;
@@ -51,9 +52,13 @@ public class IgniteConfig {
     private IgniteConfiguration prepareIgniteConfiguration() {
         org.apache.ignite.configuration.IgniteConfiguration igniteConfiguration = new org.apache.ignite.configuration.IgniteConfiguration();
 
+        // enable compute calls from thin client
+        ThinClientConfiguration thinClientConfiguration = new ThinClientConfiguration();
+        thinClientConfiguration.setMaxActiveComputeTasksPerConnection(100);
+
         igniteConfiguration.setClientMode(false);
         igniteConfiguration.setMetricsLogFrequency(0);  // DISABLE IGNITE METRICS
-        igniteConfiguration.setClientConnectorConfiguration(new ClientConnectorConfiguration()); // enable client connector
+        igniteConfiguration.setClientConnectorConfiguration(new ClientConnectorConfiguration().setThinClientConfiguration(thinClientConfiguration)); // enable client connector
 
         if (useKubernetes) {
             configureClusterNodeDiscoveryKubernetes(igniteConfiguration);

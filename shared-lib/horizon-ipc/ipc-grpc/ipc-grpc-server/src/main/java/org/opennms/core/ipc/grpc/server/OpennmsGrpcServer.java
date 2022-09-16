@@ -266,6 +266,7 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
                 return CompletableFuture.failedFuture(new IllegalArgumentException("Connection to minion " + request.getSystemId() + " not found"));
             }
             observer.onNext(request);
+            return future;
         }
         StreamObserver<RpcRequestProto> observer = rpcConnectionTracker.lookupByLocationRoundRobin(request.getLocation());
         if (observer == null) {
