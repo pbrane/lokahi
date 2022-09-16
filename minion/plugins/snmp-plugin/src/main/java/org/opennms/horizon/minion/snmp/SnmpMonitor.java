@@ -28,28 +28,33 @@
 
 package org.opennms.horizon.minion.snmp;
 
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl.ServiceMonitorResponseImplBuilder;
-import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
-import org.opennms.horizon.shared.snmp.SnmpHelper;
-import org.opennms.horizon.shared.snmp.SnmpObjId;
-import org.opennms.horizon.shared.snmp.SnmpStrategy;
-import org.opennms.horizon.shared.snmp.StrategyResolver;
-import org.opennms.horizon.shared.utils.InetAddressUtils;
+import com.google.protobuf.Any;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
-import org.opennms.horizon.minion.plugin.api.ParameterMap;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse.Status;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl.ServiceMonitorResponseImplBuilder;
+import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
+import org.opennms.horizon.shared.snmp.SnmpConfiguration;
+import org.opennms.horizon.shared.snmp.SnmpObjId;
+import org.opennms.horizon.shared.snmp.SnmpUtils;
+import org.opennms.horizon.shared.snmp.SnmpValue;
+import org.opennms.horizon.shared.snmp.StrategyResolver;
+import org.opennms.snmp.contract.SnmpMonitorRequest;
+import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 /**
+ * TBD888: is there lost logic here?  For example, counting
+ *
  * <P>
  * This class is designed to be used by the service poller framework to test the
  * availability of the SNMP service on remote interfaces. The class implements
@@ -65,6 +70,8 @@ import org.slf4j.LoggerFactory;
  * @author <A HREF="http://www.opennms.org/">OpenNMS </A>
  */
 public class SnmpMonitor extends SnmpMonitorStrategy {
+
+    public static final long NANOSECOND_PER_MILLISECOND = 1_000_000;
     
     public static final Logger LOG = LoggerFactory.getLogger(SnmpMonitor.class);
 
@@ -79,8 +86,30 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
     private static final String DEFAULT_REASON_TEMPLATE = "Observed value '${observedValue}' does not meet criteria '${operator} ${operand}'";
     private final StrategyResolver strategyResolver;
 
+    private final Descriptors.FieldDescriptor communityFieldDescriptor;
+    private final Descriptors.FieldDescriptor hostFieldDescriptor;
+    private final Descriptors.FieldDescriptor hexFieldDescriptor;
+    private final Descriptors.FieldDescriptor oidFieldDescriptor;
+    private final Descriptors.FieldDescriptor operatorFieldDescriptor;
+    private final Descriptors.FieldDescriptor operandFieldDescriptor;
+    private final Descriptors.FieldDescriptor reasonTemplateFieldDescriptor;
+    private final Descriptors.FieldDescriptor retriesFieldDescriptor;
+    private final Descriptors.FieldDescriptor timeoutFieldDescriptor;
+
     public SnmpMonitor(StrategyResolver strategyResolver) {
         this.strategyResolver = strategyResolver;
+
+        Descriptors.Descriptor snmpMonitorRequestDescriptor = SnmpMonitorRequest.getDefaultInstance().getDescriptorForType();
+
+        communityFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.COMMUNITY_FIELD_NUMBER);
+        hexFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.HEX_FIELD_NUMBER);
+        hostFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.HOST_FIELD_NUMBER);
+        oidFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OID_FIELD_NUMBER);
+        operandFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OPERAND_FIELD_NUMBER);
+        operatorFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.OPERATOR_FIELD_NUMBER);
+        reasonTemplateFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.REASON_TEMPLATE_FIELD_NUMBER);
+        retriesFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.RETRIES_FIELD_NUMBER);
+        timeoutFieldDescriptor = snmpMonitorRequestDescriptor.findFieldByNumber(SnmpMonitorRequest.TIMEOUT_FIELD_NUMBER);
     }
 
     /**
@@ -94,81 +123,84 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
      *                Thrown for any unrecoverable errors.
      */
 
-//    public PollStatus poll(MonitoredService svc, Map<String, Object> parameters) {
     @Override
-    public CompletableFuture<ServiceMonitorResponse> poll(MonitoredService svc, Map<String, Object> parameters) {
+    public CompletableFuture<ServiceMonitorResponse> poll(MonitoredService svc, Any config) {
 
+        CompletableFuture<ServiceMonitorResponse> future = null;
+        String hostAddress = null;
 
-        InetAddress ipaddr = svc.getAddress();
-
-        // Retrieve this interface's SNMP peer object
+        // Establish SNMP session with interface
         //
-        final SnmpAgentConfig agentConfig = getAgentConfig(svc, parameters);
-        final String hostAddress = InetAddressUtils.str(ipaddr);
-
-        // Get configuration parameters
-        //
-        String oid = ParameterMap.getKeyedString(parameters, "oid", DEFAULT_OBJECT_IDENTIFIER);
-        String operator = ParameterMap.getKeyedString(parameters, "operator", null);
-        String operand = ParameterMap.getKeyedString(parameters, "operand", null);
-        String walkstr = ParameterMap.getKeyedString(parameters, "walk", "false");
-        String matchstr = ParameterMap.getKeyedString(parameters, "match-all", "true");
-        int countMin = ParameterMap.getKeyedInteger(parameters, "minimum", 0);
-        int countMax = ParameterMap.getKeyedInteger(parameters, "maximum", 0);
-        String reasonTemplate = ParameterMap.getKeyedString(parameters, "reason-template", DEFAULT_REASON_TEMPLATE);
-        String hexstr = ParameterMap.getKeyedString(parameters, "hex", "false");
-
-        hex = "true".equalsIgnoreCase(hexstr);
-        // set timeout and retries on SNMP peer object
-        //
-        agentConfig.setTimeout(ParameterMap.getKeyedInteger(parameters, "timeout", agentConfig.getTimeout()));
-        agentConfig.setRetries(ParameterMap.getKeyedInteger(parameters, "retry", ParameterMap.getKeyedInteger(parameters, "retries", agentConfig.getRetries())));
-        agentConfig.setPort(ParameterMap.getKeyedInteger(parameters, "port", agentConfig.getPort()));
-
-        // Squirrel the configuration parameters away in a Properties for later expansion if service is down
-        Properties svcParams = new Properties();
-        svcParams.setProperty("oid", oid);
-        svcParams.setProperty("operator", String.valueOf(operator));
-        svcParams.setProperty("operand", String.valueOf(operand));
-        svcParams.setProperty("walk", walkstr);
-        svcParams.setProperty("matchAll", matchstr);
-        svcParams.setProperty("minimum", String.valueOf(countMin));
-        svcParams.setProperty("maximum", String.valueOf(countMax));
-        svcParams.setProperty("timeout", String.valueOf(agentConfig.getTimeout()));
-        svcParams.setProperty("retry", String.valueOf(agentConfig.getRetries()));
-        svcParams.setProperty("retries", svcParams.getProperty("retry"));
-        svcParams.setProperty("ipaddr", hostAddress);
-        svcParams.setProperty("port", String.valueOf(agentConfig.getPort()));
-        svcParams.setProperty("hex", hexstr);
-
         try {
+            if (! config.is(SnmpMonitorRequest.class)) {
+                throw new IllegalArgumentException("config must be an SnmpRequest; type-url=" + config.getTypeUrl());
+            }
+
+            SnmpMonitorRequest snmpMonitorRequest = config.unpack(SnmpMonitorRequest.class);
+            SnmpMonitorRequest effectiveSnmpMonitorRequest = populateDefaultsAsNeeded(snmpMonitorRequest);
+
+            // Retrieve this interface's SNMP peer object
+            //
+            SnmpAgentConfig agentConfig = getAgentConfig(svc, effectiveSnmpMonitorRequest);
+            hostAddress = effectiveSnmpMonitorRequest.getHost();
+
+            // Get configuration parameters
+            //
+            String oid = effectiveSnmpMonitorRequest.getOid();
+            String operator = protobufDefaultNullHelper(effectiveSnmpMonitorRequest, operatorFieldDescriptor);
+            String operand = protobufDefaultNullHelper(effectiveSnmpMonitorRequest, operandFieldDescriptor);
+            String reasonTemplate = effectiveSnmpMonitorRequest.getReasonTemplate();
+            boolean hex = effectiveSnmpMonitorRequest.getHex();
+
+            agentConfig.setTimeout(effectiveSnmpMonitorRequest.getTimeout());
+            agentConfig.setRetries(effectiveSnmpMonitorRequest.getRetries());
+
+            // TBD888
+            // String walkstr = ParameterMap.getKeyedString(config, "walk", "false");
+            // String matchstr = ParameterMap.getKeyedString(config, "match-all", "true");
+            // int countMin = ParameterMap.getKeyedInteger(config, "minimum", 0);
+            // int countMax = ParameterMap.getKeyedInteger(config, "maximum", 0);
+            // String reasonTemplate = ParameterMap.getKeyedString(config, "reason-template", DEFAULT_REASON_TEMPLATE);
+
+            // set timeout and retries on SNMP peer object
+            //
+            // agentConfig.setPort(ParameterMap.getKeyedInteger(config, "port", agentConfig.getPort()));
+
+            // Squirrel the configuration parameters away in a Properties for later expansion if service is down
+            // Properties svcParams = new Properties();
+            // svcParams.setProperty("oid", oid);
+            // svcParams.setProperty("operator", String.valueOf(operator));
+            // svcParams.setProperty("operand", String.valueOf(operand));
+            // svcParams.setProperty("walk", walkstr);
+            // svcParams.setProperty("matchAll", matchstr);
+            // svcParams.setProperty("minimum", String.valueOf(countMin));
+            // svcParams.setProperty("maximum", String.valueOf(countMax));
+            // svcParams.setProperty("timeout", String.valueOf(agentConfig.getTimeout()));
+            // svcParams.setProperty("retry", String.valueOf(agentConfig.getRetries()));
+            // svcParams.setProperty("retries", svcParams.getProperty("retry"));
+            // svcParams.setProperty("ipaddr", hostAddress);
+            // svcParams.setProperty("port", String.valueOf(agentConfig.getPort()));
+            // svcParams.setProperty("hex", hexstr);
+
+
+//            TODO: Removing to decouple from horizon core
+//            TimeoutTracker tracker = new TimeoutTracker(parameters, agentConfig.getRetries(), agentConfig.getTimeout());
+//            tracker.reset();
+//            tracker.startAttempt();
+
+
+            final String finalHostAddress = hostAddress;
             SnmpObjId snmpObjectId = SnmpObjId.get(oid);
-            return new SnmpHelper(strategyResolver).getAsync(agentConfig, new SnmpObjId[] {snmpObjectId})
-                .<ServiceMonitorResponse>thenApply(result -> {
-                    ServiceMonitorResponseImplBuilder builder = ServiceMonitorResponseImpl.builder()
-                        .status(Status.Unknown);
 
-                    Map<String, Number> properties = new HashMap<>();
-                    if (result[0] != null) {
-                        LOG.debug("poll: SNMP poll succeeded, addr={} oid={} value={}", hostAddress, oid, result);
+            long startTimestamp = System.nanoTime();
 
-                        if (result[0].isNumeric()) {
-                            properties.put("observedValue", result[0].toLong());
-                        }
+            future =
+                SnmpUtils.getAsync(agentConfig, new SnmpObjId[]{ snmpObjectId })
+                    .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand, startTimestamp))
+                    .orTimeout(agentConfig.getTimeout(), TimeUnit.MILLISECONDS)
+            ;
 
-                        if (meetsCriteria(result[0], operator, operand)) {
-                            builder.status(Status.Up);
-                        } else {
-                            builder.status(Status.Down);
-                        }
-                    } else {
-                        LOG.debug("SNMP poll failed, addr={} oid={}", hostAddress, oid);
-                        builder.status(Status.Unknown);
-                    }
-
-                    builder.properties(properties);
-                    return builder.build();
-                }).orTimeout(agentConfig.getTimeout(), TimeUnit.MILLISECONDS);
+            return future;
         } catch (NumberFormatException e) {
             LOG.debug("Number operator used in a non-number evaluation", e);
             return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder().reason(e.getMessage()).status(Status.Unknown).build());
@@ -181,4 +213,99 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
         }
     }
 
+//========================================
+// Internal Methods
+//----------------------------------------
+
+    private SnmpMonitorRequest populateDefaultsAsNeeded(SnmpMonitorRequest snmpMonitorRequest) {
+        SnmpMonitorRequest.Builder resultBuilder = SnmpMonitorRequest.newBuilder(snmpMonitorRequest);
+
+
+        if (! snmpMonitorRequest.hasField(communityFieldDescriptor)) {
+            resultBuilder.setCommunity(SnmpConfiguration.DEFAULT_READ_COMMUNITY);
+        }
+
+        if (! snmpMonitorRequest.hasField(hexFieldDescriptor)) {
+            resultBuilder.setHex(false);
+        }
+
+        if (! snmpMonitorRequest.hasField(oidFieldDescriptor)) {
+            resultBuilder.setOid(DEFAULT_OBJECT_IDENTIFIER);
+        }
+
+        if (! snmpMonitorRequest.hasField(reasonTemplateFieldDescriptor)) {
+            resultBuilder.setReasonTemplate(DEFAULT_REASON_TEMPLATE);
+        }
+
+        if (! snmpMonitorRequest.hasField(retriesFieldDescriptor)) {
+            resultBuilder.setRetries(SnmpConfiguration.DEFAULT_RETRIES);
+        }
+
+        if (! snmpMonitorRequest.hasField(timeoutFieldDescriptor)) {
+            resultBuilder.setTimeout(SnmpConfiguration.DEFAULT_TIMEOUT);
+        }
+
+        return resultBuilder.build();
+    }
+
+    private String protobufDefaultNullHelper(Message msg, Descriptors.FieldDescriptor fieldDescriptor) {
+        if (! msg.hasField(fieldDescriptor)) {
+            return null;
+        }
+
+        return (String) msg.getField(fieldDescriptor);
+    }
+
+    private ServiceMonitorResponse
+    processSnmpResponse(
+        SnmpValue[] result,
+        String hostAddress,
+        SnmpObjId oid,
+        String operator,
+        String operand,
+        long startTimestamp
+    ) {
+        long endTimestamp = System.nanoTime();
+        long elapsedTimeNs = ( endTimestamp - startTimestamp );
+        double elapsedTimeMs = (double) elapsedTimeNs / NANOSECOND_PER_MILLISECOND;
+
+        ServiceMonitorResponseImplBuilder builder = ServiceMonitorResponseImpl.builder()
+            .monitorType(MonitorType.SNMP)
+            .status(Status.Unknown)
+            .responseTime(elapsedTimeMs)
+            .ipAddress(hostAddress)
+            ;
+
+        Map<String, Number> metrics = new HashMap<>();
+
+        if (result[0] != null) {
+            LOG.debug("poll: SNMP poll succeeded, addr={} oid={} value={}", hostAddress, oid, result);
+
+            if (result[0].isNumeric()) {
+                metrics.put("observedValue", result[0].toLong());
+            }
+
+            if (meetsCriteria(result[0], operator, operand)) {
+                builder.status(Status.Up);
+            } else {
+                builder.status(Status.Down);
+            }
+
+            // if (DEFAULT_REASON_TEMPLATE.equals(reasonTemplate)) {
+            //     if (operator != null) {
+            //         reasonTemplate = "Observed value '${observedValue}' does not meet criteria '${operator} ${operand}'";
+            //     } else {
+            //         reasonTemplate = "Observed value '${observedValue}' was null";
+            //     }
+            // }
+        } else {
+            String reason = "SNMP poll failed, addr=" + hostAddress + " oid=" + oid;
+            builder.reason(reason);
+
+            LOG.debug(reason);
+        }
+
+        builder.properties(metrics);
+        return builder.build();
+    }
 }
