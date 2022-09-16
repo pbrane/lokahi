@@ -31,6 +31,7 @@ package org.opennms.horizon.minion.snmp;
 import com.google.protobuf.Any;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import lombok.Setter;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse.Status;
@@ -47,10 +48,13 @@ import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * TBD888: is there lost logic here?  For example, counting
@@ -95,6 +99,10 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
     private final Descriptors.FieldDescriptor reasonTemplateFieldDescriptor;
     private final Descriptors.FieldDescriptor retriesFieldDescriptor;
     private final Descriptors.FieldDescriptor timeoutFieldDescriptor;
+
+    // Wrap SnmpUtils static calls in a test-friendly injectable
+    @Setter
+    private BiFunction<SnmpAgentConfig, SnmpObjId[], CompletableFuture<SnmpValue[]>> snmpOperation = SnmpUtils::getAsync;
 
     public SnmpMonitor(StrategyResolver strategyResolver) {
         this.strategyResolver = strategyResolver;
@@ -195,7 +203,7 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
             long startTimestamp = System.nanoTime();
 
             future =
-                SnmpUtils.getAsync(agentConfig, new SnmpObjId[]{ snmpObjectId })
+                snmpOperation.apply(agentConfig, new SnmpObjId[]{ snmpObjectId })
                     .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand, startTimestamp))
                     .orTimeout(agentConfig.getTimeout(), TimeUnit.MILLISECONDS)
             ;

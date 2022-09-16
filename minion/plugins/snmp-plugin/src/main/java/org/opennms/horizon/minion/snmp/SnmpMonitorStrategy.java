@@ -35,6 +35,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import lombok.Setter;
 import org.opennms.horizon.minion.plugin.api.AbstractServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
@@ -72,6 +74,10 @@ public abstract class SnmpMonitorStrategy extends AbstractServiceMonitor {
     
     protected boolean hex = false;
 
+    // Wrap InetAddress static calls in a test-friendly injectable
+    @Setter
+    private FunctionWithException<String, InetAddress, UnknownHostException> inetLookupOperation = InetAddress::getByName;
+
     @Override
     public Map<String, Object> getRuntimeAttributes(MonitoredService svc, Map<String, Object> parameters) {
         try {
@@ -84,7 +90,7 @@ public abstract class SnmpMonitorStrategy extends AbstractServiceMonitor {
 
     public SnmpAgentConfig getAgentConfig(MonitoredService svc, SnmpMonitorRequest snmpMonitorRequest) throws UnknownHostException {
         // return getKeyedInstance(parameters, "agent", () -> { return new SnmpAgentConfig(svc.getAddress()); });
-        return new SnmpAgentConfig(InetAddress.getByName(snmpMonitorRequest.getHost()));
+        return new SnmpAgentConfig(inetLookupOperation.call(snmpMonitorRequest.getHost()));
     }
 
     public String getStringValue(SnmpValue result) {
@@ -183,6 +189,16 @@ public abstract class SnmpMonitorStrategy extends AbstractServiceMonitor {
         } else {
             return null;
         }
+    }
+
+//========================================
+// Workarounds
+//----------------------------------------
+
+    // TODO
+    @FunctionalInterface
+    public interface FunctionWithException<ARG, RET, EXC extends Exception> {
+        RET call(ARG arg) throws EXC;
     }
 
 }
