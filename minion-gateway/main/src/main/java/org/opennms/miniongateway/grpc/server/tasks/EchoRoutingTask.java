@@ -1,14 +1,11 @@
 package org.opennms.miniongateway.grpc.server.tasks;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
 import org.apache.ignite.IgniteException;
 import org.apache.ignite.IgniteLogger;
@@ -23,30 +20,36 @@ import org.apache.ignite.resources.SpringResource;
 import org.jetbrains.annotations.NotNull;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
-import org.opennms.core.ipc.grpc.server.manager.rpc.RpcProxyHandler;
-import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterService;
-import org.opennms.miniongateway.detector.api.LocalEchoAdapter;
+import org.opennms.horizon.shared.ignite.remoteasync.MinionLookupService;
 import org.opennms.miniongateway.detector.server.IgniteRpcRequestDispatcher;
 
-@ComputeTaskName(MinionRouterService.IGNITE_SERVICE_NAME)
+@ComputeTaskName(EchoRoutingTask.ECHO_ROUTING_TASK)
 public class EchoRoutingTask implements ComputeTask<RpcRequestProto, RpcResponseProto> {
 
-    @SpringResource(resourceName = "minionRouterService")
-    private transient MinionRouterService minionRouterService;
+    public static final String ECHO_ROUTING_TASK = "echoRoutingTask";
+
+    @SpringResource(resourceName = MinionLookupService.IGNITE_SERVICE_NAME)
+    private transient MinionLookupService minionLookupService;
 
     @Override
     public @NotNull Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, @Nullable RpcRequestProto arg) throws IgniteException {
         UUID gatewayNodeId = null;
-        if (!arg.getSystemId().isBlank()) {
-            gatewayNodeId = minionRouterService.findGatewayNodeWithId(arg.getSystemId());
-        } else {
-            gatewayNodeId = minionRouterService.findGatewayNodeWithLocation(arg.getLocation());
-        }
-        RoutingJob job = new RoutingJob(arg);
         Map<ComputeJob, ClusterNode> map = new HashMap<>();
-        UUID finalGatewayNodeId = gatewayNodeId;
-        ClusterNode node = subgrid.stream().filter(clusterNode -> finalGatewayNodeId.equals(clusterNode.id())).findFirst().get();
-        map.put(job, node);
+
+        if (!arg.getSystemId().isBlank()) {
+            gatewayNodeId = minionLookupService.findGatewayNodeWithId(arg.getSystemId());
+        } else {
+            //TODO: For now just get the first one
+            gatewayNodeId =  minionLookupService.findGatewayNodeWithLocation(arg.getLocation()).stream().findFirst().get();
+        }
+        //TODO: is it possible for this to be null? Or just assume there will always be at least one?
+        if (gatewayNodeId != null) {
+            RoutingJob job = new RoutingJob(arg);
+            UUID finalGatewayNodeId = gatewayNodeId;
+            ClusterNode node = subgrid.stream().filter(clusterNode -> finalGatewayNodeId.equals(clusterNode.id()))
+                .findFirst().get();
+            map.put(job, node);
+        }
         return map;
     }
 

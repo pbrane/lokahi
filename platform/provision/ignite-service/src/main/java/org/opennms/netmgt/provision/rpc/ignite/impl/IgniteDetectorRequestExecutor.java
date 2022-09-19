@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.ignite.client.IgniteClient;
 import org.apache.ignite.client.IgniteClientFuture;
@@ -22,7 +21,7 @@ import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.horizon.grpc.detector.contract.Attribute;
 import org.opennms.horizon.grpc.detector.contract.DetectorRequest;
 import org.opennms.horizon.grpc.detector.contract.DetectorResponse;
-import org.opennms.horizon.shared.ignite.remoteasync.MinionRouterService;
+import org.opennms.horizon.shared.ignite.remoteasync.MinionLookupService;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +91,7 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
         Optional.ofNullable(systemId).ifPresent(rpcRequest::setSystemId);
 
         IgniteClientFuture<RpcRequestProto> dispatcher = igniteClient.compute()
-            .executeAsync2(MinionRouterService.IGNITE_SERVICE_NAME, rpcRequest.build());
+            .executeAsync2(MinionLookupService.IGNITE_SERVICE_NAME, rpcRequest.build());
 
         return dispatcher.toCompletableFuture()
             .thenApply(response -> {
