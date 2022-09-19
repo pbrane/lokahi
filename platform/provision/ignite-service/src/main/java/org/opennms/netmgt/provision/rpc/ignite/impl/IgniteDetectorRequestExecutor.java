@@ -85,7 +85,7 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
             .setLocation(location)
             .setModuleId("detector")
             .setExpirationTime(System.currentTimeMillis() + 10_000)
-            .setRpcContent(Any.pack(requestObj).getValue())
+            .setPayload(Any.pack(requestObj))
             .setRpcId(UUID.randomUUID().toString());
 
         Optional.ofNullable(systemId).ifPresent(rpcRequest::setSystemId);
@@ -94,13 +94,7 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
             .executeAsync2(MinionLookupService.IGNITE_SERVICE_NAME, rpcRequest.build());
 
         return dispatcher.toCompletableFuture()
-            .thenApply(response -> {
-                try {
-                    return Any.parseFrom(response.getRpcContent());
-                } catch (InvalidProtocolBufferException e) {
-                    throw new RuntimeException(e);
-                }
-            })
+            .thenApply(RpcRequestProto::getPayload)
             .thenApply(any -> {
                 try {
                     return any.unpack(DetectorResponse.class);

@@ -3,20 +3,23 @@ package org.opennms.miniongateway.ignite;
 import java.util.concurrent.CompletableFuture;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
-import org.opennms.core.ipc.grpc.server.manager.rpc.RpcProxyHandler;
+import org.opennms.core.ipc.grpc.server.manager.RpcRequestDispatcher;
 import org.opennms.miniongateway.detector.server.IgniteRpcRequestDispatcher;
 
 public class LocalIgniteRpcRequestDispatcher implements IgniteRpcRequestDispatcher {
 
-    private RpcProxyHandler proxyHandler;
+    private RpcRequestDispatcher rpcRequestDispatcher;
 
-    public LocalIgniteRpcRequestDispatcher(RpcProxyHandler proxyHandler) {
-        this.proxyHandler = proxyHandler;
+    public LocalIgniteRpcRequestDispatcher(RpcRequestDispatcher rpcRequestDispatcher) {
+        this.rpcRequestDispatcher = rpcRequestDispatcher;
     }
 
     @Override
     public CompletableFuture<RpcResponseProto> execute(RpcRequestProto request) {
-        return proxyHandler.handle(request);
+        if (request.getSystemId().isBlank()) {
+            return rpcRequestDispatcher.dispatch(request.getLocation(), request);
+        }
+        return rpcRequestDispatcher.dispatch(request.getLocation(), request.getSystemId(), request);
     }
 
 }
