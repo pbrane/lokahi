@@ -56,7 +56,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
-public abstract class AbstractTwinPublisher implements TwinPublisher {
+public abstract class AbstractTwinPublisher implements TwinPublisher, TwinProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractTwinPublisher.class);
 
@@ -79,6 +79,11 @@ public abstract class AbstractTwinPublisher implements TwinPublisher {
             LOG.info("Registered a session with key {}", sessionKey);
             return new SessionImpl<>(sessionKey);
         }
+    }
+
+    @Override
+    public TwinResponseProto getTwinResponse(TwinRequestProto twinRequest) {
+        return mapTwinResponse(getTwin(twinRequest));
     }
 
     protected TwinUpdate getTwin(TwinRequestProto twinRequest) {

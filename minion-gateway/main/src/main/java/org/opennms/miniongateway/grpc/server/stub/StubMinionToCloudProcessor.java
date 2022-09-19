@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.BiConsumer;
 
-public class StubMinionToCloudProcessor implements  BiConsumer<RpcRequestProto, StreamObserver<RpcResponseProto>> {
+public class StubMinionToCloudProcessor implements BiConsumer<RpcRequestProto, StreamObserver<RpcResponseProto>> {
     private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(StubMinionToCloudProcessor.class);
 
     private Logger log = DEFAULT_LOGGER;

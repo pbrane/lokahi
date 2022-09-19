@@ -195,37 +195,4 @@ public class GrpcTwinPublisher extends AbstractTwinPublisher {
         };
     }
 
-    // BiConsumer<RpcRequestProto, StreamObserver<RpcResponseProto>>
-    public BiConsumer<RpcRequestProto, StreamObserver<RpcResponseProto>> getRpcObserver() {
-        return new BiConsumer<RpcRequestProto, StreamObserver<RpcResponseProto>>() {
-            @Override
-            public void accept(RpcRequestProto request, StreamObserver<RpcResponseProto> responseObserver) {
-                if (request.getModuleId().equals("twin")) {
-                    try {
-                        CompletableFuture.runAsync(() -> {
-                            try {
-                                TwinRequestProto twinRequest = request.getPayload().unpack(TwinRequestProto.class);
-                                TwinUpdate twinUpdate = getTwin(twinRequest);
-                                TwinResponseProto twinResponseProto = mapTwinResponse(twinUpdate);
-                                LOG.debug("Sent Twin response for key {} at location {}", twinRequest.getConsumerKey(), twinRequest.getLocation());
-                                RpcResponseProto rpcResponse = RpcResponseProto.newBuilder()
-                                    .setModuleId("twin")
-                                    .setRpcId(request.getRpcId())
-                                    .setSystemId(request.getSystemId())
-                                    .setLocation(request.getLocation())
-                                    .setPayload(Any.pack(twinResponseProto))
-                                    .build();
-                                responseObserver.onNext(rpcResponse);
-                            } catch (Exception e) {
-                                LOG.error("Exception while processing request", e);
-                            }
-                        }, twinRpcExecutor);
-                    } catch (Exception e) {
-                        LOG.error("Could not handle twin rpc request", e);
-                    }
-                }
-            }
-        };
-    }
-
 }

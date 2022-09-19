@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.grpc.stub.StreamObserver;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiConsumer;
@@ -78,8 +79,8 @@ public class GrpcServerConfig {
     }
 
     @Bean("minionToCloudRPCProcessor")
-    public StubMinionToCloudProcessor stubMinionToCloudRPCProcessor() {
-        return new StubMinionToCloudProcessor();
+    public IncomingRpcHandlerAdapter stubMinionToCloudRPCProcessor(List<ServerHandler> handlers) {
+        return new IncomingRpcHandlerAdapter(handlers);
     }
 
     @Bean("cloudToMinionMessageProcessor")
@@ -113,7 +114,7 @@ public class GrpcServerConfig {
         @Autowired RpcRequestTracker rpcRequestTracker,
         @Autowired LocationIndependentRpcClientFactory locationIndependentRpcClientFactory,
         @Autowired MinionRpcStreamConnectionManager minionRpcStreamConnectionManager,
-        @Autowired @Qualifier("minionToCloudRPCProcessor") BiConsumer<RpcRequestProto, StreamObserver<RpcResponseProto>> minionToCloudRPCProcessor,
+        @Autowired @Qualifier("minionToCloudRPCProcessor") IncomingRpcHandlerAdapter incomingRpcHandlerAdapter,
         @Autowired @Qualifier("cloudToMinionMessageProcessor") BiConsumer<Identity, StreamObserver<CloudToMinionMessage>> cloudToMinionMessageProcessor,
         @Autowired TaskResultsKafkaForwarder taskResultsKafkaForwarder,
         @Autowired HeartbeatKafkaForwarder heartbeatKafkaForwarder,
@@ -130,7 +131,7 @@ public class GrpcServerConfig {
         server.setMinionManager(minionManager);
         server.setLocationIndependentRpcClientFactory(locationIndependentRpcClientFactory);
         server.setMinionRpcStreamConnectionManager(minionRpcStreamConnectionManager);
-        server.setIncomingRpcHandler(minionToCloudRPCProcessor);
+        server.setIncomingRpcHandler(incomingRpcHandlerAdapter);
         server.setOutgoingMessageHandler(cloudToMinionMessageProcessor);
         server.registerConsumer(taskResultsKafkaForwarder);
         server.registerConsumer(heartbeatKafkaForwarder);
