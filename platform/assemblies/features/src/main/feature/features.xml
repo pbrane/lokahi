@@ -232,7 +232,8 @@
     <!--    -->
     <!--    <bundle>mvn:org.opennms.horizon.shared/snmp-api/${project.version}</bundle>-->
     <!--    <bundle>mvn:org.opennms.horizon.minion/rpc-impl/${project.version}</bundle>-->
-    <!--    <bundle>mvn:org.opennms.horizon.minion/snmp4j/${project.version}</bundle>-->
+    <!--    <bundle>mvn:org.opennms.horizon.shared/snmp-api/${project.version}</bundle>-->
+    <!--    <bundle>mvn:org.opennms.horizon.shared/snmp-impl/${project.version}</bundle>-->
     <!--    <bundle>mvn:org.opennms.horizon.minion/shell/${project.version}</bundle>-->
     <!--</feature>-->
 

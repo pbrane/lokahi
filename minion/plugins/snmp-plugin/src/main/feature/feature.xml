@@ -8,7 +8,8 @@
         <bundle>mvn:commons-lang/commons-lang/${commons.lang.version}</bundle>
         <bundle>mvn:commons-io/commons-io/${commons.io.version}</bundle>
         <bundle>mvn:org.opennms.horizon.shared/horizon-common-logging/${project.version}</bundle>
-        <bundle>mvn:org.opennms.horizon.minion/snmp4j/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.shared/snmp-api/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.shared/snmp-impl/${project.version}</bundle>
     </feature>
 
     <feature name="snmp-plugins" description="OpenNMS SNMP Plugins" version="${project.version}">

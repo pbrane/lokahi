@@ -39,6 +39,7 @@ import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl.ServiceMonitorResponseImplBuilder;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.snmp.SnmpConfiguration;
+import org.opennms.horizon.shared.snmp.SnmpHelper;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
 import org.opennms.horizon.shared.snmp.SnmpUtils;
 import org.opennms.horizon.shared.snmp.SnmpValue;
@@ -48,13 +49,11 @@ import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * TBD888: is there lost logic here?  For example, counting
@@ -89,6 +88,7 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
 
     private static final String DEFAULT_REASON_TEMPLATE = "Observed value '${observedValue}' does not meet criteria '${operator} ${operand}'";
     private final StrategyResolver strategyResolver;
+    private final SnmpHelper snmpHelper;
 
     private final Descriptors.FieldDescriptor communityFieldDescriptor;
     private final Descriptors.FieldDescriptor hostFieldDescriptor;
@@ -100,12 +100,9 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
     private final Descriptors.FieldDescriptor retriesFieldDescriptor;
     private final Descriptors.FieldDescriptor timeoutFieldDescriptor;
 
-    // Wrap SnmpUtils static calls in a test-friendly injectable
-    @Setter
-    private BiFunction<SnmpAgentConfig, SnmpObjId[], CompletableFuture<SnmpValue[]>> snmpOperation = SnmpUtils::getAsync;
-
-    public SnmpMonitor(StrategyResolver strategyResolver) {
+    public SnmpMonitor(StrategyResolver strategyResolver, SnmpHelper snmpHelper) {
         this.strategyResolver = strategyResolver;
+        this.snmpHelper = snmpHelper;
 
         Descriptors.Descriptor snmpMonitorRequestDescriptor = SnmpMonitorRequest.getDefaultInstance().getDescriptorForType();
 
@@ -203,7 +200,7 @@ public class SnmpMonitor extends SnmpMonitorStrategy {
             long startTimestamp = System.nanoTime();
 
             future =
-                snmpOperation.apply(agentConfig, new SnmpObjId[]{ snmpObjectId })
+                snmpHelper.getAsync(agentConfig, new SnmpObjId[]{ snmpObjectId })
                     .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand, startTimestamp))
                     .orTimeout(agentConfig.getTimeout(), TimeUnit.MILLISECONDS)
             ;

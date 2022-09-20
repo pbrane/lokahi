@@ -7,9 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
-import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
-import org.opennms.horizon.shared.snmp.SnmpObjId;
-import org.opennms.horizon.shared.snmp.SnmpStrategy;
+import org.opennms.horizon.shared.snmp.SnmpHelper;
 import org.opennms.horizon.shared.snmp.SnmpValue;
 import org.opennms.horizon.shared.snmp.StrategyResolver;
 import org.opennms.snmp.contract.SnmpMonitorRequest;
@@ -20,7 +18,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
@@ -37,11 +34,10 @@ public class SnmpMonitorTest {
     private SnmpMonitor target;
 
     private StrategyResolver mockStrategyResolver;
-    private SnmpStrategy mockSnmpStrategy;
+    private SnmpHelper mockSnmpHelper;
 
     private MonitoredService mockMonitoredService;
     private ServiceMonitorResponse mockServiceMonitorResponse;
-    BiFunction<SnmpAgentConfig, SnmpObjId[], CompletableFuture<SnmpValue[]>> mockSnmpOperation;
     SnmpMonitorStrategy.FunctionWithException<String, InetAddress, UnknownHostException> mockInetLookupOperation;
     private CompletableFuture<SnmpValue[]> mockFuture1;
     private CompletableFuture<ServiceMonitorResponse> mockFuture2;
@@ -57,11 +53,10 @@ public class SnmpMonitorTest {
     @Before
     public void setUp() throws Exception {
         mockStrategyResolver = Mockito.mock(StrategyResolver.class);
-        mockSnmpStrategy = Mockito.mock(SnmpStrategy.class);
+        mockSnmpHelper = Mockito.mock(SnmpHelper.class);
         mockMonitoredService = Mockito.mock(MonitoredService.class);
 
         mockServiceMonitorResponse = Mockito.mock(ServiceMonitorResponse.class);
-        mockSnmpOperation = Mockito.mock(BiFunction.class);
         mockInetLookupOperation = Mockito.mock(SnmpMonitorStrategy.FunctionWithException.class);
         mockFuture1 = Mockito.mock(CompletableFuture.class);
         mockFuture2 = Mockito.mock(CompletableFuture.class);
@@ -77,12 +72,11 @@ public class SnmpMonitorTest {
 
         testConfig = Any.pack(testRequest);
 
-        target = new SnmpMonitor(mockStrategyResolver);
-        target.setSnmpOperation(mockSnmpOperation);
+        target = new SnmpMonitor(mockStrategyResolver, mockSnmpHelper);
         target.setInetLookupOperation(mockInetLookupOperation);
 
         // TBD888: need to match SnmpAgentConfig
-        Mockito.when(mockSnmpOperation.apply(Mockito.any(), Mockito.any())).thenReturn(mockFuture1);
+        Mockito.when(mockSnmpHelper.getAsync(Mockito.any(), Mockito.any())).thenReturn(mockFuture1);
         processSnmpResponseCaptor = ArgumentCaptor.forClass(Function.class);
         Mockito.when(mockFuture1.thenApply(processSnmpResponseCaptor.capture())).thenReturn((CompletableFuture) mockFuture2);
         Mockito.when(mockFuture2.orTimeout(3000, TimeUnit.MILLISECONDS)).thenReturn(mockFuture3);

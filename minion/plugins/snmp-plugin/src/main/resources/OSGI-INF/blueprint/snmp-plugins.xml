@@ -20,6 +20,7 @@
 
   <bean id="snmpMonitorManager" class="org.opennms.horizon.minion.snmp.SnmpMonitorManager">
       <argument ref="strategyResolver" />
+      <argument ref="snmpHelper" />
   </bean>
 
   <service ref="snmpMonitorManager" interface="org.opennms.horizon.minion.plugin.api.ServiceMonitorManager">
@@ -29,5 +30,6 @@
   </service>
 
   <reference id="strategyResolver" interface="org.opennms.horizon.shared.snmp.StrategyResolver" />
+  <reference id="snmpHelper" interface="org.opennms.horizon.shared.snmp.SnmpHelper" />
 
 </blueprint>
