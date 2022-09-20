@@ -1,13 +1,11 @@
 package org.opennms.miniongateway.router;
 
-import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
-import org.opennms.core.ipc.grpc.server.manager.MinionManagerListener;
 import org.opennms.horizon.shared.ignite.remoteasync.MinionLookupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +50,7 @@ public class MinionLookupServiceImpl implements MinionLookupService {
 
         Queue<UUID> existingMinions = minionByLocationCache.get(minionInfo.getLocation());
         if (existingMinions == null) {
-            existingMinions = new ConcurrentLinkedDeque();
+            existingMinions = new ConcurrentLinkedQueue<>();
             minionByLocationCache.put(minionInfo.getLocation(), existingMinions);
         }
         //TODO: for now, seems we can modify in place and not have to put this back in.
@@ -65,11 +63,14 @@ public class MinionLookupServiceImpl implements MinionLookupService {
         UUID localUUID = ignite.cluster().localNode().id();
 
         minionByIdCache.remove(minionInfo.getId());
-        minionByLocationCache.remove(minionInfo.getLocation());
 
         Queue<UUID> existingMinions = minionByLocationCache.get(minionInfo.getLocation());
-        if (!existingMinions.isEmpty()) {
+        if (existingMinions != null) {
             existingMinions.remove(localUUID);
+            if (existingMinions.size() == 0)
+            {
+                minionByLocationCache.remove(minionInfo.getLocation());
+            }
         }
     }
 }
