@@ -51,6 +51,7 @@ public class MinionLookupServiceImpl implements MinionLookupService {
         Queue<UUID> existingMinions = minionByLocationCache.get(minionInfo.getLocation());
         if (existingMinions.isEmpty()) {
             existingMinions = new ConcurrentLinkedDeque();
+            minionByLocationCache.put(minionInfo.getLocation(), existingMinions);
         }
         //TODO: for now, seems we can modify in place and not have to put this back in.
         existingMinions.add(localUUID);
