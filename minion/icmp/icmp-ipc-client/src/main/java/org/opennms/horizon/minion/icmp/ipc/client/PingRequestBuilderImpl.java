@@ -126,32 +126,10 @@ public class PingRequestBuilderImpl implements PingRequestBuilder {
         }
 
         return client.execute(systemId, location, request).thenApply(response -> {
-            try {
-                return response.getPayload().unpack(PingResponse.class);
-            } catch (InvalidProtocolBufferException e) {
-                throw new RuntimeException(e);
-            }
-        }).thenApply(response -> {
-            PingSummary summary = new PingSummary(wrapRequest(request), 1);
-            summary.addSequence(new PingSequence(1, wrapResponse(response)));
+            PingSummary summary = new PingSummary(request, 1);
+            summary.addSequence(new PingSequence(1, response));
             return summary;
         });
     }
 
-    // TODO remove these - brought in just to keep basic bytecode compatibility
-    private org.opennms.netmgt.icmp.proxy.PingRequest wrapRequest(PingRequest request) {
-        org.opennms.netmgt.icmp.proxy.PingRequest pingRequest = new org.opennms.netmgt.icmp.proxy.PingRequest();
-        try {
-            pingRequest.setInetAddress(InetAddress.getByName(request.getInetAddress()));
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-        return pingRequest;
-    }
-
-    private org.opennms.netmgt.icmp.proxy.PingResponse wrapResponse(PingResponse response) {
-        org.opennms.netmgt.icmp.proxy.PingResponse pingResponse = new org.opennms.netmgt.icmp.proxy.PingResponse();
-        pingResponse.setRtt(response.getRtt());
-        return pingResponse;
-    }
 }

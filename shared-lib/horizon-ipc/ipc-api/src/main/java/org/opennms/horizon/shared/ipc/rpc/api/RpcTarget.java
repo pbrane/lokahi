@@ -30,6 +30,7 @@ package org.opennms.horizon.shared.ipc.rpc.api;
 
 import java.util.Objects;
 
+@Deprecated
 public class RpcTarget {
     private final String location;
     private final String systemId;

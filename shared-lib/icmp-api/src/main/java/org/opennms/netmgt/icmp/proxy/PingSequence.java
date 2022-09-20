@@ -29,6 +29,7 @@
 package org.opennms.netmgt.icmp.proxy;
 
 import java.util.Objects;
+import org.opennms.horizon.grpc.ping.contract.PingResponse;
 
 public class PingSequence {
     private boolean timeout;

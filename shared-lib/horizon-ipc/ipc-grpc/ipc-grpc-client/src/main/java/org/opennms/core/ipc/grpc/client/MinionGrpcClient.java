@@ -57,7 +57,7 @@ import org.opennms.cloud.grpc.minion.RpcResponseProto;
 import org.opennms.cloud.grpc.minion.SinkMessage;
 import org.opennms.core.ipc.grpc.client.rpc.RpcRequestHandler;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
-import org.opennms.horizon.shared.ipc.rpc.api.client.ClientRequestDispatcher;
+import org.opennms.horizon.shared.ipc.rpc.api.minion.ClientRequestDispatcher;
 import org.opennms.horizon.shared.ipc.sink.api.MessageConsumerManager;
 import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
 import org.opennms.horizon.shared.ipc.sink.common.AbstractMessageDispatcherFactory;
@@ -335,6 +335,7 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
             rpcRequestHandler.handle(requestProto).whenComplete((response, error) -> {
                 if (error != null) {
                     LOG.warn("Failed to handle request {}", requestProto, error);
+                    rpcStream.onError(error);
                     return;
                 }
                 sendRpcResponse(response);

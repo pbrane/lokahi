@@ -30,6 +30,7 @@ package org.opennms.netmgt.icmp.proxy;
 
 import java.util.List;
 import java.util.Objects;
+import org.opennms.horizon.grpc.ping.contract.PingRequest;
 
 public class PingStringUtils {
 

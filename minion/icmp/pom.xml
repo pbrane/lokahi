@@ -19,8 +19,6 @@
     <module>icmp-jni6</module>
     <module>icmp-jna</module>
     <module>icmp-rpc-common</module>
-    <module>icmp-rpc-module-impl</module>
-    <module>icmp-rpc-impl</module>
     <module>icmp-shell</module>
     <module>icmp-ipc</module>
     <module>icmp-ipc-client</module>

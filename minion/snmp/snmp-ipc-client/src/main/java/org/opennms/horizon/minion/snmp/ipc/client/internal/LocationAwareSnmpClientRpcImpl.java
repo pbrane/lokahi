@@ -28,8 +28,6 @@
 
 package org.opennms.horizon.minion.snmp.ipc.client.internal;
 
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -38,6 +36,8 @@ import java.util.stream.Collectors;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.horizon.grpc.snmp.contract.SnmpMultiResponse;
 import org.opennms.horizon.grpc.snmp.contract.SnmpRequest;
+import org.opennms.horizon.shared.ipc.rpc.api.RpcClient;
+import org.opennms.horizon.shared.ipc.rpc.api.RpcClientFactory;
 import org.opennms.horizon.shared.snmp.CollectionTracker;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
@@ -55,11 +55,11 @@ import org.opennms.horizon.shared.snmp.proxy.SNMPRequestBuilder;
  */
 public class LocationAwareSnmpClientRpcImpl implements LocationAwareSnmpClient {
 
-    private final RpcDispatcher dispatcher;
+    private final RpcClient<SnmpMultiResponse> client;
     private final SnmpValueFactory valueFactory;
 
-    public LocationAwareSnmpClientRpcImpl(RpcDispatcher dispatcher, SnmpValueFactory valueFactory) {
-        this.dispatcher = dispatcher;
+    public LocationAwareSnmpClientRpcImpl(RpcClientFactory rpcClientFactory, SnmpValueFactory valueFactory) {
+        this.client = rpcClientFactory.getClient(response -> response.getPayload().unpack(SnmpMultiResponse.class));
         this.valueFactory = valueFactory;
     }
 
@@ -115,19 +115,12 @@ public class LocationAwareSnmpClientRpcImpl implements LocationAwareSnmpClient {
     }
 
     CompletableFuture<SnmpMultiResponse> execute(String location, String systemId, SnmpRequest payload) {
-        RpcRequestProto request = RpcRequestProto.newBuilder()
-            .setSystemId(systemId)
-            .setLocation(location)
-            .setModuleId("SNMP")
-            .setExpirationTime(0L)
-            .setPayload(Any.pack(payload))
+        RpcRequestProto request = client.builder("SNMP")
+            .withLocation(location)
+            .withSystemId(systemId)
+            .withExpirationTime(0L)
+            .withPayload(payload)
             .build();
-        return dispatcher.execute(request).thenApply(response -> {
-            try {
-                return response.getPayload().unpack(SnmpMultiResponse.class);
-            } catch (InvalidProtocolBufferException e) {
-                throw new RuntimeException("Failed to collect snmp response", e);
-            }
-        });
+        return client.execute(request);
     }
 }

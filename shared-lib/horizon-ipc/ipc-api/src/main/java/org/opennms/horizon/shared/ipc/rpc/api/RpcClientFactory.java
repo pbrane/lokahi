@@ -28,9 +28,10 @@
 
 package org.opennms.horizon.shared.ipc.rpc.api;
 
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
+
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+import org.opennms.cloud.grpc.minion.RpcResponseProto;
 
 /**
  * Creates a {@link RpcClient} that can be used to invoke RPCs against the given {@link RpcModule}.
@@ -38,43 +39,13 @@ import com.codahale.metrics.MetricRegistry;
  * @author jwhite
  */
 public interface RpcClientFactory {
-
     String LOG_PREFIX = "ipc";
-    // RPC Metrics related constants.
-    String JMX_DOMAIN_RPC = "org.opennms.core.ipc.rpc";
-    String RPC_REQUEST_SENT = "requestSent";
-    String RPC_REQUESTS_RECEIVED = "requestsReceived";
-    String RPC_FAILED = "requestFailed";
-    String RPC_DURATION = "duration";
-    String RPC_REQUEST_SIZE = "requestSize";
-    String RPC_RESPONSE_SIZE = "responseSize";
 
-    <R extends RpcRequest, S extends RpcResponse> RpcClient<R, S> getClient(RpcModule<R, S> module);
+    <T extends Message> RpcClient<T> getClient(Deserializer<T> deserializer);
+    RpcClient<RpcResponseProto> getClient();
 
-
-    static void updateDuration(MetricRegistry metricRegistry, String location, String moduleId, long duration) {
-        Histogram histogram = metricRegistry.histogram(MetricRegistry.name(location, moduleId, RPC_DURATION));
-        histogram.update(duration);
-    }
-
-    static void markRpcCount(MetricRegistry metricRegistry, String location, String moduleId) {
-        Meter rpcCount = metricRegistry.meter(MetricRegistry.name(location, moduleId, RPC_REQUEST_SENT));
-        rpcCount.mark();
-    }
-
-    static void updateRequestSize(MetricRegistry metricRegistry, String location, String moduleId, int requestSize) {
-        Histogram histogram = metricRegistry.histogram(MetricRegistry.name(location, moduleId, RPC_REQUEST_SIZE));
-        histogram.update(requestSize);
-    }
-
-    static void updateResponseSize(MetricRegistry metricRegistry, String location, String moduleId, int responseSize) {
-        Histogram histogram = metricRegistry.histogram(MetricRegistry.name(location, moduleId, RPC_RESPONSE_SIZE));
-        histogram.update(responseSize);
-    }
-
-    static void markFailed(MetricRegistry metricRegistry, String location, String moduleId) {
-        Meter failed = metricRegistry.meter(MetricRegistry.name(location, moduleId, RPC_FAILED));
-        failed.mark();
+    interface Deserializer<T extends Message> {
+        T deserialize(RpcResponseProto response) throws InvalidProtocolBufferException;
     }
 
 }

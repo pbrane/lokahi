@@ -5,7 +5,7 @@
         https://osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
     ">
 
-    <reference id="clientRequestDispatcher" interface="org.opennms.horizon.shared.ipc.rpc.api.client.ClientRequestDispatcher"/>
+    <reference id="clientRequestDispatcher" interface="org.opennms.horizon.shared.ipc.rpc.api.minion.ClientRequestDispatcher"/>
 
     <reference id="minionIdentity" interface="org.opennms.horizon.shared.ipc.rpc.IpcIdentity"/>
 
@@ -17,7 +17,7 @@
 
     <service ref="grpcTwinSubscriber">
         <interfaces>
-            <value>org.opennms.horizon.shared.ipc.rpc.api.client.CloudMessageReceiver</value>
+            <value>org.opennms.horizon.shared.ipc.rpc.api.minion.CloudMessageReceiver</value>
             <value>org.opennms.horizon.minion.ipc.twin.api.TwinSubscriber</value>
         </interfaces>
     </service>

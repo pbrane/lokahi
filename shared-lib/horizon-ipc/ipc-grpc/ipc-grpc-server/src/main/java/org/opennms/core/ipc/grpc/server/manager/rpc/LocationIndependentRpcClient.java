@@ -18,7 +18,7 @@ import org.opennms.horizon.shared.ipc.rpc.api.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LocationIndependentRpcClient<REQUEST extends RpcRequest, RESPONSE extends RpcResponse> implements RpcClient<REQUEST, RESPONSE> {
+public class LocationIndependentRpcClient<REQUEST extends RpcRequest, RESPONSE extends RpcResponse> /*implements RpcClient<REQUEST, RESPONSE>*/ {
 
     private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(LocationIndependentRpcClient.class);
 
@@ -88,7 +88,7 @@ public class LocationIndependentRpcClient<REQUEST extends RpcRequest, RESPONSE e
 // Operations
 //----------------------------------------
 
-    @Override
+    //@Override
     public CompletableFuture<RESPONSE> execute(REQUEST request) {
         CompletableFuture<RESPONSE> result;
 
@@ -108,7 +108,7 @@ public class LocationIndependentRpcClient<REQUEST extends RpcRequest, RESPONSE e
 //----------------------------------------
 
     private CompletableFuture<RESPONSE> executeLocally(REQUEST request) {
-        return localModule.execute(request);
+        return CompletableFuture.failedFuture(new AbstractMethodError()); // localModule.execute(request);
     }
 
     /**
@@ -154,7 +154,6 @@ public class LocationIndependentRpcClient<REQUEST extends RpcRequest, RESPONSE e
         boolean succeeded = sendRequest(requestProto);
 
         if (!succeeded) {
-            RpcClientFactory.markFailed(rpcMetrics, request.getLocation(), localModule.getId());
             future.completeExceptionally(new RuntimeException("No minion found at location " + request.getLocation()));
             return future;
         }

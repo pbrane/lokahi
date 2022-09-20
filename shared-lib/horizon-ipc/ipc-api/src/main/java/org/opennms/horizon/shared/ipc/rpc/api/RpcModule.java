@@ -36,7 +36,8 @@ import com.google.protobuf.Any;
  *
  * @author jwhite
  */
-public interface RpcModule<S extends RpcRequest, T extends RpcResponse> extends RpcClient<S,T> {
+@Deprecated
+public interface RpcModule<S extends RpcRequest, T extends RpcResponse> {
 
     public static final String MINION_HEADERS_MODULE = "MINION_HEADERS";
 

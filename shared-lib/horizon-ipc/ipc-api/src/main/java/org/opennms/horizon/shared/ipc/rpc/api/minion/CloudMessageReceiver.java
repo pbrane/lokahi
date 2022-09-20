@@ -1,4 +1,4 @@
-package org.opennms.horizon.shared.ipc.rpc.api.client;
+package org.opennms.horizon.shared.ipc.rpc.api.minion;
 
 import com.google.protobuf.Message;
 

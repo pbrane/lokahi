@@ -32,7 +32,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.opennms.netmgt.icmp.proxy.PingResponse;
+import org.opennms.horizon.grpc.ping.contract.PingResponse;
 import org.opennms.netmgt.icmp.proxy.PingSequence;
 import org.opennms.netmgt.icmp.proxy.PingSummaryCalculator;
 
@@ -75,13 +75,15 @@ public class PingSummaryCalculatorTest {
                 sequences.add(new PingSequence(i, new Exception()));
                 numberErrors--;
             } else if (numberTimeouts > 0) {
-                final PingResponse timeoutResponse = new PingResponse();
-                timeoutResponse.setRtt(Double.POSITIVE_INFINITY);
+                final PingResponse timeoutResponse = PingResponse.newBuilder()
+                    .setRtt(Double.POSITIVE_INFINITY)
+                    .build();
                 sequences.add(new PingSequence(i, timeoutResponse));
                 numberTimeouts--;
             } else {
-                final PingResponse pingResponse = new PingResponse();
-                pingResponse.setRtt(1000);
+                final PingResponse pingResponse = PingResponse.newBuilder()
+                    .setRtt(1000)
+                    .build();
                 sequences.add(new PingSequence(i, pingResponse));
             }
         }

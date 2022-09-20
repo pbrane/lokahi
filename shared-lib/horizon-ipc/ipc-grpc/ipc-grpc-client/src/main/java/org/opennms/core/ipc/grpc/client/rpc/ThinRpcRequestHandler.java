@@ -1,9 +1,7 @@
 package org.opennms.core.ipc.grpc.client.rpc;
 
 import com.google.protobuf.Any;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
-import org.opennms.horizon.shared.ipc.rpc.api.client.RpcHandler;
+import org.opennms.horizon.shared.ipc.rpc.api.minion.RpcHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
 import org.opennms.core.ipc.grpc.client.CloudMessageHandler;
-import org.opennms.horizon.shared.ipc.rpc.api.client.CloudMessageReceiver;
+import org.opennms.horizon.shared.ipc.rpc.api.minion.CloudMessageReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -28,15 +28,19 @@
 
 package org.opennms.horizon.shared.ipc.rpc.api;
 
+import com.google.protobuf.Message;
 import java.util.concurrent.CompletableFuture;
+import org.opennms.cloud.grpc.minion.RpcRequestProto;
 
 /**
  * Asynchronously executes remote procedure calls (RPCs).
  *
  * @author jwhite
  */
-public interface RpcClient<S extends RpcRequest, T extends RpcResponse> {
+public interface RpcClient<T extends Message>  {
 
-    CompletableFuture<T> execute(S request);
+    CompletableFuture<T> execute(RpcRequestProto request);
+
+    RequestBuilder builder(String module);
 
 }

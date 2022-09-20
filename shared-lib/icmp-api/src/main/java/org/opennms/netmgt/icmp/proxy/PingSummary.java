@@ -33,6 +33,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
+import org.opennms.horizon.grpc.ping.contract.PingRequest;
+import org.opennms.horizon.grpc.ping.contract.PingResponse;
 
 public class PingSummary {
 

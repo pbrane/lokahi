@@ -28,22 +28,23 @@
 
 package org.opennms.horizon.minion.icmp.ipc.client;
 
-import com.google.protobuf.Any;
 import java.net.InetAddress;
 import java.util.concurrent.CompletableFuture;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
-import org.opennms.cloud.grpc.minion.RpcResponseProto;
 import org.opennms.horizon.grpc.ping.contract.PingRequest;
+import org.opennms.horizon.grpc.ping.contract.PingResponse;
+import org.opennms.horizon.shared.ipc.rpc.api.RpcClient;
+import org.opennms.horizon.shared.ipc.rpc.api.RpcClientFactory;
 import org.opennms.netmgt.icmp.proxy.LocationAwarePingClient;
 import org.opennms.netmgt.icmp.proxy.PingRequestBuilder;
 import org.opennms.netmgt.icmp.proxy.PingSweepRequestBuilder;
 
 public class LocationAwarePingClientImpl implements LocationAwarePingClient {
 
-    private final RpcDispatcher dispatcher;
+    private final RpcClient<PingResponse> client;
 
-    public LocationAwarePingClientImpl(RpcDispatcher dispatcher) {
-        this.dispatcher = dispatcher;
+    public LocationAwarePingClientImpl(RpcClientFactory rpcClientFactory) {
+        this.client = rpcClientFactory.getClient(response -> response.getPayload().unpack(PingResponse.class));
     }
 
     @Override
@@ -56,13 +57,12 @@ public class LocationAwarePingClientImpl implements LocationAwarePingClient {
         throw new UnsupportedOperationException("This RPC operation is currently not supported");
     }
 
-    CompletableFuture<RpcResponseProto> execute(String systemId, String location, PingRequest payload) {
-        RpcRequestProto request = RpcRequestProto.newBuilder()
-            .setSystemId(systemId)
-            .setLocation(location)
-            .setModuleId("PING")
-            .setPayload(Any.pack(payload))
+    CompletableFuture<PingResponse> execute(String systemId, String location, PingRequest payload) {
+        RpcRequestProto request = client.builder("PING")
+            .withLocation(location)
+            .withSystemId(systemId)
+            .withPayload(payload)
             .build();
-        return dispatcher.execute(request);
+        return client.execute(request);
     }
 }

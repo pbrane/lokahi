@@ -38,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.horizon.grpc.echo.contract.EchoRequest;
 import org.opennms.horizon.grpc.echo.contract.EchoResponse;
-import org.opennms.horizon.shared.ipc.rpc.api.client.RpcHandler;
+import org.opennms.horizon.shared.ipc.rpc.api.minion.RpcHandler;
 
 public class EchoRpcHandler implements RpcHandler<EchoRequest, EchoResponse> {
 

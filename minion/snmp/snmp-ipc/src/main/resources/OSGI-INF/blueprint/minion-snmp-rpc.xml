@@ -5,7 +5,7 @@
         https://osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
     ">
 
-    <service interface="org.opennms.horizon.shared.ipc.rpc.api.client.RpcHandler">
+    <service interface="org.opennms.horizon.shared.ipc.rpc.api.minion.RpcHandler">
         <bean class="org.opennms.horizon.minion.snmp.ipc.internal.SnmpRpcHandler">
         </bean>
     </service>

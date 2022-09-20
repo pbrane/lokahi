@@ -66,10 +66,8 @@ import org.opennms.core.ipc.grpc.server.manager.RpcRequestDispatcher;
 import org.opennms.core.ipc.grpc.server.manager.RpcRequestTimeoutManager;
 import org.opennms.core.ipc.grpc.server.manager.RpcRequestTracker;
 import org.opennms.core.ipc.grpc.server.manager.adapter.MinionRSTransportAdapter;
-import org.opennms.core.ipc.grpc.server.manager.rpc.RemoteRegistrationHandler;
 import org.opennms.core.ipc.grpc.server.manager.rpcstreaming.MinionRpcStreamConnectionManager;
 import org.opennms.horizon.shared.ipc.rpc.api.RemoteExecutionException;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcClient;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcClientFactory;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcModule;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcRequest;
@@ -102,7 +100,7 @@ import org.slf4j.MDC.MDCCloseable;
  */
 
 @SuppressWarnings("rawtypes")
-public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements RpcClientFactory, RpcRequestDispatcher {
+public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements RpcRequestDispatcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpennmsGrpcServer.class);
     private final GrpcIpcServer grpcIpcServer;
@@ -240,16 +238,6 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
 //========================================
 // Operations
 //----------------------------------------
-
-    @Override
-    public <S extends RpcRequest, T extends RpcResponse> RpcClient<S, T> getClient(RpcModule<S, T> module) {
-
-        RemoteRegistrationHandler remoteRegistrationHandler =
-                (request, timeout, future) -> registerRemoteCall(request, timeout, future, module);
-
-        return locationIndependentRpcClientFactory.createClient(module, remoteRegistrationHandler);
-    }
-
 
 //========================================
 // Message Consumer Manager

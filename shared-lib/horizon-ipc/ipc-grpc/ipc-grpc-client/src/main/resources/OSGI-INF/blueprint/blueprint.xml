@@ -48,7 +48,7 @@
         <property name="rpcRequestHandler" ref="thinRpcRequestHandler" />
     </bean>
 
-    <reference-list interface="org.opennms.horizon.shared.ipc.rpc.api.client.RpcHandler" availability="optional">
+    <reference-list interface="org.opennms.horizon.shared.ipc.rpc.api.minion.RpcHandler" availability="optional">
         <reference-listener ref="thinRpcRequestHandler" bind-method="bind" unbind-method="unbind" />
     </reference-list>
 
@@ -56,12 +56,12 @@
         <interfaces>
             <value>org.opennms.core.ipc.grpc.client.MinionGrpcClient</value>
             <value>org.opennms.horizon.shared.ipc.sink.api.MessageDispatcherFactory</value>
-            <value>org.opennms.horizon.shared.ipc.rpc.api.client.ClientRequestDispatcher</value>
+            <value>org.opennms.horizon.shared.ipc.rpc.api.minion.ClientRequestDispatcher</value>
         </interfaces>
     </service>
 
     <bean id="cloudMessageHandler" class="org.opennms.core.ipc.grpc.client.message.ThinCloudMessageHandler" />
-    <reference-list id="cloudMessageReceivers" interface="org.opennms.horizon.shared.ipc.rpc.api.client.CloudMessageReceiver" availability="optional">
+    <reference-list id="cloudMessageReceivers" interface="org.opennms.horizon.shared.ipc.rpc.api.minion.CloudMessageReceiver" availability="optional">
         <reference-listener ref="cloudMessageHandler" bind-method="bind" unbind-method="unbind" />
     </reference-list>
 

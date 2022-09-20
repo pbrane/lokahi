@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
-import org.opennms.cloud.grpc.minion.Identity;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.TwinRequestProto;
 import org.opennms.cloud.grpc.minion.TwinResponseProto;
@@ -47,12 +46,10 @@ import org.opennms.horizon.minion.ipc.twin.common.AbstractTwinSubscriber;
 import org.opennms.horizon.minion.ipc.twin.common.TwinRequest;
 import org.opennms.horizon.minion.ipc.twin.common.TwinUpdate;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
-import org.opennms.horizon.shared.ipc.rpc.api.client.ClientRequestDispatcher;
-import org.opennms.horizon.shared.ipc.rpc.api.client.CloudMessageReceiver;
+import org.opennms.horizon.shared.ipc.rpc.api.minion.ClientRequestDispatcher;
+import org.opennms.horizon.shared.ipc.rpc.api.minion.CloudMessageReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.grpc.ManagedChannel;
 
 public class GrpcTwinSubscriber extends AbstractTwinSubscriber implements CloudMessageReceiver {
 

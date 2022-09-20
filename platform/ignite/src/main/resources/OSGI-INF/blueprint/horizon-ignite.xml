@@ -29,4 +29,10 @@
 
     <service ref="igniteClient" interface="org.apache.ignite.client.IgniteClient"/>
 
+    <service interface="org.opennms.horizon.shared.ipc.rpc.api.RpcClientFactory">
+        <bean class="org.opennms.horizon.core.ignite.rpc.IgniteRpcClientFactory">
+            <argument ref="igniteClient" />
+        </bean>
+    </service>
+
 </blueprint>
