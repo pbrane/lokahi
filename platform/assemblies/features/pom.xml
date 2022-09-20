@@ -104,7 +104,7 @@
                                 <feature>camel-activemq</feature>
                                 <feature>horizon-metrics-prometheus</feature>
                                 <feature>horizon-ignite</feature>
-                                <feature>horizon-core-monitor</feature>
+<!--                                <feature>horizon-core-monitor</feature>-->
                             </features>
                         </configuration>
                     </execution>
@@ -206,56 +206,6 @@
         <dependency>
             <groupId>org.opennms.horizon.events</groupId>
             <artifactId>shell</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.horizon.ipc</groupId>
-            <artifactId>echo</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.horizon.ipc</groupId>
-            <artifactId>shell</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.horizon.ipc.grpc</groupId>
-            <artifactId>client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.horizon.ipc.grpc</groupId>
-            <artifactId>heartbeat</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.horizon.ipc.grpc</groupId>
-            <artifactId>server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.core.ipc.twin</groupId>
-            <artifactId>api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.core.ipc.twin</groupId>
-            <artifactId>common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.core.ipc.twin.grpc</groupId>
-            <artifactId>common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.core.ipc.twin.grpc</groupId>
-            <artifactId>publisher</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.core.ipc.twin.grpc</groupId>
-            <artifactId>subscriber</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -57,13 +57,13 @@ public class MinionRpcStreamConnectionImpl implements MinionRpcStreamConnection 
         this.minionManager = minionManager;
     }
 
-    private boolean isMinionIndentityHeaders(RpcResponseProto rpcMessage) {
+    private boolean isMinionIdentityHeaders(RpcResponseProto rpcMessage) {
         return Objects.equals(MINION_HEADERS_MODULE, rpcMessage.getModuleId());
     }
 
     @Override
     public void handleRpcStreamInboundMessage(RpcResponseProto message) {
-        if (isMinionIndentityHeaders(message)) {
+        if (isMinionIdentityHeaders(message)) {
             String location = message.getLocation();
             String systemId = message.getSystemId();
 
@@ -118,7 +118,7 @@ public class MinionRpcStreamConnectionImpl implements MinionRpcStreamConnection 
         RpcResponseHandler responseHandler = rpcRequestTracker.lookup(message.getRpcId());
 
         if (responseHandler != null && message.getRpcContent() != null) {
-            responseHandler.sendResponse(message.getRpcContent().toStringUtf8());
+            responseHandler.sendResponse(message);
         } else {
             log.debug("Received a response for request for module: {} with RpcId:{}, but no outstanding request was found with this id." +
                     "The request may have timed out", message.getModuleId(), message.getRpcId());

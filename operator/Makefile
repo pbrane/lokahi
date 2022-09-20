@@ -11,7 +11,6 @@ integration-test:
 
 kubebuilder:
 	controller-gen object paths=./api/v1alpha1/opennms_types.go
-	controller-gen object paths=./api/keycloak/v2alpha1/keycloak_types.go
 
 dependencies:
 	go mod download

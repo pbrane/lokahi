@@ -3,21 +3,21 @@ kind: KeycloakRealmImport
 metadata:
   name: {{ .Values.Keycloak.ServiceName }}-ri
   labels:
-    app: sso
+    app: keycloak-ri
   namespace: {{ .Values.Namespace }}
 spec:
   keycloakCRName: {{ .Values.Keycloak.ServiceName }}
   realm:
     accessTokenLifespan: 6000
-    id: {{ .Values.Keycloak.ServiceName }}
-    realm: {{ .Values.Keycloak.ServiceName }}
+    id: {{ .Values.Keycloak.UUID.RealmId }}
+    realm: {{ .Values.Keycloak.RealmName }}
     enabled: true
     loginTheme: "horizon-stream"
     emailTheme: "horizon-stream"
     rememberMe: true
     resetPasswordAllowed: true
     attributes:
-      frontendUrl: "http://{{ .Values.Host }}"
+      frontendUrl: "https://{{ .Values.Host }}{{ .Values.Keycloak.Path }}"
     clients:
       - id: {{ .Values.Keycloak.UUID.ClientId }}
         clientId: horizon-stream
@@ -41,22 +41,21 @@ spec:
           - "microprofile-jwt"
     roles:
       realm:
-      - id: {{ .Values.Keycloak.UUID.BaseUserId }}
-        name: user
-        composite: false
       - id: {{ .Values.Keycloak.UUID.AdminUserId }}
         name: admin
         composite: false
+      - id: {{ .Values.Keycloak.UUID.BaseUserId }}
+        name: user
+        composite: false
     users:
-      - username: {{ .Values.Keycloak.AdminUsername }}
+      - id: {{ .Values.Keycloak.UUID.AdminUserId }}
+        username: {{ .Values.Keycloak.AdminUsername }}
         email: "admin@test.opennms.org"
         enabled: True
         emailVerified: False
         credentials:
           - type: "password"
-            secret:
-              name: keycloak-credentials
-              value: adminPwd
+            value: "{{ .Values.Keycloak.AdminPassword }}"
         realmRoles:
           - "admin"
         clientRoles:
@@ -68,7 +67,8 @@ spec:
             - "view-users"
             - "query-users"
             - "create-client"
-      - username: {{ .Values.Keycloak.UserUsername }}
+      - id: {{ .Values.Keycloak.UUID.BaseUserId }}
+        username: {{ .Values.Keycloak.UserUsername }}
         firstName: "User001"
         lastName: ""
         email: "user001@test.opennms.org"
@@ -76,9 +76,7 @@ spec:
         emailVerified: False
         credentials:
           - type: "password"
-            secret:
-              name: keycloak-credentials
-              value: userPwd
+            value: "{{ .Values.Keycloak.UserPassword }}"
         realmRoles:
           - "user"
         clientRoles:

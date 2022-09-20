@@ -103,6 +103,7 @@ public class PlatformGateway {
     }
 
     private <T> ResponseEntity<T> executeRequest(String path, HttpMethod method, HttpEntity request, Class<T> type) {
+        log.info("Sending {} request to {}", method.name(), baseUrl + path);
         ResponseEntity<T> response = restTemplate.exchange(baseUrl + path, method, request, type);
         log.info("Response from platform with code {}, {}", response.getStatusCode(), response.hasBody());
         return response;

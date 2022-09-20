@@ -4,3 +4,7 @@ node_modules
 **/*.tsx~
 **/*.swn
 **/*.swo
+*.local
+skaffold.yaml
+mock-graphql
+node_modules

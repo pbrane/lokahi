@@ -16,7 +16,7 @@ runs:
 
         # When there are tests to run, put those here.
 
-        # Create the docker image.
-        docker build -t opennms/horizon-stream-ui:local -f ./dev/Dockerfile .
+        # Create the docker image with BuildKit enabled.
+        DOCKER_BUILDKIT=1 docker build -t opennms/horizon-stream-ui:local .
 
       shell: bash

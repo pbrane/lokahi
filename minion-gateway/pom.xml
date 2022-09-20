@@ -2,6 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <version>0.1.0-SNAPSHOT</version>
     <parent>
         <groupId>org.opennms.horizon</groupId>
         <artifactId>horizon-parent</artifactId>
@@ -9,6 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
+    <groupId>org.opennms.horizon.minion.gateway</groupId>
     <artifactId>minion-gateway</artifactId>
     <packaging>pom</packaging>
 
@@ -29,6 +31,7 @@
     </properties>
 
     <modules>
+        <module>ignite-detector</module>
         <module>main</module>
     </modules>
 

@@ -87,8 +87,8 @@ public class WorkerIgniteConfiguration {
     private void configureClusterNodeDiscovery(IgniteConfiguration igniteConfiguration) {
         TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
 
-        // Using defaults for now (multicast group 228.1.2.4, port 47400)
-        TcpDiscoveryMulticastIpFinder ipFinder = new TcpDiscoveryMulticastIpFinder();
+        // Using port 47401 to separate this cluster from the minion one
+        TcpDiscoveryMulticastIpFinder ipFinder = new TcpDiscoveryMulticastIpFinder().setMulticastPort(47401);
         tcpDiscoverySpi.setIpFinder(ipFinder);
 
         igniteConfiguration.setDiscoverySpi(tcpDiscoverySpi);

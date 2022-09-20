@@ -63,6 +63,9 @@ func (r *OpenNMSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	var autoUpdateServices []client.Object
 
 	for _, handler := range r.Handlers {
+		if handler.GetDeployed() && instance.Spec.DeployOnly { //skip handler if already deployed and the instance is marked as "deploy only"
+			continue
+		}
 		for _, resource := range handler.ProvideConfig(valuesForInstance) {
 			kind := reflect.ValueOf(resource).Elem().Type().String()
 			if (kind == "v1.Deployment" || kind == "v1.StatefulSet") && r.ImageChecker.ServiceMarkedForImageCheck(resource) {
@@ -79,6 +82,8 @@ func (r *OpenNMSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 				}
 				if kind == "v1.Deployment" || kind == "v1.Job" || kind == "v1.StatefulSet" {
 					return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+				} else if kind == "v1alpha1.Subscription" || kind == "v2alpha1.KeycloakRealmImport" || kind == "v2alpha1.Keycloak" {
+					return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
 				}
 			} else {
 				r.Log.Info("checking resource for update", "namespace", resource.GetNamespace(), "name", resource.GetName(), "kind", kind)
@@ -107,6 +112,7 @@ func (r *OpenNMSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 				}
 			}
 		}
+		handler.SetDeployed(true)
 	}
 
 	//TODO - reenable below with HS-232

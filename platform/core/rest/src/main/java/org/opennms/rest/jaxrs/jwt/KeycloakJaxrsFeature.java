@@ -124,14 +124,14 @@ public class KeycloakJaxrsFeature implements ContainerRequestFilter {
         try {
             AdapterConfig adapterConfig = configureKeycloak();
 
-            keycloakDeployment = new KeycloakDeployment();
+	        keycloakDeployment = new KeycloakDeployment();
             keycloakDeployment.setAuthServerBaseUrl(adapterConfig);
             keycloakDeployment.setRealm(keycloakRealm);
 
             // Create the HTTP Client that the Keycloak library will use to call out for Public Key lookup
             HttpClient httpClient = HttpClientBuilder.create().build();
             keycloakDeployment.setClient(httpClient);
-
+            
             //
             // Configure the Public Key Locator for Keycloak signature validation
             //
@@ -140,7 +140,8 @@ public class KeycloakJaxrsFeature implements ContainerRequestFilter {
             } else {
                 configureKeycloakServerPublicKeyLookup();
             }
-        } catch (Exception exc) {
+        
+	} catch (Exception exc) {
             throw new RuntimeException("Failed to initialize the JWT Public Key Signature Verification", exc);
         }
     }
@@ -149,7 +150,7 @@ public class KeycloakJaxrsFeature implements ContainerRequestFilter {
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
         if (keycloakDeployment == null) {
             throw new RuntimeException("Not Initialized - make sure the init() method is called at startup");
-        }
+	    }
 
         String authHeader = containerRequestContext.getHeaders().getFirst("Authorization");
 
@@ -218,14 +219,14 @@ public class KeycloakJaxrsFeature implements ContainerRequestFilter {
 
     private void configureStaticPublicKeyFile () {
         PublicKey publicKey = loadPemPublicKeyFile(tokenSignaturePublicKeyPath);
-
+        
         PublicKeyLocator publicKeyLocator = new HardcodedPublicKeyLocator(publicKey);
         keycloakDeployment.setPublicKeyLocator(publicKeyLocator);
-
     }
 
     private PublicKey loadPemPublicKeyFile(String path) {
         try {
+
             byte[] bytes = Files.readAllBytes(Path.of(path));
             String fileContentText = new String(bytes, StandardCharsets.UTF_8);
 

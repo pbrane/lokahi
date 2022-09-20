@@ -3,6 +3,7 @@ package org.opennms.core.ipc.grpc.server.manager.impl;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.PostConstruct;
 import org.opennms.core.ipc.grpc.server.manager.RpcRequestTimeoutManager;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcResponseHandler;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ public class RpcRequestTimeoutManagerImpl implements RpcRequestTimeoutManager {
 //----------------------------------------
 
     @Override
+    @PostConstruct
     public void start() {
         rpcTimeoutExecutor.execute(this::handleRpcTimeouts);
     }
@@ -71,7 +73,7 @@ public class RpcRequestTimeoutManagerImpl implements RpcRequestTimeoutManager {
             try {
                 RpcResponseHandler responseHandler = rpcTimeoutQueue.take();
                 if (!responseHandler.isProcessed()) {
-                    log.warn("RPC request from module: {} with RpcId:{} timedout ", responseHandler.getRpcModule().getId(),
+                    log.warn("RPC request from module: {} with RpcId:{} timedout ", responseHandler.getRpcModuleId(),
                             responseHandler.getRpcId());
                     responseHandlerExecutor.execute(() -> responseHandler.sendResponse(null));
                 }

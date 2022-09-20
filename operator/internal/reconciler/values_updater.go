@@ -42,7 +42,7 @@ func (r *OpenNMSReconciler) UpdateValues(ctx context.Context, instance v1alpha1.
 	// only set new passwords if they weren't already created by a previous operator
 	templateValues, existingCreds := r.CheckForExistingCoreCreds(ctx, templateValues, namespace)
 	if !existingCreds { // only set new passwords if they weren't already created by a previous operator
-		templateValues = setCorePasswords(templateValues)
+		templateValues = setCorePasswords(templateValues, instance.Spec.Credentials)
 	}
 
 	templateValues, existingCreds = r.CheckForExistingPostgresCreds(ctx, templateValues, namespace)
@@ -67,11 +67,13 @@ func (r *OpenNMSReconciler) CheckForExistingCoreCreds(ctx context.Context, v val
 	if existingAdminPwd == "" || existingUserPwd == "" {
 		return v, false
 	}
+	realmId := string(credSecret.Data["realmId"])
 	clientId := string(credSecret.Data["clientId"])
 	adminId := string(credSecret.Data["adminId"])
 	userId := string(credSecret.Data["userId"])
 	v.Values.Keycloak.AdminPassword = existingAdminPwd
 	v.Values.Keycloak.UserPassword = existingUserPwd
+	v.Values.Keycloak.UUID.RealmId = uuid.MustParse(realmId)
 	v.Values.Keycloak.UUID.ClientId = uuid.MustParse(clientId)
 	v.Values.Keycloak.UUID.AdminUserId = uuid.MustParse(adminId)
 	v.Values.Keycloak.UUID.BaseUserId = uuid.MustParse(userId)
@@ -98,10 +100,19 @@ func (r *OpenNMSReconciler) CheckForExistingPostgresCreds(ctx context.Context, v
 }
 
 //setCorePasswords - sets randomly generated passwords for the core if not already set
-func setCorePasswords(tv values.TemplateValues) values.TemplateValues {
-	tv.Values.Keycloak.AdminPassword = security.GeneratePassword(true)
-	tv.Values.Keycloak.UserPassword = security.GeneratePassword(true)
+func setCorePasswords(tv values.TemplateValues, creds v1alpha1.Credentials) values.TemplateValues {
+	if creds.AdminPassword == "" {
+		tv.Values.Keycloak.AdminPassword = security.GeneratePassword(true)
+	} else {
+		tv.Values.Keycloak.AdminPassword = creds.AdminPassword
+	}
+	if creds.UserPassword == "" {
+		tv.Values.Keycloak.UserPassword = security.GeneratePassword(true)
+	} else {
+		tv.Values.Keycloak.UserPassword = creds.UserPassword
+	}
 
+	tv.Values.Keycloak.UUID.RealmId = uuid.New()
 	tv.Values.Keycloak.UUID.ClientId = uuid.New()
 	tv.Values.Keycloak.UUID.AdminUserId = uuid.New()
 	tv.Values.Keycloak.UUID.BaseUserId = uuid.New()
@@ -111,6 +122,7 @@ func setCorePasswords(tv values.TemplateValues) values.TemplateValues {
 //setCorePasswords - sets randomly generated password for Postgres if not already set
 func setPostgresPassword(tv values.TemplateValues) values.TemplateValues {
 	tv.Values.Postgres.AdminPassword = security.GeneratePassword(false)
+	tv.Values.Postgres.OpenNMSPassword = security.GeneratePassword(false)
 	tv.Values.Postgres.KeycloakPassword = security.GeneratePassword(false)
 	tv.Values.Postgres.NotificationPassword = security.GeneratePassword(false)
 	return tv

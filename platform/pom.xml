@@ -46,7 +46,8 @@
         <cucumber.version>7.1.0</cucumber.version>
         <cxf.version>3.5.0</cxf.version>
         <dhcp4java.version>1.1.0</dhcp4java.version>
-        <docker.image>opennms/horizon-stream-core:local</docker.image>
+        <docker.image.tag>local</docker.image.tag>
+        <docker.image>opennms/horizon-stream-core:${docker.image.tag}</docker.image>
         <docker.skipPush>false</docker.skipPush>
         <drools.version>7.31.0.Final</drools.version>
         <geohash.version>1.4.0</geohash.version>
@@ -225,7 +226,6 @@
                 <configuration>
                     <instructions>
                         <Bundle-RequiredExecutionEnvironment>JavaSE-${java.version}</Bundle-RequiredExecutionEnvironment>
-                        <Karaf-Commands>*</Karaf-Commands>
                     </instructions>
                 </configuration>
             </plugin>

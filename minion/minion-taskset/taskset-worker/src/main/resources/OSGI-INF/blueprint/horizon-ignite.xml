@@ -88,4 +88,6 @@
 
   <service ref="meteredWorkflowLifecycleManager" interface="com.codahale.metrics.MetricSet" />
 
+  <service ref="ignite" interface="org.apache.ignite.Ignite"/>
+
 </blueprint>

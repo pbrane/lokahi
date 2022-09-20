@@ -4,7 +4,7 @@ metadata:
   name: opennms-ingress
   namespace: {{ .Values.Namespace }}
 spec:
-  ingressClassName: ingress-nginx-{{ .Values.Namespace }}
+  ingressClassName: nginx
   rules:
     - host: {{ .Values.Host }}
       http:
@@ -15,38 +15,22 @@ spec:
               service:
                 name: {{ .Values.OpenNMS.UI.ServiceName }}
                 port:
-                  number: 3000
-{{/*          - path: {{ .Values.Keycloak.Path }}*/}}
-{{/*            pathType: Prefix*/}}
-{{/*            backend:*/}}
-{{/*              service:*/}}
-{{/*                name: {{ .Values.Keycloak.ServiceName }}-discovery*/}}
-{{/*                port:*/}}
-{{/*                  number: 8080*/}}
-          - path: /karaf
+                  number: {{ .Values.OpenNMS.UI.Port }}
+          - path: {{ .Values.Keycloak.Path }}
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.OpenNMS.Core.ServiceName }}
+                name: {{ .Values.Keycloak.ServiceName }}
                 port:
-                  number: 8101
-          - path: {{ .Values.OpenNMS.Core.Path }}
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Values.OpenNMS.Core.ServiceName }}
-                port:
-                  number: 8181
+                  number: {{ .Values.Keycloak.Port }}
           - path: {{ .Values.OpenNMS.API.Path }}
             pathType: Prefix
             backend:
               service:
                 name: {{ .Values.OpenNMS.API.ServiceName }}
                 port:
-                  number: 9090
-  {{ if .Values.TLS.Enabled }}
+                  number: {{ .Values.OpenNMS.API.Port }}
   tls:
     - hosts:
         -  {{.Values.Host }}
       secretName: {{ .Values.TLS.Cert.Name }}
-  {{ end }}
