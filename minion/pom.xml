@@ -20,6 +20,7 @@
         <module>minion-3rdParty</module>
         <module>icmp</module>
         <module>snmp</module>
+        <module>minion-heartbeat</module>
         <module>minion-ipc</module>
         <module>minion-grpc</module>
         <module>minion-observability</module>

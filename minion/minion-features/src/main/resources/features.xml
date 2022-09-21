@@ -11,8 +11,10 @@
     <repository>mvn:org.opennms.horizon.minion/icmp-plugin/${project.version}/xml/features</repository>
     <repository>mvn:org.opennms.horizon.shared/snmp-api/${project.version}/xml/features</repository>
     <repository>mvn:org.opennms.horizon.minion/snmp-plugin/${project.version}/xml/features</repository>
+    <repository>mvn:org.opennms.horizon.minion/minion-heartbeat/${project.version}/xml/features</repository>
 
     <feature name="minion-ng">
+        <feature>minion-heartbeat</feature>
         <feature>taskset-minion</feature>
         <feature>icmp-plugins</feature>
         <feature>snmp-plugins</feature>
