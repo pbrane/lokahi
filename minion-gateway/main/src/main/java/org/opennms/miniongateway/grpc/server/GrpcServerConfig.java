@@ -1,6 +1,7 @@
 package org.opennms.miniongateway.grpc.server;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.grpc.stub.StreamObserver;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
 import org.opennms.cloud.grpc.minion.Identity;
@@ -31,8 +32,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.BiConsumer;
 
 @Configuration
@@ -76,15 +79,25 @@ public class GrpcServerConfig {
 
     @Bean("cloudToMinionMessageProcessor")
     public StubCloudToMinionMessageProcessor stubCloudToMinionMessageProcessor(
-        @Qualifier("publisher") TaskSetPublisher publisher,
-        @Qualifier("forwarder") TaskSetForwarder forwarder,
+        @Qualifier("taskSetPublisher") TaskSetPublisher publisher,
+        @Qualifier("taskSetForwarder") TaskSetForwarder forwarder,
         GrpcTwinPublisher grpcTwinPublisher) {
         return new StubCloudToMinionMessageProcessor(publisher, forwarder, grpcTwinPublisher);
     }
 
     @Bean
     public RpcRequestTimeoutManager requestTimeoutManager() {
-        return new RpcRequestTimeoutManagerImpl();
+        ThreadFactory timerThreadFactory = new ThreadFactoryBuilder()
+            .setNameFormat("rpc-timeout-tracker-%d")
+            .build();
+
+        // RPC timeout executor thread retrieves elements from delay queue used to timeout rpc requests.
+        ExecutorService rpcTimeoutExecutor = Executors.newSingleThreadExecutor(timerThreadFactory);
+
+        RpcRequestTimeoutManagerImpl result = new RpcRequestTimeoutManagerImpl();
+        result.setRpcTimeoutExecutor(rpcTimeoutExecutor);
+
+        return result;
     }
 
     @Bean

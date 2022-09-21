@@ -4,7 +4,6 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.services.ServiceDescriptor;
 import org.opennms.taskset.contract.TaskSet;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.opennms.taskset.service.model.LocatedTaskSet;
 import org.opennms.tooling.ignitetool.message.IgniteMessageConsumerManager;
 import org.slf4j.Logger;
@@ -27,6 +26,9 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+
+import static org.opennms.taskset.service.api.TaskSetPublisher.TASK_SET_PUBLISH_SERVICE;
 
 @SuppressWarnings("rawtypes")
 @RestController
@@ -76,7 +78,7 @@ public class IgniteToolRestController {
 
         log.info("Publishing task set: location={}; num-task={}", location, Optional.ofNullable(taskSet.getTaskDefinitionList()).map(Collection::size).orElse(0));
 
-        ignite.message().send(TaskSetPublisher.TASK_SET_TOPIC, locatedTaskSet);
+        ignite.services().serviceProxy(TASK_SET_PUBLISH_SERVICE, Consumer.class, false).accept(locatedTaskSet);
     }
 
     @GetMapping(path = "/topology/{version}")

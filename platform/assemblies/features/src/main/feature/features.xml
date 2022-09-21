@@ -173,8 +173,6 @@
         <feature>horizon-events</feature>
         <feature>horizon-ignite</feature>
         <feature>horizon-db</feature>
-        <feature>horizon-icmp</feature>
-        <feature>horizon-snmp</feature>
         <feature>horizon-shared-lang</feature>
         <feature>horizon-shared-task-set-service</feature>
         <feature>horizon-shared-task-set-publisher</feature>

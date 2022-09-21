@@ -27,6 +27,8 @@ public class MinionLookupServiceImpl implements MinionLookupService {
     public MinionLookupServiceImpl(Ignite ignite) {
         logger.info("############ MINION ROUTER SERVICE INITIALIZED");
 
+        this.ignite = ignite;
+
         minionByIdCache = ignite.getOrCreateCache(MINIONS_BY_ID);
         minionByLocationCache = ignite.getOrCreateCache(MINIONS_BY_LOCATION);
     }
@@ -49,7 +51,7 @@ public class MinionLookupServiceImpl implements MinionLookupService {
         minionByIdCache.put(minionInfo.getId(), localUUID);
 
         Queue<UUID> existingMinions = minionByLocationCache.get(minionInfo.getLocation());
-        if (existingMinions.isEmpty()) {
+        if (existingMinions == null) {
             existingMinions = new ConcurrentLinkedDeque();
             minionByLocationCache.put(minionInfo.getLocation(), existingMinions);
         }

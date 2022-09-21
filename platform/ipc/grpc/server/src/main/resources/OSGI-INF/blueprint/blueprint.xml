@@ -30,9 +30,6 @@
   </bean>
   <service ref="grpcIpcServer" interface="org.opennms.core.grpc.common.GrpcIpcServer"/>
 
-  <bean id="minionManager" class="org.opennms.core.ipc.grpc.server.manager.impl.MinionManagerImpl" />
-  <service ref="minionManager" interface="org.opennms.core.ipc.grpc.server.manager.MinionManager" />
-
   <bean id="locationIndependentRpcClientFactory" class="org.opennms.core.ipc.grpc.server.manager.rpc.LocationIndependentRpcClientFactoryImpl">
     <property name="serverIdentity" ref="identity"/>
     <property name="tracerRegistry" ref="tracerRegistry"/>
@@ -52,7 +49,6 @@
   <bean id="minionRpcStreamConnectionManager" class="org.opennms.core.ipc.grpc.server.manager.rpcstreaming.impl.MinionRpcStreamConnectionManagerImpl" destroy-method="shutdown">
     <argument ref="rpcConnectionTracker"/>
     <argument ref="rpcRequestTracker"/>
-    <argument ref="minionManager"/>
     <argument><bean factory-ref="threadExecutorManager" factory-method="getResponseHandlerExecutor"/></argument>
   </bean>
 
@@ -64,7 +60,6 @@
     <property name="identity" ref="identity"/>
     <property name="rpcMetrics" ref="grpcRpcMetrics"/>
     <property name="sinkMetrics" ref="grpcSinkMetrics"/>
-    <property name="minionManager" ref="minionManager"/>
 
     <property name="rpcRequestTracker" ref="rpcRequestTracker"/>
     <property name="rpcConnectionTracker" ref="rpcConnectionTracker"/>

@@ -1,23 +1,31 @@
 package org.opennms.taskset.service.igniteclient.impl;
 
-import org.apache.ignite.Ignite;
+import org.apache.ignite.client.IgniteClient;
 import org.opennms.taskset.contract.TaskSet;
 import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.opennms.taskset.service.model.LocatedTaskSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.function.Consumer;
 
 public class TaskSetIgnitePublisherImpl implements TaskSetPublisher {
-    private Ignite ignite;
+    private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskSetIgnitePublisherImpl.class);
+
+    private Logger log = DEFAULT_LOGGER;
+
+    private IgniteClient igniteClient;
 
 //========================================
 // Getters and Setters
 //----------------------------------------
 
-    public Ignite getIgnite() {
-        return ignite;
+    public IgniteClient getIgniteClient() {
+        return igniteClient;
     }
 
-    public void setIgnite(Ignite ignite) {
-        this.ignite = ignite;
+    public void setIgniteClient(IgniteClient igniteClient) {
+        this.igniteClient = igniteClient;
     }
 
 
@@ -29,6 +37,6 @@ public class TaskSetIgnitePublisherImpl implements TaskSetPublisher {
     public void publishTaskSet(String location, TaskSet taskSet) {
         LocatedTaskSet locatedTaskSet = new LocatedTaskSet(location, taskSet);
 
-        ignite.message().send(TaskSetPublisher.TASK_SET_TOPIC, locatedTaskSet);
+        igniteClient.services().serviceProxy(TASK_SET_PUBLISH_SERVICE, Consumer.class).accept(locatedTaskSet);
     }
 }

@@ -104,7 +104,7 @@
                                 <feature>camel-activemq</feature>
                                 <feature>horizon-metrics-prometheus</feature>
                                 <feature>horizon-ignite</feature>
-<!--                                <feature>horizon-core-monitor</feature>-->
+                                <feature>horizon-core-monitor</feature>
                             </features>
                         </configuration>
                     </execution>

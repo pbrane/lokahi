@@ -14,7 +14,7 @@ public class MinionLookupServiceConfig {
     MinionManager minionManager;
 
     @Bean(MinionLookupServiceImpl.IGNITE_SERVICE_NAME)
-    public MinionLookupService minionLookupService(Ignite ignite) {
+    public MinionLookupService minionLookupService(@Autowired Ignite ignite) {
         MinionLookupService minionLookupService = new MinionLookupServiceImpl(ignite);
         minionManager.addMinionListener(minionLookupService);
         return minionLookupService;
