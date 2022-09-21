@@ -6,7 +6,7 @@ import org.opennms.core.ipc.grpc.server.manager.RpcRequestDispatcher;
 import org.opennms.miniongateway.detector.api.LocalDetectorAdapter;
 import org.opennms.miniongateway.detector.server.IgniteRpcRequestDispatcher;
 import org.opennms.miniongateway.detector.server.LocalDetectorAdapterStubImpl;
-import org.opennms.miniongateway.grpc.server.tasks.RpcRoutingTask;
+import org.opennms.miniongateway.grpc.server.tasks.EchoRoutingTask;
 import org.opennms.miniongateway.ignite.LocalIgniteRpcRequestDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class IgniteDetectorConfig {
 
     @PostConstruct
     void deployTask() {
-        ignite.compute().localDeployTask(RpcRoutingTask.class, getClass().getClassLoader());
+        ignite.compute().localDeployTask(EchoRoutingTask.class, getClass().getClassLoader());
         logger.info("Deployed routing task");
     }
 }

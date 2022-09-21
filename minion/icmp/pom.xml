@@ -21,7 +21,6 @@
     <module>icmp-rpc-common</module>
     <module>icmp-shell</module>
     <module>icmp-ipc</module>
-    <module>icmp-ipc-client</module>
   </modules>
 
 </project>

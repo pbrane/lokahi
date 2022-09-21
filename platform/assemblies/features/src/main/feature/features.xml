@@ -116,8 +116,7 @@
         <feature>horizon-ipc-api</feature>
         <feature>horizon-db</feature>
         <feature>horizon-metrics-api</feature>
-        <bundle>mvn:org.opennms.horizon.3rdparty/grpc/${project.version}</bundle>
-        <bundle>mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
+        <feature>grpc</feature>
 
         <bundle>mvn:org.opennms.horizon.ipc.grpc/client/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.ipc.grpc/common/${project.version}</bundle>
@@ -161,10 +160,7 @@
 <!--    </feature>-->
 
     <feature name="horizon-grpc-contract" version="${project.version}">
-        <feature>guava</feature>
-        <bundle>mvn:org.opennms.horizon.3rdparty/grpc/${project.version}</bundle>
-        <bundle>mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
-
+        <feature>grpc</feature>
         <bundle>mvn:org.opennms.horizon.shared/ipc-grpc-contract/${project.version}</bundle>
     </feature>
 
@@ -177,9 +173,7 @@
         <feature>horizon-shared-task-set-service</feature>
         <feature>horizon-shared-task-set-publisher</feature>
         <feature>horizon-core-camel</feature>
-        <feature>horizon-grpc-contract</feature>
 
-        <bundle>mvn:org.opennms.horizon.shared/ipc-api/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.core/monitor/${project.version}</bundle>
 
         <bundle dependency="true">mvn:org.opennms.horizon.shared/horizon-common-logging/${project.version}</bundle>
@@ -212,8 +206,7 @@
         <feature>rate-limited-logger</feature>
         <feature>horizon-core</feature>
         <feature>horizon-tracing</feature>
-
-        <bundle>mvn:io.dropwizard.metrics/metrics-core/${dropwizard.metrics.version}</bundle>
+        <feature>dropwizard-metrics-core-3.x</feature>
 
         <bundle>mvn:org.opennms.horizon.ipc/api/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.ipc/shell/${project.version}</bundle>
@@ -322,14 +315,8 @@
     <feature name="provision-ignite" version="${project.version}">
         <feature>horizon-tracing</feature>
         <feature>horizon-ignite</feature>
-        <feature>minion-gateway-ignite-detector</feature>
 
         <bundle>mvn:org.opennms.horizon.provision/ignite-service/${project.version}</bundle>
-    </feature>
-
-    <!-- TBD: move to minion-gateway features -->
-    <feature name="minion-gateway-ignite-detector" version="${project.version}">
-        <bundle>mvn:org.opennms.horizon.minion.gateway/minion-gateway-ignite-detector-api/${project.version}</bundle>
     </feature>
 
     <!--                -->
@@ -523,10 +510,15 @@
     <!-- IGNITE -->
     <!--        -->
     <feature name="horizon-ignite" version="${project.version}">
+        <feature version="${project.version}">horizon-grpc-contract</feature>
         <feature version="${project.version}">3rdparty-ignite</feature>
         <feature version="${project.version}">horizon-shared-lang</feature>
+        <feature version="4.2.10">dropwizard-metrics-core-4.x</feature>
+        <feature>rate-limited-logger</feature>
+        <feature>horizon-tracing</feature>
+        <bundle dependency="true">mvn:org.opennms.horizon.shared/horizon-common-logging/${project.version}</bundle>
 
-        <feature>horizon-grpc-contract</feature>
+        <bundle>mvn:org.opennms.horizon.shared/ipc-api/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon/ignite/${project.version}</bundle>
     </feature>
 
@@ -580,6 +572,24 @@
         <feature>horizon-metrics-api</feature>
         <feature>prometheus-push-gateway</feature>
         <bundle>mvn:org.opennms.horizon.metrics/impl/${project.version}</bundle>
+    </feature>
+
+    <feature name="dropwizard-metrics-core-3.x" version="${dropwizard.metrics.version}">
+        <bundle>mvn:io.dropwizard.metrics/metrics-core/${dropwizard.metrics.version}</bundle>
+    </feature>
+
+    <feature name="dropwizard-metrics-core-4.x" version="4.2.10">
+        <bundle>mvn:io.dropwizard.metrics/metrics-core/4.2.10</bundle>
+    </feature>
+
+    <feature name="grpc">
+        <feature>guava</feature>
+        <feature>protobuf</feature>
+        <bundle>mvn:org.opennms.horizon.3rdparty/grpc/${project.version}</bundle>
+    </feature>
+
+    <feature name="protobuf">
+        <bundle>mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
     </feature>
 
 </features>
