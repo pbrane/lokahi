@@ -42,7 +42,7 @@ build:
         # ignite-detector builds only a jar, not an image.
         # Skaffold requires that artifacts produce images. This is a workaround that builds a dummy image.
         buildCommand: |
-          mvn clean install -DskipTests=$SKIP_TEST &&
+          mvn clean install -DskipTests=$SKIP_TEST -N &&
           printf 'FROM scratch\nCMD \"Dummy Image Started\"' | docker build -t $IMAGE -
         dependencies:
           paths: ["pom.xml"]
