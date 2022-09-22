@@ -46,8 +46,7 @@ import java.util.Optional;
  */
 public interface SinkModule<S extends Message, T extends Message> {
 
-    //TODO MMF: Why is this here?
-    String HEARTBEAT_MODULE_ID = "Heartbeat";
+    String HEARTBEAT_MODULE_ID = "heartbeat";
 
     /**
      * Globally unique identifier.
