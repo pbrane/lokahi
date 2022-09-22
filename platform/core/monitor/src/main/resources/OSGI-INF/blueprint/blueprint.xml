@@ -28,19 +28,27 @@
         </cm:default-properties>
     </cm:property-placeholder>
 
-    <!--<reference id="rpcClientFactory" interface="org.opennms.horizon.ipc.rpc.api.RpcClientFactory"/>-->
+    <reference id="echoClient" interface="org.opennms.horizon.minion.echo.ipc.client.LocationAwareEchoClient"/>
     <reference id="metricsAdapter" interface="org.opennms.horizon.metrics.api.OnmsMetricsAdapter"/>
     <reference id="eventSubscriptionService" interface="org.opennms.horizon.events.api.EventSubscriptionService" availability="mandatory"/>
     <reference id="sessionUtils" interface="org.opennms.horizon.db.dao.api.SessionUtils" />
     <reference id="nodeDao" interface="org.opennms.horizon.db.dao.api.NodeDao" />
     <reference id="ipInterfaceDao" interface="org.opennms.horizon.db.dao.api.IpInterfaceDao" />
-    <!--<reference id="locationAwarePingClient" interface="org.opennms.netmgt.icmp.proxy.LocationAwarePingClient"/>-->
-
+    <reference id="minionDao" interface="org.opennms.horizon.db.dao.api.MinionDao"/>
     <reference id="igniteClient" interface="org.apache.ignite.client.IgniteClient"/>
     <reference id="igniteTaskSetClientFactory" interface="org.opennms.taskset.service.igniteclient.TaskSetIgnitePublisherFactory"/>
 
     <bean id="taskSetIgniteClient" factory-ref="igniteTaskSetClientFactory" factory-method="create">
         <argument ref="igniteClient"/>
+    </bean>
+
+    <bean id="minionRpcMonitorManager" class="org.opennms.horizon.core.monitor.MinionRpcMonitorManager"
+        init-method="init" destroy-method="shutdown">
+        <argument ref="echoClient"/>
+        <argument ref="metricsAdapter"/>
+        <argument ref="sessionUtils"/>
+        <argument ref="minionDao"/>
+        <argument ref="eventSubscriptionService"/>
     </bean>
 
     <bean id="deviceMonitorManager" class="org.opennms.horizon.core.monitor.DeviceMonitorManager"

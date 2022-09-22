@@ -124,40 +124,21 @@
         <bundle>mvn:org.opennms.horizon.ipc/echo/${project.version}</bundle>
     </feature>
 
-<!--    TODO MMF: move to minion-->
-<!--    <feature name="horizon-icmp" version="${project.version}" description="Horizon :: ICMP">-->
-<!--        <feature>java-native-access</feature>-->
-<!--        <feature>guava</feature>-->
-<!--        <feature>horizon-grpc</feature>-->
-<!--        <feature version="${jackson.version}">jackson</feature>-->
+    <feature name="horizon-echo-client" version="${project.version}" description="Horizon :: Echo Client">
+        <feature>horizon-ignite</feature>
+        <bundle>mvn:org.opennms.horizon.ipc/echo-ipc-client/${project.version}</bundle>
+    </feature>
 
-<!--        <bundle>mvn:org.opennms.horizon.3rdparty/json-patch-osgi/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.horizon.3rdparty/jackson-coreutils-osgi/${project.version}</bundle>-->
-<!--        <bundle>mvn:com.github.fge/msg-simple/${fgeMsgSimple.version}</bundle>-->
-<!--        <bundle>mvn:com.github.fge/btf/${fgeBtf.version}</bundle>-->
-<!--        <bundle>mvn:com.google.code.findbugs/jsr305/${jsr305.version}</bundle>-->
+    <feature name="horizon-icmp-client" version="${project.version}" description="Horizon :: ICMP Client">
+        <feature>horizon-ignite</feature>
+        <bundle>mvn:org.opennms.horizon.ipc/icmp-ipc-client/${project.version}</bundle>
+    </feature>
 
-<!--        <bundle>mvn:org.opennms.horizon.core/lib/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.lib/org.opennms.lib.tracker/${opennms.tracker.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms/jicmp-api/${jicmp.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms/jicmp6-api/${jicmp.version}</bundle>-->
+    <feature name="horizon-snmp-client" version="${project.version}" description="Horizon :: SNMP Client">
+        <feature>horizon-ignite</feature>
+        <bundle>mvn:org.opennms.horizon.ipc/snmp-ipc-client/${project.version}</bundle>
+    </feature>
 
-<!--        <bundle>mvn:org.opennms.horizon.shared/icmp-api/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.horizon.icmp/best/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.horizon.icmp/jna/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.horizon.icmp/jni/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.horizon.icmp/jni6/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.horizon.icmp/shell/${project.version}</bundle>-->
-
-<!--        <bundle>mvn:org.opennms.horizon.icmp/rpc-common/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.horizon.icmp/rpc-module-impl/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.horizon.icmp/rpc-impl/${project.version}</bundle>-->
-
-<!--        <bundle>mvn:org.opennms.core.ipc.twin/api/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.core.ipc.twin/common/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.core.ipc.twin.grpc/common/${project.version}</bundle>-->
-<!--        <bundle>mvn:org.opennms.core.ipc.twin.grpc/publisher/${project.version}</bundle>-->
-<!--    </feature>-->
 
     <feature name="horizon-grpc-contract" version="${project.version}">
         <feature>grpc</feature>
@@ -173,6 +154,7 @@
         <feature>horizon-shared-task-set-service</feature>
         <feature>horizon-shared-task-set-publisher</feature>
         <feature>horizon-core-camel</feature>
+        <feature>horizon-echo-client</feature>
 
         <bundle>mvn:org.opennms.horizon.core/monitor/${project.version}</bundle>
 
@@ -591,5 +573,6 @@
     <feature name="protobuf">
         <bundle>mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
     </feature>
+
 
 </features>
