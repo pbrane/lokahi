@@ -7,16 +7,16 @@ option java_package = "org.opennms.horizon.grpc.echo.contract";
 import "opennms_minion_ipc.proto";
 
 message EchoRequest {
-  uint64 id = 2;
-  string message = 3;
-  optional string body = 4;
-  optional int64 delay = 5;
-  bool throw = 6;
+  uint64 time = 1;
+  string message = 2;
+  optional string body = 3;
+  optional int64 delay = 4;
+  bool throw = 5;
 }
 
 message EchoResponse {
-  int64 id = 2;
-  string error =3 ;
-  string message = 4;
-  optional string body = 5;
+  int64 time = 1;
+  string error = 2;
+  string message = 3;
+  optional string body = 4;
 }

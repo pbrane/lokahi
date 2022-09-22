@@ -67,7 +67,7 @@ public class EchoRpcHandler implements RpcHandler<EchoRequest, EchoResponse> {
             future.completeExceptionally(new MyEchoException(request.getMessage()));
         } else {
             EchoResponse response = EchoResponse.newBuilder()
-                .setId(request.getId())
+                .setTime(request.getTime())
                 .setMessage(request.getMessage())
                 .setBody(request.getBody())
                 .build();
