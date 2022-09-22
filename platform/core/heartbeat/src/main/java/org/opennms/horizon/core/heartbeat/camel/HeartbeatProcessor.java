@@ -24,7 +24,12 @@ public class HeartbeatProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         HeartbeatMessage heartbeat = exchange.getIn().getMandatoryBody(HeartbeatMessage.class);
 
-        Date timestamp = new Date(heartbeat.getTimestamp().getSeconds());
+        long millis =
+            (heartbeat.getTimestamp().getSeconds() * 1_000) +
+            (heartbeat.getTimestamp().getNanos() / 1_000_000)
+            ;
+
+        Date timestamp = new Date(millis);
         heartbeatConsumer.update(heartbeat.getIdentity().getSystemId(), heartbeat.getIdentity().getLocation(), timestamp);
     }
 }
