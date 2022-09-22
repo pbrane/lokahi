@@ -47,7 +47,6 @@ public class HeartbeatProducer {
 
     private static final int PERIOD_MS = 30 * 1000;
 
-
     private final IpcIdentity identity;
     private final MessageDispatcherFactory messageDispatcherFactory;
 

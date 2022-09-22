@@ -28,11 +28,13 @@
 
 package org.opennms.horizon.minion.heartbeat;
 
+import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.grpc.heartbeat.contract.HeartbeatMessage;
 import org.opennms.horizon.shared.ipc.sink.api.AggregationPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
 
+@Slf4j
 public class HeartbeatModule implements SinkModule<HeartbeatMessage, HeartbeatMessage> {
 
     public static final String MODULE_ID = "Heartbeat";
@@ -48,23 +50,33 @@ public class HeartbeatModule implements SinkModule<HeartbeatMessage, HeartbeatMe
     }
 
     @Override
-    public byte[] marshal(HeartbeatMessage message) {
-        return new byte[0];
+    public byte[] marshal(HeartbeatMessage resultsMessage) {
+        try {
+            return resultsMessage.toByteArray();
+        } catch (Exception e) {
+            log.warn("Error while marshalling message {}.", resultsMessage, e);
+            return new byte[0];
+        }
     }
 
     @Override
     public HeartbeatMessage unmarshal(byte[] message) {
-        return null;
+        try {
+            return HeartbeatMessage.parseFrom(message);
+        } catch (Exception e) {
+            log.warn("Error while unmarshalling message.", e);
+            return null;
+        }
     }
 
     @Override
     public byte[] marshalSingleMessage(HeartbeatMessage message) {
-        return new byte[0];
+        return marshal(message);
     }
 
     @Override
     public HeartbeatMessage unmarshalSingleMessage(byte[] message) {
-        return null;
+        return unmarshal(message);
     }
 
     @Override
