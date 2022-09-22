@@ -30,6 +30,7 @@ package org.opennms.horizon.minion.heartbeat;
 
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.grpc.heartbeat.contract.HeartbeatMessage;
+import org.opennms.horizon.shared.ipc.sink.aggregation.IdentityAggregationPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.AggregationPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
@@ -81,12 +82,23 @@ public class HeartbeatModule implements SinkModule<HeartbeatMessage, HeartbeatMe
 
     @Override
     public AggregationPolicy<HeartbeatMessage, HeartbeatMessage, ?> getAggregationPolicy() {
-        // TODO MMF: Is null correct for no aggregation?
-        return null;
+        return new IdentityAggregationPolicy();
     }
 
     @Override
     public AsyncPolicy getAsyncPolicy() {
-        return null;
+        return new AsyncPolicy() {
+            public int getQueueSize() {
+                return 10;
+            }
+
+            public int getNumThreads() {
+                return 10;
+            }
+
+            public boolean isBlockWhenFull() {
+                return true;
+            }
+        };
     }
 }
