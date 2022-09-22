@@ -120,7 +120,7 @@ public class EchoRoutingTask implements ComputeTask<RpcRequestProto, RpcResponse
                 throw new IgniteException("Failed to dispatch request", e);
             } catch (ExecutionException e) {
                 logger.warning("Failure while executing request " + request.getRpcId(), e);
-                return null;
+                throw new IgniteException("Could not execute RPC request", e);
             }
         }
     }
