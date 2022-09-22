@@ -372,12 +372,12 @@
         <bundle>wrap:mvn:ch.hsr/geohash/${geohash.version}</bundle>
     </feature>
 
-    <!--<feature name="horizon-minion-rest" version="${project.version}" description="Horizon: Minion :: Rest">-->
-    <!--    <feature>horizon-db</feature>-->
-    <!--    <feature>horizon-core-rest</feature>-->
-    <!--    <bundle>mvn:org.opennms.horizon.shared/dto-model/${horizon.shared.lib.version}</bundle>-->
-    <!--    <bundle start-level="80">mvn:org.opennms.horizon.minion/org.opennms.horizon.minion.rest/${project.version}</bundle>-->
-    <!--</feature>-->
+    <feature name="horizon-minion-rest" version="${project.version}" description="Horizon: Minion :: Rest">
+        <feature>horizon-db</feature>
+        <feature>horizon-core-rest</feature>
+        <bundle>mvn:org.opennms.horizon.shared/dto-model/${horizon.shared.lib.version}</bundle>
+        <bundle start-level="80">mvn:org.opennms.horizon.minion/org.opennms.horizon.minion.rest/${project.version}</bundle>
+    </feature>
 
     <!--<feature name="horizon-minion-heartbeat" version="${project.version}" description="Horizon: Minion :: Heartbeat">-->
     <!--    <feature>horizon-db</feature>-->

@@ -28,14 +28,12 @@
         </cm:default-properties>
     </cm:property-placeholder>
 
-    <reference id="messageConsumerManager" interface="org.opennms.horizon.ipc.sink.api.MessageConsumerManager" availability="optional"/>
     <reference id="minionDao" interface="org.opennms.horizon.db.dao.api.MinionDao"/>
     <reference id="sessionUtils" interface="org.opennms.horizon.db.dao.api.SessionUtils" />
     <reference id="metricsAdapter" interface="org.opennms.horizon.metrics.api.OnmsMetricsAdapter"/>
     <reference id="eventForwarder" interface="org.opennms.horizon.events.api.EventForwarder" availability="optional"/>
 
     <bean id="heartbeatConsumer" class="org.opennms.horizon.core.heartbeat.HeartbeatConsumer" init-method="init">
-        <argument ref="messageConsumerManager"/>
         <argument ref="minionDao"/>
         <argument ref="sessionUtils"/>
         <argument ref="metricsAdapter"/>
@@ -53,7 +51,7 @@
         <route id="consumeKafkaHeartbeats">
             <from uri="kafka:{{heartbeat.kafka-topic}}?brokers={{kafkaBrokers}}&amp;valueDeserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer"/>
             <unmarshal>
-                <protobuf instanceClass="org.opennms.horizon.grpc.heartbeat.contract.Heartbeat"/>
+                <protobuf instanceClass="org.opennms.horizon.grpc.heartbeat.contract.HeartbeatMessage"/>
             </unmarshal>
             <process ref="heartbeatProcessor"/>
         </route>

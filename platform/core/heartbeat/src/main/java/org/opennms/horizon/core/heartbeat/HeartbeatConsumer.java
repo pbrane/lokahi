@@ -54,7 +54,6 @@ import java.util.stream.IntStream;
 public class HeartbeatConsumer implements MessageConsumer<MinionIdentityDTO, MinionIdentityDTO> {
 
     private static final Logger LOG = LoggerFactory.getLogger(HeartbeatConsumer.class);
-    private final MessageConsumerManager messageConsumerManager;
     private final MinionDao minionDao;
     private final SessionUtils sessionUtils;
     private final OnmsMetricsAdapter onmsMetricsAdapter;
@@ -65,10 +64,9 @@ public class HeartbeatConsumer implements MessageConsumer<MinionIdentityDTO, Min
     private final Gauge upTimeGauge = Gauge.build().name("minion_uptime").help("Total Uptime of Minion.")
         .unit("sec").labelNames(labelNames).register(collectorRegistry);
 
-    public HeartbeatConsumer(MessageConsumerManager messageConsumerManager, MinionDao minionDao,
+    public HeartbeatConsumer(MinionDao minionDao,
                              SessionUtils sessionUtils, OnmsMetricsAdapter onmsMetricsAdapter,
                              EventForwarder eventForwarder) {
-        this.messageConsumerManager = messageConsumerManager;
         this.minionDao = minionDao;
         this.sessionUtils = sessionUtils;
         this.onmsMetricsAdapter = onmsMetricsAdapter;
@@ -76,7 +74,6 @@ public class HeartbeatConsumer implements MessageConsumer<MinionIdentityDTO, Min
     }
 
     public void init() throws Exception {
-        messageConsumerManager.registerConsumer(this);
     }
 
     @Override
