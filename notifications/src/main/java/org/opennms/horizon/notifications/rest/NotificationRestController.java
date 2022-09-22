@@ -48,6 +48,7 @@ public class NotificationRestController {
     private NotificationService notificationsService;
 
     @PostMapping(value = "/config", consumes="application/json")
+    @RolesAllowed({"user", "admin"})
     public ResponseEntity<String> postPagerDutyConfig(@RequestBody PagerDutyConfigDTO config) throws Exception {
         notificationsService.postPagerDutyConfig(config);
         return new ResponseEntity<>("OK", HttpStatus.OK);
