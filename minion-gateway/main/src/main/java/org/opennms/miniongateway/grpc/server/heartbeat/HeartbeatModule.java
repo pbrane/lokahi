@@ -10,11 +10,9 @@ import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
 
 public class HeartbeatModule implements SinkModule<Message, Message> {
 
-    public static final String MODULE_ID = "heartbeat";
-
     @Override
     public String getId() {
-        return MODULE_ID;
+        return HEARTBEAT_MODULE_ID;
     }
 
     @Override
