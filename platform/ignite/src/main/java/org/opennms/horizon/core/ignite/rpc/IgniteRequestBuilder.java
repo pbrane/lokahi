@@ -30,7 +30,9 @@ public class IgniteRequestBuilder implements RequestBuilder {
 
     @Override
     public RequestBuilder withSystemId(String systemId) {
-        proto.setSystemId(systemId);
+        if (systemId != null) {
+            proto.setSystemId(systemId);
+        }
         return this;
     }
 
