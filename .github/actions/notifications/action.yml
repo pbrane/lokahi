@@ -18,5 +18,7 @@ runs:
 
         # Create the docker image.
         mvn package jib:dockerBuild -Dimage=opennms/horizon-stream-notification:local
+        cd ../ && mkdir -p tmp/
+        docker save -o tmp/opennms-horizon-stream-notification-local.tar opennms/horizon-stream-notification:local
 
       shell: bash

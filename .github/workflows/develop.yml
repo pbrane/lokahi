@@ -45,7 +45,7 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Get Branch
+      - name: Init
         run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV
       - name: shared-lib
         id: action-shared-lib
@@ -67,19 +67,26 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Get Branch
-        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV
+      - name: Init
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p tmp/
       - name: shared-lib-cache
         uses: actions/cache@v3
         with:
           path: |
             ~/.m2
           key: shared-lib-${{ env.BRANCH }}-${{ github.actor }}
+      - name: tmp-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp
+          key: tmp-${{ env.BRANCH }}-${{ github.actor }}
       - name: feature-notifications
         id: action-notifications
         uses: ./.github/actions/notifications
         with:
           dir-location: 'notifications'
+
 
   feature-ui:
     # If label for PR, closed on PR, or develop branch on push, then run., 
@@ -117,7 +124,7 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Get Branch
+      - name: Init
         run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV
       - name: shared-lib-cache
         uses: actions/cache@v3
@@ -139,25 +146,48 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Get Branch
-        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV
+      - name: Init
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p tmp/
       - name: shared-lib-cache
         uses: actions/cache@v3
         with:
           path: |
             ~/.m2
           key: shared-lib-${{ env.BRANCH }}-${{ github.actor }}
+      - name: tmp-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp
+          key: tmp-${{ env.BRANCH }}-${{ github.actor }}
       - name: feature-rest-server
         id: action-rest-server
         uses: ./.github/actions/rest-server
         with:
           dir-location: 'rest-server'
-    
-      - name: test-dependencies
+      - name: test-tmp
         run: |
 
-          echo "Testing for optimized workflows. List images"
-          docker images
+          ls tmp/
+ 
+  test-tmp:
+    runs-on: ubuntu-latest
+    needs: [ feature-rest-server, feature-notifications ]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Init
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p tmp/
+      - name: tmp-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp
+          key: tmp-${{ env.BRANCH }}-${{ github.actor }}
+      - name: test-tmp
+        run: |
+
+          ls tmp/
 
   external-it:
     # If label for PR, closed on PR, or develop branch on push, then run., 

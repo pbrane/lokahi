@@ -18,5 +18,7 @@ runs:
 
         # Create the docker image.
         mvn clean install jib:dockerBuild -Dimage=opennms/horizon-stream-rest-server:local
+        cd ../ && mkdir -p tmp/
+        docker save -o tmp/opennms-horizon-stream-rest-server-local.tar opennms/horizon-stream-rest-server:local
 
       shell: bash

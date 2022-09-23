@@ -26,6 +26,9 @@ runs:
 
         # Create the docker image.
         make local-docker
+        docker tag opennms/operator:local-build opennms/operator:local
+        cd ../ && mkdir -p tmp/
+        docker save -o tmp/opennms-operator-local.tar opennms/operator:local
 
       shell: bash
   
