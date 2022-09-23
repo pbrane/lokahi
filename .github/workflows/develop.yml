@@ -32,11 +32,11 @@ jobs:
           echo "For init steps."
           echo "Testing for optimized workflows.
   
-      #- name: feature-ui
-      #  id: action-feature-ui
-      #  uses: ./.github/actions/ui
-      #  with:
-      #    dir-location: 'ui'
+      - name: feature-ui
+        id: action-feature-ui
+        uses: ./.github/actions/ui
+        with:
+          dir-location: 'ui'
   
       #- name: feature-grafana
       #  id: action-feature-grafana
