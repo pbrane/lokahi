@@ -40,7 +40,7 @@ runs:
         # The image, opennms-horizon-application-it-image, is just for the
         # integration tests, ignore.  
 
-        cd ../ && mkdir -p tmp/
-        docker save -o tmp/opennms-horizon-stream-core-local.tar opennms/horizon-stream-core:local
+        cd ../ && mkdir -p ~/tmp/
+        docker save -o ~/tmp/opennms-horizon-stream-core-local.tar opennms/horizon-stream-core:local
 
       shell: bash

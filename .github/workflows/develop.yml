@@ -68,7 +68,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Init
-        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p tmp/
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
       - name: shared-lib-cache
         uses: actions/cache@v3
         with:
@@ -147,7 +147,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Init
-        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p tmp/
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
       - name: shared-lib-cache
         uses: actions/cache@v3
         with:
@@ -167,8 +167,8 @@ jobs:
           dir-location: 'rest-server'
       - name: test-tmp
         run: |
-
-          ls tmp/
+          pwd
+          ls ~/tmp/
  
   test-tmp:
     runs-on: ubuntu-latest
@@ -177,7 +177,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Init
-        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p tmp/
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
       - name: tmp-cache
         uses: actions/cache@v3
         with:
@@ -186,8 +186,8 @@ jobs:
           key: tmp-${{ env.BRANCH }}-${{ github.actor }}
       - name: test-tmp
         run: |
-
-          ls tmp/
+          pwd
+          ls ~/tmp/
 
   external-it:
     # If label for PR, closed on PR, or develop branch on push, then run., 
