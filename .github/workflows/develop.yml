@@ -25,7 +25,6 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-        # Is required to call actions.
   
       - name: feature-grafana
         id: action-feature-grafana
@@ -39,14 +38,13 @@ jobs:
         with:
           dir-location: 'keycloak-ui'
   
-  feature-notifications:
+  shared-lib:
     # If label for PR, closed on PR, or develop branch on push, then run., 
     #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-        # Is required to call actions.
       
       # This needs to happen before core, rest-server, and notifications.
       - name: shared-lib
@@ -54,6 +52,45 @@ jobs:
         uses: ./.github/actions/shared-lib
         with:
           dir-location: 'shared-lib'
+
+      - name: shared-lib
+        uses: actions/cache@v3
+          with:
+            path: |
+              ~/.m2
+        key: ${{ runner.os }}-cache-${{ env.cache-name }}-pr-${{ github.event.number }}
+
+      - name: test-cache
+        run: |
+
+          echo "Test: " ${{ runner.os }}-cache-${{ env.cache-name }}-pr-${{ github.event.number }}
+
+  feature-notifications:
+    # If label for PR, closed on PR, or develop branch on push, then run., 
+    #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      
+      ## This needs to happen before core, rest-server, and notifications.
+      #- name: shared-lib
+      #  id: action-shared-lib
+      #  uses: ./.github/actions/shared-lib
+      #  with:
+      #    dir-location: 'shared-lib'
+
+      - name: shared-lib
+        uses: actions/cache@v3
+          with:
+            path: |
+              ~/.m2
+        key: ${{ runner.os }}-cache-${{ env.cache-name }}-pr-${{ github.event.number }}
+
+      - name: test-cache
+        run: |
+          ls ~/.m2
+          echo "Test: " ${{ runner.os }}-cache-${{ env.cache-name }}-pr-${{ github.event.number }}
     
       - name: feature-notifications
         id: action-notifications
@@ -68,7 +105,6 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-        # Is required to call actions.
 
       - name: feature-ui
         id: action-feature-ui
@@ -83,7 +119,6 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-        # Is required to call actions.
   
       - name: feature-operator
         id: action-feature-operator
@@ -98,7 +133,6 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-        # Is required to call actions.
   
       # This needs to happen before core, rest-server, and notifications.
       - name: shared-lib
@@ -120,7 +154,6 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-        # Is required to call actions.
   
       # This needs to happen before core, rest-server, and notifications.
       - name: shared-lib
@@ -149,7 +182,6 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-        # Is required to call actions.
     
       - name: test-dependencies
         run: |
