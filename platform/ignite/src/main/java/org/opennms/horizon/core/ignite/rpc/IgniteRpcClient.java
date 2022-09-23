@@ -22,15 +22,23 @@ public class IgniteRpcClient<T extends Message> implements RpcClient<T> {
     }
     @Override
     public CompletableFuture<T> execute(RpcRequestProto request) {
-        IgniteClientFuture<RpcResponseProto> future = client.compute()
-            .executeAsync2("echoRoutingTask", request);
-        return future.toCompletableFuture().thenApply(response -> {
-            try {
-                return deserializer.deserialize(response);
-            } catch (InvalidProtocolBufferException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        IgniteClientFuture<byte[]> future = client.compute()
+            .executeAsync2("echoRoutingTask", request.toByteArray());
+        return future.toCompletableFuture()
+            .thenApply(response -> {
+                try {
+                    return RpcResponseProto.parseFrom(response);
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RuntimeException("Failed to deserialize rpc response", e);
+                }
+            })
+            .thenApply(response -> {
+                try {
+                    return deserializer.deserialize(response);
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RuntimeException(e);
+                }
+            });
     }
 
     @Override

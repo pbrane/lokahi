@@ -1,5 +1,6 @@
 package org.opennms.miniongateway.grpc.server.tasks;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import org.opennms.horizon.shared.ignite.remoteasync.MinionLookupService;
 import org.opennms.miniongateway.detector.server.IgniteRpcRequestDispatcher;
 
 @ComputeTaskName(EchoRoutingTask.ECHO_ROUTING_TASK)
-public class EchoRoutingTask implements ComputeTask<RpcRequestProto, RpcResponseProto> {
+public class EchoRoutingTask implements ComputeTask<byte[], byte[]> {
 
     public static final String ECHO_ROUTING_TASK = "echoRoutingTask";
 
@@ -32,23 +33,27 @@ public class EchoRoutingTask implements ComputeTask<RpcRequestProto, RpcResponse
     private transient MinionLookupService minionLookupService;
 
     @Override
-    public @NotNull Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, @Nullable RpcRequestProto arg) throws IgniteException {
+    public @NotNull Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, @Nullable byte[] arg) throws IgniteException {
         UUID gatewayNodeId = null;
         Map<ComputeJob, ClusterNode> map = new HashMap<>();
-
-        if (!arg.getSystemId().isBlank()) {
-            gatewayNodeId = minionLookupService.findGatewayNodeWithId(arg.getSystemId());
-        } else {
-            //TODO: For now just get the first one
-            gatewayNodeId =  minionLookupService.findGatewayNodeWithLocation(arg.getLocation()).stream().findFirst().get();
-        }
-        //TODO: is it possible for this to be null? Or just assume there will always be at least one?
-        if (gatewayNodeId != null) {
-            RoutingJob job = new RoutingJob(arg);
-            UUID finalGatewayNodeId = gatewayNodeId;
-            ClusterNode node = subgrid.stream().filter(clusterNode -> finalGatewayNodeId.equals(clusterNode.id()))
-                .findFirst().get();
-            map.put(job, node);
+        try {
+            RpcRequestProto request = RpcRequestProto.parseFrom(arg);
+            if (!request.getSystemId().isBlank()) {
+                gatewayNodeId = minionLookupService.findGatewayNodeWithId(request.getSystemId());
+            } else {
+                //TODO: For now just get the first one
+                gatewayNodeId =  minionLookupService.findGatewayNodeWithLocation(request.getLocation()).stream().findFirst().get();
+            }
+            //TODO: is it possible for this to be null? Or just assume there will always be at least one?
+            if (gatewayNodeId != null) {
+                RoutingJob job = new RoutingJob(request);
+                UUID finalGatewayNodeId = gatewayNodeId;
+                ClusterNode node = subgrid.stream().filter(clusterNode -> finalGatewayNodeId.equals(clusterNode.id()))
+                    .findFirst().get();
+                map.put(job, node);
+            }
+        } catch (InvalidProtocolBufferException e) {
+            throw new RuntimeException(e);
         }
         return map;
     }
@@ -63,7 +68,7 @@ public class EchoRoutingTask implements ComputeTask<RpcRequestProto, RpcResponse
     }
 
     @Override
-    public @Nullable RpcResponseProto reduce(List<ComputeJobResult> results) throws IgniteException {
+    public @Nullable byte[] reduce(List<ComputeJobResult> results) throws IgniteException {
         if (results.isEmpty()) {
             return null;
         }
@@ -97,7 +102,7 @@ public class EchoRoutingTask implements ComputeTask<RpcRequestProto, RpcResponse
         }
 
         @Override
-        public Object execute() throws IgniteException {
+        public byte[] execute() throws IgniteException {
             try {
                 if (logger.isTraceEnabled()) {
                     logger.trace("Dispatching RPC request " + request);
@@ -115,7 +120,7 @@ public class EchoRoutingTask implements ComputeTask<RpcRequestProto, RpcResponse
                         logger.debug("Received answer for rpc request " + request.getRpcId());
                     }
                 });
-                return responseFuture.get();
+                return responseFuture.get().toByteArray();
             } catch (InterruptedException e) {
                 throw new IgniteException("Failed to dispatch request", e);
             } catch (ExecutionException e) {
