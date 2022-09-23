@@ -89,13 +89,13 @@ jobs:
     # If label for PR, closed on PR, or develop branch on push, then run., 
     #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
     runs-on: ubuntu-latest
+    needs: [ feature-ui, feature-grafana, feature-keycloak-ui, shared-lib ]
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
         # Is required to call actions.
     
       - name: test-dependencies
-        needs: [ feature-ui, feature-grafana, feature-keycloak-ui, shared-lib ]
         run: |
 
           echo "Testing for optimized workflows. EXTERNAL-IT"
