@@ -39,7 +39,7 @@ jobs:
         with:
           dir-location: 'keycloak-ui'
   
-  shared-lib:
+  feature-notifications:
     # If label for PR, closed on PR, or develop branch on push, then run., 
     #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
     runs-on: ubuntu-latest
@@ -47,23 +47,13 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
         # Is required to call actions.
-    
+      
       # This needs to happen before core, rest-server, and notifications.
       - name: shared-lib
         id: action-shared-lib
         uses: ./.github/actions/shared-lib
         with:
           dir-location: 'shared-lib'
-  
-  feature-notifications:
-    # If label for PR, closed on PR, or develop branch on push, then run., 
-    #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
-    runs-on: ubuntu-latest
-    needs: [ shared-lib ]
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-        # Is required to call actions.
     
       - name: feature-notifications
         id: action-notifications
@@ -86,11 +76,73 @@ jobs:
         with:
           dir-location: 'ui'
 
+  feature-operator:
+    # If label for PR, closed on PR, or develop branch on push, then run., 
+    #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
+    runs-on: ubuntu-latest
+    needs: [ shared-lib ]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        # Is required to call actions.
+  
+      - name: feature-operator
+        id: action-feature-operator
+        uses: ./.github/actions/operator
+        with:
+          dir-location: 'operator'
+
+  feature-core:
+    # If label for PR, closed on PR, or develop branch on push, then run., 
+    #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
+    runs-on: ubuntu-latest
+    needs: [ shared-lib ]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        # Is required to call actions.
+  
+      # This needs to happen before core, rest-server, and notifications.
+      - name: shared-lib
+        id: action-shared-lib
+        uses: ./.github/actions/shared-lib
+        with:
+          dir-location: 'shared-lib'
+    
+      - name: feature-core
+        id: action-feature-core
+        uses: ./.github/actions/core
+        with:
+          dir-location: 'platform'
+
+  feature-rest-server:
+    # If label for PR, closed on PR, or develop branch on push, then run., 
+    #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
+    runs-on: ubuntu-latest
+    needs: [ shared-lib ]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        # Is required to call actions.
+  
+      # This needs to happen before core, rest-server, and notifications.
+      - name: shared-lib
+        id: action-shared-lib
+        uses: ./.github/actions/shared-lib
+        with:
+          dir-location: 'shared-lib'
+    
+      - name: feature-rest-server
+        id: action-rest-server
+        uses: ./.github/actions/rest-server
+        with:
+          dir-location: 'rest-server'
+
   external-it:
     # If label for PR, closed on PR, or develop branch on push, then run., 
     #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
     runs-on: ubuntu-latest
-    needs: [ feature-ui, image-wrappers, feature-notifications ]
+    needs: [ image-wrappers, feature-ui, feature-notifications, feature-operator, feature-core, feature-rest-server ]
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
