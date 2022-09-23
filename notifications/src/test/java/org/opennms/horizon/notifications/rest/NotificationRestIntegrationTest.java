@@ -1,5 +1,6 @@
 package org.opennms.horizon.notifications.rest;
 
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.opennms.horizon.notifications.NotificationsApplication;
 import org.opennms.horizon.notifications.api.PagerDutyAPI;
