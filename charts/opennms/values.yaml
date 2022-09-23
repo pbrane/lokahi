@@ -12,11 +12,11 @@ OpenNMS:
     GrpcPort: 8990
     Resources:
       Limits:
-        Cpu: 2
-        Memory: 4Gi
+        Cpu: 200m
+        Memory: 1000Mi
       Requests:
-        Cpu: 2
-        Memory: 2Gi
+        Cpu: 100m
+        Memory: 500Mi
   API:
     Path: /api
     ServiceName: opennms-rest-server
@@ -25,11 +25,11 @@ OpenNMS:
     Port: 9090
     Resources:
       Limits:
-        Cpu: 2
-        Memory: 2Gi
+        Cpu: 100m
+        Memory: 250Mi
       Requests:
-        Cpu: 1
-        Memory: 1Gi
+        Cpu: 50
+        Memory: 100Mi
   UI:
     Path: /
     ServiceName: opennms-ui
@@ -38,11 +38,11 @@ OpenNMS:
     Port: 80
     Resources:
       Limits:
-        Cpu: 1
-        Memory: 500Mi
-      Requests:
         Cpu: 100m
-        Memory: 250Mi
+        Memory: 50Mi
+      Requests:
+        Cpu: 50m
+        Memory: 25Mi
   Minion:
     ServiceName: opennms-minion
     Image: opennms/minion:29.0.10
@@ -52,10 +52,10 @@ OpenNMS:
     SyslogPort: 1514
     Resources:
       Limits:
-        Cpu: 1
+        Cpu: 1500m
         Memory: 2050M
       Requests:
-        Cpu: 1
+        Cpu: 1000m
         Memory: 512Mi
   Notification: 
     ServiceName: opennms-notifications
@@ -78,7 +78,7 @@ Postgres:
   KeycloakPassword: notset
   NotificationPassword: notset
   GrafanaPassword: notset
-  VolumeSize: 10Gi
+  VolumeSize: 5Gi
 Keycloak:
   Path: /auth
   Image: opennms/horizon-stream-keycloak:latest
@@ -112,11 +112,11 @@ Grafana:
   InitContainerImage: busybox
   Resources:
     Limits:
-      Cpu: 500m
-      Memory: 1Gi
-    Requests:
-      Cpu: 100m
+      Cpu: 50m
       Memory: 100Mi
+    Requests:
+      Cpu: 20m
+      Memory: 50Mi
 Prometheus:
   Enabled: true
   Server:
@@ -126,7 +126,7 @@ Prometheus:
     Replicas: 1
     Resources:
       Limits:
-        Cpu: "1"
+        Cpu: 200m
         Memory: 512Mi
       Requests:
         Cpu: 100m
@@ -138,7 +138,7 @@ Prometheus:
     Replicas: 1
     Resources:
       Limits:
-        Cpu: "1"
+        Cpu: 200m
         Memory: 512Mi
       Requests:
         Cpu: 100m
@@ -151,8 +151,8 @@ MailServer:
   SmtpPort: 1025
   Resources:
     Limits:
-      Cpu: 100m
-      Memory: 200Mi
+      Cpu: 50m
+      Memory: 20Mi
     Requests:
-      Cpu: 100m
-      Memory: 100Mi
+      Cpu: 20m
+      Memory: 10Mi

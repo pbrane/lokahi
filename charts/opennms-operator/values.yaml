@@ -35,7 +35,7 @@ TLS:
 Kafka:
   Namespace: kafka
   ServiceName: opennms
-  VolumeSize: 10Gi
+  VolumeSize: 5Gi
   URL: opennms-kafka-bootstrap.kafka
 NodeRestrictions: # will be applied to every pod in the instance
   Enabled: false

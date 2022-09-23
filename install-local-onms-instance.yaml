@@ -9,16 +9,16 @@ spec:
   deployOnly: true
   core:
     image: opennms/horizon-stream-core
-    cpu: "0"
-    mem: "0"
+    cpu: 200m
+    mem: 1000Mi
   api:
     image: opennms/horizon-stream-rest-server
     cpu: "0"
     mem: "0"
   ui:
     image: opennms/horizon-stream-ui
-    cpu: "0"
-    mem: "0"
+    cpu: 100m
+    mem: 50Mi
   postgres:
     image: postgres:13.3-alpine
   credentials:
