@@ -45,25 +45,23 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      
-      # This needs to happen before core, rest-server, and notifications.
+      - name: Get Branch
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV
       - name: shared-lib
         id: action-shared-lib
         uses: ./.github/actions/shared-lib
         with:
           dir-location: 'shared-lib'
-
-      - name: shared-lib
+      - name: shared-lib-cache
         uses: actions/cache@v3
         with:
           path: |
             ~/.m2
-          key: shared-lib-${{ github.ref }}-${{ github.actor }}
-
+          key: shared-lib-${{ env.BRANCH }}-${{ github.actor }}
       - name: test-cache
         run: |
 
-          echo "Test: " ${{ github.job }}-${{ github.ref }}-${{ github.actor }}
+          echo "Test: " shared-lib-${{ env.BRANCH }}-${{ github.actor }}
 
   feature-notifications:
     # If label for PR, closed on PR, or develop branch on push, then run., 
@@ -73,26 +71,23 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      
-      ## This needs to happen before core, rest-server, and notifications.
+      - name: Get Branch
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV
       #- name: shared-lib
       #  id: action-shared-lib
       #  uses: ./.github/actions/shared-lib
       #  with:
       #    dir-location: 'shared-lib'
-
-      - name: shared-lib
+      - name: shared-lib-cache
         uses: actions/cache@v3
         with:
           path: |
             ~/.m2
-          key: shared-lib-${{ github.ref }}-${{ github.actor }}
-
+          key: shared-lib-${{ env.BRANCH }}-${{ github.actor }}
       - name: test-cache
         run: |
           ls ~/.m2
-          echo "Test: " ${{ github.job }}-${{ github.ref }}-${{ github.actor }}
-    
+          echo "Test: " shared-lib-${{ env.BRANCH }}-${{ github.actor }}
       - name: feature-notifications
         id: action-notifications
         uses: ./.github/actions/notifications
