@@ -134,6 +134,12 @@ jobs:
         uses: ./.github/actions/rest-server
         with:
           dir-location: 'rest-server'
+    
+      - name: test-dependencies
+        run: |
+
+          echo "Testing for optimized workflows. List images"
+          docker images
 
   external-it:
     # If label for PR, closed on PR, or develop branch on push, then run., 
@@ -149,6 +155,7 @@ jobs:
         run: |
 
           echo "Testing for optimized workflows. EXTERNAL-IT"
+          docker images
   
       #- name: Setup tmate session
       #  uses: mxschmitt/action-tmate@v3
