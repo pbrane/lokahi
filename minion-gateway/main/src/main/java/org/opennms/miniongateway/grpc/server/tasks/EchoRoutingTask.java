@@ -44,7 +44,6 @@ public class EchoRoutingTask implements ComputeTask<byte[], byte[]> {
                 //TODO: For now just get the first one
                 gatewayNodeId =  minionLookupService.findGatewayNodeWithLocation(request.getLocation()).stream().findFirst().get();
             }
-            //TODO: is it possible for this to be null? Or just assume there will always be at least one?
             if (gatewayNodeId != null) {
                 RoutingJob job = new RoutingJob(request);
                 UUID finalGatewayNodeId = gatewayNodeId;
@@ -120,7 +119,8 @@ public class EchoRoutingTask implements ComputeTask<byte[], byte[]> {
                         logger.debug("Received answer for rpc request " + request.getRpcId());
                     }
                 });
-                return responseFuture.get().toByteArray();
+                RpcResponseProto response = responseFuture.get();
+                return response == null ? null : response.toByteArray();
             } catch (InterruptedException e) {
                 throw new IgniteException("Failed to dispatch request", e);
             } catch (ExecutionException e) {
