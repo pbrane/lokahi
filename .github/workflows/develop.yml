@@ -3,13 +3,13 @@ name: develop
 on:
   push:
     branches:
-      - 'develop'
+      #- 'develop'
       - 'jira/HS-293-ci-cd-ipeline-with-operator-changes'
-  pull_request:
-    #types: [ labeled, closed]
-    types: [ labeled]
-    branches:
-      - 'develop'
+  #pull_request:
+  #  #types: [ labeled, closed]
+  #  types: [ labeled]
+  #  branches:
+  #    - 'develop'
 
 # For now, we have put all steps into a single job, this will allow for just
 # one vm to run. We use actions to factor out the functionality. If there is a
@@ -30,7 +30,7 @@ jobs:
         run: |
 
           echo "For init steps."
-          echo "Testing for optimized workflows.
+          echo "Testing for optimized workflows."
   
       - name: feature-ui
         id: action-feature-ui
