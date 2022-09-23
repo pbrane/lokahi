@@ -58,16 +58,12 @@ jobs:
         with:
           path: |
             ~/.m2
-          key: ${{ runner.os }}-cache-${{ env.cache-name }}-pr-${{ github.event.number }}
+          key: shared-lib-${{ github.ref }}-${{ github.actor }}
 
       - name: test-cache
         run: |
 
-          echo "Test: " ${{ runner.os }}-cache-${{ env.cache-name }}-pr-${{ github.event.number }}
-          echo "Test: " ${{ github.base_ref }}
-          echo "Test: " ${{ github.head_ref }}
-          echo "Test: " ${{ github.ref }}
-          echo "Test: " ${{ github.actor }}
+          echo "Test: " ${{ github.job }}-${{ github.ref }}-${{ github.actor }}
 
   feature-notifications:
     # If label for PR, closed on PR, or develop branch on push, then run., 
@@ -90,12 +86,12 @@ jobs:
         with:
           path: |
             ~/.m2
-          key: ${{ runner.os }}-cache-${{ env.cache-name }}-pr-${{ github.event.number }}
+          key: shared-lib-${{ github.ref }}-${{ github.actor }}
 
       - name: test-cache
         run: |
           ls ~/.m2
-          echo "Test: " ${{ runner.os }}-cache-${{ env.cache-name }}-pr-${{ github.event.number }}
+          echo "Test: " ${{ github.job }}-${{ github.ref }}-${{ github.actor }}
     
       - name: feature-notifications
         id: action-notifications
