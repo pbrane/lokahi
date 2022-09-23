@@ -64,6 +64,10 @@ jobs:
         run: |
 
           echo "Test: " ${{ runner.os }}-cache-${{ env.cache-name }}-pr-${{ github.event.number }}
+          echo "Test: " ${{ github.base_ref }}
+          echo "Test: " ${{ github.head_ref }}
+          echo "Test: " ${{ github.ref }}
+          echo "Test: " ${{ github.actor }}
 
   feature-notifications:
     # If label for PR, closed on PR, or develop branch on push, then run., 
