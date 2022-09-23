@@ -103,6 +103,12 @@ jobs:
           path: |
             ~/.m2
           key: shared-lib-${{ env.BRANCH }}-${{ github.actor }}
+      - name: core-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp/opennms-horizon-stream-core-local.tar
+          key: core-image-cache-${{ env.BRANCH }}-${{ github.actor }}
       - name: feature-core
         id: action-feature-core
         uses: ./.github/actions/core
@@ -164,10 +170,6 @@ jobs:
         uses: ./.github/actions/rest-server
         with:
           dir-location: 'rest-server'
-      - name: test-tmp
-        run: |
-          pwd
-          ls ~/tmp/
  
   test-tmp:
     runs-on: ubuntu-latest
@@ -194,8 +196,7 @@ jobs:
           key: notifications-image-cache-${{ env.BRANCH }}-${{ github.actor }}
       - name: test-tmp
         run: |
-          pwd
-          ls ~/tmp/
+          ls -ltah ~/tmp/
 
   external-it:
     # If label for PR, closed on PR, or develop branch on push, then run., 
