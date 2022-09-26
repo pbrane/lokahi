@@ -1,5 +1,6 @@
 package org.opennms.miniongateway.router;
 
+import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -36,8 +37,11 @@ public class MinionLookupServiceImpl implements MinionLookupService {
     }
 
     @Override
-    public Queue<UUID> findGatewayNodeWithLocation(String location) {
-        return minionByLocationCache.get(location);
+    public List<UUID> findGatewayNodeWithLocation(String location) {
+        // TODO consider different structure to retain node identifiers to avoid wrapping into list
+        // result must be indexed to support balancing of requests sent onto location (see Routing Task)
+        Queue<UUID> uuids = minionByLocationCache.get(location);
+        return uuids != null ? List.copyOf(uuids) : null;
     }
 
     @Override
