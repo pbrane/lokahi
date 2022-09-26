@@ -16,6 +16,10 @@ on:
 # requirement to create additional jobs, maybe to run concurrent jobs, then we
 # can split them up later.
 
+# Caching - When running multiple jobs in parallel, if they all reference the
+# same dir cache, then only one job's files seem to get written. That is why we
+# reference the specific files within tmp/.
+
 jobs:
   
   image-wrappers:
@@ -31,12 +35,24 @@ jobs:
         uses: ./.github/actions/grafana
         with:
           dir-location: 'grafana'
+      - name: grafana-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp/opennms-horizon-stream-grafana-local.tar
+          key: grafana-image-cache-${{ env.BRANCH }}-${{ github.actor }}
 
       - name: feature-keycloak-ui
         id: action-feature-keycloak-ui
         uses: ./.github/actions/keycloak-ui
         with:
           dir-location: 'keycloak-ui'
+      - name: keycloak-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp/opennms-horizon-stream-keycloak-local.tar
+          key: keycloak-image-cache-${{ env.BRANCH }}-${{ github.actor }}
   
   shared-lib:
     # If label for PR, closed on PR, or develop branch on push, then run., 
@@ -66,7 +82,12 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-
+      - name: ui-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp/opennms-horizon-stream-ui-local.tar
+          key: ui-image-cache-${{ env.BRANCH }}-${{ github.actor }}
       - name: feature-ui
         id: action-feature-ui
         uses: ./.github/actions/ui
@@ -80,7 +101,12 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-  
+      - name: operator-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/opennms-operator-local.tar
+          key: operator-image-cache-${{ env.BRANCH }}-${{ github.actor }}
       - name: feature-operator
         id: action-feature-operator
         uses: ./.github/actions/operator
@@ -180,8 +206,9 @@ jobs:
       - name: Init
         run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
 
-      # Need multiple, while rest-server was using cache for ~/tmp/ dir,
-      # notifications was not getting written to ~/tmp/.
+      # Need multiple of the following, while rest-server was using cache for
+      # ~/tmp/ dir, notifications was not getting written to ~/tmp/.
+
       - name: rest-server-image-cache
         uses: actions/cache@v3
         with:
@@ -194,6 +221,36 @@ jobs:
           path: |
             ~/tmp/opennms-horizon-stream-notification-local.tar
           key: notifications-image-cache-${{ env.BRANCH }}-${{ github.actor }}
+      - name: ui-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp/opennms-horizon-stream-ui-local.tar
+          key: ui-image-cache-${{ env.BRANCH }}-${{ github.actor }}
+      - name: grafana-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp/opennms-horizon-stream-grafana-local.tar
+          key: grafana-image-cache-${{ env.BRANCH }}-${{ github.actor }}
+      - name: keycloak-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp/opennms-horizon-stream-keycloak-local.tar
+          key: keycloak-image-cache-${{ env.BRANCH }}-${{ github.actor }}
+      - name: operator-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/opennms-operator-local.tar
+          key: operator-image-cache-${{ env.BRANCH }}-${{ github.actor }}
+      - name: core-image-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/tmp/opennms-horizon-stream-core-local.tar
+          key: core-image-cache-${{ env.BRANCH }}-${{ github.actor }}
       - name: test-tmp
         run: |
           ls -ltah ~/tmp/
@@ -212,7 +269,11 @@ jobs:
 
           echo "Testing for optimized workflows. EXTERNAL-IT"
           docker images
-  
+
+      # IMPORTANT: Once all images are imported into docker from ~/tmp/, delete
+      # ~/tmp/ to get back disk space. Try first, see if we can get Kind to run
+      # ok with it.
+
       #- name: Setup tmate session
       #  uses: mxschmitt/action-tmate@v3
 

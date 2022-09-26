@@ -18,7 +18,7 @@ runs:
 
         # Create the docker image with BuildKit enabled.
         DOCKER_BUILDKIT=1 docker build -t opennms/horizon-stream-ui:local .
-        cd ../ && mkdir -p tmp/
-        docker save -o tmp/opennms-horizon-stream-ui-local.tar opennms/horizon-stream-ui:local
+        cd ../ && mkdir -p ~/tmp/
+        docker save -o ~/tmp/opennms-horizon-stream-ui-local.tar opennms/horizon-stream-ui:local
 
       shell: bash

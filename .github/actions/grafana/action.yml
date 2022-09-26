@@ -18,7 +18,7 @@ runs:
 
         # Create the docker image.
         docker build -t opennms/horizon-stream-grafana:local -f ./Dockerfile .
-        cd ../ && mkdir -p tmp/
-        docker save -o tmp/opennms-horizon-stream-grafana-local.tar opennms/horizon-stream-grafana:local
+        cd ../ && mkdir -p ~/tmp/
+        docker save -o ~/tmp/opennms-horizon-stream-grafana-local.tar opennms/horizon-stream-grafana:local
 
       shell: bash
