@@ -21,8 +21,8 @@ import org.apache.ignite.resources.SpringResource;
 import org.jetbrains.annotations.NotNull;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
-import org.opennms.horizon.shared.ignite.remoteasync.MinionLookupService;
 import org.opennms.miniongateway.detector.server.IgniteRpcRequestDispatcher;
+import org.opennms.miniongateway.router.MinionLookupService;
 
 @ComputeTaskName(EchoRoutingTask.ECHO_ROUTING_TASK)
 public class EchoRoutingTask implements ComputeTask<byte[], byte[]> {

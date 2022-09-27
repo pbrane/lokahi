@@ -1,4 +1,4 @@
-package org.opennms.horizon.shared.ignite.remoteasync;
+package org.opennms.miniongateway.router;
 
 import java.util.List;
 import java.util.Queue;

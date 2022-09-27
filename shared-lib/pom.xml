@@ -24,7 +24,6 @@
         <module>horizon-ipc</module>
         <module>snmp</module>
         <module>icmp-api</module>
-        <module>ignite-remote-async</module>
         <module>task-set</module>
         <module>task-set-service</module>
     </modules>
