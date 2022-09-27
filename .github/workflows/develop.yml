@@ -205,13 +205,6 @@ jobs:
         uses: ./.github/actions/rest-server
         with:
           dir-location: 'rest-server'
- 
-  test-tmp:
-    runs-on: ubuntu-latest
-    needs: [ image-wrappers, feature-ui, feature-notifications, feature-operator, feature-core, feature-rest-server ]
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
 
   external-it:
     # If label for PR, closed on PR, or develop branch on push, then run., 
