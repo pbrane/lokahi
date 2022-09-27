@@ -20,6 +20,9 @@ on:
 # same dir cache, then only one job's files seem to get written. That is why we
 # reference the specific files within tmp/.
 
+# Each job Init step - This step is required to get the branch name with proper
+# formatting that will be accepted by the actions/cache@v3 action. 
+
 jobs:
   
   image-wrappers:
@@ -29,6 +32,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+      - name: Init
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
   
       - name: feature-grafana
         id: action-feature-grafana
@@ -82,6 +87,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+      - name: Init
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
       - name: ui-image-cache
         uses: actions/cache@v3
         with:
@@ -101,11 +108,13 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+      - name: Init
+        run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
       - name: operator-image-cache
         uses: actions/cache@v3
         with:
           path: |
-            ~/opennms-operator-local.tar
+            ~/tmp/opennms-operator-local.tar
           key: operator-image-cache-${{ env.BRANCH }}-${{ github.actor }}
       - name: feature-operator
         id: action-feature-operator
