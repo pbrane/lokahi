@@ -212,6 +212,16 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+
+  external-it:
+    # If label for PR, closed on PR, or develop branch on push, then run., 
+    #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
+    runs-on: ubuntu-latest
+    needs: [ image-wrappers, feature-ui, feature-notifications, feature-operator, feature-core, feature-rest-server ]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+ 
       - name: Init
         run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
 
@@ -260,24 +270,13 @@ jobs:
           path: |
             ~/tmp/opennms-horizon-stream-core-local.tar
           key: core-image-cache-${{ env.BRANCH }}-${{ github.actor }}
-      - name: test-tmp
-        run: |
-          ls -ltah ~/tmp/
 
-  external-it:
-    # If label for PR, closed on PR, or develop branch on push, then run., 
-    #if: ${{ ( github.event.label.name == 'actions-develop' ) || ( github.event.action == 'closed' ) || ( github.event.ref == 'refs/heads/develop' ) }}
-    runs-on: ubuntu-latest
-    needs: [ image-wrappers, feature-ui, feature-notifications, feature-operator, feature-core, feature-rest-server ]
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-    
       - name: test-dependencies
         run: |
 
           echo "Testing for optimized workflows. EXTERNAL-IT"
           docker images
+          ls -ltah ~/tmp/
 
       # IMPORTANT: Once all images are imported into docker from ~/tmp/, delete
       # ~/tmp/ to get back disk space. Try first, see if we can get Kind to run
