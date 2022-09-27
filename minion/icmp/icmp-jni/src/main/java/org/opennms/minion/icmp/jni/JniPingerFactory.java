@@ -28,8 +28,8 @@
 
 package org.opennms.minion.icmp.jni;
 
-import org.opennms.netmgt.icmp.AbstractPingerFactory;
-import org.opennms.netmgt.icmp.Pinger;
+import org.opennms.horizon.shared.icmp.AbstractPingerFactory;
+import org.opennms.horizon.shared.icmp.Pinger;
 
 public class JniPingerFactory extends AbstractPingerFactory {
 

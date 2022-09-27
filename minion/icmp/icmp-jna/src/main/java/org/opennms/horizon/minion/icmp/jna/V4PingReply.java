@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.opennms.horizon.minion.jicmp.ip.ICMPEchoPacket;
 import org.opennms.horizon.minion.jicmp.ip.ICMPPacket;
-import org.opennms.netmgt.icmp.EchoPacket;
+import org.opennms.horizon.shared.icmp.EchoPacket;
 
 class V4PingReply extends ICMPEchoPacket implements EchoPacket {
     

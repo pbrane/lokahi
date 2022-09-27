@@ -34,10 +34,10 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.opennms.horizon.grpc.ping.contract.PingRequest;
-import org.opennms.netmgt.icmp.PingConstants;
-import org.opennms.netmgt.icmp.proxy.PingRequestBuilder;
-import org.opennms.netmgt.icmp.proxy.PingSequence;
-import org.opennms.netmgt.icmp.proxy.PingSummary;
+import org.opennms.horizon.shared.icmp.PingConstants;
+import org.opennms.horizon.shared.icmp.proxy.PingRequestBuilder;
+import org.opennms.horizon.shared.icmp.proxy.PingSequence;
+import org.opennms.horizon.shared.icmp.proxy.PingSummary;
 
 public class PingRequestBuilderImpl implements PingRequestBuilder {
 

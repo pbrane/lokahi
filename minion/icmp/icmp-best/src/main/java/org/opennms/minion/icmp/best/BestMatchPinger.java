@@ -31,9 +31,9 @@ package org.opennms.minion.icmp.best;
 import java.net.InetAddress;
 import java.util.List;
 
-import org.opennms.netmgt.icmp.NullPinger;
-import org.opennms.netmgt.icmp.PingResponseCallback;
-import org.opennms.netmgt.icmp.Pinger;
+import org.opennms.horizon.shared.icmp.NullPinger;
+import org.opennms.horizon.shared.icmp.PingResponseCallback;
+import org.opennms.horizon.shared.icmp.Pinger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

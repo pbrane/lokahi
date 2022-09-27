@@ -5,7 +5,7 @@
         https://osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
     ">
 
-    <reference id="pingerFactory" interface="org.opennms.netmgt.icmp.PingerFactory" />
+    <reference id="pingerFactory" interface="org.opennms.horizon.shared.icmp.PingerFactory" />
 
     <service interface="org.opennms.horizon.shared.ipc.rpc.api.minion.RpcHandler">
         <bean class="org.opennms.horizon.minion.icmp.ipc.internal.PingRpcHandler">

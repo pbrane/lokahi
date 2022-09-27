@@ -34,9 +34,9 @@ import java.net.InetAddress;
 import java.util.Arrays;
 
 import org.opennms.horizon.shared.utils.InetAddressUtils;
-import org.opennms.netmgt.icmp.AbstractPingerFactory;
-import org.opennms.netmgt.icmp.NullPinger;
-import org.opennms.netmgt.icmp.Pinger;
+import org.opennms.horizon.shared.icmp.AbstractPingerFactory;
+import org.opennms.horizon.shared.icmp.NullPinger;
+import org.opennms.horizon.shared.icmp.Pinger;
 import org.opennms.horizon.minion.icmp.jna.JnaPinger;
 import org.opennms.minion.icmp.jni.JniPinger;
 import org.opennms.minion.icmp.jni6.Jni6Pinger;

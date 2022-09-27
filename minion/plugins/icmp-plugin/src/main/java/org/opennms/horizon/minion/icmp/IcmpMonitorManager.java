@@ -1,7 +1,7 @@
 package org.opennms.horizon.minion.icmp;
 
 import lombok.RequiredArgsConstructor;
-import org.opennms.netmgt.icmp.PingerFactory;
+import org.opennms.horizon.shared.icmp.PingerFactory;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
 

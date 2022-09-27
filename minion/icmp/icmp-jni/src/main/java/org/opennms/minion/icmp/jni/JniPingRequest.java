@@ -37,9 +37,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.opennms.netmgt.icmp.EchoPacket;
-import org.opennms.netmgt.icmp.HostIsDownException;
-import org.opennms.netmgt.icmp.PingResponseCallback;
+import org.opennms.horizon.shared.icmp.EchoPacket;
+import org.opennms.horizon.shared.icmp.HostIsDownException;
+import org.opennms.horizon.shared.icmp.PingResponseCallback;
 import org.opennms.protocols.icmp.ICMPEchoPacket;
 import org.opennms.protocols.icmp.IcmpSocket;
 import org.opennms.protocols.rt.Request;

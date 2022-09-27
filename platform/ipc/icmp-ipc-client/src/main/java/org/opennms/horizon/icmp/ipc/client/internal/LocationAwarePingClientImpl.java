@@ -35,9 +35,9 @@ import org.opennms.horizon.grpc.ping.contract.PingRequest;
 import org.opennms.horizon.grpc.ping.contract.PingResponse;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcClient;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcClientFactory;
-import org.opennms.netmgt.icmp.proxy.LocationAwarePingClient;
-import org.opennms.netmgt.icmp.proxy.PingRequestBuilder;
-import org.opennms.netmgt.icmp.proxy.PingSweepRequestBuilder;
+import org.opennms.horizon.shared.icmp.proxy.LocationAwarePingClient;
+import org.opennms.horizon.shared.icmp.proxy.PingRequestBuilder;
+import org.opennms.horizon.shared.icmp.proxy.PingSweepRequestBuilder;
 
 public class LocationAwarePingClientImpl implements LocationAwarePingClient {
 

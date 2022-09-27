@@ -1,9 +1,8 @@
 package org.opennms.miniongateway.router;
 
-import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
-import org.opennms.core.ipc.grpc.server.manager.MinionManagerListener;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.MinionManagerListener;
 
 public interface MinionLookupService extends MinionManagerListener {
 

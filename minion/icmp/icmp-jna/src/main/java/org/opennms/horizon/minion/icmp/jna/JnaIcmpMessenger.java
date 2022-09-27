@@ -31,8 +31,8 @@ package org.opennms.horizon.minion.icmp.jna;
 import java.io.IOException;
 import java.net.InetAddress;
 
-import org.opennms.netmgt.icmp.EchoPacket;
-import org.opennms.netmgt.icmp.IcmpMessengerIOException;
+import org.opennms.horizon.shared.icmp.EchoPacket;
+import org.opennms.horizon.shared.icmp.IcmpMessengerIOException;
 import org.opennms.protocols.rt.Messenger;
 import org.opennms.protocols.rt.ReplyHandler;
 import org.slf4j.Logger;

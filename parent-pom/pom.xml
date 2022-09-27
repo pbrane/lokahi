@@ -491,6 +491,12 @@
                 <groupId>org.apache.ignite</groupId>
                 <artifactId>ignite-spring</artifactId>
                 <version>${ignite.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.ignite</groupId>
+                        <artifactId>ignite-indexing</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.karaf.jaas</groupId>

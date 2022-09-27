@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.opennms.horizon.minion.jicmp.ipv6.ICMPv6EchoPacket;
 import org.opennms.horizon.minion.jicmp.ipv6.ICMPv6Packet;
-import org.opennms.netmgt.icmp.EchoPacket;
+import org.opennms.horizon.shared.icmp.EchoPacket;
 
 class V6PingReply extends ICMPv6EchoPacket implements EchoPacket {
     

@@ -31,7 +31,7 @@ package org.opennms.horizon.minion.icmp.jna;
 import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
-import org.opennms.netmgt.icmp.EchoPacket;
+import org.opennms.horizon.shared.icmp.EchoPacket;
 import org.opennms.protocols.rt.ResponseWithId;
 
 /**

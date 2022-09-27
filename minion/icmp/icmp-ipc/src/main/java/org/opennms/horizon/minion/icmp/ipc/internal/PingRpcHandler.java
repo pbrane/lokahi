@@ -7,7 +7,7 @@ import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.horizon.grpc.ping.contract.PingRequest;
 import org.opennms.horizon.grpc.ping.contract.PingResponse;
 import org.opennms.horizon.shared.ipc.rpc.api.minion.RpcHandler;
-import org.opennms.netmgt.icmp.PingerFactory;
+import org.opennms.horizon.shared.icmp.PingerFactory;
 
 public class PingRpcHandler implements RpcHandler<PingRequest, PingResponse> {
 

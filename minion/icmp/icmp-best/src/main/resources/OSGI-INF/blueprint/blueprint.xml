@@ -6,11 +6,11 @@
         ">
 
     <bean id="pingerFactory" class="org.opennms.minion.icmp.best.BestMatchPingerFactory"/>
-    <service interface="org.opennms.netmgt.icmp.PingerFactory" ref="pingerFactory" ranking="1000"/>
+    <service interface="org.opennms.horizon.shared.icmp.PingerFactory" ref="pingerFactory" ranking="1000"/>
 
     <bean id="bestMatchPinger" factory-ref="pingerFactory" factory-method="getInstance"/>
 
-    <service interface="org.opennms.netmgt.icmp.Pinger" ref="bestMatchPinger" ranking="1000">
+    <service interface="org.opennms.horizon.shared.icmp.Pinger" ref="bestMatchPinger" ranking="1000">
         <service-properties>
             <entry key="type">
                 <value type="java.lang.String">best</value>

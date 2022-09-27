@@ -1,17 +1,13 @@
 package org.opennms.miniongateway.grpc.server;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
-import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
-import org.opennms.core.ipc.grpc.server.manager.MinionManager;
-import org.opennms.core.ipc.grpc.server.manager.MinionManagerListener;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.MinionInfo;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.MinionManager;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.MinionManagerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
