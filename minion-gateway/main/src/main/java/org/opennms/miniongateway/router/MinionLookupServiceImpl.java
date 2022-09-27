@@ -6,7 +6,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
-import org.opennms.horizon.shared.ignite.remoteasync.MinionLookupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

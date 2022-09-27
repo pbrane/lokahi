@@ -54,7 +54,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.opennms.core.ipc.grpc.server.manager.MinionInfo;
-import org.opennms.horizon.shared.ignite.remoteasync.MinionLookupService;
 
 public class MinionLookupServiceImplTest {
 

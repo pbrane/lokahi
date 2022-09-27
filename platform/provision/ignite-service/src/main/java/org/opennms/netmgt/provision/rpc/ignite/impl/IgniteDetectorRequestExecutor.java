@@ -21,7 +21,6 @@ import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.horizon.grpc.detector.contract.Attribute;
 import org.opennms.horizon.grpc.detector.contract.DetectorRequest;
 import org.opennms.horizon.grpc.detector.contract.DetectorResponse;
-import org.opennms.horizon.shared.ignite.remoteasync.MinionLookupService;
 import org.opennms.netmgt.provision.DetectorRequestExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,8 +89,8 @@ public class IgniteDetectorRequestExecutor implements DetectorRequestExecutor {
 
         Optional.ofNullable(systemId).ifPresent(rpcRequest::setSystemId);
 
-        IgniteClientFuture<RpcRequestProto> dispatcher = igniteClient.compute()
-            .executeAsync2(MinionLookupService.IGNITE_SERVICE_NAME, rpcRequest.build());
+        IgniteClientFuture<RpcRequestProto> dispatcher = null;
+//            .executeAsync2(MinionLookupService.IGNITE_SERVICE_NAME, rpcRequest.build());
 
         return dispatcher.toCompletableFuture()
             .thenApply(RpcRequestProto::getPayload)
