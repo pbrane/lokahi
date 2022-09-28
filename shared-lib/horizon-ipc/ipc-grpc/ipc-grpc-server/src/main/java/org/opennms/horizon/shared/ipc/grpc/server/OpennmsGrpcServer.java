@@ -30,7 +30,6 @@ package org.opennms.horizon.shared.ipc.grpc.server;
 
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
 import com.google.protobuf.Message;
 import io.grpc.BindableService;
@@ -40,15 +39,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
@@ -69,11 +64,6 @@ import org.opennms.horizon.shared.ipc.grpc.server.manager.adapter.MinionRSTransp
 import org.opennms.horizon.shared.ipc.grpc.server.manager.rpcstreaming.MinionRpcStreamConnectionManager;
 import org.opennms.horizon.shared.ipc.rpc.api.RemoteExecutionException;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcClientFactory;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcModule;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcRequest;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcResponse;
-import org.opennms.horizon.shared.ipc.rpc.api.RpcResponseHandler;
-import org.opennms.horizon.shared.ipc.rpc.api.server.CallFactory;
 import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
 import org.opennms.horizon.shared.ipc.sink.common.AbstractMessageConsumerManager;
 import org.slf4j.Logger;
@@ -269,18 +259,6 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
 // Internals
 //----------------------------------------
 
-    private String registerRemoteCall(RpcRequest request, long expiration, CompletableFuture future, RpcModule localModule) {
-        String rpcId = UUID.randomUUID().toString();
-
-        RpcResponseHandlerImpl responseHandler =
-                new RpcResponseHandlerImpl(future, localModule, rpcId, request.getLocation(), expiration);
-
-        rpcRequestTracker.addRequest(rpcId, responseHandler);
-        rpcRequestTimeoutManager.registerRequestTimeout(responseHandler);
-
-        return rpcId;
-    }
-
     private StreamObserver<MinionToCloudMessage> processSinkStreamingCall(StreamObserver<Empty> responseObserver) {
         return new StreamObserver<>() {
 
@@ -327,10 +305,6 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
         this.outgoingMessageHandler = outgoingMessageHandler;
     }
 
-    public CallFactory getCallFactory() {
-        return new BasicCallFactory(this);
-    }
-
     @Override
     public CompletableFuture<RpcResponseProto> dispatch(String location, RpcRequestProto request) {
         StreamObserver<RpcRequestProto> rpcHandler = rpcConnectionTracker.lookupByLocationRoundRobin(location);
@@ -361,81 +335,5 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
         });
     }
 
-    // TODO: move to top-level class
-    private class RpcResponseHandlerImpl<S extends RpcRequest, T extends RpcResponse> implements RpcResponseHandler {
-
-        private final CompletableFuture<T> responseFuture;
-        private final RpcModule<S, T> rpcModule;
-        private final String rpcId;
-        private final String location;
-        private final long expirationTime;
-        private boolean isProcessed = false;
-        private final Long requestCreationTime;
-
-        private RpcResponseHandlerImpl(CompletableFuture<T> responseFuture, RpcModule<S, T> rpcModule, String rpcId,
-                                       String location, long timeout) {
-            this.responseFuture = responseFuture;
-            this.rpcModule = rpcModule;
-            this.rpcId = rpcId;
-            this.location = location;
-            this.expirationTime = timeout;
-            this.requestCreationTime = System.currentTimeMillis();
-        }
-
-        @Override
-        public void sendResponse(RpcResponseProto payload) {
-            if (payload == null) {
-                // case for timeout
-                responseFuture.completeExceptionally(new TimeoutException());
-                return;
-            }
-
-            Any message = payload.getPayload();
-            try {
-                T response = rpcModule.unmarshalResponse(message);
-                if (response.getErrorMessage() != null) {
-                    responseFuture.completeExceptionally(new RemoteExecutionException(response.getErrorMessage()));
-                } else {
-                    responseFuture.complete(response);
-                }
-                isProcessed = true;
-            } catch (Throwable e) {
-                LOG.error("Error while processing RPC response {}", message, e);
-            } finally {
-                rpcRequestTracker.remove(rpcId);
-            }
-            if (isProcessed) {
-                LOG.debug("RPC Response from module: {} handled successfully for RpcId:{}.", rpcId, rpcModule.getId());
-            }
-        }
-
-        @Override
-        public boolean isProcessed() {
-            return isProcessed;
-        }
-
-        @Override
-        public String getRpcId() {
-            return rpcId;
-        }
-
-        @Override
-        public int compareTo(Delayed other) {
-            long myDelay = getDelay(TimeUnit.MILLISECONDS);
-            long otherDelay = other.getDelay(TimeUnit.MILLISECONDS);
-            return Long.compare(myDelay, otherDelay);
-        }
-
-        @Override
-        public long getDelay(TimeUnit unit) {
-            long now = System.currentTimeMillis();
-            return unit.convert(expirationTime - now, TimeUnit.MILLISECONDS);
-        }
-
-        @Override
-        public String getRpcModuleId() {
-            return rpcModule.getId();
-        }
-    }
 
 }
