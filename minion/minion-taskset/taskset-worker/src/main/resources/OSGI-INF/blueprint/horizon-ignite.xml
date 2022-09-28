@@ -16,8 +16,6 @@
 
   <reference id="taskResultsSyncDispatcher" interface="org.opennms.horizon.shared.ipc.sink.api.SyncDispatcher" filter="(message.type=taskset-results)"/>
 
-  <bean id="workflowRepository" class="org.opennms.horizon.minion.taskset.worker.TaskRepository"/>
-
   <bean id="igniteMetrics" class="org.opennms.horizon.minion.taskset.worker.ignite.IgniteMetricsAdapter" init-method="start" destroy-method="stop">
     <argument ref="identity" />
   </bean>
@@ -37,7 +35,6 @@
 
   <bean id="ignitePocRestServiceImpl" class="org.opennms.horizon.minion.taskset.worker.rest.IgniteWorkerRestControllerImpl" scope="singleton">
     <argument ref="ignite"/>
-    <argument ref="workflowRepository"/>
   </bean>
 
   <service id="ignitePocRestService" ref="ignitePocRestServiceImpl" interface="org.opennms.horizon.minion.taskset.worker.rest.IgniteWorkerRestController">

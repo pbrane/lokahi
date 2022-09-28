@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.services.ServiceDescriptor;
-import org.opennms.horizon.minion.taskset.worker.TaskRepository;
 
 @AllArgsConstructor
 @Slf4j
@@ -19,8 +18,6 @@ public class IgniteWorkerRestControllerImpl implements IgniteWorkerRestControlle
 
     //TODO: should this be injected through ignite annotation?
     private Ignite ignite;
-
-    private TaskRepository workflowRepository;
 
     @Override
     public void hiOnYoungest() {

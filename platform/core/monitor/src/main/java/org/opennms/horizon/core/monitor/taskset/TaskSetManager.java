@@ -1,7 +1,7 @@
 package org.opennms.horizon.core.monitor.taskset;
 
 import com.google.protobuf.Any;
-import org.opennms.echo.contract.EchoMonitorRequest;
+import org.opennms.icmp.contract.IcmpMonitorRequest;
 import org.opennms.snmp.contract.SnmpMonitorRequest;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskSet;
@@ -23,7 +23,7 @@ public class TaskSetManager {
             .build();
     }
 
-    public void addEchoTask(InetAddress inetAddress, String name, TaskType taskType, String pluginName, String schedule, EchoMonitorRequest echoRequest) {
+    public void addEchoTask(InetAddress inetAddress, String name, TaskType taskType, String pluginName, String schedule, IcmpMonitorRequest echoRequest) {
         String taskId = monitorTaskSetIdentityUtil.identityForIpTask(inetAddress.getHostAddress(), name);
 
         TaskDefinition.Builder builder =
