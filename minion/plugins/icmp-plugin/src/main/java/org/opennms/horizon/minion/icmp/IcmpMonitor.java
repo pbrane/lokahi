@@ -33,14 +33,14 @@ public class IcmpMonitor extends AbstractServiceMonitor {
     public IcmpMonitor(PingerFactory pingerFactory) {
         this.pingerFactory = pingerFactory;
 
-        Descriptors.Descriptor echoMonitorRequestDescriptor = EchoMonitorRequest.getDefaultInstance().getDescriptorForType();
+        Descriptors.Descriptor echoMonitorRequestDescriptor = IcmpMonitorRequest.getDefaultInstance().getDescriptorForType();
 
-        allowFragmentationFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(EchoMonitorRequest.ALLOW_FRAGMENTATION_FIELD_NUMBER);
-        dscpFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(EchoMonitorRequest.DSCP_FIELD_NUMBER);
-        hostFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(EchoMonitorRequest.HOST_FIELD_NUMBER);
-        packetSizeFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(EchoMonitorRequest.PACKET_SIZE_FIELD_NUMBER);
-        retriesFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(EchoMonitorRequest.RETRIES_FIELD_NUMBER);
-        timeoutFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(EchoMonitorRequest.TIMEOUT_FIELD_NUMBER);
+        allowFragmentationFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(IcmpMonitorRequest.ALLOW_FRAGMENTATION_FIELD_NUMBER);
+        dscpFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(IcmpMonitorRequest.DSCP_FIELD_NUMBER);
+        hostFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(IcmpMonitorRequest.HOST_FIELD_NUMBER);
+        packetSizeFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(IcmpMonitorRequest.PACKET_SIZE_FIELD_NUMBER);
+        retriesFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(IcmpMonitorRequest.RETRIES_FIELD_NUMBER);
+        timeoutFieldDescriptor = echoMonitorRequestDescriptor.findFieldByNumber(IcmpMonitorRequest.TIMEOUT_FIELD_NUMBER);
     }
 
 //========================================
@@ -53,12 +53,12 @@ public class IcmpMonitor extends AbstractServiceMonitor {
         CompletableFuture<ServiceMonitorResponse> future = new CompletableFuture<>();
 
         try {
-            if (! config.is(EchoMonitorRequest.class)) {
+            if (! config.is(IcmpMonitorRequest.class)) {
                 throw new IllegalArgumentException("configuration must be an EchoRequest; type-url=" + config.getTypeUrl());
             }
 
-            EchoMonitorRequest echoMonitorRequest = config.unpack(EchoMonitorRequest.class);
-            EchoMonitorRequest effectiveRequest = populateDefaultsAsNeeded(echoMonitorRequest);
+            IcmpMonitorRequest IcmpMonitorRequest = config.unpack(IcmpMonitorRequest.class);
+            IcmpMonitorRequest effectiveRequest = populateDefaultsAsNeeded(IcmpMonitorRequest);
 
             String hostString = effectiveRequest.getHost();
             InetAddress host = InetAddress.getByName(hostString);
@@ -85,26 +85,26 @@ public class IcmpMonitor extends AbstractServiceMonitor {
 // Internal Methods
 //----------------------------------------
 
-    private EchoMonitorRequest populateDefaultsAsNeeded(EchoMonitorRequest echoMonitorRequest) {
-        EchoMonitorRequest.Builder resultBuilder = EchoMonitorRequest.newBuilder(echoMonitorRequest);
+    private IcmpMonitorRequest populateDefaultsAsNeeded(IcmpMonitorRequest IcmpMonitorRequest) {
+        IcmpMonitorRequest.Builder resultBuilder = IcmpMonitorRequest.newBuilder(IcmpMonitorRequest);
 
-        if (! echoMonitorRequest.hasField(retriesFieldDescriptor)) {
+        if (! IcmpMonitorRequest.hasField(retriesFieldDescriptor)) {
             resultBuilder.setRetries(PingConstants.DEFAULT_RETRIES);
         }
 
-        if ((! echoMonitorRequest.hasField(packetSizeFieldDescriptor)) || (echoMonitorRequest.getPacketSize() <= 0)) {
+        if ((! IcmpMonitorRequest.hasField(packetSizeFieldDescriptor)) || (IcmpMonitorRequest.getPacketSize() <= 0)) {
             resultBuilder.setPacketSize(PingConstants.DEFAULT_PACKET_SIZE);
         }
 
-        if (! echoMonitorRequest.hasField(dscpFieldDescriptor)) {
+        if (! IcmpMonitorRequest.hasField(dscpFieldDescriptor)) {
             resultBuilder.setDscp(0);
         }
 
-        if (! echoMonitorRequest.hasField(allowFragmentationFieldDescriptor)) {
+        if (! IcmpMonitorRequest.hasField(allowFragmentationFieldDescriptor)) {
             resultBuilder.setAllowFragmentation(true);
         }
 
-        if (! echoMonitorRequest.hasField(timeoutFieldDescriptor)) {
+        if (! IcmpMonitorRequest.hasField(timeoutFieldDescriptor)) {
             resultBuilder.setTimeout(PingConstants.DEFAULT_TIMEOUT);
         }
 

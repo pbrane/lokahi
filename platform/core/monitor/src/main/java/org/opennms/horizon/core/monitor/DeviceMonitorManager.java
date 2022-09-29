@@ -29,7 +29,7 @@
 package org.opennms.horizon.core.monitor;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.opennms.echo.contract.EchoMonitorRequest;
+import org.opennms.icmp.contract.IcmpMonitorRequest;
 import org.opennms.horizon.core.monitor.taskset.LocationBasedTaskSetManager;
 import org.opennms.horizon.core.monitor.taskset.TaskSetManager;
 import org.opennms.horizon.db.dao.api.IpInterfaceDao;
@@ -140,8 +140,8 @@ public class DeviceMonitorManager implements EventListener {
     }
 
     private void addPollIcmpTask(TaskSetManager taskSetManager, InetAddress inetAddress) {
-        EchoMonitorRequest echoRequest =
-            EchoMonitorRequest.newBuilder()
+        IcmpMonitorRequest echoRequest =
+            IcmpMonitorRequest.newBuilder()
                 .setHost(inetAddress.getHostAddress())
                 .setTimeout(60000)
                 .build()
