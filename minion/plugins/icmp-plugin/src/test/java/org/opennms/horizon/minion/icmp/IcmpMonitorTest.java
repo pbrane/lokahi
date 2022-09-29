@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.opennms.echo.contract.EchoMonitorRequest;
+import org.opennms.icmp.contract.IcmpMonitorRequest;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.minion.icmp.best.BestMatchPingerFactory;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
@@ -21,7 +21,7 @@ public class IcmpMonitorTest {
     @Mock
     MonitoredService monitoredService;
 
-    EchoMonitorRequest testEchoRequest;
+    IcmpMonitorRequest testEchoRequest;
     Any testConfig;
     IcmpMonitor icmpMonitor;
 
@@ -32,7 +32,7 @@ public class IcmpMonitorTest {
         icmpMonitor = new IcmpMonitor(new BestMatchPingerFactory());
 
         testEchoRequest =
-            EchoMonitorRequest.newBuilder()
+            IcmpMonitorRequest.newBuilder()
                 .setHost("127.0.0.1")
                 .build();
 
