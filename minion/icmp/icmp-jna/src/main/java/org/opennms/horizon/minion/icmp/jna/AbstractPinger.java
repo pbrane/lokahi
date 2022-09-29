@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.opennms.horizon.minion.jicmp.jna.NativeDatagramSocket;
-import org.opennms.netmgt.icmp.EchoPacket;
+import org.opennms.horizon.shared.icmp.EchoPacket;
 
 /**
  * JnaPinger

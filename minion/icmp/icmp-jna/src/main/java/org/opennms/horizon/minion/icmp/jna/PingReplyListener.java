@@ -30,7 +30,7 @@ package org.opennms.horizon.minion.icmp.jna;
 
 import java.net.InetAddress;
 
-import org.opennms.netmgt.icmp.EchoPacket;
+import org.opennms.horizon.shared.icmp.EchoPacket;
 
 public interface PingReplyListener {
 	public void onPingReply(InetAddress inetAddress, EchoPacket packet);

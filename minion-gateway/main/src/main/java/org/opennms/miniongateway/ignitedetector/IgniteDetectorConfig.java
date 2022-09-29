@@ -2,7 +2,7 @@ package org.opennms.miniongateway.ignitedetector;
 
 import javax.annotation.PostConstruct;
 import org.apache.ignite.Ignite;
-import org.opennms.core.ipc.grpc.server.manager.RpcRequestDispatcher;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcRequestDispatcher;
 import org.opennms.miniongateway.detector.api.LocalDetectorAdapter;
 import org.opennms.miniongateway.detector.server.IgniteRpcRequestDispatcher;
 import org.opennms.miniongateway.detector.server.LocalDetectorAdapterStubImpl;

@@ -33,8 +33,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opennms.horizon.grpc.ping.contract.PingResponse;
-import org.opennms.netmgt.icmp.proxy.PingSequence;
-import org.opennms.netmgt.icmp.proxy.PingSummaryCalculator;
+import org.opennms.horizon.shared.icmp.proxy.PingSequence;
+import org.opennms.horizon.shared.icmp.proxy.PingSummaryCalculator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;

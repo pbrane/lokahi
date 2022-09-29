@@ -28,9 +28,9 @@
 
 package org.opennms.minion.icmp.jni6;
 
-import static org.opennms.netmgt.icmp.PingConstants.DEFAULT_PACKET_SIZE;
-import static org.opennms.netmgt.icmp.PingConstants.DEFAULT_RETRIES;
-import static org.opennms.netmgt.icmp.PingConstants.DEFAULT_TIMEOUT;
+import static org.opennms.horizon.shared.icmp.PingConstants.DEFAULT_PACKET_SIZE;
+import static org.opennms.horizon.shared.icmp.PingConstants.DEFAULT_RETRIES;
+import static org.opennms.horizon.shared.icmp.PingConstants.DEFAULT_TIMEOUT;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -41,11 +41,11 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.opennms.horizon.shared.logging.Logging;
-import org.opennms.netmgt.icmp.LogPrefixPreservingPingResponseCallback;
-import org.opennms.netmgt.icmp.ParallelPingResponseCallback;
-import org.opennms.netmgt.icmp.PingResponseCallback;
-import org.opennms.netmgt.icmp.Pinger;
-import org.opennms.netmgt.icmp.SinglePingResponseCallback;
+import org.opennms.horizon.shared.icmp.LogPrefixPreservingPingResponseCallback;
+import org.opennms.horizon.shared.icmp.ParallelPingResponseCallback;
+import org.opennms.horizon.shared.icmp.PingResponseCallback;
+import org.opennms.horizon.shared.icmp.Pinger;
+import org.opennms.horizon.shared.icmp.SinglePingResponseCallback;
 import org.opennms.minion.icmp.jni.JniPinger;
 import org.opennms.protocols.rt.IDBasedRequestLocator;
 import org.opennms.protocols.rt.RequestTracker;

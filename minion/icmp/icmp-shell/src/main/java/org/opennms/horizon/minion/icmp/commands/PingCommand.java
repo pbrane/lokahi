@@ -41,10 +41,10 @@ import org.apache.karaf.shell.api.action.Command;
 import org.apache.karaf.shell.api.action.Option;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
-import org.opennms.netmgt.icmp.proxy.LocationAwarePingClient;
-import org.opennms.netmgt.icmp.proxy.PingRequestBuilder;
-import org.opennms.netmgt.icmp.proxy.PingStringUtils;
-import org.opennms.netmgt.icmp.proxy.PingSummary;
+import org.opennms.horizon.shared.icmp.proxy.LocationAwarePingClient;
+import org.opennms.horizon.shared.icmp.proxy.PingRequestBuilder;
+import org.opennms.horizon.shared.icmp.proxy.PingStringUtils;
+import org.opennms.horizon.shared.icmp.proxy.PingSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

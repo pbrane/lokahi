@@ -6,17 +6,17 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.Descriptors;
-import org.opennms.icmp.contract.IcmpMonitorRequest;
-import org.opennms.netmgt.icmp.EchoPacket;
-import org.opennms.netmgt.icmp.PingConstants;
-import org.opennms.netmgt.icmp.PingResponseCallback;
-import org.opennms.netmgt.icmp.Pinger;
-import org.opennms.netmgt.icmp.PingerFactory;
+import org.opennms.horizon.shared.icmp.EchoPacket;
+import org.opennms.horizon.shared.icmp.PingConstants;
+import org.opennms.horizon.shared.icmp.PingResponseCallback;
+import org.opennms.horizon.shared.icmp.Pinger;
+import org.opennms.horizon.shared.icmp.PingerFactory;
 import org.opennms.horizon.minion.plugin.api.AbstractServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse.Status;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
+import org.opennms.icmp.contract.IcmpMonitorRequest;
 import org.opennms.taskset.contract.MonitorType;
 
 public class IcmpMonitor extends AbstractServiceMonitor {

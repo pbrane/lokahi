@@ -7,7 +7,7 @@
 
     <reference id="rpcClientFactory" interface="org.opennms.horizon.shared.ipc.rpc.api.RpcClientFactory"/>
 
-    <service interface="org.opennms.netmgt.icmp.proxy.LocationAwarePingClient">
+    <service interface="org.opennms.horizon.shared.icmp.proxy.LocationAwarePingClient">
         <bean class="org.opennms.horizon.icmp.ipc.client.internal.LocationAwarePingClientImpl">
             <argument ref="rpcClientFactory" />
         </bean>

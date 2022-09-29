@@ -7,7 +7,7 @@
 
     <bean id="jniPinger" class="org.opennms.minion.icmp.jni.JniPinger"/>
 
-    <service interface="org.opennms.netmgt.icmp.Pinger" ref="jniPinger" ranking="100">
+    <service interface="org.opennms.horizon.shared.icmp.Pinger" ref="jniPinger" ranking="100">
         <service-properties>
             <entry key="type">
                 <value type="java.lang.String">jni</value>
@@ -16,6 +16,6 @@
     </service>
 
     <bean id="pingerFactory" class="org.opennms.minion.icmp.jni.JniPingerFactory"/>
-    <service interface="org.opennms.netmgt.icmp.PingerFactory" ref="pingerFactory" ranking="100"/>
+    <service interface="org.opennms.horizon.shared.icmp.PingerFactory" ref="pingerFactory" ranking="100"/>
 
 </blueprint>

@@ -37,9 +37,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.opennms.horizon.shared.utils.InetAddressUtils;
-import org.opennms.netmgt.icmp.EchoPacket;
-import org.opennms.netmgt.icmp.LogPrefixPreservingPingResponseCallback;
-import org.opennms.netmgt.icmp.PingResponseCallback;
+import org.opennms.horizon.shared.icmp.EchoPacket;
+import org.opennms.horizon.shared.icmp.LogPrefixPreservingPingResponseCallback;
+import org.opennms.horizon.shared.icmp.PingResponseCallback;
 import org.opennms.protocols.rt.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

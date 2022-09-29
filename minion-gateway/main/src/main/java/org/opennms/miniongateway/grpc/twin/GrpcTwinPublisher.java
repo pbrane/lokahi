@@ -28,7 +28,6 @@
 
 package org.opennms.miniongateway.grpc.twin;
 
-import com.google.protobuf.Any;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,11 +39,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.function.BiConsumer;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
-import org.opennms.cloud.grpc.minion.RpcRequestProto;
-import org.opennms.cloud.grpc.minion.RpcResponseProto;
-import org.opennms.cloud.grpc.minion.TwinRequestProto;
 import org.opennms.cloud.grpc.minion.TwinResponseProto;
-import org.opennms.core.grpc.common.GrpcIpcUtils;
+import org.opennms.horizon.shared.grpc.common.GrpcIpcUtils;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

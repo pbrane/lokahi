@@ -5,29 +5,28 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.grpc.stub.StreamObserver;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.BiConsumer;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
 import org.opennms.cloud.grpc.minion.Identity;
-import org.opennms.cloud.grpc.minion.RpcRequestProto;
-import org.opennms.cloud.grpc.minion.RpcResponseProto;
-import org.opennms.core.grpc.common.GrpcIpcServer;
-import org.opennms.core.grpc.interceptor.MeteringInterceptorFactory;
-import org.opennms.core.ipc.grpc.server.OpennmsGrpcServer;
-import org.opennms.core.ipc.grpc.server.manager.LocationIndependentRpcClientFactory;
-import org.opennms.core.ipc.grpc.server.manager.MinionManager;
-import org.opennms.core.ipc.grpc.server.manager.RpcConnectionTracker;
-import org.opennms.core.ipc.grpc.server.manager.RpcRequestTimeoutManager;
-import org.opennms.core.ipc.grpc.server.manager.RpcRequestTracker;
-import org.opennms.core.ipc.grpc.server.manager.impl.RpcRequestTimeoutManagerImpl;
-import org.opennms.core.ipc.grpc.server.manager.impl.RpcRequestTrackerImpl;
-import org.opennms.core.ipc.grpc.server.manager.rpc.LocationIndependentRpcClientFactoryImpl;
-import org.opennms.core.ipc.grpc.server.manager.rpcstreaming.MinionRpcStreamConnectionManager;
-import org.opennms.core.ipc.grpc.server.manager.rpcstreaming.impl.MinionRpcStreamConnectionManagerImpl;
+import org.opennms.horizon.shared.grpc.common.GrpcIpcServer;
+import org.opennms.horizon.shared.grpc.interceptor.MeteringInterceptorFactory;
+import org.opennms.horizon.shared.ipc.grpc.server.OpennmsGrpcServer;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.LocationIndependentRpcClientFactory;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.MinionManager;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcConnectionTracker;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcRequestTimeoutManager;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcRequestTracker;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.impl.RpcRequestTimeoutManagerImpl;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.impl.RpcRequestTrackerImpl;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.rpc.LocationIndependentRpcClientFactoryImpl;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.rpcstreaming.MinionRpcStreamConnectionManager;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.rpcstreaming.impl.MinionRpcStreamConnectionManagerImpl;
 import org.opennms.miniongateway.grpc.server.heartbeat.HeartbeatKafkaForwarder;
-import org.opennms.miniongateway.grpc.server.stub.StubCloudToMinionMessageProcessor;
-import org.opennms.miniongateway.grpc.server.stub.StubMinionToCloudProcessor;
+import org.opennms.miniongateway.grpc.twin.TaskSetTwinMessageProcessor;
 import org.opennms.miniongateway.grpc.server.tasktresults.TaskResultsKafkaForwarder;
 import org.opennms.miniongateway.grpc.twin.GrpcTwinPublisher;
 import org.opennms.taskset.service.api.TaskSetForwarder;
@@ -36,13 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.function.BiConsumer;
 
 @Configuration
 public class GrpcServerConfig {
@@ -84,11 +76,11 @@ public class GrpcServerConfig {
     }
 
     @Bean("cloudToMinionMessageProcessor")
-    public StubCloudToMinionMessageProcessor stubCloudToMinionMessageProcessor(
+    public TaskSetTwinMessageProcessor stubCloudToMinionMessageProcessor(
         @Qualifier("taskSetPublisher") TaskSetPublisher publisher,
         @Qualifier("taskSetForwarder") TaskSetForwarder forwarder,
         GrpcTwinPublisher grpcTwinPublisher) {
-        return new StubCloudToMinionMessageProcessor(publisher, forwarder, grpcTwinPublisher);
+        return new TaskSetTwinMessageProcessor(publisher, forwarder, grpcTwinPublisher);
     }
 
     @Bean

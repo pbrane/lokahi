@@ -1,9 +1,9 @@
 package org.opennms.miniongateway.grpc.server;
 
-import org.opennms.core.grpc.common.GrpcIpcServer;
-import org.opennms.core.grpc.common.GrpcIpcServerBuilder;
-import org.opennms.core.grpc.common.GrpcIpcUtils;
-import org.opennms.core.grpc.interceptor.LoggingInterceptor;
+import org.opennms.horizon.shared.grpc.common.GrpcIpcServer;
+import org.opennms.horizon.shared.grpc.common.GrpcIpcServerBuilder;
+import org.opennms.horizon.shared.grpc.common.GrpcIpcUtils;
+import org.opennms.horizon.shared.grpc.interceptor.LoggingInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
