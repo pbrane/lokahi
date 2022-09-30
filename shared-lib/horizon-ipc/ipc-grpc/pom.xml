@@ -17,6 +17,5 @@
     <modules>
         <module>ipc-grpc-contract</module>
         <module>ipc-grpc-client</module>
-        <module>ipc-grpc-server</module>
     </modules>
 </project>

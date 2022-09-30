@@ -23,12 +23,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.opennms.horizon.shared</groupId>
-            <artifactId>ignite-remote-async</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.ignite</groupId>
             <artifactId>ignite-core</artifactId>
         </dependency>
