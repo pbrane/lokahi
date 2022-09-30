@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
@@ -99,7 +100,7 @@ public class MinionLookupServiceImplTest {
     public void findGatewayNodeWithLocation() {
         generateMinions(3);
 
-        Queue<UUID> uuids = minionLookupService.findGatewayNodeWithLocation("location");
+        List<UUID> uuids = minionLookupService.findGatewayNodeWithLocation("location");
         assertNotNull(uuids);
         assertEquals(3, uuids.size());
 

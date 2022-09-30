@@ -1,13 +1,16 @@
 package org.opennms.miniongateway.grpc.server.tasks;
 
+import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
+import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteException;
 import org.apache.ignite.IgniteLogger;
 import org.apache.ignite.cluster.ClusterNode;
@@ -16,6 +19,7 @@ import org.apache.ignite.compute.ComputeJobResult;
 import org.apache.ignite.compute.ComputeJobResultPolicy;
 import org.apache.ignite.compute.ComputeTask;
 import org.apache.ignite.compute.ComputeTaskName;
+import org.apache.ignite.resources.IgniteInstanceResource;
 import org.apache.ignite.resources.LoggerResource;
 import org.apache.ignite.resources.SpringResource;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +36,11 @@ public class EchoRoutingTask implements ComputeTask<byte[], byte[]> {
     @SpringResource(resourceName = MinionLookupService.IGNITE_SERVICE_NAME)
     private transient MinionLookupService minionLookupService;
 
+    @IgniteInstanceResource
+    private transient Ignite ignite;
+
+    private transient Random random;
+
     @Override
     public @NotNull Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, @Nullable byte[] arg) throws IgniteException {
         UUID gatewayNodeId = null;
@@ -41,20 +50,38 @@ public class EchoRoutingTask implements ComputeTask<byte[], byte[]> {
             if (!request.getSystemId().isBlank()) {
                 gatewayNodeId = minionLookupService.findGatewayNodeWithId(request.getSystemId());
             } else {
-                //TODO: For now just get the first one
-                gatewayNodeId =  minionLookupService.findGatewayNodeWithLocation(request.getLocation()).stream().findFirst().get();
+                gatewayNodeId = shuffle(minionLookupService.findGatewayNodeWithLocation(request.getLocation()));
             }
-            if (gatewayNodeId != null) {
-                RoutingJob job = new RoutingJob(request);
-                UUID finalGatewayNodeId = gatewayNodeId;
-                ClusterNode node = subgrid.stream().filter(clusterNode -> finalGatewayNodeId.equals(clusterNode.id()))
-                    .findFirst().get();
-                map.put(job, node);
+
+            ClusterNode routingNode;
+            if (gatewayNodeId == null || (routingNode = findNode(gatewayNodeId, subgrid)) == null) {
+                map.put(new FailedJob(request), ignite.cluster().localNode());
+            } else {
+                map.put(new RoutingJob(request), routingNode);
             }
         } catch (InvalidProtocolBufferException e) {
             throw new RuntimeException(e);
         }
         return map;
+    }
+
+    private <T> UUID shuffle(List<UUID> queue) {
+        if (queue == null || queue.isEmpty()) {
+            return null;
+        }
+
+        // generate index which is within range from [0, size).
+        int index = random.nextInt(queue.size());
+        return queue.get(index);
+    }
+
+    private ClusterNode findNode(UUID node, List<ClusterNode> subgrid) {
+        for (ClusterNode clusterNode : subgrid) {
+            if (node.equals(clusterNode.id())) {
+                return clusterNode;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -76,6 +103,13 @@ public class EchoRoutingTask implements ComputeTask<byte[], byte[]> {
             throw jobResult.getException();
         }
         return jobResult.getData();
+    }
+
+    private Random random() {
+        if (this.random == null) {
+            this.random = new Random();
+        }
+        return this.random;
     }
 
     public static class RoutingJob implements ComputeJob {
@@ -119,14 +153,33 @@ public class EchoRoutingTask implements ComputeTask<byte[], byte[]> {
                         logger.debug("Received answer for rpc request " + request.getRpcId());
                     }
                 });
-                RpcResponseProto response = responseFuture.get();
-                return response == null ? null : response.toByteArray();
+                return responseFuture.thenApply(AbstractMessageLite::toByteArray).get();
             } catch (InterruptedException e) {
                 throw new IgniteException("Failed to dispatch request", e);
             } catch (ExecutionException e) {
                 logger.warning("Failure while executing request " + request.getRpcId(), e);
                 throw new IgniteException("Could not execute RPC request", e);
             }
+        }
+    }
+
+
+    public static class FailedJob implements ComputeJob {
+
+        private RpcRequestProto request;
+
+        public FailedJob(RpcRequestProto request) {
+            this.request = request;
+        }
+
+        @Override
+        public void cancel() {
+
+        }
+
+        @Override
+        public Object execute() throws IgniteException {
+            throw new IgniteException("Could not find active connection for location=" + request.getLocation() + " and systemId=" + request.getSystemId());
         }
     }
 }
