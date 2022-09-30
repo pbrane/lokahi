@@ -39,7 +39,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.opennms.horizon.shared</groupId>
+            <groupId>org.opennms.horizon.minion.gateway</groupId>
             <artifactId>ipc-grpc-server</artifactId>
             <version>${project.version}</version>
         </dependency>

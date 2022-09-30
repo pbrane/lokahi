@@ -4,15 +4,10 @@ import org.apache.ignite.client.IgniteClient;
 import org.opennms.taskset.contract.TaskSet;
 import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.opennms.taskset.service.model.LocatedTaskSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
 public class TaskSetIgnitePublisherImpl implements TaskSetPublisher {
-    private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskSetIgnitePublisherImpl.class);
-
-    private Logger log = DEFAULT_LOGGER;
 
     private IgniteClient igniteClient;
 

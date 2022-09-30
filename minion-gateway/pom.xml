@@ -32,6 +32,7 @@
 
     <modules>
         <module>ignite-detector</module>
+        <module>ipc-grpc-server</module>
         <module>main</module>
     </modules>
 

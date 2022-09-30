@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.opennms.horizon.shared</groupId>
-        <artifactId>ipc-grpc</artifactId>
+        <groupId>org.opennms.horizon.minion.gateway</groupId>
+        <artifactId>minion-gateway</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>ipc-grpc-server</artifactId>
-    <packaging>bundle</packaging>
+    <packaging>jar</packaging>
 
-    <name>OpenNMS Horizon :: Shared Library :: IPC :: GRPC :: Server</name>
+    <name>OpenNMS Horizon :: Minion Gateway :: IPC GRPC Server</name>
     <description>Server side of gRPC.</description>
 
     <dependencies>
