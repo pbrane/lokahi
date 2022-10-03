@@ -26,6 +26,7 @@
         <module>icmp-api</module>
         <module>task-set</module>
         <module>task-set-service</module>
+      <module>ignite-tasks</module>
     </modules>
 
     <properties>
