@@ -1,4 +1,4 @@
-package org.opennms.taskset.service.igniteservice.impl;
+package org.opennms.miniongateway.taskset;
 
 import org.apache.ignite.Ignite;
 import org.opennms.taskset.service.api.TaskSetPublisher;

@@ -1,4 +1,4 @@
-package org.opennms.taskset.service.impl;
+package org.opennms.miniongateway.taskset;
 
 import org.opennms.taskset.contract.TaskSet;
 import org.opennms.taskset.service.api.TaskSetForwarder;

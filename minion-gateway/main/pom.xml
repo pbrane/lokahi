@@ -45,12 +45,7 @@
         </dependency>
         <dependency>
             <groupId>org.opennms.horizon.shared</groupId>
-            <artifactId>task-set-ignite-service</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opennms.horizon.shared</groupId>
-            <artifactId>task-set-service-core</artifactId>
+            <artifactId>task-set-service-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -18,9 +18,7 @@
 
     <modules>
         <module>api</module>
-        <module>core</module>
         <module>ignite-client</module>
-        <module>ignite-service</module>
     </modules>
 
 </project>
