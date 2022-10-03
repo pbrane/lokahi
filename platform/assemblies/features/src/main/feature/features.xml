@@ -316,8 +316,7 @@
 
     <feature name="horizon-shared-task-set-service" version="${project.version}">
         <feature version="${project.version}">horizon-shared-task-set-publisher-common</feature>
-
-        <bundle>mvn:org.opennms.horizon.shared/task-set-ignite-service/${project.version}</bundle>
+        
     </feature>
 
     <feature name="horizon-shared-task-set-publisher-common" version="${project.version}">
