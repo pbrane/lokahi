@@ -24,15 +24,12 @@
 
     <feature name="taskset-worker-ignite-internal" version="${project.version}">
         <feature>aries-blueprint</feature>
-        <feature>camel-core</feature>
         <feature>cxf-jackson</feature>
         <feature>ipc-minion</feature>
         <feature>observability-minion</feature>
         <feature>taskset-model</feature>
         <feature>taskset-ignite-core-internal</feature>
         <feature>taskset-rest-utils-internal</feature>
-
-        <bundle>wrap:mvn:org.apache.ignite/ignite-kubernetes/${ignite.version}$Bundle-SymbolicName=org.apache.ignite.kubernetes&amp;Bundle-Name=Ignite-Kubernetes</bundle>
     </feature>
 
     <feature name="taskset-ignite-core-internal" version="${project.version}">

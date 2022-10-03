@@ -97,6 +97,7 @@
                 <version>${karaf.version}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <featuresProcessing>processing.xml</featuresProcessing>
                     <installedFeatures>
                         <feature>wrapper</feature>
                         <feature>aries-blueprint</feature>
