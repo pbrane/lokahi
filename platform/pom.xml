@@ -23,12 +23,11 @@
         <module>ignite</module>
         <module>ipc</module>
         <module>provision</module>
-        
+        <module>minion</module>
+        <module>metrics</module>
         <module>assemblies</module>
         <module>docker-it</module>
         <module>inventory</module>
-        <module>minion</module>
-        <module>metrics</module>
     </modules>
 
     <properties>
