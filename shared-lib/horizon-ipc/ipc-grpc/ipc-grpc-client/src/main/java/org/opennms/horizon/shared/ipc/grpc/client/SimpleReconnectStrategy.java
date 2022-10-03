@@ -36,8 +36,6 @@ public class SimpleReconnectStrategy implements Runnable, ReconnectStrategy {
                 onConnect.run();
                 reconnectTask = null;
             }
-        } else {
-            reconnectTask = executor.scheduleAtFixedRate(this, 5000, 5000, TimeUnit.MILLISECONDS);
         }
     }
 }
