@@ -16,6 +16,7 @@
 
     <modules>
         <module>ipc-echo</module>
+        <module>ipc-heartbeat</module>
         <module>twin-api</module>
         <module>twin-common</module>
         <module>twin-core</module>

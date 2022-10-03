@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.minion.heartbeat;
+package org.opennms.horizon.minion.ipc.heartbeat.internal;
 
 
 import com.google.protobuf.Timestamp;

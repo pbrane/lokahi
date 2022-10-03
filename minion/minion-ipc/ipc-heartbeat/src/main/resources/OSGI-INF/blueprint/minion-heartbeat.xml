@@ -10,7 +10,7 @@
   <reference id="identity" interface="org.opennms.horizon.shared.ipc.rpc.IpcIdentity"/>
   <reference id="messageDispatcherFactory" interface="org.opennms.horizon.shared.ipc.sink.api.MessageDispatcherFactory"/>
 
-  <bean id="heartbeatProducer" class="org.opennms.horizon.minion.heartbeat.HeartbeatProducer" init-method="init">
+  <bean id="heartbeatProducer" class="org.opennms.horizon.minion.ipc.heartbeat.internal.HeartbeatProducer" init-method="init">
     <argument ref="identity"/>
     <argument ref="messageDispatcherFactory"/>
   </bean>

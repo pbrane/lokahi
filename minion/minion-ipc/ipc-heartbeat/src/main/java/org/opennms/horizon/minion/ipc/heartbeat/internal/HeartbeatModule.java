@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.minion.heartbeat;
+package org.opennms.horizon.minion.ipc.heartbeat.internal;
 
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.grpc.heartbeat.contract.HeartbeatMessage;

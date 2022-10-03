@@ -49,6 +49,11 @@
         <bundle>mvn:org.opennms.horizon.minion/ipc-echo/${project.version}</bundle>
     </feature>
 
+    <feature name="ipc-heartbeat" version="${project.version}">
+        <feature>ipc-api</feature>
+        <bundle>mvn:org.opennms.horizon.minion/ipc-heartbeat/${project.version}</bundle>
+    </feature>
+
     <feature name="ipc-minion" version="${project.version}">
         <feature>grpc-minion</feature>
         <feature>ipc-jackson-internal</feature>
@@ -56,6 +61,7 @@
         <feature>ipc-whiteboard-internal</feature>
         <feature>ipc-api</feature>
         <feature>ipc-echo</feature>
+        <feature>ipc-heartbeat</feature>
 
         <bundle>mvn:org.opennms.horizon.minion/twin-api/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.minion/twin-common/${project.version}</bundle>

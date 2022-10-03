@@ -13,16 +13,11 @@
     <repository>mvn:org.opennms.horizon.minion/snmp-plugin/${project.version}/xml/features</repository>
 
     <feature name="minion-ng">
-        <feature>minion-heartbeat</feature>
         <feature>taskset-minion</feature>
         <feature>icmp-plugins</feature>
         <feature>icmp-rpc</feature>
         <feature>snmp-plugins</feature>
         <feature>snmp-rpc</feature>
-    </feature>
-
-    <feature name="minion-heartbeat">
-        <bundle>mvn:org.opennms.horizon.minion/minion-heartbeat/${project.version}</bundle>
     </feature>
 
 </features>
