@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-//UpdateValues - update values for an instance based on it's crd
+// UpdateValues - update values for an instance based on it's crd
 func (r *OpenNMSReconciler) UpdateValues(ctx context.Context, instance v1alpha1.OpenNMS) values.TemplateValues {
 	if r.ValuesMap == nil {
 		r.ValuesMap = map[string]values.TemplateValues{}
@@ -55,7 +55,7 @@ func (r *OpenNMSReconciler) UpdateValues(ctx context.Context, instance v1alpha1.
 	return templateValues
 }
 
-//CheckForExistingCoreCreds - checks if core credentials already exist for a given namespace
+// CheckForExistingCoreCreds - checks if core credentials already exist for a given namespace
 func (r *OpenNMSReconciler) CheckForExistingCoreCreds(ctx context.Context, v values.TemplateValues, namespace string) (values.TemplateValues, bool) {
 	var credSecret v1.Secret
 	err := r.Client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: "keycloak-credentials"}, &credSecret)
@@ -80,7 +80,7 @@ func (r *OpenNMSReconciler) CheckForExistingCoreCreds(ctx context.Context, v val
 	return v, true
 }
 
-//CheckForExistingPostgresCreds - checks if core credentials already exist for a given namespace
+// CheckForExistingPostgresCreds - checks if core credentials already exist for a given namespace
 func (r *OpenNMSReconciler) CheckForExistingPostgresCreds(ctx context.Context, v values.TemplateValues, namespace string) (values.TemplateValues, bool) {
 	var credSecret v1.Secret
 	err := r.Client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: "postgres"}, &credSecret)
@@ -90,24 +90,26 @@ func (r *OpenNMSReconciler) CheckForExistingPostgresCreds(ctx context.Context, v
 	adminPwd := string(credSecret.Data["adminPwd"])
 	keycloakPwd := string(credSecret.Data["keycloakPwd"])
 	notificationPwd := string(credSecret.Data["notificationPwd"])
+	grafanaPwd := string(credSecret.Data["grafanaPwd"])
 	if adminPwd == "" || keycloakPwd == "" || notificationPwd == "" {
 		return v, false
 	}
 	v.Values.Postgres.AdminPassword = adminPwd
 	v.Values.Postgres.KeycloakPassword = keycloakPwd
 	v.Values.Postgres.NotificationPassword = notificationPwd
+	v.Values.Postgres.GrafanaPassword = grafanaPwd
 	return v, true
 }
 
-//setCorePasswords - sets randomly generated passwords for the core if not already set
+// setCorePasswords - sets randomly generated passwords for the core if not already set
 func setCorePasswords(tv values.TemplateValues, creds v1alpha1.Credentials) values.TemplateValues {
 	if creds.AdminPassword == "" {
-		tv.Values.Keycloak.AdminPassword = security.GeneratePassword(true)
+		tv.Values.Keycloak.AdminPassword = security.GeneratePassword(false)
 	} else {
 		tv.Values.Keycloak.AdminPassword = creds.AdminPassword
 	}
 	if creds.UserPassword == "" {
-		tv.Values.Keycloak.UserPassword = security.GeneratePassword(true)
+		tv.Values.Keycloak.UserPassword = security.GeneratePassword(false)
 	} else {
 		tv.Values.Keycloak.UserPassword = creds.UserPassword
 	}
@@ -119,11 +121,12 @@ func setCorePasswords(tv values.TemplateValues, creds v1alpha1.Credentials) valu
 	return tv
 }
 
-//setCorePasswords - sets randomly generated password for Postgres if not already set
+// setCorePasswords - sets randomly generated password for Postgres if not already set
 func setPostgresPassword(tv values.TemplateValues) values.TemplateValues {
-	tv.Values.Postgres.AdminPassword = security.GeneratePassword(false)
-	tv.Values.Postgres.OpenNMSPassword = security.GeneratePassword(false)
-	tv.Values.Postgres.KeycloakPassword = security.GeneratePassword(false)
-	tv.Values.Postgres.NotificationPassword = security.GeneratePassword(false)
+	tv.Values.Postgres.AdminPassword = security.GeneratePassword(true)
+	tv.Values.Postgres.OpenNMSPassword = security.GeneratePassword(true)
+	tv.Values.Postgres.KeycloakPassword = security.GeneratePassword(true)
+	tv.Values.Postgres.NotificationPassword = security.GeneratePassword(true)
+	tv.Values.Postgres.GrafanaPassword = security.GeneratePassword(true)
 	return tv
 }

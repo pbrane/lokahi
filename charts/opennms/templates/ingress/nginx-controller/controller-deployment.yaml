@@ -53,11 +53,13 @@ spec:
         - --controller-class=k8s.io/ingress-nginx
         - --ingress-class=nginx
         - --configmap=$(POD_NAMESPACE)/ingress-nginx-controller
+        - --watch-ingress-without-class=true
+        - --publish-status-address=localhost
+        - --http-port={{ .Values.Ingress.HttpPort }}
+        - --https-port={{ .Values.Ingress.HttpsPort }}
         - --validating-webhook=:8443
         - --validating-webhook-certificate=/usr/local/certificates/cert
         - --validating-webhook-key=/usr/local/certificates/key
-        - --watch-ingress-without-class=true
-        - --publish-status-address=localhost
         env:
         - name: POD_NAME
           valueFrom:
@@ -69,7 +71,7 @@ spec:
               fieldPath: metadata.namespace
         - name: LD_PRELOAD
           value: /usr/local/lib/libmimalloc.so
-        image: registry.k8s.io/ingress-nginx/controller:v1.3.0@sha256:d1707ca76d3b044ab8a28277a2466a02100ee9f58a86af1535a3edf9323ea1b5
+        image: {{ .Values.Ingress.ControllerImage }}
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -88,12 +90,12 @@ spec:
           timeoutSeconds: 1
         name: controller
         ports:
-        - containerPort: 80
-          hostPort: 80
+        - containerPort: {{ .Values.Ingress.HttpPort }}
+          hostPort: {{ .Values.Ingress.HttpPort }}
           name: http
           protocol: TCP
-        - containerPort: 443
-          hostPort: 443
+        - containerPort: {{ .Values.Ingress.HttpsPort }}
+          hostPort: {{ .Values.Ingress.HttpsPort }}
           name: https
           protocol: TCP
         - containerPort: 8443
@@ -125,7 +127,6 @@ spec:
         - mountPath: /usr/local/certificates/
           name: webhook-cert
           readOnly: true
-      dnsPolicy: ClusterFirst
       serviceAccountName: ingress-nginx
       terminationGracePeriodSeconds: 0
       volumes:

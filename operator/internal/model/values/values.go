@@ -18,7 +18,7 @@ type TemplateValues struct {
 	Values Values
 }
 
-//Values - Helm values for a complete OpenNMS Horizon Stream instance
+// Values - Helm values for a complete OpenNMS Horizon Stream instance
 type Values struct {
 	Namespace        string                 `yaml:"Namespace"`
 	Host             string                 `yaml:"Host"`

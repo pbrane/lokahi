@@ -297,8 +297,11 @@
                   <PGSQL_SERVICE_NAME>postgres-host</PGSQL_SERVICE_NAME>
                   <PGSQL_ADMIN_USERNAME>postgres</PGSQL_ADMIN_USERNAME>
                   <PGSQL_ADMIN_PASSWORD>unused</PGSQL_ADMIN_PASSWORD>
+                  <PGSQL_USERNAME>opennms</PGSQL_USERNAME>
+                  <PGSQL_PASSWORD>unused</PGSQL_PASSWORD>
                   <KAFKA_BROKER_HOST>kafka-host</KAFKA_BROKER_HOST>
                   <KAFKA_BROKER_PORT>9092</KAFKA_BROKER_PORT>
+                  <NOTIFICATION_KAFKA_TOPIC>org.opennms.horizon.notifications.alarms</NOTIFICATION_KAFKA_TOPIC>
                   <ACTIVEMQ_BROKER_URL>tcp://localhost:61616</ACTIVEMQ_BROKER_URL>
                 </env>
                 <wait>

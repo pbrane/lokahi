@@ -83,6 +83,7 @@
                                 <feature>horizon-events-api</feature>
                                 <feature>horizon-events</feature>
                                 <feature>horizon-grpc</feature> <!-- TBD888: this goes away -->
+                                <feature>horizon-datachoices</feature>
                                 <feature>horizon-inventory</feature>
                                 <feature>horizon-ipc-api</feature>
                                 <feature>horizon-provision</feature>
@@ -102,6 +103,9 @@
                                 <feature>horizon-ignite</feature>
                                 <feature>horizon-core-heartbeat</feature>
                                 <feature>horizon-core-monitor</feature>
+                                <feature>horizon-core-config-rest</feature>
+                                <feature>horizon-core-traps</feature>
+                                <feature>horizon-stream-jmx</feature>
                             </features>
                         </configuration>
                     </execution>
@@ -327,6 +331,46 @@
         </dependency>
         <dependency>
             <groupId>org.opennms.horizon.metrics</groupId>
+            <artifactId>impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.config</groupId>
+            <artifactId>api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.config</groupId>
+            <artifactId>service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.config</groupId>
+            <artifactId>rest</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon</groupId>
+            <artifactId>datachoices</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon</groupId>
+            <artifactId>traps</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.common</groupId>
+            <artifactId>common-collection</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.jmx</groupId>
+            <artifactId>api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.jmx</groupId>
             <artifactId>impl</artifactId>
             <version>${project.version}</version>
         </dependency>

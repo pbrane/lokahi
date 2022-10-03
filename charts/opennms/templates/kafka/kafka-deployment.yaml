@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.Kafka.ServiceName }}
+  labels:
+    app: kafka
+  namespace: {{ .Values.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.Kafka.ServiceName }}
+  replicas: {{ .Values.Kafka.Replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.Kafka.ServiceName }}
+    spec:
+      containers:
+        - name: {{ .Values.Kafka.ServiceName }}
+          image: {{ .Values.Kafka.Image }}
+          imagePullPolicy: {{ .Values.Kafka.ImagePullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - "export CLUSTER_ID=$(bin/kafka-storage.sh random-uuid) && bin/kafka-storage.sh format -t $CLUSTER_ID -c config/kraft/server.properties && bin/kafka-server-start.sh config/kraft/server.properties --override advertised.listeners=${KAFKA_ADVERTISED_LISTENERS}"
+          env:
+            - name: LOG_DIR
+              value: /tmp/logs
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: http://{{ .Values.Kafka.ServiceName }}:{{ .Values.Kafka.Port  }}
+          resources:
+            limits:
+              cpu: "{{ .Values.Kafka.Resources.Limits.Cpu }}"
+              memory: "{{ .Values.Kafka.Resources.Limits.Memory }}"
+            requests:
+              cpu: "{{ .Values.Kafka.Resources.Requests.Cpu }}"
+              memory: "{{ .Values.Keycloak.Resources.Requests.Memory }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.Kafka.Port }}

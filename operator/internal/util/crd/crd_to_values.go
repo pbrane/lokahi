@@ -19,7 +19,7 @@ import (
 	"github.com/OpenNMS/opennms-operator/internal/model/values"
 )
 
-//ConvertCRDToValues - convert an ONMS crd into a set of template values
+// ConvertCRDToValues - convert an ONMS crd into a set of template values
 func ConvertCRDToValues(crd v1alpha1.OpenNMS, defaultValues values.TemplateValues) values.TemplateValues {
 	templateValues := defaultValues
 
@@ -28,6 +28,13 @@ func ConvertCRDToValues(crd v1alpha1.OpenNMS, defaultValues values.TemplateValue
 
 	v.Namespace = spec.Namespace
 	v.Host = spec.Host
+
+	if spec.HttpPort != 0 {
+		v.Ingress.HttpPort = spec.HttpPort
+	}
+	if spec.HttpsPort != 0 {
+		v.Ingress.HttpsPort = spec.HttpsPort
+	}
 
 	//ONMS Core
 	v.OpenNMS = getCoreValues(spec, v.OpenNMS)
@@ -44,6 +51,12 @@ func ConvertCRDToValues(crd v1alpha1.OpenNMS, defaultValues values.TemplateValue
 	//ONMS Notification
 	v.OpenNMS = getNotificationValues(spec, v.OpenNMS)
 
+	//Keycloak
+	v.Keycloak = getKeycloakValues(spec, v.Keycloak)
+
+	//Grafana
+	v.Grafana = getGrafanaValues(spec, v.Grafana)
+
 	//Postgres
 	v.Postgres = getPostgresValues(spec, v.Postgres)
 
@@ -57,7 +70,7 @@ func ConvertCRDToValues(crd v1alpha1.OpenNMS, defaultValues values.TemplateValue
 	return templateValues
 }
 
-//getCoreValues - get ONMS core values from the crd
+// getCoreValues - get ONMS core values from the crd
 func getCoreValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
 	if spec.Core.Image != "" {
 		v.Core.Image = spec.Core.Image
@@ -76,7 +89,7 @@ func getCoreValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.Ope
 	return v
 }
 
-//getAPIValues - get ONMS API values from the crd
+// getAPIValues - get ONMS API values from the crd
 func getAPIValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
 	if spec.API.Image != "" {
 		v.API.Image = spec.API.Image
@@ -95,7 +108,7 @@ func getAPIValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.Open
 	return v
 }
 
-//getUIValues - get ONMS UI values from the crd
+// getUIValues - get ONMS UI values from the crd
 func getUIValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
 	if spec.UI.Image != "" {
 		v.UI.Image = spec.UI.Image
@@ -114,7 +127,7 @@ func getUIValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenN
 	return v
 }
 
-//getMinionValues - get ONMS Minion values from the crd
+// getMinionValues - get ONMS Minion values from the crd
 func getMinionValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
 	if spec.Minion.Image != "" {
 		v.Minion.Image = spec.Minion.Image
@@ -133,7 +146,7 @@ func getMinionValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.O
 	return v
 }
 
-//getNotificationValues - get ONMS Notification values from the crd
+// getNotificationValues - get ONMS Notification values from the crd
 func getNotificationValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
 	if spec.Notification.Image != "" {
 		v.Notification.Image = spec.Notification.Image
@@ -152,7 +165,23 @@ func getNotificationValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) va
 	return v
 }
 
-//overrideImages - overrides images with noop images for deployment testing purposes
+// getKeycloakValues - get Keycloak values from the crd
+func getKeycloakValues(spec v1alpha1.OpenNMSSpec, v values.KeycloakValues) values.KeycloakValues {
+	if spec.Keycloak.Image != "" {
+		v.Image = spec.Keycloak.Image
+	}
+	return v
+}
+
+// getGrafanaValues - get ONMS Notification values from the crd
+func getGrafanaValues(spec v1alpha1.OpenNMSSpec, v values.GrafanaValues) values.GrafanaValues {
+	if spec.Grafana.Image != "" {
+		v.Image = spec.Grafana.Image
+	}
+	return v
+}
+
+// overrideImages - overrides images with noop images for deployment testing purposes
 func overrideImages(v values.Values) values.Values {
 	noopServiceImage := "lipanski/docker-static-website:latest"
 	noopJobImage := "alpine:latest"
@@ -170,7 +199,7 @@ func overrideImages(v values.Values) values.Values {
 	return v
 }
 
-//getPostgresValues - get Postgres DB values from the CRD
+// getPostgresValues - get Postgres DB values from the CRD
 func getPostgresValues(spec v1alpha1.OpenNMSSpec, v values.PostgresValues) values.PostgresValues {
 	if spec.Postgres.Disk != "" {
 		v.VolumeSize = spec.Postgres.Disk

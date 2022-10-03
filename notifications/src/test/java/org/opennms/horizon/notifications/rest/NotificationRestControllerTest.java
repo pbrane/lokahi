@@ -31,8 +31,7 @@ package org.opennms.horizon.notifications.rest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.opennms.horizon.notifications.api.dto.PagerDutyConfigDTO;
-import org.opennms.horizon.notifications.dto.NotificationDTO;
+import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -55,17 +54,6 @@ public class NotificationRestControllerTest {
     private NotificationService notificationsService;
 
     @Test
-    public void testPostNotification() throws Exception {
-        String content = getNotification();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(post("/notifications").headers(headers).content(content))
-            .andDo(print())
-            .andExpect(status().isOk());
-    }
-
-    @Test
     public void testInitConfig() throws Exception {
         String content = getConfig();
         HttpHeaders headers = new HttpHeaders();
@@ -76,17 +64,8 @@ public class NotificationRestControllerTest {
             .andExpect(status().isOk());
     }
 
-    private String getNotification() throws JsonProcessingException {
-        NotificationDTO dto = new NotificationDTO();
-        dto.setMessage("Message");
-        dto.setDedupKey("dedup");
-
-        ObjectMapper om = new ObjectMapper();
-        return om.writeValueAsString(dto);
-    }
-
     private String getConfig() throws JsonProcessingException {
-        PagerDutyConfigDTO dto = new PagerDutyConfigDTO("token", "integration");
+        PagerDutyConfigDTO dto = new PagerDutyConfigDTO("integration");
 
         ObjectMapper om = new ObjectMapper();
         return om.writeValueAsString(dto);

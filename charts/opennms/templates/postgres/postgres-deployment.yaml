@@ -36,8 +36,8 @@ spec:
       volumes:
         - name: postgres-volume
         - name: postgres-initial-script
-          configMap:
-            name: postgres-initial-sql
+          secret:
+            secretName: postgres-initial-sql
       containers:
         - name: {{ .Values.Postgres.ServiceName }}
           image: {{ .Values.Postgres.Image }}
@@ -53,8 +53,6 @@ spec:
                 secretKeyRef:
                   name: postgres
                   key: adminPwd
-            - name: POSTGRES_HOST_AUTH_METHOD
-              value: "trust"
           ports:
             - containerPort: 5432
           {{ if not .Values.TestDeploy }}
@@ -99,3 +97,6 @@ spec:
             - mountPath: "/docker-entrypoint-initdb.d/postgres.notification.initial.script.sql"
               name: postgres-initial-script
               subPath: "postgres.notification.initial.script.sql"
+            - mountPath: "/docker-entrypoint-initdb.d/postgres.grafana.initial.script.sql"
+              name: postgres-initial-script
+              subPath: "postgres.grafana.initial.script.sql"
