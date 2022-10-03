@@ -1,4 +1,4 @@
-package org.opennms.horizon.shared.ipc.grpc.client.rpc;
+package org.opennms.horizon.minion.grpc.rpc;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;

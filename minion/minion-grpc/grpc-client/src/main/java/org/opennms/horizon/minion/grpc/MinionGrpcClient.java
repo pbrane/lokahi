@@ -26,9 +26,9 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.shared.ipc.grpc.client;
+package org.opennms.horizon.minion.grpc;
 
-import static org.opennms.horizon.shared.ipc.grpc.client.GrpcClientConstants.*;
+import static org.opennms.horizon.minion.grpc.GrpcClientConstants.*;
 import static org.opennms.horizon.shared.ipc.rpc.api.RpcModule.MINION_HEADERS_MODULE;
 
 import com.codahale.metrics.MetricRegistry;
@@ -41,7 +41,6 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -57,7 +56,7 @@ import org.opennms.cloud.grpc.minion.MinionToCloudMessage;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
 import org.opennms.cloud.grpc.minion.SinkMessage;
-import org.opennms.horizon.shared.ipc.grpc.client.rpc.RpcRequestHandler;
+import org.opennms.horizon.minion.grpc.rpc.RpcRequestHandler;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.rpc.api.minion.ClientRequestDispatcher;
 import org.opennms.horizon.shared.ipc.sink.api.MessageConsumerManager;

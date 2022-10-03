@@ -24,7 +24,7 @@
         </cm:default-properties>
     </cm:property-placeholder>
 
-    <bean id="ipcIdentity" class="org.opennms.horizon.shared.ipc.grpc.client.MinionIpcIdentity">
+    <bean id="ipcIdentity" class="org.opennms.horizon.minion.grpc.MinionIpcIdentity">
         <argument value="$[id]" />
         <argument value="$[location]" />
     </bean>
@@ -35,11 +35,11 @@
     <bean id="metricRegistry" class="com.codahale.metrics.MetricRegistry"/>
     <bean id="tracer" class="io.opentracing.noop.NoopTracerFactory" factory-method="create"/>
 
-    <bean id="thinRpcRequestHandler" class="org.opennms.horizon.shared.ipc.grpc.client.rpc.ThinRpcRequestHandler">
+    <bean id="thinRpcRequestHandler" class="org.opennms.horizon.minion.grpc.rpc.ThinRpcRequestHandler">
         <argument ref="ipcIdentity" />
     </bean>
 
-    <bean id="minionClient" class="org.opennms.horizon.shared.ipc.grpc.client.MinionGrpcClient" init-method="start" destroy-method="shutdown">
+    <bean id="minionClient" class="org.opennms.horizon.minion.grpc.MinionGrpcClient" init-method="start" destroy-method="shutdown">
         <argument ref="ipcIdentity"/>
         <argument ref="configAdmin"/>
         <argument ref="metricRegistry"/>
@@ -54,13 +54,13 @@
 
     <service ref="minionClient">
         <interfaces>
-            <value>org.opennms.horizon.shared.ipc.grpc.client.MinionGrpcClient</value>
+            <value>org.opennms.horizon.minion.grpc.MinionGrpcClient</value>
             <value>org.opennms.horizon.shared.ipc.sink.api.MessageDispatcherFactory</value>
             <value>org.opennms.horizon.shared.ipc.rpc.api.minion.ClientRequestDispatcher</value>
         </interfaces>
     </service>
 
-    <bean id="cloudMessageHandler" class="org.opennms.horizon.shared.ipc.grpc.client.message.ThinCloudMessageHandler" />
+    <bean id="cloudMessageHandler" class="org.opennms.horizon.minion.grpc.client.message.ThinCloudMessageHandler" />
     <reference-list id="cloudMessageReceivers" interface="org.opennms.horizon.shared.ipc.rpc.api.minion.CloudMessageReceiver" availability="optional">
         <reference-listener ref="cloudMessageHandler" bind-method="bind" unbind-method="unbind" />
     </reference-list>

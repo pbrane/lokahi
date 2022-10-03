@@ -13,7 +13,9 @@
     <packaging>pom</packaging>
 
     <name>OpenNms Horizon :: Minion :: gRPC</name>
+
     <modules>
+        <module>grpc-client</module>
         <module>grpc-features</module>
     </modules>
 

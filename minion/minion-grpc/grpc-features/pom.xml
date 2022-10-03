@@ -15,6 +15,11 @@
     <name>OpenNms Horizon :: Minion :: gRPC :: Features</name>
 
     <dependencies>
+        <dependency>
+            <groupId>org.opennms.horizon.minion</groupId>
+            <artifactId>grpc-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

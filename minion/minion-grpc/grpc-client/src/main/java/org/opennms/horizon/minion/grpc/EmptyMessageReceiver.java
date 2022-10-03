@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.shared.ipc.grpc.client;
+package org.opennms.horizon.minion.grpc;
 
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;

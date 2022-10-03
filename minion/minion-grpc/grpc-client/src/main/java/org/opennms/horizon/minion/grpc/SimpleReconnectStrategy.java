@@ -1,4 +1,4 @@
-package org.opennms.horizon.shared.ipc.grpc.client;
+package org.opennms.horizon.minion.grpc;
 
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;

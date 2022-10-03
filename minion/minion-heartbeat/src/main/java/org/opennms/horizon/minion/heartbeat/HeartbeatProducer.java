@@ -60,7 +60,7 @@ public class HeartbeatProducer {
             @Override
             public void run() {
                 try {
-                    log.info("Sending heartbeat to Minion with id: {} at location: {}",
+                    log.info("Sending heartbeat from Minion with id: {} at location: {}",
                             identity.getId(), identity.getLocation());
 
                     long millis = System.currentTimeMillis();
