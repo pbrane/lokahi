@@ -19,7 +19,6 @@
         <module>registration</module>
         <module>icmp-plugin</module>
         <module>snmp-plugin</module>
-        <module>WEB-LISTEN</module>
         <module>features</module>
     </modules>
 
