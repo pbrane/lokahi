@@ -325,7 +325,6 @@
 
         <bundle>mvn:org.opennms.horizon.shared/task-set/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.shared/task-set-service-api/${project.version}</bundle>
-        <bundle>mvn:org.opennms.horizon.shared/task-set-service-core/${project.version}</bundle>
     </feature>
 
 
