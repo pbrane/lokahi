@@ -20,40 +20,6 @@ public class IgniteWorkerRestControllerImpl implements IgniteWorkerRestControlle
     private Ignite ignite;
 
     @Override
-    public void hiOnYoungest() {
-        UUID myNodeId = ignite.cluster().localNode().id();
-
-        ignite.compute(
-            ignite.cluster().forYoungest())
-                .runAsync(() -> {
-                    System.out.println("YOUNGEST: hello initiated by node " + myNodeId);
-                });
-    }
-
-    @Override
-    public void hiOnOldest() {
-        UUID myNodeId = ignite.cluster().localNode().id();
-
-        ignite.compute(
-                ignite.cluster().forOldest())
-                .runAsync(
-                        () -> {
-                            System.out.println("OLDEST: hello initiated by node " + myNodeId);
-                });
-    }
-
-    @Override
-    public void hiAll() {
-        UUID myNodeId = ignite.cluster().localNode().id();
-
-        ignite.compute(
-                ignite.cluster())
-                .broadcastAsync(() -> {
-                    System.out.println("ALL: hello initiated by node " + myNodeId);
-                });
-    }
-
-    @Override
     public Response reportServiceDeploymentMetrics(boolean verbose) {
         Map<String, Object> result = calculateServiceDeploymentMetrics(verbose);
 

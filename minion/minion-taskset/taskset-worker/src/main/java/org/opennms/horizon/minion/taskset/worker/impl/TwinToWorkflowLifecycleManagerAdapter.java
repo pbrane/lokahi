@@ -1,14 +1,14 @@
 package org.opennms.horizon.minion.taskset.worker.impl;
 
-import org.opennms.horizon.minion.taskset.worker.TaskLifecycleManager;
+import org.opennms.horizon.minion.taskset.worker.TaskSetLifecycleManager;
 import org.opennms.horizon.minion.ipc.twin.api.TwinListener;
 import org.opennms.taskset.contract.TaskSet;
 
 public class TwinToWorkflowLifecycleManagerAdapter implements TwinListener<TaskSet> {
 
-  private final TaskLifecycleManager workflowLifecycleManager;
+  private final TaskSetLifecycleManager workflowLifecycleManager;
 
-  public TwinToWorkflowLifecycleManagerAdapter(TaskLifecycleManager workflowLifecycleManager) {
+  public TwinToWorkflowLifecycleManagerAdapter(TaskSetLifecycleManager workflowLifecycleManager) {
     this.workflowLifecycleManager = workflowLifecycleManager;
   }
 

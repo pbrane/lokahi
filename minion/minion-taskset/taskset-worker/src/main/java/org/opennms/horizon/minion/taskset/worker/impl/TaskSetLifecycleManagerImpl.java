@@ -12,19 +12,19 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.services.Service;
 import org.apache.ignite.services.ServiceConfiguration;
 import org.apache.ignite.services.ServiceDescriptor;
-import org.opennms.horizon.minion.taskset.worker.TaskLifecycleManager;
+import org.opennms.horizon.minion.taskset.worker.TaskSetLifecycleManager;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskSet;
 import org.opennms.taskset.contract.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TaskLifecycleManagerImpl implements TaskLifecycleManager {
+public class TaskSetLifecycleManagerImpl implements TaskSetLifecycleManager {
 
     public static final String SERVICE_NAME_PREFIX = "task:";
     public static final String TASK_SERVICE_CACHE_NAME = "minion.task-service";
 
-    private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskLifecycleManagerImpl.class);
+    private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskSetLifecycleManagerImpl.class);
 
     private Logger log = DEFAULT_LOGGER;
 

@@ -7,17 +7,17 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
 import java.util.Collections;
 import java.util.Map;
-import org.opennms.horizon.minion.taskset.worker.TaskLifecycleManager;
+import org.opennms.horizon.minion.taskset.worker.TaskSetLifecycleManager;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.taskset.contract.TaskSet;
 
-public class MeteredWorkflowLifecycleManager implements TaskLifecycleManager, MetricSet {
+public class MeteredWorkflowLifecycleManager implements TaskSetLifecycleManager, MetricSet {
 
   private final IpcIdentity identity;
-  private final TaskLifecycleManager delegate;
+  private final TaskSetLifecycleManager delegate;
   private final Counter counter = new Counter();
 
-  public MeteredWorkflowLifecycleManager(IpcIdentity identity, TaskLifecycleManager delegate) {
+  public MeteredWorkflowLifecycleManager(IpcIdentity identity, TaskSetLifecycleManager delegate) {
     this.identity = identity;
     this.delegate = delegate;
   }

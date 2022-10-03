@@ -7,20 +7,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/poc")
+@Path("/ignite-worker")
 public interface IgniteWorkerRestController {
-
-    @GET
-    @Path("/hi-youngest")
-    void hiOnYoungest();
-
-    @GET
-    @Path("/hi-oldest")
-    void hiOnOldest();
-
-    @GET
-    @Path("/hi-all")
-    void hiAll();
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
