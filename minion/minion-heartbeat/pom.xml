@@ -30,8 +30,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.opennms.horizon.shared</groupId>
-            <artifactId>ipc-grpc-client</artifactId>
+            <groupId>org.opennms.horizon.minion</groupId>
+            <artifactId>grpc-client</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
