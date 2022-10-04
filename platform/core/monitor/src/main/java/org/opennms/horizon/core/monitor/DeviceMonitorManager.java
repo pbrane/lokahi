@@ -99,15 +99,15 @@ public class DeviceMonitorManager implements EventListener {
                                 IpInterfaceDao ipInterfaceDao,
                                 SessionUtils sessionUtils,
                                 OnmsMetricsAdapter metricsAdapter,
-                                MonitoringLocationDao locationDao,
-                                TaskSetPublisher taskSetIgniteClient) {
+                                TaskSetPublisher taskSetIgniteClient,
+                                MonitoringLocationDao locationDao) {
         this.eventSubscriptionService = eventSubscriptionService;
         this.nodeDao = nodeDao;
         this.ipInterfaceDao = ipInterfaceDao;
         this.sessionUtils = sessionUtils;
         this.metricsAdapter = metricsAdapter;
-        this.monitoringLocationDao = locationDao;
         this.taskSetIgniteClient = taskSetIgniteClient;
+        this.monitoringLocationDao = locationDao;
     }
 
     // TODO: don't use a static snapshot of nodes at init-time; need to update as new nodes are discovered.
