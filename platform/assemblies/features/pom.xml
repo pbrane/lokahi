@@ -310,11 +310,11 @@
             <artifactId>service</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--<dependency>-->
-        <!--    <groupId>org.opennms.horizon.minion</groupId>-->
-        <!--    <artifactId>org.opennms.horizon.minion.rest</artifactId>-->
-        <!--    <version>${project.version}</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.opennms.horizon.minion</groupId>
+            <artifactId>org.opennms.horizon.minion.rest</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!--<dependency>-->
         <!--    <groupId>org.opennms.horizon.minion</groupId>-->
         <!--    <artifactId>heartbeat</artifactId>-->
