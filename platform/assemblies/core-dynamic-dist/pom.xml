@@ -94,6 +94,7 @@
                         <feature>wrapper</feature>
                         <feature>aries-blueprint</feature>
                         <feature>shell-compat</feature>
+                        <feature>cxf-commands</feature>
                     </installedFeatures>
                     <startupFeatures>
                         <feature>eventadmin</feature>
