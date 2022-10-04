@@ -18,8 +18,7 @@ build:
       requires:
         - image: minion_gateway_parent_pom
         - image: ignite_detector_library
-        - image: shared-lib
-          alias: unused_shared
+        - image: shared_lib
     - image: ignite_detector_library # use an underscore, so we can reference this in other Skaffold artifacts without an alias
       context: ignite-detector
       custom:
@@ -35,8 +34,7 @@ build:
           ]
       requires:
         - image: minion_gateway_parent_pom
-        - image: shared-lib
-          alias: unused_shared
+        - image: shared_lib
     - image: minion_gateway_parent_pom # use an underscore, so we can reference this in other Skaffold artifacts without an alias
       custom:
         # ignite-detector builds only a jar, not an image.
