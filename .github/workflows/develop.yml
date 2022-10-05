@@ -35,6 +35,9 @@ jobs:
       - name: Init
         run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: parent-pom
         id: action-parent-pom
         uses: ./.github/actions/parent-pom
