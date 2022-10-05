@@ -90,9 +90,9 @@ import { useMapStore } from '@/store/Views/mapStore'
 import useSpinner from '@/composables/useSpinner'
 import { DeviceDto } from '@/types/graphql'
 import useTheme from '@/composables/useTheme'
+import { WidgetProps } from '@/types'
 // @ts-ignore
 import { Map as LeafletMap, divIcon, MarkerCluster as Cluster } from 'leaflet'
-import { WidgetProps } from '@/types'
 
 defineProps<{widgetProps?: WidgetProps}>()
 
@@ -314,8 +314,8 @@ const tileProviders = ref([
 
 onMounted(() => {
   nodesReady.value = computed(() => {
-    mapStore.devicesAreFetched ? stopSpinner() : startSpinner()
-    return mapStore.devicesAreFetched
+    mapStore.areDevicesFetching ? startSpinner() : stopSpinner()
+    return !mapStore.areDevicesFetching
   })
 })
 

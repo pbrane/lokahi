@@ -28,12 +28,10 @@ type OpenNMSHandler struct {
 
 func (h *OpenNMSHandler) ProvideConfig(values values.TemplateValues) []client.Object {
 	//core
-	var certSecret corev1.Secret
 	var configMap corev1.ConfigMap
 	var coreService corev1.Service
 	var coreDeployment appsv1.Deployment
 
-	yaml.LoadYaml(filepath("opennms/core/cert-secret.yaml"), values, &certSecret)
 	yaml.LoadYaml(filepath("opennms/core/core-configmap.yaml"), values, &configMap)
 	yaml.LoadYaml(filepath("opennms/core/core-service.yaml"), values, &coreService)
 	yaml.LoadYaml(filepath("opennms/core/core-deployment.yaml"), values, &coreDeployment)
@@ -69,7 +67,6 @@ func (h *OpenNMSHandler) ProvideConfig(values values.TemplateValues) []client.Ob
 	yaml.LoadYaml(filepath("opennms/notification/notification-service.yaml"), values, &noteService)
 
 	h.Config = []client.Object{
-		&certSecret,
 		&configMap,
 		&coreService,
 		&coreDeployment,

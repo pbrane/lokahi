@@ -27,11 +27,14 @@ type BaseHandler struct {
 
 func (h *BaseHandler) ProvideConfig(values values.TemplateValues) []client.Object {
 	var namespace v1.Namespace
+	var certSecret v1.Secret
 
-	yaml.LoadYaml(filepath("namespace.yaml"), values, &namespace)
+	yaml.LoadYaml(filepath("_namespace.yaml"), values, &namespace)
+	yaml.LoadYaml(filepath("cert/cert-secret.yaml"), values, &certSecret)
 
 	h.Config = []client.Object{
 		&namespace,
+		&certSecret,
 	}
 
 	return h.Config

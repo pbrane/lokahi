@@ -1,11 +1,9 @@
 package org.opennms.horizon.notifications.rest;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.opennms.horizon.notifications.NotificationsApplication;
 import org.opennms.horizon.notifications.api.PagerDutyAPI;
-import org.opennms.horizon.notifications.api.dto.PagerDutyConfigDTO;
-import org.opennms.horizon.notifications.exceptions.NotificationBadDataException;
+import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -18,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 

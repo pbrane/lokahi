@@ -13,6 +13,8 @@ graphql:
 horizon-stream:
   core:
     url: http://localhost:8181
+  notifications:
+    url: http://localhost:38080
 
 logging:
   file.path: /var/log/restServer

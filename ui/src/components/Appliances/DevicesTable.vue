@@ -69,7 +69,7 @@ import Sort from '@featherds/icon/action/Sort'
 import Search from '@featherds/icon/action/Search'
 import Instances from '@featherds/icon/hardware/Instances'
 import ChevronRight from '@featherds/icon/navigation/ChevronRight'
-import { useApplianceQueries } from '@/store/Queries/applianceQueries'
+import { useAppliancesQueries } from '@/store/Queries/appliancesQueries'
 import { useAppliancesStore } from '@/store/Views/appliancesStore'
 import { ExtendedDeviceDTOWithBGColors } from '@/types/device'
 import { ComputedRef } from 'vue'
@@ -79,10 +79,10 @@ import { WidgetProps } from '@/types'
 defineProps<{widgetProps?: WidgetProps}>()
 
 const appliancesStore = useAppliancesStore()
-const applianceQueries = useApplianceQueries()
+const appliancesQueries = useAppliancesQueries()
 const router = useRouter()
 
-const listDevicesWithBgColor: ComputedRef<ExtendedDeviceDTOWithBGColors[]> = computed<any[]>(() => formatItemBgColor(applianceQueries.tableDevices))
+const listDevicesWithBgColor: ComputedRef<ExtendedDeviceDTOWithBGColors[]> = computed<any[]>(() => formatItemBgColor(appliancesQueries.tableDevices))
 
 const searchValue = ref('')
 

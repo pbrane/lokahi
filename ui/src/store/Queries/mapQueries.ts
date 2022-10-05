@@ -3,21 +3,20 @@ import { useQuery } from 'villus'
 import { DeviceForMapDocument } from '@/types/graphql'
 
 export const useMapQueries = defineStore('mapQueries', () => {
-  const devicesAreFetched = ref()
-  const fetchedDevices = ref()
+  const devices = ref()
 
-  const { data } = useQuery({
-    query: DeviceForMapDocument
+  const { data, execute, isFetching } = useQuery({
+    query: DeviceForMapDocument,
+    cachePolicy: 'network-only' // always fetch and do not cache
   })
 
   watchEffect(() => {
-    const devices = data.value?.listDevices?.devices
-    devicesAreFetched.value = devices ? true : false
-    fetchedDevices.value = devices || []
+    devices.value = data.value?.listDevices?.devices || []
   })
 
   return {
-    devicesAreFetched,
-    fetchedDevices
+    devices,
+    fetch: execute,
+    isFetching
   }
 })

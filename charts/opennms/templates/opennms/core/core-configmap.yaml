@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: opennms-config
-  namespace: {{ .Values.Namespace }}
+  namespace: {{ .Release.Namespace }}
 data:
   restCfg: |
     keycloak.base-url=http://{{ .Values.Keycloak.ServiceName }}:{{ .Values.Keycloak.Port }}{{ .Values.Keycloak.Path }}/

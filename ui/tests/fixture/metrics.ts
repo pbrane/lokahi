@@ -1,6 +1,27 @@
 import { TsResult, TimeSeriesQueryResult } from '@/types/graphql'
 
-const mockData: TsResult = {
+const mockMinionLatency: TsResult = {
+  'metric': {
+    '__name__': 'minion_response_time_msec',
+    'instance': 'minion-01',
+    'job': 'horizon-core',
+    'location': 'Default',
+    'pushgateway_instance': 'horizon-core-pushgateway'
+  },
+  'value': [
+    1662670391.864,
+    2
+  ]
+}
+const minionLatencyFixture = (props: Partial<TsResult> = {}): TimeSeriesQueryResult => ({
+  data: { 
+    result: [
+      { ...mockMinionLatency, ...props }
+    ]
+  }
+})
+
+const mockMinionUptime: TsResult = {
   'metric': {
     '__name__': 'minion_uptime_sec',
     'instance': 'minion-01',
@@ -9,27 +30,53 @@ const mockData: TsResult = {
     'pushgateway_instance': 'horizon-core-pushgateway'
   },
   'value': [
-    1662595962.501,
-    22976
+    1662670391.861,
+    97419
   ]
 }
-
-export const latencyFixture = (props: Partial<TsResult> = {}): TimeSeriesQueryResult => ({
+const minionUptimeFixture = (props: Partial<TsResult> = {}): TimeSeriesQueryResult => ({
   data: { 
     result: [
-      { ...mockData, ...props }
+      { ...mockMinionUptime, ...props }
     ]
   }
 })
 
-const defaultsUptime: TsResult = {}
-
-export const uptimeFixture = (props: Partial<TsResult> = {}): TimeSeriesQueryResult => ({
+const mockDeviceLatency: TsResult = {
+  'metric': {
+    '__name__': 'icmp_round_trip_time_msec',
+    'instance': '127.0.0.1',
+    'job': 'horizon-core',
+    'location': 'Default',
+    'pushgateway_instance': 'horizon-core-pushgateway'
+  },
+  'value': [
+    1662657451.683,
+    0.17
+  ]
+}
+const deviceLatencyFixture = (props: Partial<TsResult> = {}): TimeSeriesQueryResult => ({
   data: { 
-    result: Object.keys(defaultsUptime).length ?
+    result: [
+      { ...mockDeviceLatency, ...props }
+    ]
+  }
+})
+
+const mockDeviceUptime: TsResult = {}
+const deviceUptimeFixture = (props: Partial<TsResult> = {}): TimeSeriesQueryResult => ({
+  data: { 
+    result: Object.keys(mockDeviceUptime).length ?
       [
-        { ...defaultsUptime, ...props }
+        { ...mockDeviceUptime, ...props }
       ] :
       [] 
   }
 })
+
+export {
+  deviceLatencyFixture,
+  deviceUptimeFixture,
+  minionLatencyFixture,
+  minionUptimeFixture
+}

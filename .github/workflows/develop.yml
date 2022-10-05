@@ -34,6 +34,18 @@ jobs:
         uses: actions/checkout@v2
       - name: Init
         run: echo "BRANCH=$( echo ${{ github.ref }} | sed 's/\//\-/g')" >> $GITHUB_ENV && mkdir -p ~/tmp/
+
+      - name: parent-pom
+        id: action-parent-pom
+        uses: ./.github/actions/parent-pom
+        with:
+          dir-location: 'parent-pom'
+  
+      - name: feature-ui
+        id: action-feature-ui
+        uses: ./.github/actions/ui
+        with:
+          dir-location: 'ui'
   
       - name: feature-grafana
         id: action-feature-grafana

@@ -91,7 +91,7 @@ func RunIntegrationTests(t *testing.T, ctx context.Context, k8sClient client.Cli
 
 func CheckResources(ctx context.Context, handlers []handlers.ServiceHandler, k8sClient client.Client) bool {
 	values := values.TemplateValues{
-		Values: values.Values{
+		Release: values.HelmRelease{
 			Namespace: "test-instance",
 		},
 	}

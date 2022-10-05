@@ -1,6 +1,22 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: horizon-stream-ignite-core
+spec:
+  type: ClusterIP
+  ports:
+    - port: 47100
+      protocol: TCP
+      name: ignite1
+    - port: 47500
+      protocol: TCP
+      name: ignite2
+  selector:
+    ignite-cluster: core
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: horizon-stream-core
   labels:
     run: my-horizon-stream-core
@@ -18,6 +34,24 @@ spec:
       name: grpc
   selector:
     run: my-horizon-stream-core
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: horizon-stream-minion
+  labels:
+    run: my-horizon-stream-minion
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8101
+      protocol: TCP
+      name: ssh
+    - port: 8181
+      protocol: TCP
+      name: http
+  selector:
+    run: my-horizon-stream-minion
 ---
 apiVersion: v1
 kind: Service
@@ -69,6 +103,40 @@ spec:
       name: syslog
   selector:
     run: my-minion
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minion-gateway
+  labels:
+    run: my-gateway
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      protocol: TCP
+      name: http
+    - port: 8990
+      protocol: TCP
+      name: grpc
+  selector:
+    run: my-minion-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ignite-minion-gateway
+  labels:
+    run: my-gateway
+spec:
+  type: ClusterIP
+  ports:
+    - port: 10800
+      protocol: TCP
+      name: ignite-client
+      targetPort: 10800
+  selector:
+    run: my-minion-gateway
 ---
 apiVersion: v1
 kind: Service
@@ -587,6 +655,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-horizon-stream-core
+  labels:
+    ignite-cluster: core
 spec:
   selector:
     matchLabels:
@@ -596,6 +666,7 @@ spec:
     metadata:
       labels:
         run: my-horizon-stream-core
+        ignite-cluster: core
     spec:
       volumes:
         - name: config-volume
@@ -624,6 +695,10 @@ spec:
                 secretKeyRef:
                   name: postgres-admin-secret
                   key: password
+            - name: PGSQL_USERNAME
+              value: "opennms"
+            - name: PGSQL_PASSWORD
+              value: ""
             - name: KAFKA_BROKER_HOST
               value: "kafka"
             - name: KAFKA_BROKER_PORT
@@ -644,6 +719,8 @@ spec:
             - containerPort: 8101
             - containerPort: 8181
             - containerPort: 8990
+            - containerPort: 47100
+            - containerPort: 47500
           volumeMounts:
             - name: config-volume
               mountPath: "/opt/horizon-stream/etc/org.opennms.horizon.alarmd.camel.cfg"
@@ -651,6 +728,67 @@ spec:
             - name: config-volume
               mountPath: "/opt/horizon-stream/etc/org.opennms.horizon.eventd.camel.cfg"
               subPath: "useKafka"
+            - name: users-volume
+              mountPath: "/opt/horizon-stream/etc/users.properties"
+              subPath: "data"
+              readOnly: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-horizon-stream-minion
+spec:
+  selector:
+    matchLabels:
+      run: my-horizon-stream-minion
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: my-horizon-stream-minion
+      annotations:
+        linkerd.io/inject: enabled
+        config.linkerd.io/opaque-ports: "47100,47500"
+    spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: minion-cfg-files
+        - name: users-volume
+          secret:
+            secretName: karaf-users-secret
+      initContainers:
+      - name: init-sysctl
+        image: busybox
+        command:
+        - sysctl
+        - -w
+        - net.ipv4.ping_group_range=0 429496729
+        securityContext:
+          privileged: true
+      containers:
+        - name: horizon-stream-minion
+          image: opennms/horizon-stream-minion
+          imagePullPolicy: Never
+          env:
+            - name: USE_KUBERNETES
+              value: "true"
+            - name: KUBERNETES_SERVICE_NAME
+              value: "horizon-stream-minion"
+            - name: JAVA_TOOL_OPTIONS # Presence of this var lets `skaffold debug` see that this is a jvm container
+              value: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y" # Permanent debug port in `skaffold dev`
+            - name: LOCATION
+              value: "Default"
+          ports:
+            - containerPort: 8181
+            - containerPort: 8101
+          volumeMounts:
+            - name: config-volume
+              mountPath: "/opt/karaf/etc/org.opennms.core.ipc.grpc.client.cfg"
+              subPath: "grpc-config"
+            - name: config-volume
+              mountPath: "/opt/karaf/etc/org.opennms.identity.cfg"
+              subPath: "opennms-minion-identity"
             - name: users-volume
               mountPath: "/opt/horizon-stream/etc/users.properties"
               subPath: "data"
@@ -681,6 +819,8 @@ spec:
               value: "maximumSize=10000,expireAfterWrite=60s"
             - name: HORIZON_STREAM_CORE_URL
               value: "http://horizon-stream-core:8181"
+            - name: HORIZON_STREAM_NOTIFICATIONS_URL
+              value: "http://horizon-stream-notification:8080"
             - name: TSDB_URL
               value: "http://prometheus:9090/api/v1/query"
           ports:
@@ -711,6 +851,38 @@ spec:
               value: "kafka:9092"
           ports:
             - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-minion-gateway
+  labels:
+    ignite-cluster: core
+spec:
+  selector:
+    matchLabels:
+      run: my-minion-gateway
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: my-minion-gateway
+        ignite-cluster: core
+    spec:
+      containers:
+        - name: horizon-stream-minion-gateway
+          image: opennms/horizon-stream-minion-gateway
+          imagePullPolicy: Never
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y" # Permanent debug port in `skaffold dev`
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+          ports:
+            - containerPort: 8080
+            - containerPort: 10800
+            - containerPort: 47100
+            - containerPort: 47500
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1277,7 +1449,7 @@ spec:
     rememberMe: true
     resetPasswordAllowed: true
     attributes:
-      frontendUrl: "http://localhost:28080"
+      frontendUrl: "http://localhost:26080"
     clients:
       - id: b67dfe9a-36c2-42bc-bd23-b380023d4238
         clientId: horizon-stream
@@ -1347,3 +1519,38 @@ spec:
       port: "1025"
       user: "admin@horizion.stream.com"
       from: "admin@horizion.stream.com"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minion-cfg-files
+data:
+  grpc-config: |
+    host=minion-gateway
+    max.message.size=104857600
+  opennms-minion-identity: |
+    id=${env:HOSTNAME:-UNKNOWN}
+    location=${env:LOCATION:-Default}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: role-endpoints
+rules:
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["get", "list"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: role-endpoints-rb
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: default
+roleRef:
+  kind: Role
+  name: role-endpoints
+  apiGroup: ""

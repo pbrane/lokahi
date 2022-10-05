@@ -36,6 +36,7 @@ import org.opennms.horizon.notifications.exceptions.*;
 import org.opennms.horizon.shared.dto.event.AlarmDTO;
 import org.opennms.horizon.shared.dto.event.EventDTO;
 import org.opennms.horizon.shared.dto.event.EventParameterDTO;
+import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

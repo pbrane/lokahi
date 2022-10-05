@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.server.service;
 
+import org.opennms.horizon.server.service.gateway.PlatformGateway;
 import org.opennms.horizon.shared.dto.minion.MinionCollectionDTO;
 import org.opennms.horizon.shared.dto.minion.MinionDTO;
 import org.springframework.stereotype.Service;

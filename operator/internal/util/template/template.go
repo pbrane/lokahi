@@ -41,5 +41,11 @@ func TemplateConfig(file string, values values.TemplateValues) (string, error) {
 
 func initTemplater() {
 	templater = template.New("operator-templater")
-	templater.Funcs(sprig.TxtFuncMap())
+	funcMap := sprig.TxtFuncMap()
+	funcMap["lookup"] = emptyDict
+	templater.Funcs(funcMap)
+}
+
+func emptyDict(_ ...string) map[string]interface{} {
+	return map[string]interface{}{}
 }

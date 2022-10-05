@@ -28,7 +28,7 @@
 
 package org.opennms.horizon.notifications.api;
 
-import org.opennms.horizon.notifications.api.dto.PagerDutyConfigDTO;
+import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.exceptions.NotificationConfigUninitializedException;
 
 public interface PagerDutyDao {

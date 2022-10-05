@@ -18,6 +18,8 @@
 
     <reference id="dataChoicesDao" interface="org.opennms.horizon.db.dao.api.DataChoicesDao"/>
     <reference id="sessionUtils" interface="org.opennms.horizon.db.dao.api.SessionUtils"/>
+    <reference id="nodeDao" interface="org.opennms.horizon.db.dao.api.NodeDao" />
+    <reference id="monitoredServiceDao" interface="org.opennms.horizon.db.dao.api.MonitoredServiceDao" />
 
     <bean id="stateManager" class="org.opennms.horizon.datachoices.internal.StateManager">
         <property name="dataChoicesDao" ref="dataChoicesDao"/>
@@ -29,6 +31,9 @@
         <property name="url" value="${url}"/>
         <property name="interval" value="${interval}"/>
         <property name="stateManager" ref="stateManager"/>
+        <property name="sessionUtils" ref="sessionUtils"/>
+        <property name="nodeDao" ref="nodeDao"/>
+        <property name="monitoredServiceDao" ref="monitoredServiceDao"/>
     </bean>
 
     <bean id="dataChoiceRestService" class="org.opennms.horizon.datachoices.web.internal.DataChoiceRestServiceImpl">

@@ -1,4 +1,3 @@
-Namespace: opennms-instance
 Host: onmshs
 TestDeploy: false
 OpenNMS:
@@ -6,6 +5,7 @@ OpenNMS:
     Path: /core
     ServiceName: opennms-core
     Image: opennms/horizon-stream-core
+    ImagePullPolicy: IfNotPresent
     Replicas: 1
     HttpPort: 8181
     SshPort: 8101
@@ -21,6 +21,7 @@ OpenNMS:
     Path: /api
     ServiceName: opennms-rest-server
     Image: opennms/horizon-stream-rest-server
+    ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 9090
     Resources:
@@ -34,37 +35,40 @@ OpenNMS:
     Path: /
     ServiceName: opennms-ui
     Image: opennms/horizon-stream-ui
+    ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 80
     Resources:
       Limits:
+        Cpu: "1"
+        Memory: 500Mi
+      Requests:
         Cpu: 100m
         Memory: 50Mi
-      Requests:
-        Cpu: 50m
-        Memory: 25Mi
   Minion:
     ServiceName: opennms-minion
     Image: opennms/minion:29.0.10
+    ImagePullPolicy: IfNotPresent
     Replicas: 1
     SshPort: 8201
     SnmpPort: 1162
     SyslogPort: 1514
     Resources:
       Limits:
-        Cpu: 1500m
+        Cpu: "1"
         Memory: 2050M
       Requests:
-        Cpu: 1000m
+        Cpu: "1"
         Memory: 512Mi
   Notification: 
     ServiceName: opennms-notifications
     Image: opennms/horizon-stream-notification
+    ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8080
     Resources:
       Limits:
-        Cpu: 1
+        Cpu: "1"
         Memory: 500Mi
       Requests:
         Cpu: 100m
@@ -72,6 +76,7 @@ OpenNMS:
 Postgres:
   ServiceName: postgres
   Image: postgres
+  ImagePullPolicy: IfNotPresent
   Replicas: 1
   AdminPassword: notset
   OpenNMSPassword: notset
@@ -82,13 +87,14 @@ Postgres:
 Keycloak:
   Path: /auth
   Image: opennms/horizon-stream-keycloak:latest
+  ImagePullPolicy: IfNotPresent
   Port: 8080
   HttpsPort: 8443
   Replicas: 1
   ServiceName: onms-keycloak
   Resources:
     Limits:
-      Cpu: 1
+      Cpu: "1"
       Memory: 1000Mi
     Requests:
       Cpu: 100m
@@ -99,16 +105,17 @@ Keycloak:
   UserPassword: notset
   RealmName: opennms
   UUID:
-    RealmId: 00000000-0000-0000-0000-000000000000
-    ClientId: 00000000-0000-0000-0000-000000000000
-    BaseUserId: 00000000-0000-0000-0000-000000000000
-    AdminUserId: 00000000-0000-0000-0000-000000000000
+    RealmId: ~
+    ClientId: ~
+    BaseUserId: ~
+    AdminUserId: ~
 Grafana:
   Path: /grafana
   Port: 3000
   Replicas: 1
   ServiceName: grafana
   Image: opennms/horizon-stream-grafana
+  ImagePullPolicy: IfNotPresent
   InitContainerImage: busybox
   Resources:
     Limits:
@@ -123,6 +130,7 @@ Prometheus:
     ServiceName: prometheus
     Port: 9090
     Image: prom/prometheus
+    ImagePullPolicy: IfNotPresent
     Replicas: 1
     Resources:
       Limits:
@@ -135,6 +143,7 @@ Prometheus:
     ServiceName: prometheus-pushgateway
     Port: 9091
     Image: prom/pushgateway
+    ImagePullPolicy: IfNotPresent
     Replicas: 1
     Resources:
       Limits:
@@ -143,10 +152,25 @@ Prometheus:
       Requests:
         Cpu: 100m
         Memory: 100Mi
+Kafka:
+  ServiceName: onms-kafka
+  Image: quay.io/strimzi/kafka:latest-kafka-2.8.1
+  ImagePullPolicy: IfNotPresent
+  Replicas: 1 
+  Port: 9092
+  Resources:
+    Limits:
+      Cpu: 500m
+      Memory: 512Mi
+    Requests:
+      Cpu: 100m
+      Memory: 256Mi
+  VolumeSize: 10Gi
 MailServer:
   ServiceName: mail-server
   Image: mailhog/mailhog:latest
-  Replicas: 1 
+  ImagePullPolicy: IfNotPresent
+  Replicas: 1
   Port: 8025
   SmtpPort: 1025
   Resources:
@@ -154,5 +178,35 @@ MailServer:
       Cpu: 50m
       Memory: 20Mi
     Requests:
-      Cpu: 20m
-      Memory: 10Mi
+      Cpu: 100m
+      Memory: 100Mi
+NodeRestrictions: # will be applied to every pod in the instance
+  Enabled: false
+  Key: kubernetes.azure.com/scalesetpriority
+  Value: spot
+TLS:
+  Enabled: true
+  Issuer:
+    IssuerServer: https://acme-v02.api.letsencrypt.org/directory
+    IssuerUserEmail: email@address.com
+  Cert:
+    Hostname: "*.wildcard.domain.com"
+    Name: tls-cert-wildcard
+  # Configure according to: https://cert-manager.io/docs/configuration/acme/dns01/
+  Solver: |
+    cloudDNS:
+      project: my-project
+      serviceAccountSecretRef:
+        name: prod-clouddns-svc-acct-secret
+        key: service-account.json
+Ingress:
+  HttpPort: 80
+  HttpsPort: 443
+  ControllerImage: registry.k8s.io/ingress-nginx/controller:v1.3.0@sha256:d1707ca76d3b044ab8a28277a2466a02100ee9f58a86af1535a3edf9323ea1b5
+  SecretJobImage: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.1.1@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
+  WebhookPatchJobImage: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.1.1@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
+CustomErrors:
+  Image: quay.io/kubernetes-ingress-controller/custom-error-pages:0.4
+  Debug: true
+
+

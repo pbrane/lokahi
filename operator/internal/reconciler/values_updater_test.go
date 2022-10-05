@@ -30,11 +30,14 @@ import (
 )
 
 func TestUpdateValues(t *testing.T) {
+	testName := "testName"
 	testNamespace := "testNamespace"
 	testHost := "testingHost"
 	testValues := values.TemplateValues{
 		Values: values.Values{
-			Host:      testHost,
+			Host: testHost,
+		},
+		Release: values.HelmRelease{
 			Namespace: testNamespace,
 		},
 	}
@@ -47,7 +50,7 @@ func TestUpdateValues(t *testing.T) {
 
 	crd := v1alpha1.OpenNMS{
 		ObjectMeta: v1.ObjectMeta{
-			Name: testNamespace,
+			Name: testName,
 		},
 		Spec: v1alpha1.OpenNMSSpec{
 			Namespace: testNamespace,
@@ -57,10 +60,10 @@ func TestUpdateValues(t *testing.T) {
 
 	res := testRecon.UpdateValues(context.Background(), crd)
 
-	assert.Equal(t, testNamespace, res.Values.Namespace, "should have populated values from reconcile request")
+	assert.Equal(t, testNamespace, res.Release.Namespace, "should have populated values from reconcile request")
 	assert.Equal(t, "testingHost", res.Values.Host, "should have used values from the default values")
 
-	_, ok := testRecon.ValuesMap[testNamespace]
+	_, ok := testRecon.ValuesMap[testName]
 	assert.True(t, ok, "should have saved the created values to the reconciler's values map")
 }
 
@@ -111,8 +114,8 @@ func TestCheckForExistingCoreCreds(t *testing.T) {
 			Name: "postgres",
 		},
 		Data: map[string][]byte{
-			"adminPwd":    []byte(adminPglPwd),
-			"keycloakPwd": []byte(keycloakPwd),
+			"adminPwd":        []byte(adminPglPwd),
+			"keycloakPwd":     []byte(keycloakPwd),
 			"notificationPwd": []byte(notificationPwd),
 		},
 	}

@@ -75,8 +75,13 @@ func (r *OpenNMSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			if !exists {
 				r.updateStatus(ctx, &instance, false, "instance starting")
 				r.Log.Info("creating resource", "namespace", resource.GetNamespace(), "name", resource.GetName(), "kind", kind)
-				err := r.Create(ctx, resource)
-				if err != nil {
+
+				if err := ctrl.SetControllerReference(&instance, resource, r.Scheme); err != nil {
+					r.Log.Error(err, "error setting resource controller reference", "controller", instance, "resource", resource, "kind", kind, "error", err)
+					return ctrl.Result{}, err
+				}
+
+				if err := r.Create(ctx, resource); err != nil {
 					r.Log.Error(err, "error creating resource", "namespace", resource.GetNamespace(), "name", resource.GetName(), "kind", kind, "error", err)
 					return ctrl.Result{}, err
 				}

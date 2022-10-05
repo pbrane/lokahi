@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { useApplianceQueries } from '@/store/Queries/applianceQueries'
+import { useAppliancesQueries } from '@/store/Queries/appliancesQueries'
 import { useAppliancesStore } from '@/store/Views/appliancesStore'
 import ChevronLeft from '@featherds/icon/navigation/ChevronLeft'
 import { ExtendedMinionDTOWithBGColors } from '@/types/minion'
@@ -64,7 +64,7 @@ import { WidgetProps } from '@/types'
 defineProps<{widgetProps?: WidgetProps}>()
 
 const appliancesStore = useAppliancesStore()
-const applianceQueries = useApplianceQueries()
+const applianceQueries = useAppliancesQueries()
 const listMinionsWithBgColor: ComputedRef<ExtendedMinionDTOWithBGColors[]> = computed<any[]>(() => formatItemBgColor(applianceQueries.tableMinions))
 </script>
 

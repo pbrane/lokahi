@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.server.service;
 
+import org.opennms.horizon.server.service.gateway.PlatformGateway;
 import org.opennms.horizon.shared.dto.device.LocationCollectionDTO;
 import org.opennms.horizon.shared.dto.device.LocationDTO;
 import org.springframework.stereotype.Service;

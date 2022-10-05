@@ -30,7 +30,7 @@ package org.opennms.horizon.notifications.api;
 
 import java.util.List;
 
-import org.opennms.horizon.notifications.api.dto.PagerDutyConfigDTO;
+import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.exceptions.NotificationConfigUninitializedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

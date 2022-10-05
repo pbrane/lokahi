@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.OpenNMS.Minion.ServiceName }}-config-map
   labels:
     app: {{ .Values.OpenNMS.Minion.ServiceName }}
-  namespace: {{ .Values.Namespace }}
+  namespace: {{ .Release.Namespace }}
 data:
   minion-config.yaml: |
     id: "minion-01"

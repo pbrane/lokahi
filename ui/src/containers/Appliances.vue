@@ -31,7 +31,7 @@ const gapWidth = computed<string>(() => appliancesStore.minionsTableOpen ? '20px
 .header-container {
   display: flex;
   justify-content: space-between;
-  margin: 30px 0px 25px 0px;
+  margin: 30px 10px 25px;
   .welcome {
     @include headline2;
     font-weight: bold;

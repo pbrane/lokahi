@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.OpenNMS.UI.ServiceName }}
-  namespace: {{ .Values.Namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Values.OpenNMS.UI.ServiceName }}
     app.kubernetes.io/name: {{ .Values.OpenNMS.UI.ServiceName }}
@@ -18,7 +18,7 @@ spec:
       labels:
         app: {{ .Values.OpenNMS.UI.ServiceName }}
     spec:
-      {{ if .Values.NodeRestrictions.Enabled }}
+      {{- if .Values.NodeRestrictions.Enabled }}
       tolerations:
         - effect: "NoSchedule"
           key: "{{ .Values.NodeRestrictions.Key }}"
@@ -34,7 +34,7 @@ spec:
                     operator: In
                     values:
                       - {{ .Values.NodeRestrictions.Value }}
-      {{ end }}
+      {{- end }}
       terminationGracePeriodSeconds: 120
       containers:
         - name: {{ .Values.OpenNMS.UI.ServiceName }}
@@ -49,8 +49,8 @@ spec:
             requests:
               cpu: "{{ .Values.OpenNMS.UI.Resources.Requests.Cpu }}"
               memory: "{{ .Values.OpenNMS.UI.Resources.Requests.Memory }}"
-          {{ if not .Values.TestDeploy }}
+          {{- if not .Values.TestDeploy }}
           {{/*  TODO    livenessProbe:*/}}
           {{/*          readinessProbe:*/}}
           {{/*          startupProbe:*/}}
-          {{ end }}
+          {{- end }}

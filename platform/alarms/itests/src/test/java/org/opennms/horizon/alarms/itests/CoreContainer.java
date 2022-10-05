@@ -57,6 +57,8 @@ public class CoreContainer extends GenericContainer<CoreContainer> implements Te
                 .withEnv("PGSQL_SERVICE_NAME", DB_ALIAS)
                 .withEnv("PGSQL_ADMIN_USERNAME", pgContainer.getUsername())
                 .withEnv("PGSQL_ADMIN_PASSWORD", pgContainer.getPassword())
+                .withEnv("PGSQL_USERNAME", pgContainer.getUsername())
+                .withEnv("PGSQL_PASSWORD", pgContainer.getPassword())
                 .withEnv("KAFKA_BROKER_HOST", KAFKA_ALIAS)
                 .withEnv("KAFKA_BROKER_PORT", KAFKA_PORT.toString())
                 .withEnv("NOTIFICATION_KAFKA_TOPIC", NOTIFICATION_KAFKA_TOPIC.toString())

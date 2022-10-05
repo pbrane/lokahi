@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.server.service;
 
+import org.opennms.horizon.server.service.gateway.PlatformGateway;
 import org.opennms.horizon.shared.dto.device.DeviceCollectionDTO;
 import org.opennms.horizon.shared.dto.device.DeviceCreateDTO;
 import org.opennms.horizon.shared.dto.device.DeviceDTO;

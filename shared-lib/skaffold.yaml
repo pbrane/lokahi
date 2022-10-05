@@ -3,6 +3,9 @@ apiVersion: skaffold/v2beta28
 kind: Config
 metadata:
   name: shared-lib
+requires:
+  - configs: ["parent-pom"]
+    path: ../parent-pom/skaffold.yaml
 build:
   local:
     push: false
@@ -19,3 +22,6 @@ build:
         ignore: [
           "**/target/**"
         ]
+    requires:
+      - image: parent-pom
+        alias: unused

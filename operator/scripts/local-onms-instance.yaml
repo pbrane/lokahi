@@ -5,6 +5,8 @@ metadata:
 spec:
   allowedUsers: []
   host: onmshs
+  httpPort: 80
+  httpsPort: 443
   namespace: local-instance
   deployOnly: true
   core:
@@ -22,13 +24,13 @@ spec:
   minion:
     image: opennms/minion:29.0.10
     cpu: "0"
-    mem: 500Mi
+    mem: 1000Mi
   notification:
     image: opennms/horizon-stream-notification
     cpu: "0"
     mem: 100Mi
   keycloak:
-    image: opennms/horizon-stream-keycloak:test
+    image: opennms/horizon-stream-keycloak:latest
   grafana:
     image: opennms/horizon-stream-grafana
   postgres:

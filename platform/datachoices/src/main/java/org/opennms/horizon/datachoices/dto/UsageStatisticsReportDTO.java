@@ -34,13 +34,20 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 import javax.ws.rs.InternalServerErrorException;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.HashMap;
+import java.util.Map;
 
 @XmlRootElement
 public class UsageStatisticsReportDTO {
-
     private String systemId;
 
     private String version;
+
+    private long nodes;
+
+    private long monitoredServices;
+
+    private Map<String, Integer> deviceTypeCounts = new HashMap<>();
 
     public String getSystemId() {
         return this.systemId;
@@ -56,6 +63,30 @@ public class UsageStatisticsReportDTO {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public long getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(long nodes) {
+        this.nodes = nodes;
+    }
+
+    public long getMonitoredServices() {
+        return monitoredServices;
+    }
+
+    public void setMonitoredServices(long monitoredServices) {
+        this.monitoredServices = monitoredServices;
+    }
+
+    public Map<String, Integer> getDeviceTypeCounts() {
+        return deviceTypeCounts;
+    }
+
+    public void setDeviceTypeCounts(Map<String, Integer> deviceTypeCounts) {
+        this.deviceTypeCounts = deviceTypeCounts;
     }
 
     public String toJson() {

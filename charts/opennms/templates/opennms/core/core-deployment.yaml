@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.OpenNMS.Core.ServiceName }}
-  namespace: {{ .Values.Namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Values.OpenNMS.Core.ServiceName }}
     app.kubernetes.io/name: {{ .Values.OpenNMS.Core.ServiceName }}
@@ -18,7 +18,7 @@ spec:
       labels:
         app: {{ .Values.OpenNMS.Core.ServiceName }}
     spec:
-      {{ if .Values.NodeRestrictions.Enabled }}
+      {{- if .Values.NodeRestrictions.Enabled }}
       tolerations:
         - effect: "NoSchedule"
           key: "{{ .Values.NodeRestrictions.Key }}"
@@ -34,7 +34,7 @@ spec:
                 operator: In
                 values:
                 - {{ .Values.NodeRestrictions.Value }}
-      {{ end }}
+      {{- end }}
       terminationGracePeriodSeconds: 120
       containers:
         - name: {{ .Values.OpenNMS.Core.ServiceName }}
@@ -58,10 +58,20 @@ spec:
                 secretKeyRef:
                   name: postgres
                   key: adminPwd
+            - name: PGSQL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: opennmsUser
+            - name: PGSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: opennmsPwd
             - name: KAFKA_BROKER_HOST
-              value: "{{ .Values.Kafka.URL }}"
+              value: "{{ .Values.Kafka.ServiceName }}"
             - name: KAFKA_BROKER_PORT
-              value: "9092"
+              value: "{{ .Values.Kafka.Port }}"
             - name: NOTIFICATION_KAFKA_TOPIC
               value: "org.opennms.horizon.notifications.alarms"
             - name: ACTIVEMQ_BROKER_URL
@@ -104,11 +114,11 @@ spec:
               containerPort: {{ .Values.OpenNMS.Core.HttpPort }}
             - name: grpc
               containerPort: {{ .Values.OpenNMS.Core.GrpcPort }}
-          {{ if not .Values.TestDeploy }}
+          {{- if not .Values.TestDeploy }}
 {{/*    TODO  livenessProbe:*/}}
 {{/*          readinessProbe:*/}}
 {{/*          startupProbe:*/}}
-          {{ end }}
+          {{- end }}
           resources:
             limits:
               cpu: "{{ .Values.OpenNMS.Core.Resources.Limits.Cpu }}"

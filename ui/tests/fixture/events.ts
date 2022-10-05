@@ -10,11 +10,14 @@ const mockData: EventDto = {
   'ipAddress': '',
   'nodeId': 1
 }
-
-export const eventsFixture = (props: Partial<EventDto> = {}): EventCollectionDto => ({
+const eventsFixture = (props: Partial<EventDto> = {}): EventCollectionDto => ({
   events: [
     { ...mockData, ...props }
   ],
   offset: 0,
   totalCount: 1
 })
+
+export {
+  eventsFixture
+}

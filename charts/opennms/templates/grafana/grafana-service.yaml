@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.Grafana.ServiceName }}
   labels:
     app: {{ .Values.Grafana.ServiceName }}
-  namespace: {{ .Values.Namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   ports:
     - port: {{ .Values.Grafana.Port }}

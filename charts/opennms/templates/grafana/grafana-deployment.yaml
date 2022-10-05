@@ -4,7 +4,7 @@ metadata:
   labels:
     app: {{ .Values.Grafana.ServiceName }}
   name: {{ .Values.Grafana.ServiceName }}
-  namespace: {{ .Values.Namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
@@ -14,7 +14,7 @@ spec:
       labels:
         app: {{ .Values.Grafana.ServiceName }}
     spec:
-      {{ if .Values.NodeRestrictions.Enabled }}
+      {{- if .Values.NodeRestrictions.Enabled }}
       tolerations:
         - effect: "NoSchedule"
           key: "{{ .Values.NodeRestrictions.Key }}"
@@ -30,11 +30,11 @@ spec:
                 operator: In
                 values:
                 - {{ .Values.NodeRestrictions.Value }}
-      {{ end }}
+      {{- end }}
       volumes:
         - name: grafana-config
-          configMap:
-            name: {{ .Values.Grafana.ServiceName }}
+          secret:
+            secretName: {{ .Values.Grafana.ServiceName }}
             defaultMode: 420
       containers:
         - name: {{ .Values.Grafana.ServiceName }}
@@ -75,5 +75,3 @@ spec:
             requests:
               cpu: "{{ .Values.Grafana.Resources.Requests.Cpu }}"
               memory: "{{ .Values.Grafana.Resources.Requests.Memory }}"
-
-          

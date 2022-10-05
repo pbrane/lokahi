@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
       vue(),
       svgLoader(),
       AutoImport({
-        imports: ['vue', 'vue-router', '@vueuse/core', 'vitest'],
+        imports: ['vue', 'vue-router', '@vueuse/core'],
         eslintrc: {
           enabled: true,
           filepath: './.eslintrc-auto-import.json'

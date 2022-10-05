@@ -43,7 +43,7 @@ const router = createRouter({
     {
       path: '/node/:id',
       name: 'Node',
-      component: () => import('@/containers/Node.vue'),
+      component: () => import('@/containers/NodeStatus.vue'),
       beforeEnter: () => {
         setAvailableWidgets(Widgets.TAGS)
       }

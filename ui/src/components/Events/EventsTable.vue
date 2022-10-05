@@ -79,9 +79,9 @@
 import FilterAlt from '@featherds/icon/action/FilterAlt'
 import Sort from '@featherds/icon/action/Sort'
 import Search from '@featherds/icon/action/Search'
-import { useNodeStore } from '@/store/Views/nodeStore'
+import { useNodeStatusStore } from '@/store/Views/nodeStatusStore'
 
-const nodeStore = useNodeStore()
+const nodeStatusStore = useNodeStatusStore()
 const route = useRoute()
 
 const searchValue = ref()
@@ -93,19 +93,21 @@ const total = ref(0)
 const updatePageSize = (v: number) => { pageSize.value = v }
   
 const nodeData = computed(() => {
-  const events = nodeStore.fetchedData?.listEvents?.events?.filter((event: any) => event.nodeId == route.params.id)
+  const events = nodeStatusStore.fetchedData?.listEvents?.events?.filter((event: any) => event.nodeId == route.params.id)
 
   total.value = events?.length || 0
 
   return {
     events,
-    node: nodeStore.fetchedData?.device,
-    latencies: nodeStore.fetchedData?.deviceLatency,
-    uptimes: nodeStore.fetchedData?.deviceUptime
+    node: nodeStatusStore.fetchedData?.device,
+    latencies: nodeStatusStore.fetchedData?.deviceLatency,
+    uptimes: nodeStatusStore.fetchedData?.deviceUptime
   }
 })
 
-nodeStore.setNodeId(Number(route.params.id))
+onBeforeMount(() => {
+  nodeStatusStore.setNodeId(Number(route.params.id))
+})
 </script>
 
 <style lang="scss" scoped>

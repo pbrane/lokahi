@@ -25,6 +25,12 @@ type OpenNMSSpec struct {
 	// Domain name used in ingress rule
 	Host string `json:"host,omitempty"`
 
+	//HTTP port number the instance will be exposed on
+	HttpPort int `json:"httpPort"`
+
+	//HTTPS port number the instance will be exposed on
+	HttpsPort int `json:"httpsPort"`
+
 	// K8s namespace to use
 	Namespace string `json:"namespace"`
 
