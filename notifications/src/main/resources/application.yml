@@ -31,3 +31,15 @@ horizon:
     client: OpenNMS
     clientURL: http://opennms.com
 
+  keycloak:
+    realm: opennms
+    use-static-pubkey: false
+    keycloakRequireSsl: false
+    static-pubkey-path: etc/keycloak-pubkey.pem
+    base-url: http://keycloak:8080
+    admin-realm: master
+    admin-username: keycloak-admin
+    admin-password: admin
+#      <cm:property name="keycloak.base-url" value="$[env:KEYCLOAK_BASE_URL]"/>
+#      <cm:property name="keycloak.admin-username" value="$[env:KEYCLOAK_ADMIN_USERNAME]" />
+#      <cm:property name="keycloak.admin-password" value="$[env:KEYCLOAK_ADMIN_PASSWORD]" />

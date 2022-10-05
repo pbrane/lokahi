@@ -26,8 +26,7 @@ import static org.junit.Assert.assertEquals;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = NotificationsApplication.class)
 @TestPropertySource(locations = "classpath:application.yml")
-@ActiveProfiles("test")
-class NotificationRestIntegrationTest {
+class TempTokenIntegrationTest {
 
     @Autowired
     private Environment environment;
@@ -51,24 +50,17 @@ class NotificationRestIntegrationTest {
         saveConfig(integrationKey);
     }
 
-    @Test
-    void callSaveConfigTwice() throws Exception {
-        String integrationKey = "not_verified";
-
-        saveConfig(integrationKey);
-
-        integrationKey = "not_verified2";
-
-        saveConfig(integrationKey);
-    }
-
     private void saveConfig(String integrationKey) {
         PagerDutyConfigDTO config = new PagerDutyConfigDTO(integrationKey);
         HttpHeaders headers = new HttpHeaders();
+        String accessToken = "";
+        accessToken = "";
+        accessToken = "";
+        accessToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJXMVA1TEx0cDJNNGN4NWt6dGhvV0lyaWdwakZXWEdCOGxtemxoQ3RnQV9NIn0.eyJleHAiOjE2NjQ5NzY3MTQsImlhdCI6MTY2NDk3MDcxNCwianRpIjoiZDMzOWFiYTgtYjg1OS00NmVkLTlkM2ItNDcyMjZkNDRjNjc2IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDoyODA4MC9yZWFsbXMvb3Blbm5tcyIsInN1YiI6IjhkZTNkNTkyLTNmMzEtNGVmZC04MjJiLTAyYTViNGM4ZDMxMyIsInR5cCI6IkJlYXJlciIsImF6cCI6ImFkbWluLWNsaSIsInNlc3Npb25fc3RhdGUiOiI5NzEzOTViZi1lYmI4LTRkZmUtOTJmMS1kZDU0YWY0NjQ4ZDEiLCJhY3IiOiIxIiwic2NvcGUiOiJvcGVuaWQgZW1haWwgcHJvZmlsZSIsInNpZCI6Ijk3MTM5NWJmLWViYjgtNGRmZS05MmYxLWRkNTRhZjQ2NDhkMSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlVzZXIwMDEiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJ1c2VyMDAxIiwiZ2l2ZW5fbmFtZSI6IlVzZXIwMDEiLCJmYW1pbHlfbmFtZSI6IiIsImVtYWlsIjoidXNlcjAwMUB0ZXN0Lm9wZW5ubXMub3JnIn0.O9Kjyp8eXDHVlciGwjeOdtX4wPu-yZHl-OFjDDVTSAnKL5cdm40Z-zWSCDHbzduFsxNzup8kuLZPfsuhWXgzf3lvSQekrauS4tmZ-T7UPyjJcsPUVQGFCbljDPpdWZnILZtrzw2OkcHYTOVXvPJh7alDkeMhsn4O2VHseh0jyYQvhtt5Ll7zmaV1df78LWBdXtSq1TteZmgoF1aIGRzRQhyTOZ_KjcPtqCD3RkfUyPu5Gf-iromFaYrdOUdbZ4h8BokszAD-K3zOAJvfhX9dF1ot4JWtaF_LcOHkQx9ygOpmpqBoz6Rfr36SaNTeW0jhHzcqYM9ZJOgkLxSNGcVS7Q";
+        headers.set("Authorization", "Bearer "+accessToken);
         HttpEntity<PagerDutyConfigDTO> request = new HttpEntity<>(config, headers);
 
         ResponseEntity<String> response = this.testRestTemplate
-            .withBasicAuth("testUser", "testPassword")
             .postForEntity("http://localhost:" + port + "/notifications/config", request, String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());

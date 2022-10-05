@@ -32,3 +32,30 @@ horizon:
     client: OpenNMS
     clientURL: http://opennms.com
 
+  keycloak:
+    realm: opennms
+    use-static-pubkey: false
+    keycloakRequireSsl: false
+    static-pubkey-path: etc/keycloak-pubkey.pem
+    base-url: http://localhost:28080
+#    base-url: http://keycloak:8080
+#      <cm:property name="keycloak.base-url" value="$[env:KEYCLOAK_BASE_URL]"/>
+
+
+
+#      <cm:property name="keycloak.use-static-pubkey" value="false"/>
+#      <cm:property name="keycloak.static-pubkey-path" value="etc/keycloak-pubkey.pem"/>
+#      <cm:property name="keycloak.realm" value="opennms"/>
+#      <cm:property name="keycloak.admin-realm" value="master"/>
+#      <cm:property name="keycloak.base-url" value="$[env:KEYCLOAK_BASE_URL]"/>
+#
+#      <cm:property name="keycloak.admin-username" value="$[env:KEYCLOAK_ADMIN_USERNAME]" />
+#      <cm:property name="keycloak.admin-password" value="$[env:KEYCLOAK_ADMIN_PASSWORD]" />
+
+#             <cm:property name="keycloak.base-url" value="$[env:KEYCLOAK_BASE_URL]"/>
+#      <property name="keycloakServerUrl" value="${keycloak.base-url}"/>
+#      <property name="keycloakRealm" value="${keycloak.realm}"/>
+#      <property name="roleAssignmentProvider" ref="keycloakRoleAssignmentProvider"/>
+#
+#      <property name="tokenSignatureUseStaticKey" value="${keycloak.use-static-pubkey}"/>
+#      <property name="tokenSignaturePublicKeyPath" value="${keycloak.static-pubkey-path}"/>
