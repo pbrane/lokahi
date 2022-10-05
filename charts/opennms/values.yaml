@@ -176,9 +176,9 @@ MailServer:
   Resources:
     Limits:
       Cpu: 50m
-      Memory: 20Mi
+      Memory: 200Mi
     Requests:
-      Cpu: 100m
+      Cpu: 10m
       Memory: 100Mi
 NodeRestrictions: # will be applied to every pod in the instance
   Enabled: false
