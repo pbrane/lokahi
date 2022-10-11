@@ -47,15 +47,15 @@
           </div>
           <div data-test="col-latency">
             <pre class="title">ICMP Latency</pre>
-            <div :data-metric="device.icmp_latency" class="value" :class="device.latencyBgColor">{{ formatLatencyDisplay(device.icmp_latency) }}</div>
+            <div :data-metric="device.icmp_latency" class="value bg-status" :class="device.latencyBgColor">{{ formatLatencyDisplay(device.icmp_latency) }}</div>
           </div>
           <div data-test="col-uptime">
             <pre class="title">SNMP Uptime</pre>
-            <div :data-metric="device.snmp_uptime" class="value" :class="device.uptimeBgColor">{{ getHumanReadableDuration(device.snmp_uptime) }}</div>
+            <div :data-metric="device.snmp_uptime" class="value bg-status" :class="device.uptimeBgColor">{{ getHumanReadableDuration(device.snmp_uptime) }}</div>
           </div>
           <div data-test="col-status">
             <pre class="title">Status</pre>
-            <div class="value" :class="device.statusBgColor">{{ device.status }}</div>
+            <div class="value bg-status" :class="device.statusBgColor">{{ device.status }}</div>
           </div>
         </div>
       </TransitionGroup>
@@ -73,7 +73,7 @@ import { useAppliancesQueries } from '@/store/Queries/appliancesQueries'
 import { useAppliancesStore } from '@/store/Views/appliancesStore'
 import { ExtendedDeviceDTOWithBGColors } from '@/types/device'
 import { ComputedRef } from 'vue'
-import { formatItemBgColor, getHumanReadableDuration, formatLatencyDisplay } from './appliances.helpers'
+import { formatItemBgColor, getHumanReadableDuration, formatLatencyDisplay } from './utils'
 import { WidgetProps } from '@/types'
 
 defineProps<{widgetProps?: WidgetProps}>()

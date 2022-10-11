@@ -16,9 +16,9 @@ export interface BGColors {
 export const formatItemBgColor = (list: ExtendedMinionDTO[] | ExtendedDeviceDTO[]) => list.map(item => {
   const { icmp_latency: latency, snmp_uptime: uptime, status } = item
   const bg = {
-    ok: 'bg-ok',
-    failed: 'bg-failed',
-    unknown: 'bg-unknown' // undefined | null
+    ok: 'ok',
+    failed: 'failed',
+    unknown: 'unknown' // undefined | null
   }
 
   const setBgColor = (metric: any) => {

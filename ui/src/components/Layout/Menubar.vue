@@ -35,17 +35,7 @@ const { toggleDark } = useTheme()
 const { triggerWidgetBar } = useLayoutStore()
 </script>
 
-<style lang="scss">
-@import "@featherds/styles/themes/open-mixins";
-body {
-  background: var($background);
-}
-.open-light {
-  @include open-light;
-}
-.open-dark {
-  @include open-dark;
-}
+<style lang="scss" scoped>
 .menu-icon {
   font-size: 24px;
   margin-top: 2px;
@@ -53,6 +43,9 @@ body {
   &:last-child {
     margin-right: 0;
   }
+}
+:deep(.header) {
+  border-bottom: 0;
 }
 </style>
   

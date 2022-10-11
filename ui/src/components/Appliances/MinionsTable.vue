@@ -58,7 +58,7 @@ import { useAppliancesStore } from '@/store/Views/appliancesStore'
 import ChevronLeft from '@featherds/icon/navigation/ChevronLeft'
 import { ExtendedMinionDTOWithBGColors } from '@/types/minion'
 import { ComputedRef } from 'vue'
-import { formatItemBgColor, getHumanReadableDuration, formatLatencyDisplay } from './appliances.helpers'
+import { formatItemBgColor, getHumanReadableDuration, formatLatencyDisplay } from './utils'
 import { WidgetProps } from '@/types'
 
 defineProps<{widgetProps?: WidgetProps}>()
@@ -101,17 +101,5 @@ const listMinionsWithBgColor: ComputedRef<ExtendedMinionDTOWithBGColors[]> = com
       }
     }
   }
-}
-
-// hide / show transition
-.fade-enter-active {
-  transition: all 0.2s;
-}
-.fade-leave-active {
-  transition: all 0.2s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

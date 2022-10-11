@@ -12,6 +12,8 @@ const { isActive } = useSpinner()
 </script>
 
 <style scoped lang="scss">
+@use "@/styles/_transitionFade";
+
 .spinner {
   z-index: 2;
   position: absolute;
@@ -20,13 +22,5 @@ const { isActive } = useSpinner()
 }
 .spinner-container {
   height: 78vh;
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

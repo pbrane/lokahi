@@ -1,0 +1,20 @@
+@import "@featherds/styles/themes/variables";
+
+.bg-status {
+  color: var($primary-text-on-color);
+  &.ok {
+    background-color: var($success);
+  }
+  &.failed {
+    background-color: var($error);
+  }
+  &.unknown {
+    background-color: grey;
+  }
+}
+
+.open-dark {
+  .bg-status.unknown {
+    color: rgb(10, 12, 27);
+  }
+}

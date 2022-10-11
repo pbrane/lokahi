@@ -1,4 +1,4 @@
-import { BGColors } from '@/components/Appliances/appliances.helpers'
+import { BGColors } from '@/components/Appliances/utils'
 import { MinionDto } from './graphql'
 
 interface ExtendedMinionDTO extends MinionDto {

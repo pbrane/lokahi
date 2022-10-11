@@ -33,6 +33,8 @@ const store = useLayoutStore()
 </script>
   
 <style lang="scss">
+@use "@/styles/_transitionFade";
+
 @import "@featherds/styles/lib/grid";
 @import "@featherds/styles/mixins/typography";
 @import "@featherds/styles/themes/open-mixins";
@@ -44,7 +46,15 @@ html {
 }
 
 body {
+  background: var($background);
   margin: 0
+}
+
+.open-light {
+  @include open-light;
+}
+.open-dark {
+  @include open-dark;
 }
 
 .content-and-widget {
@@ -87,37 +97,9 @@ a {
 .pointer {
   cursor: pointer;
 }
-
-.bg-ok {
-  background-color: var($success);
-  color: var($primary-text-on-color);
-}
-.bg-failed {
-  background-color: var($error);
-  color: var($primary-text-on-color);
-}
-.bg-unknown {
-    background-color: grey;
-    color: var($primary-text-on-color);
-}
-.open-dark {
-  .bg-unknown {
-    color: rgb(10, 12, 27);
-  }
-}
-</style>
+ </style>
 
 <style scoped lang="scss">
-.fade-enter-active {
-  transition: all 0.5s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-:deep(.header) {
-  border-bottom: 0;
-}
 :deep(.feather-app-rail) {
   border-right: 0 !important;
 }
