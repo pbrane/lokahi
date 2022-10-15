@@ -1,0 +1,10 @@
+@use "@featherds/styles/themes/variables";
+
+a {
+  text-decoration: none;
+  color: var(variables.$primary);
+}
+
+.pointer {
+  cursor: pointer;
+}

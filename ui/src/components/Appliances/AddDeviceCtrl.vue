@@ -156,10 +156,10 @@ watchEffect(() => {
 </script>
 
 <style scoped lang="scss">
-@import "@featherds/styles/mixins/typography";
+@use "@featherds/styles/mixins/typography";
 
 .title {
-  @include headline3;
+  @include typography.headline3;
   text-align: center;
   margin-bottom: 15px;
 }

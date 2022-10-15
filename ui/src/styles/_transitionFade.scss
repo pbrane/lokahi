@@ -1,9 +1,8 @@
-// hide / show transition
 .fade-enter-active {
-  transition: all 0.2s;
+  transition: all 5s;
 }
 .fade-leave-active {
-  transition: all 0.2s;
+  transition: all 5s;
 }
 .fade-enter-from,
 .fade-leave-to {

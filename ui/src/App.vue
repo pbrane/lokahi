@@ -33,73 +33,31 @@ const store = useLayoutStore()
 </script>
   
 <style lang="scss">
-@use "@/styles/_transitionFade";
-
-@import "@featherds/styles/lib/grid";
-@import "@featherds/styles/mixins/typography";
-@import "@featherds/styles/themes/open-mixins";
-@import "@featherds/table/scss/table";
-@import "@featherds/styles/themes/variables";
+@use "@featherds/styles/themes/variables";
+@use "@featherds/styles/themes/open-mixins";
 
 html {
   overflow-x: hidden;
 }
-
 body {
-  background: var($background);
-  margin: 0
+  background: var(variables.$background);
+  margin: 0;
 }
-
 .open-light {
-  @include open-light;
+  @include open-mixins.open-light;
 }
 .open-dark {
-  @include open-dark;
+  @include open-mixins.open-dark;
 }
+</style>
 
+<style lang="scss" scoped>
 .content-and-widget {
   display: flex;
 }
-
 .main-content {
   width: 100%;
-
-  table {
-    width: 100%;
-    @include table;
-  }
-
-  .data-table tr,
-  .data-table div {
-    @for $i from 1 through 50 {
-    &:nth-child(#{$i}) {
-      transition: all 0.3s ease $i * 0.05s;
-    }
-    }
-  }
-  .data-table-enter-active,
-  .data-table-leave-active {
-    transform: translateX(0px);
-    opacity:1;
-  }
-  .data-table-enter-from,
-  .data-table-leave-to {
-    transform: translateX(30px);
-    opacity:0;
-  }
 }
-
-a {
-  text-decoration: none;
-  color: var($primary);
-}
-
-.pointer {
-  cursor: pointer;
-}
- </style>
-
-<style scoped lang="scss">
 :deep(.feather-app-rail) {
   border-right: 0 !important;
 }

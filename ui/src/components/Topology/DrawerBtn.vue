@@ -30,10 +30,10 @@ const openLeftDrawer = () => topologyStore.isLeftDrawerOpen = true
   scoped
   lang="scss"
 >
-@import "@featherds/styles/mixins/elevation";
+@use "@featherds/styles/mixins/elevation";
 
 .drawer-btn {
-  @include elevation(2);
+  @include elevation.elevation(2);
   position: absolute;
   z-index: 1000;
   border-top-right-radius: 5px;

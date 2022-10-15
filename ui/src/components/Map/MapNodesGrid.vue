@@ -1,6 +1,6 @@
 <template>
-  <div id="wrap">
-    <table class="tl1 tl2 tl3" summary="Nodes">
+  <div class="container">
+    <table class="tl1 tl2 tl3 data-table" summary="Nodes">
       <thead>
         <tr>
           <FeatherSortHeader
@@ -100,7 +100,7 @@
           >SYSLOCATION</FeatherSortHeader>
         </tr>
       </thead>
-      <tbody class="node-list-grid" data-test="node-list">
+      <TransitionGroup name="data-table" tag="tbody" data-test="node-list">
         <tr v-for="node in nodes" :key="(node?.id as number)" @dblclick="doubleClickHandler(node as Partial<DeviceDto>)" :node="node?.id">
           <td :class="nodeLabelAlarmServerityMap[node?.label as string]">{{ node?.id }}</td>
           <td>{{ node?.foreignSource }}</td>
@@ -113,7 +113,7 @@
           <td>{{ node?.sysContact }}</td>
           <td>{{ node?.sysLocation }}</td>
         </tr>
-      </tbody>
+      </TransitionGroup>
     </table>
   </div>
 </template>
@@ -178,43 +178,47 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@import "@featherds/table/scss/table";
-#wrap {
+@use "@featherds/styles/themes/variables";
+@use "@featherds/table/scss/table";
+@use "@/styles//transitionDataTable";
+
+.container {
   height: calc(100% - 29px);
   overflow: auto;
-  background: var($surface);
+  background: var(variables.$surface);
 }
 table {
-  @include table;
-  @include table-condensed;
-  @include row-select;
-  @include row-hover;
-  background: var($surface);
-  color: var($primary-text-on-surface);
+  width: 100%;
+  @include table.table;
+  @include table.table-condensed;
+  @include table.row-select;
+  @include table.row-hover;
+  background: var(variables.$surface);
+  color: var(variables.$primary-text-on-surface);
   padding-top: 4px;
   margin-top: 15px;
 }
 thead {
   z-index: 2;
   position: relative;
-  background: var($surface);
+  background: var(variables.$surface);
   white-space: nowrap;
 }
 .selected > td:first-child {
   padding-left: 12px;
-  border-left: 4px solid var($success);
+  border-left: 4px solid var(variables.$success);
 }
 .WARNING {
   border-left: 4px solid #fffb00ea
 }
 .MINOR {
-  border-left: 4px solid var($warning);
+  border-left: 4px solid var(variables.$warning);
 }
 .MAJOR {
   border-left: 4px solid #ff3c00;
 }
 
 .CRITICAL {
-  border-left: 4px solid var($error);
+  border-left: 4px solid var(variables.$error);
 }
 </style>

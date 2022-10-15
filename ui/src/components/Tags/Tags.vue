@@ -78,12 +78,12 @@ const duplicateTagNameError = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-@import "@featherds/styles/themes/variables";
+@use "@featherds/styles/themes/variables";
 
 .tags-container {
   display: flex;
   flex-direction: column;
-  background: var($surface);
+  background: var(variables.$surface);
   padding: 10px;
   border-radius: 5px;
   max-height: 300px;

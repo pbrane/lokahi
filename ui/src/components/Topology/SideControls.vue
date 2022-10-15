@@ -53,12 +53,11 @@ watch(graphsSubLayers, (gsl) => {
   scoped
   lang="scss"
 >
-@import "@featherds/styles/mixins/elevation";
-@import "@featherds/styles/themes/variables";
-
+@use "@featherds/styles/themes/variables";
+@use "@featherds/styles/mixins/elevation";
 
 .topology-side-controls {
-  @include elevation(2);
+  @include elevation.elevation(2);
   display: flex;
   height: auto;
   padding-bottom: 20px;
@@ -71,13 +70,14 @@ watch(graphsSubLayers, (gsl) => {
   .controls {
     display: block;
     width: 75px;
-    border-right: 1px solid var($primary);
+    border-right: 1px solid var(variables.$primary);
     padding-right: 15px;
   }
 }
 </style>
 
 <style lang="scss">
+// TODO: scope the following
 .topology-side-controls {
   .btn {
     margin: 0px 0px 0px 15px !important;

@@ -54,7 +54,8 @@ const close = () => modalState.value = false
 </script>
 
 <style lang="scss" scoped>
-@import "@featherds/styles/themes/variables";
+@use "@featherds/styles/themes/variables";
+
 .dialog {
   min-width: 500px;
   height: 300px;
@@ -72,7 +73,7 @@ const close = () => modalState.value = false
 
   .selected-icon {
     box-sizing: border-box;
-    border: 2px solid var($primary);
+    border: 2px solid var(variables.$primary);
   }
 }
 </style>

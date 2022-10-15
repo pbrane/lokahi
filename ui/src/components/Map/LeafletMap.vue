@@ -334,7 +334,9 @@ defineExpose({ invalidateSizeFn, setBoundingBox, flyToNode })
 </style>
 
 <style lang="scss">
-@import "@featherds/styles/themes/variables";
+@use "@featherds/styles/themes/variables";
+
+// TODO: scoped the following
 .leaflet-marker-pane {
   div {
     width: 30px !important;
@@ -351,19 +353,19 @@ defineExpose({ invalidateSizeFn, setBoundingBox, flyToNode })
       width: 100%;
       display: block;
       &.NORMAL {
-        background: var($success);
+        background: var(variables.$success);
       }
       &.WARNING {
         background: #fffb00ea;
       }
       &.MINOR {
-        background-color: var($warning);
+        background-color: var(variables.$warning);
       }
       &.MAJOR {
         background: #ff3c00;
       }
       &.CRITICAL {
-        background: var($error);
+        background: var(variables.$error);
       }
       opacity: 0.7;
     }

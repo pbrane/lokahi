@@ -10,16 +10,16 @@ const { keycloak } = useKeycloak()
 </script>
 
 <style scoped lang="scss">
-@import "@featherds/styles/mixins/typography";
+@use "@featherds/styles/mixins/typography";
 
 p {
   text-align: center;
 }
 .title {
-  @include headline2;
+  @include typography.headline2;
   margin-top: 10px;
 }
 .welcome {
-  @include headline4;
+  @include typography.headline4;
 }
 </style>

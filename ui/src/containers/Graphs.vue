@@ -52,13 +52,14 @@
 <script setup lang="ts"></script>
   
 <style scoped lang="scss">
-@import "@featherds/styles/mixins/typography";
+@use "@featherds/styles/themes/variables";
+@use "@featherds/styles/mixins/typography";
 
 .header {
-  @include headline3();
+  @include typography.headline3();
   text-align: center;
   padding: 6px;
-  background: var($shade-4);
+  background: var(variables.$shade-4);
 }
 
 .graphs-layout {

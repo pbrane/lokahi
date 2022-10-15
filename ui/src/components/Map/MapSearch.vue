@@ -69,13 +69,13 @@ const results = computed(() => {
   lang="scss"
   scoped
 >
-@import "@featherds/styles/themes/variables";
+@use "@featherds/styles/themes/variables";
 
 .map-search {
   z-index: 1000;
   width: 290px !important;
   :deep(.feather-input-border) {
-    background: var($surface);
+    background: var(variables.$surface);
   }
 }
 </style>

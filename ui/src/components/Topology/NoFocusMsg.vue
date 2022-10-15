@@ -44,14 +44,15 @@ const defaultObjects = computed(() => topologyStore.defaultObjects)
   scoped
   lang="scss"
 >
-@import "@featherds/styles/mixins/elevation";
-@import "@featherds/styles/mixins/typography";
+@use "@featherds/styles/themes/variables";
+@use "@featherds/styles/mixins/elevation";
+@use "@featherds/styles/mixins/typography";
 
 .no-focus-container {
-  @include body-small;
-  @include elevation(1);
-  background: var($surface);
-  color: var($primary-text-on-surface);
+  @include typography.body-small;
+  @include elevation.elevation(1);
+  background: var(variables.$surface);
+  color: var(variables.$primary-text-on-surface);
   height: 400px;
   width: 600px;
   position: absolute;
@@ -62,10 +63,10 @@ const defaultObjects = computed(() => topologyStore.defaultObjects)
   z-index: 99999;
   top: 7rem;
   .title {
-    @include headline3;
+    @include typography.headline3;
     height: auto;
-    background: var($secondary);
-    color: var($primary-text-on-color);
+    background: var(variables.$secondary);
+    color: var(variables.$primary-text-on-color);
     padding: 15px;
   }
 

@@ -50,7 +50,7 @@ const gotoHome = () => {
 </script>
 
 <style lang="scss" scoped>
-@import "@featherds/styles/mixins/typography";
+@use "@featherds/styles/mixins/typography";
 
 .icon-text-animate {
   &:hover {
@@ -58,7 +58,7 @@ const gotoHome = () => {
   }
 }
 .product-text {
-  @include headline2;
-  color: var(--feather-app-rail-text-color);
+  @include typography.headline2;
+  color: var(--feather-app-rail-text-color); // TODO: use #var
 }
 </style>

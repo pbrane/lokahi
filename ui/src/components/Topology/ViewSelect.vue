@@ -87,22 +87,22 @@ onMounted(() => {
 }
 </style>
 <style lang="scss">
-@import "@featherds/dropdown/scss/mixins";
-@import "@featherds/styles/themes/variables";
+@use "@featherds/styles/themes/variables"; // TODO: use @use
+@use "@featherds/dropdown/scss/mixins";
 
 body > .feather-menu-dropdown > .feather-dropdown {
-  @include dropdown-menu-height(8); // to have the view dropdown list of 8 items
+  @include mixins.dropdown-menu-height(8); // to have the view dropdown list of 8 items
   // custom CSS for FeatherCheckbox to behave as radio; the disabled checked item (checkbox and label) have same color than the other checkable items
   .view-select-layout-dropdown-item,
   .view-select-display-dropdown-item {
     .layout-container {
       .feather-checkbox[aria-disabled="true"] {
         > .checkbox > .box {
-          border-color: var(--feather-primary);
-          background-color: var(--feather-primary);
+          border-color: var(variables.$primary);
+          background-color: var(variables.$primary);
         }
         > label {
-          color: var(--feather-primary-text-on-surface);
+          color: var(variables.$primary-text-on-surface);
         }
       }
     }

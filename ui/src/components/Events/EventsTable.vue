@@ -6,73 +6,71 @@
     Pagination
     columns: ID, Severity, Time, Source Location, System-ID, Node, Node Location, Interface, Service, alarm ID 
   -->
-  <Transition name="fade">
-    <TableCard v-if="nodeData.events">
-      <section class="header">
-        <div class="title-container">
-          <span class="title">
-            Events ({{ nodeData.node.label }})
-          </span>
-        </div>
-        <FeatherInput
-          class="search" 
-          v-model="searchValue" 
-          label="Event">
-          <template v-slot:pre>
-            <FeatherIcon :icon="Search" />
-          </template>
-        </FeatherInput>
-        <div class="btns">
-          <FeatherButton icon="Filter">
-            <FeatherIcon :icon="FilterAlt" />
-          </FeatherButton>
-          <FeatherButton icon="Sort">
-            <FeatherIcon :icon="Sort" />
-          </FeatherButton>
-        </div>
-      </section>
-      <section class="table-container">
-        <table class="tl1 tl2 tc3 tc4 tc5 data-table" summary="Events" data-test="data-table">
-          <thead>
-            <tr>
-              <th scope="col" data-test="col-id">ID</th>
-              <th scope="col" data-test="col-severity">Severity</th>
-              <th scope="col" data-test="col-time">Time</th>
-              <th scope="col" data-test="col-source-location">Source Location</th>
-              <th scope="col" data-test="col-system-id">System-ID</th>
-              <th scope="col" data-test="col-node">Node</th>
-              <th scope="col" data-test="col-node-location">Node Location</th>
-              <th scope="col" data-test="col-interface">Interface</th>
-              <th scope="col" data-test="col-service">Service</th>
-              <th scope="col" data-test="col-alarm-id">Alarm ID</th>
-            </tr>
-          </thead>
-          <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="event in nodeData.events" :key="event.id as number" data-test="data-item">
-              <td>{{ event.id }}</td>
-              <td>{{ event.severity }}</td>
-              <td>{{ event.time }}</td>
-              <td>{{ event.source }}</td>
-              <td>--</td>
-              <td>{{ event.nodeLabel }}</td>
-              <td>{{ event.location }}</td>
-              <td>{{ event.ipAddress || '--' }}</td>
-              <td>--</td>
-              <td>--</td>
-            </tr>
-          </TransitionGroup>
-        </table>
-      </section>
-      <section>
-        <FeatherPagination
-          v-model="page"
-          :pageSize="pageSize"
-          :total="total"
-          @update:pageSize="updatePageSize"
-        />
-      </section>
-    </TableCard>
-  </Transition>
+  <TableCard>
+    <div class="header">
+      <div class="title-container">
+        <span class="title">
+          Events ({{ nodeData.node.label }})
+        </span>
+      </div>
+      <FeatherInput
+        class="search"
+        v-model="searchValue"
+        label="Event">
+        <template v-slot:pre>
+          <FeatherIcon :icon="Search" />
+        </template>
+      </FeatherInput>
+      <div class="btns">
+        <FeatherButton icon="Filter">
+          <FeatherIcon :icon="FilterAlt" />
+        </FeatherButton>
+        <FeatherButton icon="Sort">
+          <FeatherIcon :icon="Sort" />
+        </FeatherButton>
+      </div>
+    </div>
+    <div class="container">
+      <table class="tl1 tl2 tc3 tc4 tc5 data-table" summary="Events" data-test="data-table">
+        <thead>
+          <tr>
+            <th scope="col" data-test="col-id">ID</th>
+            <th scope="col" data-test="col-severity">Severity</th>
+            <th scope="col" data-test="col-time">Time</th>
+            <th scope="col" data-test="col-source-location">Source Location</th>
+            <th scope="col" data-test="col-system-id">System-ID</th>
+            <th scope="col" data-test="col-node">Node</th>
+            <th scope="col" data-test="col-node-location">Node Location</th>
+            <th scope="col" data-test="col-interface">Interface</th>
+            <th scope="col" data-test="col-service">Service</th>
+            <th scope="col" data-test="col-alarm-id">Alarm ID</th>
+          </tr>
+        </thead>
+        <TransitionGroup name="data-table" tag="tbody">
+          <tr v-for="event in nodeData.events" :key="event.id as number" data-test="data-item">
+            <td>{{ event.id }}</td>
+            <td>{{ event.severity }}</td>
+            <td>{{ event.time }}</td>
+            <td>{{ event.source }}</td>
+            <td>--</td>
+            <td>{{ event.nodeLabel }}</td>
+            <td>{{ event.location }}</td>
+            <td>{{ event.ipAddress || '--' }}</td>
+            <td>--</td>
+            <td>--</td>
+          </tr>
+        </TransitionGroup>
+      </table>
+    </div>
+    <div>
+      <FeatherPagination
+        v-model="page"
+        :pageSize="pageSize"
+        :total="total"
+        @update:pageSize="updatePageSize"
+      />
+    </div>
+  </TableCard>
 </template>
 
 <script lang="ts" setup>
@@ -111,6 +109,52 @@ onBeforeMount(() => {
 </script>
 
 <style lang="scss" scoped>
-@use "@/styles/_listCard";
-@use "@/styles/_transitionFade";
+@use "@featherds/styles/themes/variables";
+@use "@featherds/styles/mixins/typography";
+@use "@featherds/table/scss/table";
+@use "@/styles/_transitionDataTable";
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  .title-container {
+    display: flex;
+    .title {
+      @include typography.headline3;
+      margin-left: 15px;
+      margin-top: 2px;
+    }
+  }
+  .search {
+    width: 300px;
+  }
+  .btns {
+    display: flex;
+  }
+}
+
+.container {
+  display: block;
+  overflow-x: auto;
+  table {
+    width: 100%;
+    @include table.table;
+    thead {
+      background: var(variables.$background);
+      text-transform: uppercase;
+    }
+    td {
+      white-space: nowrap;
+      div {
+        border-radius: 5px;
+        padding: 0px 5px 0px 5px;
+      }
+    }
+  }
+}
+
+.feather-pagination {
+  margin-top: var(variables.$spacing-xl);
+  justify-content: center;
+}
 </style>

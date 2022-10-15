@@ -142,14 +142,15 @@ const openIconModal = () => topologyStore.modalState = true
 </script>
 
 <style scoped lang="scss">
-@import "@featherds/styles/mixins/elevation";
-@import "@featherds/styles/mixins/typography";
+@use "@featherds/styles/themes/variables";
+@use "@featherds/styles/mixins/typography";
+@use "@featherds/styles/mixins/elevation";
 
 .context-menu {
-  @include body-small;
-  @include elevation(1);
+  @include typography.body-small;
+  @include elevation.elevation(1);
   padding: 10px;
-  color: var($primary-text-on-surface);
+  color: var(variables.$primary-text-on-surface);
   height: auto;
   width: auto;
   min-width: 100px;
@@ -166,8 +167,8 @@ const openIconModal = () => topologyStore.modalState = true
   }
 
   .menu-btn:hover {
-    color: var($primary-text-on-color);
-    background: var($primary);
+    color: var(variables.$primary-text-on-color);
+    background: var(variables.$primary);
   }
 }
 </style>

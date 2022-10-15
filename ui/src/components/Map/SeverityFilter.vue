@@ -36,20 +36,20 @@ const elemPosRight = `${headerContentLeftWidth - elemWidth}px`
 </script>
 
 <style lang="scss">
-@import "@featherds/styles/themes/variables";
+@use "@featherds/styles/themes/variables";
 
 .severity-select {
   position: absolute;
   width: v-bind(elemWidth);
   right: v-bind(elemPosRight);
   top: 11px;
-  z-index: var($zindex-tooltip);
+  z-index: var(variables.$zindex-tooltip);
   .feather-input-wrapper {
-    background: var($primary-text-on-color);
-    border: 2px solid var($secondary);
+    background: var(variables.$primary-text-on-color);
+    border: 2px solid var(variables.$secondary);
   }
   .feather-input-label {
-    border: 2px solid var($secondary);
+    border: 2px solid var(variables.$secondary);
     border-bottom: none;
   }
 }

@@ -11,8 +11,8 @@
     label="Alarm Action"
     data-test="select-ack"
   />
-  <div id="wrap">
-    <table class="tl1 tl2 tl3" summary="Alarms">
+  <div class="container">
+    <table class="tl1 tl2 tl3 data-table" summary="Alarms">
       <thead>
         <tr>
           <th class="first-th" data-test="col-check-all">
@@ -76,7 +76,7 @@
           >LOG MESSAGE</FeatherSortHeader>
         </tr>
       </thead>
-      <tbody data-test="alarm-list">
+      <TransitionGroup name="data-table" tag="tbody" data-test="alarm-list">
         <tr v-for="alarm in alarms" :key="alarm.id">
           <td :class="alarm.severity" class="first-td">
             <FeatherCheckbox
@@ -93,7 +93,7 @@
           <td v-date>{{ alarm.lastEventTime }}</td>
           <td>{{ alarm.logMessage }}</td>
         </tr>
-      </tbody>
+      </TransitionGroup>
     </table>
   </div>
 </template>
@@ -216,24 +216,28 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@import "@featherds/table/scss/table";
-#wrap {
+@use "@featherds/styles/themes/variables";
+@use "@featherds/table/scss/table";
+@use "@/styles/_transitionDataTable";
+
+.container {
   height: calc(100% - 29px);
   overflow: auto;
-  background: var($surface);
+  background: var(variables.$surface);
 }
 table {
-  @include table;
-  @include table-condensed;
-  background: var($surface);
-  color: var($primary-text-on-surface);
+  width: 100%;
+  @include table.table;
+  @include table.table-condensed;
+  background: var(variables.$surface);
+  color: var(variables.$primary-text-on-surface);
   padding-top: 4px;
   margin-top: 15px;
 }
 thead {
   z-index: 2;
   position: relative;
-  background: var($surface);
+  background: var(variables.$surface);
   white-space: nowrap;
 }
 .select-ack {
@@ -247,19 +251,19 @@ thead {
   padding-left: 20px;
 }
 .first-td {
-  border-left: 4px solid var($success);
+  border-left: 4px solid var(variables.$success);
 }
 .WARNING {
   border-left: 4px solid #fffb00ea
 }
 .MINOR {
-  border-left: 4px solid var($warning);
+  border-left: 4px solid var(variables.$warning);
 }
 .MAJOR {
   border-left: 4px solid #ff3c00;
 }
 
 .CRITICAL {
-  border-left: 4px solid var($error);
+  border-left: 4px solid var(variables.$error);
 }
 </style>

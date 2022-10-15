@@ -72,24 +72,26 @@ const clear = async () => {
 </script>
 
 <style lang="scss" scoped>
-@import "@featherds/table/scss/table";
-@import "@featherds/styles/mixins/typography";
-@import "@featherds/styles/mixins/elevation";
+@use "@featherds/styles/themes/variables";
+@use "@featherds/styles/mixins/typography";
+@use "@featherds/styles/mixins/elevation";
+@use "@featherds/table/scss/table";
+
 .container {
-  @include elevation(1);
-  background: var($surface);
+  @include elevation.elevation(1);
+  background: var(variables.$surface);
   padding: 10px 30px 30px 30px;
   width: 700px;
   margin: auto;
   margin-top: 10px;
 
   p {
-    @include headline1;
+    @include typography.headline1;
     margin-bottom: 24px;
   }
 
   table {
-    @include table;
+    @include table.table;
 
     .severity {
       display: flex;
@@ -100,10 +102,10 @@ const clear = async () => {
         margin: 5px 10px 0px -10px;
 
         &.cleared {
-          background: var($success);
+          background: var(variables.$success);
         }
         &.warning {
-          background: var($warning);
+          background: var(variables.$warning);
         }
       }
     }

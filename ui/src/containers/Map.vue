@@ -113,15 +113,16 @@ onDeactivated(() => {
 </style>
 
 <style lang="scss">
-@import "@featherds/styles/themes/variables";
+@use "@featherds/styles/themes/variables";
+
 .default-theme {
   .splitpanes__splitter {
     height: 10px !important;
-    background: var($shade-3) !important;
+    background: var(variables.$shade-3) !important;
   }
   .splitpanes__splitter::after,
   .splitpanes__splitter::before {
-    background: var($primary-text-on-surface) !important;
+    background: var(variables.$primary-text-on-surface) !important;
   }
 }
 </style>

@@ -36,6 +36,8 @@ const { triggerWidgetBar } = useLayoutStore()
 </script>
 
 <style lang="scss" scoped>
+@use "@/styles/_app";
+
 .menu-icon {
   font-size: 24px;
   margin-top: 2px;

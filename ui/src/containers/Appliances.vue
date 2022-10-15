@@ -27,13 +27,14 @@ const gapWidth = computed<string>(() => appliancesStore.minionsTableOpen ? '20px
 </script>
 
 <style scoped lang="scss">
-@import "@featherds/styles/mixins/typography";
+@use "@featherds/styles/mixins/typography";
+
 .header-container {
   display: flex;
   justify-content: space-between;
   margin: 30px 10px 25px;
   .welcome {
-    @include headline2;
+    @include typography.headline2;
     font-weight: bold;
   }
   .btns {
@@ -48,7 +49,7 @@ const gapWidth = computed<string>(() => appliancesStore.minionsTableOpen ? '20px
   
   .minions-table {
     width: v-bind(minionTableWidth);
-    transition: width 0.4s ease-out;
+    transition: width 0.2s ease-out;
   }
   .devices-table {
     flex-grow: 1;

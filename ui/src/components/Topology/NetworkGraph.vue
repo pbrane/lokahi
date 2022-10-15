@@ -373,8 +373,9 @@ const configs = reactive(
   lang="scss"
   scoped
 >
-@import "@featherds/styles/mixins/elevation";
-@import "@featherds/styles/mixins/typography";
+@use "@featherds/styles/themes/variables";
+@use "@featherds/styles/mixins/elevation";
+@use "@featherds/styles/mixins/typography";
 
 // transitions when scaling on mouseover.
 .node-circle,
@@ -384,7 +385,7 @@ const configs = reactive(
 
 .unfocused {
   opacity: 0.5;
-  background: var($state-color-on-surface);
+  background: var(variables.$state-color-on-surface);
 }
 
 .tooltip-wrapper {
@@ -392,8 +393,8 @@ const configs = reactive(
   display: contents;
 
   .tooltip {
-    @include elevation(2);
-    @include subtitle1;
+    @include elevation.elevation(2);
+    @include typography.subtitle1;
     top: 0;
     left: 0;
     display: "none";
@@ -405,8 +406,8 @@ const configs = reactive(
     padding: 10px;
     text-align: center;
     font-size: 12px;
-    background-color: var($surface);
-    border: 1px solid var($primary);
+    background-color: var(variables.$surface);
+    border: 1px solid var(variables.$primary);
   }
 }
 </style>
