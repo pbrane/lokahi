@@ -40,7 +40,7 @@
         <java.version>11</java.version>
 
         <lombok.version>1.18.22</lombok.version>
-        <ignite.version>2.13.0</ignite.version>
+        <ignite.version>2.14.0</ignite.version>
         <jetty.version>9.4.43.v20210629</jetty.version>
         <cron-utils.version>9.1.6</cron-utils.version>
         <eos.version>1.2.0</eos.version>
@@ -221,6 +221,7 @@
                     <groupId>org.apache.karaf.tooling</groupId>
                     <artifactId>karaf-maven-plugin</artifactId>
                     <version>${karaf.version}</version>
+                    <extensions>true</extensions>
                 </plugin>
             </plugins>
         </pluginManagement>

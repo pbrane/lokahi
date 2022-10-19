@@ -51,6 +51,8 @@ spec:
               value: "http://{{ .Values.Prometheus.Server.ServiceName }}:{{ .Values.Prometheus.Server.Port }}/api/v1/query"
             - name: SPRING_WEBFLUX_BASE_PATH
               value: /api
+            - name: GRAPHQL_SPQR_GUI_TARGET_ENDPOINT
+              value: /api/graphql
           ports:
             - containerPort: {{ .Values.OpenNMS.API.Port }}
           {{- if not .Values.TestDeploy }}

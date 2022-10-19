@@ -20,9 +20,6 @@
                              persistent-id="org.opennms.core.monitor"
                              update-strategy="reload">
         <cm:default-properties>
-            <cm:property name="ignite.useKubernetes" value="true"/>
-            <cm:property name="ignite.kubernetesServiceName" value="horizon-stream-ignite-core"/>
-
             <cm:property name="monitor.task-set.kafka-topic" value="task-set.results"/>
             <cm:property name="kafkaBrokers" value="$[env:KAFKA_BROKER_HOST]:$[env:KAFKA_BROKER_PORT]"/>
         </cm:default-properties>

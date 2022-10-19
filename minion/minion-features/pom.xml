@@ -10,13 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>minion-features</artifactId>
-    <packaging>pom</packaging>
+    <packaging>feature</packaging>
 
     <name>OpenNms Horizon :: Minion :: Features</name>
-
-    <properties>
-        <opennms.version>30.0.0</opennms.version>
-    </properties>
 
     <dependencies>
 
@@ -65,58 +61,13 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>resources</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-artifacts</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attach-artifact</goal>
-                        </goals>
-                        <configuration>
-                            <artifacts>
-                                <artifact>
-                                    <file>${project.build.outputDirectory}/features.xml</file>
-                                    <type>xml</type>
-                                    <classifier>features</classifier>
-                                </artifact>
-                            </artifacts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.karaf.tooling</groupId>
                 <artifactId>karaf-maven-plugin</artifactId>
-                <version>${karaf.version}</version>
-                <extensions>true</extensions>
                 <executions>
                     <execution>
-                        <id>verify</id>
-                        <goals>
-                            <goal>verify</goal>
-                        </goals>
-                        <phase>verify</phase>
+                        <id>default-verify</id>
                         <configuration>
                             <descriptors>
                                 <descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features</descriptor>
@@ -125,7 +76,7 @@
                                 <descriptor>mvn:org.apache.cxf.karaf/apache-cxf/${cxf.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.apache.camel.karaf/apache-camel/${camel.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.apache.aries.jax.rs/org.apache.aries.jax.rs.features/${aries.jax.rs.whiteboard.version}/xml</descriptor>
-                                <descriptor>file:${project.build.outputDirectory}/features.xml</descriptor>
+                                <descriptor>file:${project.build.directory}/feature/feature.xml</descriptor>
                             </descriptors>
                             <javase>11</javase>
                             <framework>

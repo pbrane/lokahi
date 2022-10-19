@@ -18,6 +18,8 @@ class RestServerApplicationTests {
     private EventService eventService;
     @Autowired
     private NotificationsService notificationsService;
+    @Autowired
+    private DataChoicesService dataChoicesService;
 
 	@Test
 	void contextLoads() {
@@ -25,6 +27,7 @@ class RestServerApplicationTests {
 		assertNotNull(alarmService);
         assertNotNull(eventService);
         assertNotNull(notificationsService);
+        assertNotNull(dataChoicesService);
 	}
 
 }

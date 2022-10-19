@@ -2,4 +2,4 @@
 
 USER=admin
 
-kubectl exec -it deployment.apps/my-horizon-stream-core -- /bin/bash
+kubectl exec -it deployment.apps/opennms-core -- /bin/bash

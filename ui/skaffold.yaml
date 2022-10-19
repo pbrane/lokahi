@@ -16,6 +16,10 @@ build:
           dest: .
         - src: 'tests/**'
           dest: .
+        - src: '.env'
+          dest: .
+        - src: '.env.*'
+          dest: .
         - src: 'index.html'
           dest: .
         - src: '*.ts'
@@ -23,9 +27,6 @@ build:
     docker:
       dockerfile: Dockerfile
       target: development
-      buildArgs:
-        VITE_BASE_URL: "http://localhost:14080"
-        VITE_KEYCLOAK_URL: "http://localhost:26080"
 portForward:
   - resourceType: deployment
     resourceName: opennms-ui
@@ -38,6 +39,3 @@ profiles:
       - image: opennms/horizon-stream-ui
         docker:
           dockerfile: Dockerfile
-          buildArgs:
-            VITE_BASE_URL: "http://localhost:14080"
-            VITE_KEYCLOAK_URL: "http://localhost:26080"

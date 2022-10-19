@@ -22,19 +22,23 @@ spec:
     cpu: "0"
     mem: 100Mi
   minion:
-    image: opennms/minion:29.0.10
+    image: opennms/horizon-stream-minion
     cpu: "0"
     mem: 1000Mi
+  minionGateway:
+    image: opennms/horizon-stream-minion-gateway
+    cpu: "0"
+    mem: 500Mi
   notification:
     image: opennms/horizon-stream-notification
     cpu: "0"
     mem: 100Mi
   keycloak:
-    image: opennms/horizon-stream-keycloak:latest
+    image: opennms/horizon-stream-keycloak
   grafana:
     image: opennms/horizon-stream-grafana
   postgres:
-    image: postgres:13.3-alpine
+    image: postgres:14.5-alpine
   credentials:
     adminPassword: admin
     userPassword: passw0rd

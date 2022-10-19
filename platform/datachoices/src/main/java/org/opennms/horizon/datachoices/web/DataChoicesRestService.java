@@ -28,7 +28,7 @@
 
 package org.opennms.horizon.datachoices.web;
 
-import org.opennms.horizon.datachoices.dto.UsageStatisticsReportDTO;
+import org.opennms.horizon.shared.dto.datachoices.UsageStatisticsReportDTO;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;

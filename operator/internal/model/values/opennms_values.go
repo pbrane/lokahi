@@ -15,25 +15,32 @@ limitations under the License.
 package values
 
 type OpenNMSValues struct {
-	Core         CoreValues    `yaml:"Core"`
-	API          ServiceValues `yaml:"API"`
-	UI           ServiceValues `yaml:"UI"`
-	Minion       MinionValues  `yaml:"Minion"`
-	Notification ServiceValues `yaml:"Notification"`
+	Core          CoreValues          `yaml:"Core"`
+	API           ServiceValues       `yaml:"API"`
+	UI            ServiceValues       `yaml:"UI"`
+	Minion        MinionValues        `yaml:"Minion"`
+	MinionGateway MinionGatewayValues `yaml:"MinionGateway"`
+	Notification  ServiceValues       `yaml:"Notification"`
 }
 
 type CoreValues struct {
-	ServiceValues `yaml:",inline"`
-	HttpPort      int `yaml:"HttpPort"`
-	SshPort       int `yaml:"SshPort"`
-	GrpcPort      int `yaml:"GrpcPort"`
+	ServiceValues       `yaml:",inline"`
+	HttpPort            int `yaml:"HttpPort"`
+	SshPort             int `yaml:"SshPort"`
+	GrpcPort            int `yaml:"GrpcPort"`
+	IgniteClusterPort   int `yaml:"IgniteClusterPort"`
+	IgniteDiscoveryPort int `yaml:"IgniteDiscoveryPort"`
 }
 
 type MinionValues struct {
 	ServiceValues `yaml:",inline"`
 	SshPort       int `yaml:"SshPort"`
-	SnmpPort      int `yaml:"SnmpPort"`
-	SyslogPort    int `yaml:"SyslogPort"`
+}
+
+type MinionGatewayValues struct {
+	ServiceValues    `yaml:",inline"`
+	GrpcPort         int `yaml:"GrpcPort"`
+	IgniteClientPort int `yaml:"IgniteClientPort"`
 }
 
 type TimeseriesValues struct {

@@ -21,6 +21,7 @@
       <template v-slot:nav>
         <FeatherAppRailNavItem href="/" :icon="Server" title="Appliances" :class="{ selected: isSelected('/') }" />
         <FeatherAppRailNavItem href="/map" :icon="Pin" title="Map" :class="{ selected: isSelected('/map') }" />
+        <FeatherAppRailNavItem href="/graphs" :icon="Graphs" title="Graphs" :class="{ selected: isSelected('/graphs') }" />
       </template>
     </FeatherAppRail>
 </template>
@@ -29,6 +30,7 @@
 import { IconTextAnimate, FeatherAppRailNavItem } from '@featherds/app-rail'
 import Server from '@featherds/icon/hardware/Server'
 import Pin from '@featherds/icon/action/Pin'
+import Graphs from '@featherds/icon/action/Reporting'
 import LogoIcon from '@/assets/OpenNMS-logo-icon.svg'
 import LogoText from '@/assets/OpenNMS-logo-text.svg'
 

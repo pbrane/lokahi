@@ -15,5 +15,7 @@ limitations under the License.
 package values
 
 type KafkaValues struct {
-	ServiceValues `yaml:",inline"`
+	ServiceValues  `yaml:",inline"`
+	ControllerPort string `yaml:"ControllerPort"`
+	LocalPort      string `yaml:"LocalPort"`
 }

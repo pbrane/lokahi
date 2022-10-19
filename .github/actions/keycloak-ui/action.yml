@@ -17,7 +17,7 @@ runs:
         # When there are tests to run, put those here.
 
         # Create the docker image.
-        docker build -t opennms/horizon-stream-keycloak:local -f ./Dockerfile .
+        DOCKER_BUILDKIT=1 docker build -t opennms/horizon-stream-keycloak:local -f ./Dockerfile .
         cd ../ && mkdir -p ~/tmp/
         docker save -o ~/tmp/opennms-horizon-stream-keycloak-local.tar opennms/horizon-stream-keycloak:local
       shell: bash

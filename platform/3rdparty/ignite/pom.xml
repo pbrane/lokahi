@@ -54,6 +54,7 @@
               javax.swing*;;resolution:=optional,
               org.apache.log4j.varia;resolution:=optional,
               org.apache.ignite.logger.log4j;resolution:=optional,
+              org.apache.ignite.logger.log4j2;resolution:=optional,
               org.apache.ignite.internal.processors.rest.protocols.http.jetty;resolution:=optional,
               com.fasterxml.jackson*;resolution:=optional,
               *

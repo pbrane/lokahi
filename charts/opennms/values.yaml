@@ -10,6 +10,8 @@ OpenNMS:
     HttpPort: 8181
     SshPort: 8101
     GrpcPort: 8990
+    IgniteClusterPort: 47100
+    IgniteDiscoveryPort: 47500
     Resources:
       Limits:
         Cpu: 200m
@@ -29,8 +31,20 @@ OpenNMS:
         Cpu: 100m
         Memory: 250Mi
       Requests:
-        Cpu: 50
-        Memory: 100Mi
+        Cpu: "1"
+        Memory: 1Gi
+  MetricsProcessor:
+    ServiceName: opennms-metrics-processor
+    Image: opennms/horizon-stream-metrics-processor
+    ImagePullPolicy: IfNotPresent
+    Replicas: 1
+    Resources:
+      Limits:
+        Cpu: "1"
+        Memory: 512Mi
+      Requests:
+        Cpu: 250m
+        Memory: 256Mi
   UI:
     Path: /
     ServiceName: opennms-ui
@@ -47,12 +61,26 @@ OpenNMS:
         Memory: 50Mi
   Minion:
     ServiceName: opennms-minion
-    Image: opennms/minion:29.0.10
+    Image: opennms/horizon-stream-minion
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    SshPort: 8201
-    SnmpPort: 1162
-    SyslogPort: 1514
+    Port: 8181
+    SshPort: 8101
+    Resources:
+      Limits:
+        Cpu: "1"
+        Memory: 2050M
+      Requests:
+        Cpu: "1"
+        Memory: 512Mi
+  MinionGateway:
+    ServiceName: opennms-minion-gateway
+    Image: opennms/horizon-stream-minion-gateway
+    ImagePullPolicy: IfNotPresent
+    Port: 8080
+    GrpcPort: 8990
+    IgniteClientPort: 10800
+    Replicas: 1
     Resources:
       Limits:
         Cpu: "1"
@@ -75,7 +103,7 @@ OpenNMS:
         Memory: 250Mi
 Postgres:
   ServiceName: postgres
-  Image: postgres
+  Image: postgres:14.5-alpine
   ImagePullPolicy: IfNotPresent
   Replicas: 1
   AdminPassword: notset
@@ -90,6 +118,8 @@ Keycloak:
   ImagePullPolicy: IfNotPresent
   Port: 8080
   HttpsPort: 8443
+  HostnamePort: ~
+  HostnameAdminUrl: ~
   Replicas: 1
   ServiceName: onms-keycloak
   Resources:
@@ -101,14 +131,7 @@ Keycloak:
       Memory: 500Mi
   AdminUsername: admin
   AdminPassword: notset
-  UserUsername: user001
-  UserPassword: notset
   RealmName: opennms
-  UUID:
-    RealmId: ~
-    ClientId: ~
-    BaseUserId: ~
-    AdminUserId: ~
 Grafana:
   Path: /grafana
   Port: 3000
@@ -154,17 +177,19 @@ Prometheus:
         Memory: 100Mi
 Kafka:
   ServiceName: onms-kafka
-  Image: quay.io/strimzi/kafka:latest-kafka-2.8.1
+  Image: bitnami/kafka:3.3.1-debian-11-r1
   ImagePullPolicy: IfNotPresent
   Replicas: 1 
   Port: 9092
+  ControllerPort: 9093
+  LocalPort: 59092
   Resources:
     Limits:
+      Cpu: "2"
+      Memory: 2Gi
+    Requests:
       Cpu: 500m
       Memory: 512Mi
-    Requests:
-      Cpu: 100m
-      Memory: 256Mi
   VolumeSize: 10Gi
 MailServer:
   ServiceName: mail-server

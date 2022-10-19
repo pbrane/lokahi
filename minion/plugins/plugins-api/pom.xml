@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>org.opennms.horizon.shared</groupId>
-            <artifactId>task-set</artifactId>
+            <artifactId>protobuf</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

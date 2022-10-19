@@ -2,7 +2,7 @@
 
 USER=admin
 
-kubectl exec -it deployment.apps/my-horizon-stream-core -- \
+kubectl exec -it deployment.apps/opennms-core -- \
 	ssh \
 		-o port="8101"			\
 		-o User="${USER}"		\

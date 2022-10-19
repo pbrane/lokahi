@@ -8,9 +8,13 @@ metadata:
 spec:
   ports:
     - port: {{ .Values.Kafka.Port }}
-      name: http
+      name: client
       protocol: TCP
       targetPort: {{ .Values.Kafka.Port }}
+    - port: {{ .Values.Kafka.ControllerPort }}
+      name: controller
+      protocol: TCP
+      targetPort: {{ .Values.Kafka.ControllerPort }}
   selector:
     app: {{ .Values.Kafka.ServiceName }}
   type: ClusterIP

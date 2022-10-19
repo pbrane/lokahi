@@ -6,3 +6,9 @@ fragment MetricParts on TimeSeriesQueryResult {
     }
   }
 }
+
+fragment TimeSeriesMetric on Query {
+  metric: metric(name: $metric) {
+    ...MetricParts
+  }
+}

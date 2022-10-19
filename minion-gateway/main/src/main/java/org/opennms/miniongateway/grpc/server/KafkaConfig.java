@@ -32,6 +32,9 @@ public class KafkaConfig {
         configProps.put(
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
             ByteArraySerializer.class);
+        configProps.put(
+            ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,
+            false); // FIXME disabled to work with KRaft, but should it stay disabled?
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 

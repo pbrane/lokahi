@@ -224,7 +224,7 @@
               <name>keycloak-it-image</name>
               <alias>keycloak</alias>
               <build>
-                <from>quay.io/keycloak/keycloak:18.0.0</from>
+                <from>quay.io/keycloak/keycloak:19.0.2</from>
               </build>
               <run>
                 <!--<cmd>start-dev &#45;&#45;log-level=DEBUG,org.hibernate:INFO</cmd>-->

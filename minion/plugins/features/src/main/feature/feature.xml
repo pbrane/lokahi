@@ -27,7 +27,7 @@
 
     <feature name="plugins-model" version="${project.version}">
         <bundle>mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
-        <bundle>mvn:org.opennms.horizon.shared/task-set/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.shared/protobuf/${project.version}</bundle>
     </feature>
 
     <feature name="plugins-registration-internal" description="Plugin registration plugin-registration" version="${project.version}">

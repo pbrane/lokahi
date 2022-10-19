@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.opennms.horizon.datachoices.dto.UsageStatisticsReportDTO;
+import org.opennms.horizon.shared.dto.datachoices.UsageStatisticsReportDTO;
 
 import java.util.Collections;
 
@@ -47,12 +47,11 @@ public class DataChoicesTimerTaskTest {
     @Test
     public void testRun() {
         UsageStatisticsReportDTO report = getReport();
-        String json = report.toJson();
 
         when(reporter.generateReport()).thenReturn(report);
 
         wireMockRule.stubFor(post(urlEqualTo("/hs-usage-report"))
-            .withRequestBody(equalToJson(json))
+            .withRequestBody(equalToJson(getReportJson()))
             .willReturn(ok()));
 
         timerTask.run();
@@ -63,12 +62,11 @@ public class DataChoicesTimerTaskTest {
     @Test
     public void testRunFailed() {
         UsageStatisticsReportDTO report = getReport();
-        String json = report.toJson();
 
         when(reporter.generateReport()).thenReturn(report);
 
         wireMockRule.stubFor(post(urlEqualTo("/hs-usage-report"))
-            .withRequestBody(equalToJson(json))
+            .withRequestBody(equalToJson(getReportJson()))
             .willReturn(badRequest()));
 
         timerTask.run();
@@ -84,5 +82,10 @@ public class DataChoicesTimerTaskTest {
         report.setMonitoredServices(TEST_MONITORED_SERVICES);
         report.setDeviceTypeCounts(Collections.singletonMap(TEST_DEVICE_TYPE, TEST_DEVICE_TYPE_COUNT));
         return report;
+    }
+
+    private static String getReportJson() {
+        return "{\"systemId\":\"1234\",\"version\":\"1.0.0\",\"nodes\":1," +
+            "\"monitoredServices\":2,\"deviceTypeCounts\":{\"device\":1}}";
     }
 }

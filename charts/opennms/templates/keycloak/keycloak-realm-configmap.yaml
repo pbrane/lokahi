@@ -6,7 +6,6 @@ metadata:
 data:
   onms-realm.json: |
     {
-      "id": "{{ .Values.Keycloak.UUID.RealmId | default uuidv4 }}",
       "realm": "{{ .Values.Keycloak.RealmName }}",
       "accessTokenLifespan": 6000,
       "enabled": true,
@@ -14,12 +13,8 @@ data:
       "emailTheme": "horizon-stream",
       "rememberMe": true,
       "resetPasswordAllowed": true,
-      "attributes": {
-        "frontendUrl": "https://{{ .Values.Host }}{{ .Values.Keycloak.Path }}"
-      },
       "clients": [
         {
-          "id": "{{ .Values.Keycloak.UUID.ClientId | default uuidv4 }}",
           "clientId": "horizon-stream",
           "standardFlowEnabled": true,
           "enabled": true,
@@ -77,12 +72,10 @@ data:
       "roles": {
         "realm": [
           {
-            "id": "{{ .Values.Keycloak.UUID.AdminUserId | default uuidv4 }}",
             "name": "admin",
             "composite": false
           },
           {
-            "id": "{{ .Values.Keycloak.UUID.BaseUserId | default uuidv4 }}",
             "name": "user",
             "composite": false
           }
@@ -90,7 +83,6 @@ data:
       },
       "users": [
         {
-          "id": "{{ .Values.Keycloak.UUID.AdminUserId | default uuidv4 }}",
           "username": "{{ .Values.Keycloak.AdminUsername }}",
           "email": "admin@test.opennms.org",
           "enabled": true,
@@ -114,30 +106,6 @@ data:
               "view-users",
               "query-users",
               "create-client"
-            ]
-          }
-        },
-        {
-          "id": "{{ .Values.Keycloak.UUID.BaseUserId | default uuidv4 }}",
-          "username": "{{ .Values.Keycloak.UserUsername }}",
-          "firstName": "User001",
-          "lastName": "",
-          "email": "user001@test.opennms.org",
-          "enabled": true,
-          "emailVerified": false,
-          "credentials": [
-            {
-              "type": "password",
-              "value": "{{ .Values.Keycloak.UserPassword }}"
-            }
-          ],
-          "realmRoles": [
-            "user"
-          ],
-          "clientRoles": {
-            "account": [
-              "manage-account",
-              "view-profile"
             ]
           }
         }

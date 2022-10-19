@@ -26,16 +26,22 @@ spec:
             requests:
               cpu: "{{ .Values.Keycloak.Resources.Requests.Cpu }}"
               memory: "{{ .Values.Keycloak.Resources.Requests.Memory }}"
-          args: ['start', '--optimized', '--import-realm']
+          args: ['--import-realm']
           env:
             - name: KC_CACHE_STACK
               value: kubernetes
-            - name: KC_HEALTH_ENABLED
-              value: "true"
             - name: KC_CACHE
               value: ispn
             - name: KC_HOSTNAME
               value: "{{ .Values.Host }}"
+            {{- if .Values.Keycloak.HostnamePort }}
+            - name: KC_HOSTNAME_PORT
+              value: "{{ .Values.Keycloak.HostnamePort }}"
+            {{- end }}
+            {{- if .Values.Keycloak.HostnameAdminUrl }}
+            - name: KC_HOSTNAME_ADMIN_URL
+              value: "{{ .Values.Keycloak.HostnameAdminUrl }}"
+            {{- end }}
             - name: KC_DB
               value: postgres
             - name: KC_DB_URL_HOST
@@ -54,14 +60,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: username
-                  name: onms-keycloak-initial-admin
+                  name: {{ .Values.Keycloak.ServiceName }}-initial-admin
             - name: KEYCLOAK_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   key: password
-                  name: onms-keycloak-initial-admin
-            - name: KC_HOSTNAME_STRICT
-              value: "false"
+                  name: {{ .Values.Keycloak.ServiceName }}-initial-admin
             - name: KC_HOSTNAME_STRICT_BACKCHANNEL
               value: "false"
             - name: KC_HTTP_ENABLED
@@ -90,6 +94,18 @@ spec:
             {{- end }}
             - mountPath: /opt/keycloak/data/import
               name: realm-config
+          startupProbe:
+            httpGet:
+              {{- if .Values.TLS.Enabled }}
+              scheme: HTTPS
+              port: https
+              {{- else }}
+              scheme: HTTP
+              port: http
+              {{- end }}
+              path: {{ .Values.Keycloak.Path }}/health/live
+            failureThreshold: 150
+            periodSeconds: 5
           livenessProbe:
             httpGet:
               {{- if .Values.TLS.Enabled }}
@@ -115,7 +131,7 @@ spec:
               port: http
               {{- end }}
               path: {{ .Values.Keycloak.Path }}/health/ready
-            failureThreshold: 400
+            failureThreshold: 250
             initialDelaySeconds: 20
             periodSeconds: 2
             successThreshold: 1

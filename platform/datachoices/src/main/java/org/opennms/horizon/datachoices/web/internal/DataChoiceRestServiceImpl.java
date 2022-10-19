@@ -28,10 +28,10 @@
 
 package org.opennms.horizon.datachoices.web.internal;
 
-import org.opennms.horizon.datachoices.dto.UsageStatisticsReportDTO;
 import org.opennms.horizon.datachoices.internal.StateManager;
 import org.opennms.horizon.datachoices.internal.UsageStatisticsReporter;
 import org.opennms.horizon.datachoices.web.DataChoicesRestService;
+import org.opennms.horizon.shared.dto.datachoices.UsageStatisticsReportDTO;
 
 public class DataChoiceRestServiceImpl implements DataChoicesRestService {
     private StateManager stateManager;

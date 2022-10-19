@@ -1,4 +1,4 @@
-import { createApp, h } from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
@@ -14,17 +14,19 @@ import { getGqlClient } from './services/gqlService'
 
 // dark / light mode
 const { setKeycloak } = useKeycloak()
-const dark = useDark()
+const isDark = useDark()
 
-const app = createApp({
-  render: () => h(App)
-})
+const app = createApp(App)
   .use(router)
   .use(createPinia())
   .use(VueKeycloak, {
     init: {
       onLoad: 'login-required',
-      redirectUri: `${window.location.href}${dark.value ? '?theme=dark' : '?theme=light'}`
+      redirectUri: (() => {
+        const redirectUrl = new URL(window.location.href)
+        redirectUrl.searchParams.set('theme', isDark.value ? 'dark' : 'light')
+        return redirectUrl.href
+      })()
     },
     config: {
       realm: keycloakConfig.realm,

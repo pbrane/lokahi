@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.opennms.horizon.grpc.echo.contract.EchoRequest;
 import org.opennms.horizon.grpc.echo.contract.EchoResponse;
-import org.opennms.horizon.minion.echo.ipc.client.EchoRequestBuilder;
 import org.opennms.horizon.minion.echo.ipc.client.LocationAwareEchoClient;
 import org.opennms.horizon.shared.ipc.rpc.api.RequestBuilder;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcClient;
@@ -47,11 +46,7 @@ public class LocationAwareEchoClientImpl implements LocationAwareEchoClient {
     }
 
     @Override
-    public EchoRequestBuilder request() {
-        return new EchoRequestBuilderImpl(this);
-    }
-
-    CompletableFuture<EchoResponse> execute(String systemId, String location, Long timeToLive, EchoRequest payload) {
+    public CompletableFuture<EchoResponse> execute(String systemId, String location, Long timeToLive, EchoRequest payload) {
         RequestBuilder request = client.builder("Echo")
             .withLocation(location)
             .withSystemId(systemId)

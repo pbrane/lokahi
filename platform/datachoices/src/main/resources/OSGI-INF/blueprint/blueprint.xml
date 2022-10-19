@@ -10,8 +10,7 @@
 
     <cm:property-placeholder persistent-id="org.opennms.horizon.datachoices">
         <cm:default-properties>
-<!--            Note: to test this with a local version of UsageStatsHandler, use the IP of your machine to connect to it outside the l8s cluster -->
-            <cm:property name="url" value="http://stats.opennms.com/"/>
+            <cm:property name="url" value="http://stats.opennms.org/datachoices/"/>
             <cm:property name="interval" value="86400000"/> <!-- 24 hours -->
         </cm:default-properties>
     </cm:property-placeholder>

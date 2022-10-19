@@ -4,6 +4,13 @@ import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.opennms.horizon.db.dao.api.MinionDao;
 import org.opennms.horizon.db.dao.api.MonitoringLocationDao;
 import org.opennms.horizon.db.dao.api.SessionUtils;
@@ -13,19 +20,11 @@ import org.opennms.horizon.events.api.EventListener;
 import org.opennms.horizon.events.api.EventSubscriptionService;
 import org.opennms.horizon.events.model.IEvent;
 import org.opennms.horizon.events.model.IParm;
+import org.opennms.horizon.grpc.echo.contract.EchoRequest;
 import org.opennms.horizon.metrics.api.OnmsMetricsAdapter;
-import org.opennms.horizon.minion.echo.ipc.client.EchoRequestBuilder;
 import org.opennms.horizon.minion.echo.ipc.client.LocationAwareEchoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class MinionRpcMonitorManager implements EventListener {
 
@@ -105,17 +104,13 @@ public class MinionRpcMonitorManager implements EventListener {
 
     private void runMinionMonitor(String location, String minionId) {
          LOG.info("Minion RPC Monitor: executing check for minion: id={}; location={}", minionId, location);
-         // Create the client
-         //RpcClient<EchoRequest, EchoResponse> client = rpcClientFactory.getClient(EchoRpcModule.INSTANCE);
 
-        EchoRequestBuilder requestBuilder = echoClient.request()
-            .withTime(System.nanoTime() / 1000000L)
-            .withMessage(Strings.repeat("*", DEFAULT_MESSAGE_SIZE))
-            .withLocation(location)
-            .withSystemId(minionId)
-            .withTimeToLive(null);
+         EchoRequest echoRequest = EchoRequest.newBuilder()
+             .setTime(System.nanoTime())
+             .setMessage(Strings.repeat("*", DEFAULT_MESSAGE_SIZE))
+             .build();
 
-         requestBuilder.execute().whenComplete((response, error) -> {
+         echoClient.execute(minionId, location, null, echoRequest).whenComplete((response, error) -> {
              if (error != null) {
                  LOG.warn("ECHO REQUEST failed", error);
                  LOG.error("Minion RPC Monitor: check for minion failed: id={}", minionId);

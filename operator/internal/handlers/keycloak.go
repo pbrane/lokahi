@@ -26,29 +26,21 @@ type KeycloakHandler struct {
 	ServiceHandlerObject
 }
 
-func (h *KeycloakHandler) ProvideConfig(values values.TemplateValues) []client.Object {
+func (h *KeycloakHandler) UpdateConfig(values values.TemplateValues) {
 	var initialAdminSecret corev1.Secret
-	var credSecret corev1.Secret
 	var realmConfigmap corev1.ConfigMap
 	var deployment appsv1.Deployment
 	var service corev1.Service
-	var internalService corev1.Service
 
 	yaml.LoadYaml(filepath("keycloak/keycloak-initial-cred-secret.yaml"), values, &initialAdminSecret)
-	yaml.LoadYaml(filepath("keycloak/keycloak-cred-secret.yaml"), values, &credSecret)
 	yaml.LoadYaml(filepath("keycloak/keycloak-realm-configmap.yaml"), values, &realmConfigmap)
 	yaml.LoadYaml(filepath("keycloak/keycloak-deployment.yaml"), values, &deployment)
 	yaml.LoadYaml(filepath("keycloak/keycloak-service.yaml"), values, &service)
-	yaml.LoadYaml(filepath("keycloak/keycloak-internal-service.yaml"), values, &internalService)
 
 	h.Config = []client.Object{
 		&initialAdminSecret,
-		&credSecret,
 		&realmConfigmap,
 		&deployment,
 		&service,
-		&internalService,
 	}
-
-	return h.Config
 }

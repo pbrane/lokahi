@@ -6,9 +6,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.opennms.horizon.datachoices.dto.UsageStatisticsReportDTO;
 import org.opennms.horizon.datachoices.internal.StateManager;
 import org.opennms.horizon.datachoices.internal.UsageStatisticsReporter;
+import org.opennms.horizon.shared.dto.datachoices.UsageStatisticsReportDTO;
 
 import java.util.UUID;
 
