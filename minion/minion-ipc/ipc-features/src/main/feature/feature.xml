@@ -69,6 +69,8 @@
         <bundle>mvn:org.opennms.horizon.minion/twin-whiteboard/${project.version}</bundle>
 
         <bundle>mvn:org.opennms.horizon.shared/protobuf/${project.version}</bundle>
+        <bundle>mvn:com.google.protobuf/protobuf-java-util/${protobuf.version}</bundle>
+
     </feature>
 
 </features>

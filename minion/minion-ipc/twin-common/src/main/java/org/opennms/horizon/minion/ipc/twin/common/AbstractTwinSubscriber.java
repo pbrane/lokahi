@@ -28,10 +28,18 @@
 
 package org.opennms.horizon.minion.ipc.twin.common;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -43,28 +51,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.google.protobuf.Message;
 import org.opennms.cloud.grpc.minion.TwinRequestProto;
 import org.opennms.cloud.grpc.minion.TwinResponseProto;
 import org.opennms.horizon.minion.ipc.twin.api.TwinSubscriber;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
+import org.opennms.horizon.shared.protobuf.marshalling.ProtoBufJsonDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 public abstract class AbstractTwinSubscriber implements TwinSubscriber {
 
@@ -182,7 +175,7 @@ public abstract class AbstractTwinSubscriber implements TwinSubscriber {
         }
     }
 
-    private class Subscription {
+    public class Subscription {
         private final String key;
 
         private final Set<Consumer<JsonNode>> consumers = Sets.newConcurrentHashSet();
@@ -198,7 +191,7 @@ public abstract class AbstractTwinSubscriber implements TwinSubscriber {
          */
         private ScheduledFuture<?> retry = null;
 
-        private Subscription(final String key) {
+        public Subscription(final String key) {
             this.key = Objects.requireNonNull(key);
         }
 
@@ -280,7 +273,7 @@ public abstract class AbstractTwinSubscriber implements TwinSubscriber {
                 if (!update.isPatch()) {
                     this.accept(new Value(update.getSessionId(),
                                           update.getVersion(),
-                                          AbstractTwinSubscriber.this.objectMapper.readTree(update.getObject())));
+                                          objectMapper.readTree(update.getObject())));
                 } else {
                     this.request();
                 }
@@ -296,12 +289,12 @@ public abstract class AbstractTwinSubscriber implements TwinSubscriber {
                 if (!update.isPatch()) {
                     this.accept(new Value(update.getSessionId(),
                                           update.getVersion(),
-                                          AbstractTwinSubscriber.this.objectMapper.readTree(update.getObject())));
+                                          objectMapper.readTree(update.getObject())));
                 } else {
                     if (update.getVersion() == this.value.version + 1) {
                         // Version advanced - apply path
                         try {
-                            final var patchObj = AbstractTwinSubscriber.this.objectMapper.readTree(update.getObject());
+                            final var patchObj = objectMapper.readTree(update.getObject());
                             final var patch = JsonPatch.fromJson(patchObj);
 
                             final var value = patch.apply(this.value.value);
@@ -332,38 +325,7 @@ public abstract class AbstractTwinSubscriber implements TwinSubscriber {
 
     private void configureProtobufJson(Class<? extends Message> clazz) {
         SimpleModule simpleModule = new SimpleModule();
-        configureProtobufJsonOneClass(simpleModule, clazz);
+        simpleModule.addDeserializer(clazz, new ProtoBufJsonDeserializer<>(clazz));
         objectMapper.registerModule(simpleModule);
     }
-
-    private <T extends Message> void configureProtobufJsonOneClass(SimpleModule simpleModule, Class<T> clazz) {
-        simpleModule.addDeserializer(clazz, new JsonDeserializer<T>() {
-            @Override
-            public Class<?> handledType() {
-                return clazz;
-            }
-
-            @SuppressWarnings("rawtypes")
-            @Override
-            public T deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JacksonException {
-                Map object = jsonParser.getCodec().readValue(jsonParser, Map.class);
-                String typeName = (String) object.get("type");
-
-                if (typeName != null) {
-                    try {
-                        String base64content = (String) object.get("content");
-                        byte[] contentBytes = Base64.getDecoder().decode(base64content);
-
-                        T result = (T) clazz.getMethod("parseFrom", byte[].class).invoke(null, (Object) contentBytes);
-
-                        return result;
-                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                        throw new RuntimeException("failed to deserialize protobuf message: type-name=" + typeName, e);
-                    }
-                }
-                return null;
-            }
-        });
-    }
-
 }
