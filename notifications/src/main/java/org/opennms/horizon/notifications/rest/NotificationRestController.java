@@ -28,17 +28,16 @@
 
 package org.opennms.horizon.notifications.rest;
 
-import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.service.NotificationService;
+import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.security.RolesAllowed;
 
 @RestController
 @RequestMapping("/notifications")
@@ -48,6 +47,7 @@ public class NotificationRestController {
     private NotificationService notificationsService;
 
     @PostMapping(value = "/config", consumes="application/json")
+    @PreAuthorize("hasAnyRole('user', 'admin')")
     public ResponseEntity<String> postPagerDutyConfig(@RequestBody PagerDutyConfigDTO config) throws Exception {
         notificationsService.postPagerDutyConfig(config);
         return new ResponseEntity<>("OK", HttpStatus.OK);

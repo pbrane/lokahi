@@ -28,16 +28,16 @@
 
 package org.opennms.horizon.notifications.api;
 
-import java.util.List;
-
-import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.exceptions.NotificationConfigUninitializedException;
+import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class PagerDutyDaoImpl implements PagerDutyDao{

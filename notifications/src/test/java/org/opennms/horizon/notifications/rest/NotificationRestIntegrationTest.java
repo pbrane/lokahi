@@ -15,17 +15,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = NotificationsApplication.class)
 @TestPropertySource(locations = "classpath:application.yml")
+@ActiveProfiles("test")
 class NotificationRestIntegrationTest {
 
     @Autowired
@@ -66,7 +67,9 @@ class NotificationRestIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<PagerDutyConfigDTO> request = new HttpEntity<>(config, headers);
 
-        ResponseEntity<String> response = this.testRestTemplate.postForEntity("http://localhost:" + port + "/notifications/config", request, String.class);
+        ResponseEntity<String> response = this.testRestTemplate
+            .withBasicAuth("testUser", "testPassword")
+            .postForEntity("http://localhost:" + port + "/notifications/config", request, String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("OK", response.getBody());

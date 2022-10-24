@@ -31,13 +31,17 @@ package org.opennms.horizon.notifications.rest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
+import org.opennms.horizon.notifications.config.security.keycloak.KeycloakDeploymentHelper;
+import org.opennms.horizon.notifications.config.security.keycloak.KeycloakRolesHelper;
 import org.opennms.horizon.notifications.service.NotificationService;
+import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
+@ActiveProfiles("test")
 public class NotificationRestControllerTest {
 
     @Autowired
@@ -53,7 +58,14 @@ public class NotificationRestControllerTest {
     @MockBean
     private NotificationService notificationsService;
 
+    @MockBean
+    private KeycloakDeploymentHelper keycloakDeploymentHelper;
+
+    @MockBean
+    private KeycloakRolesHelper keycloakRolesHelper;
+
     @Test
+    @WithMockUser(roles={"user"})
     public void testInitConfig() throws Exception {
         String content = getConfig();
         HttpHeaders headers = new HttpHeaders();
@@ -62,6 +74,18 @@ public class NotificationRestControllerTest {
         mockMvc.perform(post("/notifications/config").headers(headers).content(content))
             .andDo(print())
             .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles={"basic"})
+    public void testInitConfigUnauthorized() throws Exception {
+        String content = getConfig();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(post("/notifications/config").headers(headers).content(content))
+            .andDo(print())
+            .andExpect(status().isForbidden());
     }
 
     private String getConfig() throws JsonProcessingException {

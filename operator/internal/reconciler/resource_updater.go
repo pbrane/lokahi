@@ -18,20 +18,22 @@ import (
 	"context"
 	"fmt"
 	"github.com/OpenNMS/opennms-operator/api/v1alpha1"
-	"github.com/OpenNMS/opennms-operator/internal/util/maps"
 	"github.com/OpenNMS/opennms-operator/internal/util/subsets"
 	v1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"time"
 )
 
 func (r *OpenNMSReconciler) updateDeployment(ctx context.Context, instance *v1alpha1.OpenNMS, resource client.Object, deployedResource client.Object) (*reconcile.Result, error) {
-	if !subsets.SubsetEqual(resource, deployedResource) {
+	rD := resource.(*v1.Deployment)
+	drD := deployedResource.(*v1.Deployment)
+	if !subsets.SubsetEqual(rD.Spec, drD.Spec) || !subsets.SubsetEqual(rD.Annotations, drD.Annotations) || !subsets.SubsetEqual(rD.Labels, drD.Labels) {
 		r.updateStatus(ctx, instance, false, fmt.Sprintf("updating deployment: %s", resource.GetName()))
+		r.Log.Info("updating deployment for some reason", "name", resource.GetName())
+
 		if err := r.Update(ctx, resource); err != nil {
 			return &reconcile.Result{}, err
 		}
@@ -40,6 +42,7 @@ func (r *OpenNMSReconciler) updateDeployment(ctx context.Context, instance *v1al
 		// Determine if the resources are fully created, otherwise wait longer
 		deployment := deployedResource.(*v1.Deployment)
 		if deployment.Status.ReadyReplicas != deployment.Status.Replicas {
+			r.Log.Info("waiting for deployment for some reason", "name", resource.GetName(), "ready", deployment.Status.ReadyReplicas, "wanted", deployment.Status.Replicas)
 			return &reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 		}
 	}
@@ -47,8 +50,10 @@ func (r *OpenNMSReconciler) updateDeployment(ctx context.Context, instance *v1al
 }
 
 func (r *OpenNMSReconciler) updateStatefulSet(ctx context.Context, instance *v1alpha1.OpenNMS, resource client.Object, deployedResource client.Object) (*reconcile.Result, error) {
-	if !subsets.SubsetEqual(resource, deployedResource) {
-		r.updateStatus(ctx, instance, false, fmt.Sprintf("updating sattefulset: %s", resource.GetName()))
+	rSS := resource.(*v1.StatefulSet)
+	drSS := deployedResource.(*v1.StatefulSet)
+	if !subsets.SubsetEqual(rSS.Spec, drSS.Spec) || !subsets.SubsetEqual(rSS.Annotations, drSS.Annotations) || !subsets.SubsetEqual(rSS.Labels, drSS.Labels) {
+		r.updateStatus(ctx, instance, false, fmt.Sprintf("updating statefulset: %s", resource.GetName()))
 		if err := r.Update(ctx, resource); err != nil {
 			return &reconcile.Result{}, err
 		}
@@ -73,19 +78,14 @@ func (r *OpenNMSReconciler) updateJob(deployedResource client.Object) (*reconcil
 }
 
 func (r *OpenNMSReconciler) updateSecret(ctx context.Context, resource client.Object, deployedResource client.Object) (*reconcile.Result, error) {
-	//have to move secret data to StringData for SubsetEqual
-	deployedResource.(*corev1.Secret).StringData = maps.ConvertByteToStringMap(deployedResource.(*corev1.Secret).Data)
-	if resource.GetName() == "onms-allowed-users" && !subsets.SubsetEqual(resource, deployedResource) {
-		err := r.updateAllowedUsersSecret(ctx, resource)
-		if err != nil {
-			return &reconcile.Result{}, err
-		}
-	}
+	//TODO HS-495
 	return nil, nil
 }
 
 func (r *OpenNMSReconciler) updateConfigMap(ctx context.Context, instance *v1alpha1.OpenNMS, resource client.Object, deployedResource client.Object) (*reconcile.Result, error) {
-	if !subsets.SubsetEqual(resource, deployedResource) {
+	rCM := resource.(*corev1.ConfigMap)
+	drCM := deployedResource.(*corev1.ConfigMap)
+	if !subsets.SubsetEqual(rCM.Data, drCM.Data) || !subsets.SubsetEqual(rCM.Annotations, drCM.Annotations) || !subsets.SubsetEqual(rCM.Labels, drCM.Labels) {
 		r.updateStatus(ctx, instance, false, fmt.Sprintf("updating statefulset: %s", resource.GetName()))
 		if err := r.Update(ctx, resource); err != nil {
 			return &reconcile.Result{}, err
@@ -93,27 +93,4 @@ func (r *OpenNMSReconciler) updateConfigMap(ctx context.Context, instance *v1alp
 		return &reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return nil, nil
-}
-
-func (r *OpenNMSReconciler) updateAllowedUsersSecret(ctx context.Context, resource client.Object) error {
-	// Need to update and restart auth container
-	if err := r.Update(ctx, resource); err != nil {
-		return err
-	}
-	// Update deployment to restart the auth container
-	deployment := &v1.Deployment{}
-	err := r.Get(ctx, types.NamespacedName{Name: "onms-auth", Namespace: resource.GetNamespace()}, deployment)
-	if err != nil {
-		return nil
-	} else {
-		// Update deployment to cause a restart. Needs to be something in the spec.template section for a restart
-		if deployment.Spec.Template.Annotations == nil {
-			deployment.Spec.Template.Annotations = make(map[string]string)
-		}
-		deployment.Spec.Template.Annotations["kubectl.kubernetes.io/restartedAt"] = time.Now().String()
-		if err := r.Update(ctx, deployment); err != nil {
-			return err
-		}
-	}
-	return nil
 }

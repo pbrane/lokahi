@@ -1,19 +1,21 @@
 package org.opennms.horizon.notifications.kafka;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.opennms.horizon.notifications.NotificationsApplication;
 import org.opennms.horizon.notifications.api.PagerDutyAPIImpl;
-import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.shared.dto.event.AlarmDTO;
+import org.opennms.horizon.shared.dto.notifications.PagerDutyConfigDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,15 +26,11 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
@@ -42,7 +40,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
@@ -54,6 +51,7 @@ import static org.mockito.Mockito.verify;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = NotificationsApplication.class)
 @TestPropertySource(properties = "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}", locations = "classpath:application.yml")
+@ActiveProfiles("test")
 class AlarmKafkaConsumerIntegrationTest {
     private static final int KAFKA_TIMEOUT = 5000;
     private static final int HTTP_TIMEOUT = 5000;
@@ -100,7 +98,9 @@ class AlarmKafkaConsumerIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<PagerDutyConfigDTO> request = new HttpEntity<>(config, headers);
 
-        testRestTemplate.postForEntity("http://localhost:" + port + "/notifications/config", request, String.class);
+        testRestTemplate
+            .withBasicAuth("testUser", "testPassword")
+            .postForEntity("http://localhost:" + port + "/notifications/config", request, String.class);
     }
 
     @Test

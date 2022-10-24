@@ -45,6 +45,8 @@ spec:
               value: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y" # Permanent debug port in `skaffold dev`
             - name: SPRING_CACHE_CAFFEINE_SPEC
               value: "maximumSize=10000,expireAfterWrite=60s"
+            - name: HORIZON_STREAM_NOTIFICATIONS_URL
+              value: "http://{{ .Values.OpenNMS.Notification.ServiceName }}:{{ .Values.OpenNMS.Notification.Port }}"
             - name: HORIZON_STREAM_CORE_URL
               value: "http://{{ .Values.OpenNMS.Core.ServiceName }}:{{ .Values.OpenNMS.Core.HttpPort }}"
             - name: TSDB_URL

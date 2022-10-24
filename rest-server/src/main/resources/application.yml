@@ -14,7 +14,7 @@ horizon-stream:
   core:
     url: http://localhost:8181
   notifications:
-    url: http://localhost:38080
+    url: http://localhost:15080
 
 logging:
   file.path: /var/log/restServer

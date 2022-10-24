@@ -8,12 +8,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      run: {{ .Values.OpenNMS.Notification.ServiceName }}
+      app: {{ .Values.OpenNMS.Notification.ServiceName }}
   replicas: {{ .Values.OpenNMS.Notification.Replicas }}
   template:
     metadata:
       labels:
-        run: {{ .Values.OpenNMS.Notification.ServiceName }}
+        app: {{ .Values.OpenNMS.Notification.ServiceName }}
     spec:
       containers:
         - name: {{ .Values.OpenNMS.Notification.ServiceName }}
@@ -34,6 +34,18 @@ spec:
                 secretKeyRef:
                   name: postgres
                   key: notificationPwd
+            - name: HORIZON_KEYCLOAK_BASE_URL
+              value: "http://{{ .Values.Keycloak.ServiceName }}:{{ .Values.Keycloak.Port }}{{ .Values.Keycloak.Path }}/"
+            - name: HORIZON_KEYCLOAK_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.Keycloak.ServiceName }}-initial-admin
+                  key: username
+            - name: HORIZON_KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.Keycloak.ServiceName }}-initial-admin
+                  key: password
           ports:
             - name: http
               containerPort: {{ .Values.OpenNMS.Notification.Port }}

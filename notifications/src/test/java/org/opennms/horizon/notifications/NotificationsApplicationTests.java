@@ -29,13 +29,4 @@ class NotificationsApplicationTests {
 	void contextLoads() {
         System.out.println(environment.getProperty("spring.application.name"));
 	}
-
-    @Disabled
-    @Test
-    void callRest() {
-        // TODO: Add a H2 database for testing.
-        // Connect to it.
-        // Add extra tests with mocked pager duty API somehow.
-        Object obj = this.testRestTemplate.getForEntity("http://localhost:" + port + "/notifications/pagerDutyKey", ResponseEntity.class);
-    }
 }
