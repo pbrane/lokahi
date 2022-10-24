@@ -31,8 +31,8 @@ package org.opennms.horizon.minion.ipc.twin.common;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
+import com.flipkart.zjsonpatch.JsonPatch;
+import com.flipkart.zjsonpatch.JsonPatchApplicationException;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -295,12 +295,11 @@ public abstract class AbstractTwinSubscriber implements TwinSubscriber {
                         // Version advanced - apply path
                         try {
                             final var patchObj = objectMapper.readTree(update.getObject());
-                            final var patch = JsonPatch.fromJson(patchObj);
 
-                            final var value = patch.apply(this.value.value);
+                            final JsonNode value = JsonPatch.apply(patchObj, this.value.value);
 
                             this.accept(new Value(update.getSessionId(), update.getVersion(), value));
-                        } catch (JsonPatchException e) {
+                        } catch (final JsonPatchApplicationException e) {
                             throw new IOException("Unable to apply patch", e);
                         }
 
@@ -319,13 +318,9 @@ public abstract class AbstractTwinSubscriber implements TwinSubscriber {
 
     private void lazyAddProtobufJsonForClass(Class<? extends Message> clazz) {
         if (! mapperKnownClasses.contains(clazz)) {
-            configureProtobufJson(clazz);
+            SimpleModule simpleModule = new SimpleModule();
+            simpleModule.addDeserializer(clazz, new ProtoBufJsonDeserializer<>(clazz));
+            objectMapper.registerModule(simpleModule);
         }
-    }
-
-    private void configureProtobufJson(Class<? extends Message> clazz) {
-        SimpleModule simpleModule = new SimpleModule();
-        simpleModule.addDeserializer(clazz, new ProtoBufJsonDeserializer<>(clazz));
-        objectMapper.registerModule(simpleModule);
     }
 }

@@ -28,27 +28,23 @@
 
 package org.opennms.miniongateway.grpc.twin;
 
-import com.google.common.base.Objects;
-
-import java.util.Arrays;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
-import java.util.function.BiConsumer;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@Data
 public class TwinUpdate {
-
-
+    
     private final TwinRequest twinRequest;
 
     private byte[] object;
 
     private int version;
-
     private boolean isPatch;
-
     private String sessionId;
-
+    @EqualsAndHashCode.Exclude
     private Map<String, String> tracingInfo = new HashMap<>();
 
     public TwinUpdate() {
@@ -61,41 +57,6 @@ public class TwinUpdate {
     }
     public TwinUpdate(String key, String location) {
         this.twinRequest = new TwinRequest(key, location);
-    }
-
-
-
-    public byte[] getObject() {
-        return object;
-    }
-
-    public void setObject(byte[] object) {
-        this.object = object;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public boolean isPatch() {
-        return isPatch;
-    }
-
-    public void setPatch(boolean patch) {
-        isPatch = patch;
     }
 
     public void setLocation(String location) {
@@ -121,32 +82,4 @@ public class TwinUpdate {
     public void addTracingInfo(String key, String value) {
         this.tracingInfo.put(key, value);
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TwinUpdate)) return false;
-        TwinUpdate that = (TwinUpdate) o;
-        return version == that.version && isPatch == that.isPatch
-                && Objects.equal(twinRequest, that.twinRequest)
-                && Objects.equal(object, that.object)
-                && Objects.equal(sessionId, that.sessionId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(twinRequest, object, version, isPatch, sessionId);
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", TwinUpdate.class.getSimpleName() + "[", "]")
-                .add("twinRequest=" + twinRequest)
-                .add("object=" + Arrays.toString(object))
-                .add("version=" + version)
-                .add("isPatch=" + isPatch)
-                .add("sessionId='" + sessionId + "'")
-                .toString();
-    }
-
 }

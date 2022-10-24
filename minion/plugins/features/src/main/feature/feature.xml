@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <features name="minion-plugin-api-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.6.0">
 
+    <repository>mvn:org.opennms.horizon.minion/ipc-features/${project.version}/xml/features</repository>
+
     <feature name="plugins-horizon-utils-internal" version="${project.version}">
         <bundle>mvn:org.opennms.horizon.shared/horizon-common-utils/${project.version}</bundle>
     </feature>
@@ -14,11 +16,6 @@
         <bundle>mvn:com.google.code.gson/gson/${gson.version}</bundle>
     </feature>
 
-<!--    <feature name="plugins-horizon-core-lib-internal" version="${project.version}">-->
-<!--        <feature prerequisite="true">wrap</feature>-->
-<!--        <bundle>wrap:mvn:org.opennms.horizon.core/lib/${project.version}$overwrite=merge&amp;Import-Package=*;resolution:=optional</bundle>-->
-<!--    </feature>-->
-
     <feature name="plugins-eos-internal" description="Savoirtech EOS Whiteboard" version="${project.version}">
         <bundle dependency="true">mvn:org.apache.commons/commons-lang3/3.4</bundle>
         <bundle dependency="true">mvn:com.google.guava/guava/18.0</bundle>
@@ -26,6 +23,7 @@
     </feature>
 
     <feature name="plugins-model" version="${project.version}">
+        <feature>protobuf</feature>
         <bundle>mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
         <bundle>mvn:org.opennms.horizon.shared/protobuf/${project.version}</bundle>
     </feature>

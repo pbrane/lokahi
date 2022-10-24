@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <features name="minion-taskset-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.6.0">
 
+    <repository>mvn:org.opennms.horizon.minion/ipc-features/${project.version}/xml/features</repository>
+
     <feature name="taskset-rest-utils-internal" version="${project.version}">
         <feature>cxf-jaxrs</feature>
         <feature>cxf-sse</feature>
@@ -11,8 +13,7 @@
     </feature>
 
     <feature name="taskset-model" version="${project.version}">
-        <bundle>mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
-        <bundle>mvn:org.opennms.horizon.shared/protobuf/${project.version}</bundle>
+        <feature>protobuf</feature>
     </feature>
 
     <feature name="taskset-scheduler-internal" version="${project.version}">

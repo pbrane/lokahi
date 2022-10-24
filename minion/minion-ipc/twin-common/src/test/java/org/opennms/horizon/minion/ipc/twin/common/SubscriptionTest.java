@@ -17,9 +17,6 @@ import org.opennms.taskset.contract.TaskType;
 
 public class SubscriptionTest {
 
-    @Mock
-    IpcIdentity ipcIdentity;
-
     Subscription subscription =  new LocalTwinSubscriberImpl(new IpcIdentity() {
         @Override
         public String getId() {
@@ -46,10 +43,7 @@ public class SubscriptionTest {
 
         SimpleModule simpleModule = new SimpleModule();
 
-        // Just using Message.class here works.
-//        configureProtobufJsonOneClass(simpleModule, Message.class);
-
-        simpleModule.addSerializer(new ProtoBufJsonSerializer<>(Message.class));
+        simpleModule.addSerializer(new ProtoBufJsonSerializer<>(TaskSet.class));
 
         TaskSet taskSet = TaskSet.newBuilder().addTaskDefinition(TaskDefinition.newBuilder().setType(TaskType.MONITOR).build()).build();
 
@@ -64,7 +58,6 @@ public class SubscriptionTest {
         byte[] objInBytes = objectMapper.writeValueAsBytes(taskSet);
         twinUpdate.setObject(objInBytes);
         twinUpdate.setKey("blahKey");
-
 
         subscription.update(twinUpdate);
 

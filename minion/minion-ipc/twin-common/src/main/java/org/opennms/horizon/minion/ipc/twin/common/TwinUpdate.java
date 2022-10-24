@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.minion.ipc.twin.common;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
