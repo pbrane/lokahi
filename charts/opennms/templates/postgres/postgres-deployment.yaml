@@ -1,3 +1,17 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: {{ .Values.Postgres.ServiceName }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -35,6 +49,8 @@ spec:
       {{- end }}
       volumes:
         - name: postgres-volume
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
         - name: postgres-initial-script
           secret:
             secretName: postgres-initial-sql
@@ -43,6 +59,8 @@ spec:
           image: {{ .Values.Postgres.Image }}
           imagePullPolicy: {{ .Values.Postgres.ImagePullPolicy }}
           env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:

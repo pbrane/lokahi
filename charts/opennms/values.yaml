@@ -4,7 +4,7 @@ OpenNMS:
   Core:
     Path: /core
     ServiceName: opennms-core
-    Image: opennms/horizon-stream-core
+    Image: opennms/horizon-stream-core:latest
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     HttpPort: 8181
@@ -22,7 +22,7 @@ OpenNMS:
   API:
     Path: /api
     ServiceName: opennms-rest-server
-    Image: opennms/horizon-stream-rest-server
+    Image: opennms/horizon-stream-rest-server:latest
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 9090
@@ -35,7 +35,7 @@ OpenNMS:
         Memory: 1Gi
   MetricsProcessor:
     ServiceName: opennms-metrics-processor
-    Image: opennms/horizon-stream-metrics-processor
+    Image: opennms/horizon-stream-metrics-processor:latest
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Resources:
@@ -48,10 +48,10 @@ OpenNMS:
   UI:
     Path: /
     ServiceName: opennms-ui
-    Image: opennms/horizon-stream-ui
+    Image: opennms/horizon-stream-ui:latest
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    Port: 80
+    Port: 8080
     Resources:
       Limits:
         Cpu: "1"
@@ -61,7 +61,7 @@ OpenNMS:
         Memory: 250Mi
   Minion:
     ServiceName: opennms-minion
-    Image: opennms/horizon-stream-minion
+    Image: opennms/horizon-stream-minion:latest
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8181
@@ -75,7 +75,7 @@ OpenNMS:
         Memory: 512Mi
   MinionGateway:
     ServiceName: opennms-minion-gateway
-    Image: opennms/horizon-stream-minion-gateway
+    Image: opennms/horizon-stream-minion-gateway:latest
     ImagePullPolicy: IfNotPresent
     Port: 8080
     GrpcPort: 8990
@@ -90,7 +90,7 @@ OpenNMS:
         Memory: 512Mi
   Inventory:
     ServiceName: opennms-inventory
-    Image: opennms/horizon-stream-inventory
+    Image: opennms/horizon-stream-inventory:latest
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8080
@@ -103,7 +103,7 @@ OpenNMS:
         Memory: 250Mi
   Notification: 
     ServiceName: opennms-notifications
-    Image: opennms/horizon-stream-notification
+    Image: opennms/horizon-stream-notification:latest
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8080
@@ -151,7 +151,7 @@ Grafana:
   Port: 3000
   Replicas: 1
   ServiceName: grafana
-  Image: opennms/horizon-stream-grafana
+  Image: opennms/horizon-stream-grafana:latest
   ImagePullPolicy: IfNotPresent
   InitContainerImage: busybox
   Resources:
@@ -166,7 +166,7 @@ Prometheus:
   Server:
     ServiceName: prometheus
     Port: 9090
-    Image: prom/prometheus
+    Image: prom/prometheus:v2.39.1
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Resources:
@@ -179,7 +179,7 @@ Prometheus:
   PushGateway:
     ServiceName: prometheus-pushgateway
     Port: 9091
-    Image: prom/pushgateway
+    Image: prom/pushgateway:v1.4.3
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Resources:

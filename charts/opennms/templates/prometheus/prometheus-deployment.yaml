@@ -35,7 +35,10 @@ spec:
       volumes:
         - name: prometheus-config-volume
           configMap:
+            defaultMode: 420
             name: prometheus-config-map
+        - name: prometheus-data-volume
+          emptyDir: {}
       containers:
         - name: {{ .Values.Prometheus.Server.ServiceName }}
           image: {{ .Values.Prometheus.Server.Image }}
@@ -52,3 +55,5 @@ spec:
             - name: prometheus-config-volume
               mountPath: "/etc/prometheus/prometheus.yml"
               subPath: "prometheus.yml"
+            - name: prometheus-data-volume
+              mountPath: /prometheus

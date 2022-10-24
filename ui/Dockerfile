@@ -17,9 +17,9 @@ COPY --link . ./
 # Starts Vite dev server, used by Skaffold
 FROM sources as development
 
-EXPOSE 80
+EXPOSE 8080
 ENTRYPOINT ["yarn", "run", "dev"]
-CMD ["--port", "80"]
+CMD ["--port", "8080"]
 
 # Builds the app for production
 FROM sources as build
