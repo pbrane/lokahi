@@ -17,9 +17,6 @@
     </description>
 
     <properties>
-        <java.version>11</java.version>
-        <lombok.version>1.18.22</lombok.version>
-        <lombok.binding.version>0.2.0</lombok.binding.version>
         <docker.image.tag>local</docker.image.tag>
         <docker.image.skipPush>false</docker.image.skipPush>
     </properties>
