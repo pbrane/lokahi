@@ -17,6 +17,8 @@ OpenNMS:
         Cpu: '0'
         Memory: '0'
   UI:
+    Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-ui:next
+    ImagePullPolicy: Always
     Resources:
       Limits:
         Cpu: '0'
