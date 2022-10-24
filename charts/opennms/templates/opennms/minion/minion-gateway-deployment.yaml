@@ -18,6 +18,9 @@ spec:
         ignite-cluster: core
     spec:
       serviceAccountName: {{ .Values.OpenNMS.Minion.ServiceName }}-sa
+      volumes:
+        - name: ignite-volume
+          emptyDir: {}
       containers:
         - name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
           image: {{ .Values.OpenNMS.MinionGateway.Image }}
@@ -45,3 +48,6 @@ spec:
             requests:
               cpu: "{{ .Values.OpenNMS.MinionGateway.Resources.Requests.Cpu }}"
               memory: "{{ .Values.OpenNMS.MinionGateway.Resources.Requests.Memory }}"
+          volumeMounts:
+            - name: ignite-volume
+              mountPath: /ignite
