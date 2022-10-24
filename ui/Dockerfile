@@ -40,5 +40,5 @@ COPY --link /nginx /etc/nginx
 # Copy prod files from prod-build stage
 COPY --from=build --link /app/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 8080
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
