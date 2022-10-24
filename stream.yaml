@@ -1,0 +1,7 @@
+---
+apiVersion: k8s.opennms.com/v1alpha1
+kind: OpenNMS
+metadata:
+  name: stream
+spec:
+  namespace: stream

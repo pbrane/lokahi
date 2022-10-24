@@ -51,6 +51,8 @@ OpenNMS:
         Cpu: '0'
         Memory: '0'
   Core:
+    Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-core:next
+    ImagePullPolicy: Always
     Resources:
       Limits:
         Cpu: '0'
@@ -59,6 +61,8 @@ OpenNMS:
         Cpu: '0'
         Memory: 2Gi
 Grafana:
+  Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-grafana:next
+  ImagePullPolicy: Always
   Resources:
     Limits:
       Cpu: 500m
