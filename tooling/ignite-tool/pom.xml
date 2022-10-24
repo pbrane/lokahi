@@ -22,7 +22,6 @@
         <lombok.binding.version>0.2.0</lombok.binding.version>
         <docker.image.tag>local</docker.image.tag>
         <docker.image.skipPush>false</docker.image.skipPush>
-        <horizon.shared.lib.version>0.1.0-SNAPSHOT</horizon.shared.lib.version>
     </properties>
 
     <dependencyManagement>

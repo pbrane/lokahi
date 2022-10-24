@@ -63,7 +63,6 @@
         <hibernate.version>5.4.32.Final</hibernate.version>
         <httpcore.version>4.4.4</httpcore.version>
         <httpclient.version>4.5.13</httpclient.version>
-        <horizon.shared.lib.version>0.1.0-SNAPSHOT</horizon.shared.lib.version>
         <ignite.version>2.14.0</ignite.version>
         <jackson.version>2.13.1</jackson.version>
         <jaeger.version>0.34.0</jaeger.version>
