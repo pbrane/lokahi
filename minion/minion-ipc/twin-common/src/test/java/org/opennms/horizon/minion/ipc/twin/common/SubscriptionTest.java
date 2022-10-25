@@ -1,13 +1,16 @@
 package org.opennms.horizon.minion.ipc.twin.common;
 
+import static org.junit.Assert.assertTrue;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.google.protobuf.Message;
+import com.flipkart.zjsonpatch.JsonDiff;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.opennms.horizon.minion.ipc.twin.common.AbstractTwinSubscriber.Subscription;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.protobuf.marshalling.ProtoBufJsonSerializer;
@@ -16,6 +19,7 @@ import org.opennms.taskset.contract.TaskSet;
 import org.opennms.taskset.contract.TaskType;
 
 public class SubscriptionTest {
+    ObjectMapper objectMapper;
 
     Subscription subscription =  new LocalTwinSubscriberImpl(new IpcIdentity() {
         @Override
@@ -39,7 +43,7 @@ public class SubscriptionTest {
 
     @Ignore
     @Test
-    public void accept() throws IOException {
+    public void accept() throws IOException, Exception {
 
         SimpleModule simpleModule = new SimpleModule();
 
@@ -47,7 +51,7 @@ public class SubscriptionTest {
 
         TaskSet taskSet = TaskSet.newBuilder().addTaskDefinition(TaskDefinition.newBuilder().setType(TaskType.MONITOR).build()).build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper = new ObjectMapper();
 
         objectMapper.registerModule(simpleModule);
 
@@ -61,9 +65,23 @@ public class SubscriptionTest {
 
         subscription.update(twinUpdate);
 
+        TaskSet updatedTaskSet = TaskSet.newBuilder().addTaskDefinition(TaskDefinition.newBuilder().setType(TaskType.DETECTOR).build()).build();
+
         twinUpdate.setPatch(true);
         twinUpdate.setVersion(2);
+        byte[] patchValue = getPatchValue(objInBytes, objectMapper.writeValueAsBytes(updatedTaskSet));
+        twinUpdate.setObject(patchValue);
 
         subscription.update(twinUpdate);
+
+        // check no exceptions thrown
+        assertTrue(true);
+    }
+
+    private byte[] getPatchValue(byte[] originalObj, byte[] updatedObj) throws Exception {
+        JsonNode sourceNode = objectMapper.readTree(originalObj);
+        JsonNode targetNode = objectMapper.readTree(updatedObj);
+        JsonNode diffNode = JsonDiff.asJson(sourceNode, targetNode);
+        return diffNode.toString().getBytes(StandardCharsets.UTF_8);
     }
 }

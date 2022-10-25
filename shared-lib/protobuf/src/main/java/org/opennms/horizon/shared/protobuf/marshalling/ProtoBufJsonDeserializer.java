@@ -12,8 +12,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-@Data
+@RequiredArgsConstructor
 public class ProtoBufJsonDeserializer<T extends Message> extends JsonDeserializer {
 
     private final Class<T> clazz;

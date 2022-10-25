@@ -256,7 +256,6 @@ public abstract class AbstractTwinPublisher implements TwinPublisher, TwinProvid
         SimpleModule simpleModule = new SimpleModule();
 
         Arrays.stream(protobufClasses).forEach(clazz -> simpleModule.addSerializer(new ProtoBufJsonSerializer<>(clazz)));
-//        simpleModule.addSerializer(new ProtoBufJsonSerializer<>(TaskSet.class));
 
         objectMapper.registerModule(simpleModule);
     }
