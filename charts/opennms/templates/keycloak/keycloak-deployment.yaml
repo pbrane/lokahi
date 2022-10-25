@@ -72,6 +72,8 @@ spec:
               value: "true"
             - name: KC_HTTP_RELATIVE_PATH
               value: "{{ .Values.Keycloak.Path }}"
+            - name: KC_HOSTNAME_STRICT_HTTPS
+              value: "false"
             - name: KC_PROXY
               value: passthrough
             - name: jgroups.dns.query

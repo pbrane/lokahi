@@ -4,8 +4,8 @@ TLS:
   Enabled: False
 Keycloak:
   AdminPassword: admin
-  HostnamePort: 8123
-  HostnameAdminUrl: http://localhost:8123/auth
+  HostnamePort: 80
+  HostnameAdminUrl: http://localhost/auth
 
 OpenNMS:
   API:
