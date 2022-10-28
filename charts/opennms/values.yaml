@@ -4,7 +4,7 @@ OpenNMS:
   Core:
     Path: /core
     ServiceName: opennms-core
-    Image: opennms/horizon-stream-core:latest
+    Image: opennms/horizon-stream-core:v0.0.20-dev
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     HttpPort: 8181
@@ -22,7 +22,7 @@ OpenNMS:
   API:
     Path: /api
     ServiceName: opennms-rest-server
-    Image: opennms/horizon-stream-rest-server:latest
+    Image: opennms/horizon-stream-rest-server:v0.0.20-dev
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 9090
@@ -35,7 +35,7 @@ OpenNMS:
         Memory: 1Gi
   MetricsProcessor:
     ServiceName: opennms-metrics-processor
-    Image: opennms/horizon-stream-metrics-processor:latest
+    Image: opennms/horizon-stream-metrics-processor:v0.0.20-dev
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Resources:
@@ -48,7 +48,7 @@ OpenNMS:
   UI:
     Path: /
     ServiceName: opennms-ui
-    Image: opennms/horizon-stream-ui:latest
+    Image: opennms/horizon-stream-ui:v0.0.20-dev
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8080
@@ -61,7 +61,7 @@ OpenNMS:
         Memory: 250Mi
   Minion:
     ServiceName: opennms-minion
-    Image: opennms/horizon-stream-minion:latest
+    Image: opennms/horizon-stream-minion:v0.0.20-dev
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8181
@@ -75,7 +75,7 @@ OpenNMS:
         Memory: 512Mi
   MinionGateway:
     ServiceName: opennms-minion-gateway
-    Image: opennms/horizon-stream-minion-gateway:latest
+    Image: opennms/horizon-stream-minion-gateway:v0.0.20-dev
     ImagePullPolicy: IfNotPresent
     Port: 8080
     GrpcPort: 8990
@@ -90,7 +90,7 @@ OpenNMS:
         Memory: 512Mi
   Inventory:
     ServiceName: opennms-inventory
-    Image: opennms/horizon-stream-inventory:latest
+    Image: opennms/horizon-stream-inventory:v0.0.20-dev
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8080
@@ -103,7 +103,7 @@ OpenNMS:
         Memory: 250Mi
   Notification: 
     ServiceName: opennms-notifications
-    Image: opennms/horizon-stream-notification:latest
+    Image: opennms/horizon-stream-notification:v0.0.20-dev
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8080
@@ -128,7 +128,7 @@ Postgres:
   VolumeSize: 10Gi
 Keycloak:
   Path: /auth
-  Image: opennms/horizon-stream-keycloak:latest
+  Image: opennms/horizon-stream-keycloak:v0.0.20-dev
   ImagePullPolicy: IfNotPresent
   Port: 8080
   HttpsPort: 8443
@@ -151,7 +151,7 @@ Grafana:
   Port: 3000
   Replicas: 1
   ServiceName: grafana
-  Image: opennms/horizon-stream-grafana:latest
+  Image: opennms/horizon-stream-grafana:v0.0.20-dev
   ImagePullPolicy: IfNotPresent
   InitContainerImage: busybox
   Resources:
@@ -207,7 +207,7 @@ Kafka:
   VolumeSize: 10Gi
 MailServer:
   ServiceName: mail-server
-  Image: mailhog/mailhog:latest
+  Image: mailhog/mailhog:v1.0.1
   ImagePullPolicy: IfNotPresent
   Replicas: 1
   Port: 8025
@@ -247,5 +247,3 @@ Ingress:
 CustomErrors:
   Image: quay.io/kubernetes-ingress-controller/custom-error-pages:0.4
   Debug: true
-
-

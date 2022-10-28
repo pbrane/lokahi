@@ -23,6 +23,9 @@ RUN mkdir /opt/karaf/.ssh && \
     echo minion=$(cat /opt/karaf/.ssh/id_rsa.pub | awk '{print $2}'),viewer > /opt/karaf/etc/keys.properties && \
     echo "_g_\\:admingroup = group,admin,manager,viewer,systembundles,ssh" >> /opt/karaf/etc/keys.properties
 
+# Allow users in the root group to access them with the same authorization as the directory and file owner
+RUN chmod -R g=u /opt/karaf/
+
 # Arguments for labels should not invalidate caches
 ARG BUILD_DATE="1970-01-01T00:00:00+0000"
 ARG VERSION

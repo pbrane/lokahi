@@ -6,7 +6,6 @@ Keycloak:
   AdminPassword: admin
   HostnamePort: 80
   HostnameAdminUrl: http://localhost/auth
-
 OpenNMS:
   API:
     Resources:
@@ -17,7 +16,7 @@ OpenNMS:
         Cpu: '0'
         Memory: '0'
   UI:
-    Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-ui:next
+    #Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-ui:next
     ImagePullPolicy: Always
     Resources:
       Limits:
@@ -27,6 +26,8 @@ OpenNMS:
         Cpu: '0'
         Memory: '0'
   Minion:
+    Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-minion:next
+    ImagePullPolicy: Always
     Resources:
       Limits:
         Cpu: '0'
@@ -51,7 +52,7 @@ OpenNMS:
         Cpu: '0'
         Memory: '0'
   Core:
-    Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-core:next
+   # Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-core:next
     ImagePullPolicy: Always
     Resources:
       Limits:
@@ -61,7 +62,7 @@ OpenNMS:
         Cpu: '0'
         Memory: 2Gi
 Grafana:
-  Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-grafana:next
+  #Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-grafana:next
   ImagePullPolicy: Always
   Resources:
     Limits:

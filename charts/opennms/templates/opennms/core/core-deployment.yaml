@@ -107,6 +107,8 @@ spec:
               mountPath: "/opt/horizon-stream/etc/users.properties"
               subPath: "karafUsers"
               readOnly: true
+            - name: maven-volume
+              mountPath: /.m2
           ports:
             - name: ssh
               containerPort: {{ .Values.OpenNMS.Core.SshPort }}
@@ -134,3 +136,5 @@ spec:
         - name: config-volume
           configMap:
             name: opennms-config
+        - name: maven-volume
+          emptyDir: {}

@@ -24,7 +24,7 @@ helm upgrade -i operator-local ./charts/opennms-operator -f ./install-local-oper
 ```
 
 ```
-helm upgrade -i opennms-local ./charts/opennms -f ./openshift-helm-values.yaml --namespace stream --create-namespace
+helm upgrade -i opennms-local ./charts/opennms -f ./openshift-helm-values.yaml --namespace stream
 ```
 
 
@@ -55,8 +55,10 @@ docker push ${REGISTRY}/horizon-stream-core:next
 
 docker tag opennms/horizon-stream-grafana:local ${REGISTRY}/horizon-stream-grafana:next
 docker push ${REGISTRY}/horizon-stream-grafana:next
+
+
+
+docker tag opennms/horizon-stream-minion:local ${REGISTRY}/horizon-stream-minion:next
+docker push ${REGISTRY}/horizon-stream-minion:next
 ```
-
-
-
 
