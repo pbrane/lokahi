@@ -62,3 +62,10 @@ docker tag opennms/horizon-stream-minion:local ${REGISTRY}/horizon-stream-minion
 docker push ${REGISTRY}/horizon-stream-minion:next
 ```
 
+# TODO
+
+* Fix /.m2/
+* Ensure containers start w/o internet access (Maven access)
+ * Seed containers, then pull
+* Operator on OpenShift
+
