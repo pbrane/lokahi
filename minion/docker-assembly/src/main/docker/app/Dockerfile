@@ -54,6 +54,8 @@ WORKDIR /opt/karaf
 
 USER 10001
 
+# Initial heap size should be no less than 512MB
+ENV JAVA_OPTS "-Xms512m -Xmx512m"
 ENV KARAF_SYSTEM_OPTS "--add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED"
 
 ENTRYPOINT [ "/opt/karaf/bin/karaf" ]

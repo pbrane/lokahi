@@ -31,11 +31,11 @@ package org.opennms.horizon.minion.grpc;
 import static org.opennms.horizon.minion.grpc.GrpcClientConstants.*;
 import static org.opennms.horizon.shared.ipc.rpc.api.RpcModule.MINION_HEADERS_MODULE;
 
-import com.codahale.metrics.MetricRegistry;
-import com.google.protobuf.Message;
-import io.opentracing.Tracer;
 import java.io.File;
 import java.io.IOException;
+import java.security.Provider;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
@@ -46,8 +46,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
 import java.util.concurrent.atomic.AtomicLong;
+
+import javax.net.ssl.X509TrustManager;
+
 import org.opennms.cloud.grpc.minion.CloudServiceGrpc;
 import org.opennms.cloud.grpc.minion.CloudServiceGrpc.CloudServiceStub;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
@@ -66,8 +68,12 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Message;
 
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
@@ -76,8 +82,7 @@ import io.grpc.netty.shaded.io.grpc.netty.NegotiationType;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
 import io.grpc.stub.StreamObserver;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
+import io.opentracing.Tracer;
 
 /**
  * Minion GRPC client runs both RPC/Sink together.
@@ -176,6 +181,11 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
     }
 
     private SslContextBuilder buildSslContext() {
+        boolean tlsInsecure = PropertiesUtils.getProperty(properties, "tls.insecure", false);
+        if (tlsInsecure) {
+            return GrpcSslContexts.forClient().trustManager(new InsecureTrustManager());
+        }
+
         SslContextBuilder builder = GrpcSslContexts.forClient();
         String clientCertChainFilePath = properties.getProperty(CLIENT_CERTIFICATE_FILE_PATH);
         String clientPrivateKeyFilePath = properties.getProperty(CLIENT_PRIVATE_KEY_FILE_PATH);
@@ -188,6 +198,23 @@ public class MinionGrpcClient extends AbstractMessageDispatcherFactory<String> i
             builder.keyManager(new File(clientCertChainFilePath), new File(clientPrivateKeyFilePath));
         }
         return builder;
+    }
+
+    class InsecureTrustManager implements X509TrustManager {
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            // BAD: Does not verify the certificate chain, allowing any certificate.
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+        }
     }
 
     private void initializeRpcStub() {
