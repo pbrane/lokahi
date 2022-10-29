@@ -28,11 +28,6 @@
 
 package org.opennms.horizon.shared.grpc.common;
 
-import io.grpc.BindableService;
-import io.grpc.Server;
-import io.grpc.ServerInterceptor;
-import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
@@ -44,11 +39,19 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
 import javax.net.ssl.SSLException;
+
 import org.opennms.horizon.shared.grpc.interceptor.DelegatingInterceptor;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.grpc.BindableService;
+import io.grpc.Server;
+import io.grpc.ServerInterceptor;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
 
 public class GrpcIpcServerBuilder implements GrpcIpcServer {
 
@@ -118,11 +121,13 @@ public class GrpcIpcServerBuilder implements GrpcIpcServer {
                 if (sslContextBuilder != null) {
                     try {
                         serverBuilder.sslContext(sslContextBuilder.build());
-                        LOG.info("TLS enabled for Grpc IPC Server");
+                        LOG.info("TLS enabled for gRPC IPC Server");
                     } catch (SSLException e) {
-                        LOG.error("Couldn't initialize ssl context from {}", properties, e);
+                        LOG.error("Couldn't initialize SSL context from {}", properties, e);
                     }
                 }
+            } else {
+                LOG.info("TLS disabled for gRPC IPC Server");
             }
         }
     }
@@ -142,7 +147,7 @@ public class GrpcIpcServerBuilder implements GrpcIpcServer {
             server.start();
             LOG.info("OpenNMS IPC gRPC server started with {} services", services.size());
         } catch (IOException e) {
-            LOG.error("Exception while starting IPC Grpc Server", e);
+            LOG.error("Exception while starting IPC gRPC Server", e);
         }
     }
 }

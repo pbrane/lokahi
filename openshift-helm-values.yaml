@@ -1,5 +1,6 @@
 Namespace: skaffold-instance
 Host: stream.apps-crc.testing
+MinionHost: stream-minion.apps-crc.testing
 TLS:
   Enabled: False
 Keycloak:
@@ -27,6 +28,16 @@ OpenNMS:
         Memory: '0'
   Minion:
     Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-minion:next
+    ImagePullPolicy: Always
+    Resources:
+      Limits:
+        Cpu: '0'
+        Memory: '0'
+      Requests:
+        Cpu: '0'
+        Memory: '0'
+  MinionGateway:
+    Image: default-route-openshift-image-registry.apps-crc.testing/openshift/horizon-stream-minion-gateway:next
     ImagePullPolicy: Always
     Resources:
       Limits:

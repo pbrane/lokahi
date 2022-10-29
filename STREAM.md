@@ -56,11 +56,27 @@ docker push ${REGISTRY}/horizon-stream-core:next
 docker tag opennms/horizon-stream-grafana:local ${REGISTRY}/horizon-stream-grafana:next
 docker push ${REGISTRY}/horizon-stream-grafana:next
 
-
-
 docker tag opennms/horizon-stream-minion:local ${REGISTRY}/horizon-stream-minion:next
 docker push ${REGISTRY}/horizon-stream-minion:next
+
+docker tag opennms/horizon-stream-minion-gateway:local ${REGISTRY}/horizon-stream-minion-gateway:next
+docker push ${REGISTRY}/horizon-stream-minion-gateway:next
 ```
+
+# Minion gRPC
+
+oc annotate ingresses.config/cluster ingress.operator.openshift.io/default-enable-http2=true
+
+grpcurl -v -import-path shared-lib/horizon-ipc/ipc-grpc/ipc-grpc-contract/src/main/proto/ -proto opennms_minion_ipc.proto -insecure stream.apps-crc.testing:443 minion.CloudService.CloudToMinionMessages
+
+grpcurl -v -import-path shared-lib/horizon-ipc/ipc-grpc/ipc-grpc-contract/src/main/proto/ -proto opennms_minion_ipc.proto -plaintext -d '{"system_id":"xx","location":"home"}' localhost:8990  minion.CloudService.CloudToMinionMessages
+
+grpcurl -v -import-path shared-lib/horizon-ipc/ipc-grpc/ipc-grpc-contract/src/main/proto/ -proto opennms_minion_ipc.proto -d '{"system_id":"xx","location":"home"}' -insecure stream-minion.apps-crc.testing:443  minion.CloudService.CloudToMinionMessages
+
+
+openssl req -newkey rsa:4096 -nodes -keyout tls/tls.key -x509 -days 365 -out tls/tls.crt
+oc create secret tls tls-secret --cert=tls/tls.crt --key=tls/tls.key
+
 
 # TODO
 

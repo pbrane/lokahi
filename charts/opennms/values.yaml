@@ -74,6 +74,7 @@ OpenNMS:
         Cpu: "1"
         Memory: 512Mi
   MinionGateway:
+    Path: /minion
     ServiceName: opennms-minion-gateway
     Image: opennms/horizon-stream-minion-gateway:v0.0.20-dev
     ImagePullPolicy: IfNotPresent
