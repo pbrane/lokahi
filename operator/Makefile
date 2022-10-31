@@ -14,6 +14,10 @@ integration-test:
 kubebuilder:
 	controller-gen object paths=./api/v1alpha1/opennms_types.go
 
+crd:
+	controller-gen crd paths=./api/v1alpha1/opennms_types.go output:crd:artifacts:config=./api/crd/bases
+	mv ./api/crd/bases/k8s.opennms.com_opennms.yaml ../charts/opennms-operator/crds/opennms.yaml
+
 dependencies:
 	go mod download
 

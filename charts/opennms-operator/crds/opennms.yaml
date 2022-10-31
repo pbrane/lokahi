@@ -1,6 +1,11 @@
-apiVersion: apiextensions.k8s.io/v1
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.3.0
+  creationTimestamp: null
   name: opennms.k8s.opennms.com
 spec:
   group: k8s.opennms.com
@@ -8,253 +13,275 @@ spec:
     kind: OpenNMS
     listKind: OpenNMSList
     plural: opennms
-    singular: opennms
     shortNames:
-      - onms
-  scope: Cluster
-  versions:
-    - name: v1alpha1
-      served: true
-      storage: true
-      schema:
-        openAPIV3Schema:
-          description: An OpenNMS instance
+    - onms
+    singular: opennms
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: OpenNMS - is the Schema for the opennms API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
           type: object
+        spec:
+          description: OpenNMSSpec defines the desired state of OpenNMS
           properties:
-            spec:
-              description: OpenNMSSpec defines the desired state of OpenNMS
-              type: object
+            api:
+              description: Defines service values for API service
               properties:
-                core:
-                  description: Defines cpu,mem and disk size for core
-                  type: object
-                  properties:
-                    cpu:
-                      type: string
-                    disk:
-                      type: string
-                    mem:
-                      type: string
-                    image:
-                      description: Docker Image tag for the service
-                      type: string
-                api:
-                  description: Defines cpu,mem and disk size for api
-                  type: object
-                  properties:
-                    cpu:
-                      type: string
-                    disk:
-                      type: string
-                    mem:
-                      type: string
-                    image:
-                      description: Docker Image tag for the service
-                      type: string
-                ui:
-                  description: Defines cpu,mem and disk size for ui
-                  type: object
-                  properties:
-                    cpu:
-                      type: string
-                    disk:
-                      type: string
-                    mem:
-                      type: string
-                    image:
-                      description: Docker Image tag for the service
-                      type: string
-                minion:
-                  description: Defines cpu,mem and disk size for the Minion
-                  type: object
-                  properties:
-                    cpu:
-                      type: string
-                    disk:
-                      type: string
-                    mem:
-                      type: string
-                    image:
-                      description: Docker Image tag for the service
-                      type: string
-                minionGateway:
-                  description: Defines cpu,mem and disk size for the Minion
-                  type: object
-                  properties:
-                    cpu:
-                      type: string
-                    disk:
-                      type: string
-                    mem:
-                      type: string
-                    image:
-                      description: Docker Image tag for the service
-                      type: string
-                inventory:
-                  description: Defines cpu,mem and disk size for the Inventory service
-                  type: object
-                  properties:
-                    cpu:
-                      type: string
-                    disk:
-                      type: string
-                    mem:
-                      type: string
-                    image:
-                      description: Docker Image tag for the service
-                      type: string
-                notification:
-                  description: Defines cpu,mem and disk size for the Notification service
-                  type: object
-                  properties:
-                    cpu:
-                      type: string
-                    disk:
-                      type: string
-                    mem:
-                      type: string
-                    image:
-                      description: Docker Image tag for the service
-                      type: string
-                metricsProcessor:
-                  description: Defines cpu,mem and disk size for the MetricsProcessor service
-                  type: object
-                  properties:
-                    cpu:
-                      type: string
-                    disk:
-                      type: string
-                    mem:
-                      type: string
-                    image:
-                      description: Docker Image tag for the service
-                      type: string
-                keycloak:
-                  description: Defines service configuration for keycloak
-                  type: object
-                  properties:
-                    image:
-                      type: string
-                grafana:
-                  description: Defines service configuration for grafana
-                  type: object
-                  properties:
-                    image:
-                      type: string
-                credentials:
-                  description: Set the default credentials for the instance
-                  type: object
-                  properties:
-                    adminPassword:
-                      type: string
-                    userPassword:
-                      type: string
-                postgres:
-                  description: Resource definitions for Postgres
-                  type: object
-                  properties:
-                    cpu:
-                      type: string
-                    disk:
-                      type: string
-                    mem:
-                      type: string
-                    image:
-                      description: Docker Image tag for the service
-                      type: string
-                host:
-                  description: Domain name used for ingress into the instance
+                cpu:
                   type: string
-                httpPort:
-                  description: HTTP port number the instance will be exposed on
-                  type: number
-                httpsPort:
-                  description: HTTPS port number the instance will be exposed on
-                  type: number
-                namespace:
-                  description: k8s namespace to host resources
+                disk:
                   type: string
-                timeseries:
-                  description: Defines what plugin for timeseries to use
-                  type: object
-                  properties:
-                    apiKey:
-                      type: string
-                    host:
-                      type: string
-                    mode:
-                      type: string
-                    port:
-                      type: integer
-                allowedUsers:
-                  description: Users allowed automatic login via tokens
-                  type: array
-                  items:
-                    type: string
-                imageUpdate:
-                  description: Configuration for automatic image updating
-                  type: object
-                  properties:
-                    update:
-                      description: Strategy for updating the running image
-                      type: string
-                      enum: [ now, none ]
-                testDeploy:
-                  description: Deploy the instance in a nonoperative testing mode
-                  type: boolean
-                deployOnly:
-                  description: Only deploy the instance, do not run recurring updates on it
-                  type: boolean
-            status:
-              description: OpenNMSStatus defines the observed state of OpenNMS
-              type: object
-              properties:
                 image:
-                  description: Image defines current status of used image for OpenNMS
-                    container
-                  type: object
-                  properties:
-                    checkedAt:
-                      description: timestamp of a last image check in DockerHub
-                      type: string
-                    isLatest:
-                      description: true if latest image used, false otherwise
-                      type: boolean
-                    serviceToUpdate:
-                      description: list of services that have updates available
-                      type: string
-                  required:
-                    - isLatest
-                nodes:
-                  type: array
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            core:
+              description: Defines service values for Core service
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            credentials:
+              description: Set the default credentials for the instance
+              properties:
+                adminPassword:
+                  type: string
+                userPassword:
+                  type: string
+              type: object
+            deployOnly:
+              default: false
+              description: Only deploy the instance, do not run recurring updates
+                on it
+              type: boolean
+            grafana:
+              description: Defines service values for Grafana
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            host:
+              description: Domain name used in ingress rule
+              type: string
+            httpPort:
+              default: 80
+              description: HTTP port number the instance will be exposed on
+              type: integer
+            httpsPort:
+              default: 443
+              description: HTTPS port number the instance will be exposed on
+              type: integer
+            imageUpdate:
+              description: Defines the logic of ONMS image update
+              properties:
+                update:
+                  description: can have values of now/none
+                  type: string
+              type: object
+            inventory:
+              description: Defines service values for Inventory service
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            keycloak:
+              description: Defines service values for Postgres
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            metricsProcessor:
+              description: Defines service values for MetricsProcessor service
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            minion:
+              description: Defines service values for the Minion
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            minionGateway:
+              description: Defines service values for the Minion Gateway
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            namespace:
+              description: K8s namespace to use
+              type: string
+            notification:
+              description: Defines service values for Notification service
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            postgres:
+              description: Defines service values for Postgres
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+            ui:
+              description: Defines service values for UI service
+              properties:
+                cpu:
+                  type: string
+                disk:
+                  type: string
+                image:
+                  description: Image tag version of OpenNMS.
+                  type: string
+                mem:
+                  type: string
+              type: object
+          required:
+          - namespace
+          type: object
+        status:
+          description: OpenNMSStatus - defines the observed state of OpenNMS
+          properties:
+            image:
+              description: ImageStatus - defines current status of used image for
+                OpenNMS container
+              properties:
+                checkedAt:
+                  description: timestamp of a last image check in DockerHub
+                  type: string
+                isLatest:
+                  description: true if latest image used, false otherwise
+                  type: boolean
+                servicesToUpdate:
+                  description: list of services that have updates available
+                  type: string
+              required:
+              - isLatest
+              type: object
+            nodes:
+              items:
+                type: string
+              type: array
+            readiness:
+              description: ReadinessStatus - the ready status of the ONMS instance
+              properties:
+                ready:
+                  description: if the ONMS instance is ready
+                  type: boolean
+                reason:
+                  description: reason an ONMS instance isn't ready
+                  type: string
+                services:
+                  description: list of readinesses of the constituent services
                   items:
-                    type: string
-                readiness:
-                  type: object
-                  properties:
-                    ready:
-                      description: The instance's ready state
-                      type: boolean
-                    reason:
-                      description: Reason for the instance's ready state
-                      type: string
-                    timestamp:
-                      description: Timestamp when the instance's ready state was last determined
-                      type: string
-                    services:
-                      description: The ready state of each of the instance's constiuent services
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          ready:
-                            description: The service's readiness
-                            type: boolean
-                          reason:
-                            description: Reason for the services's readiness/state
-                            type: string
-                          timestamp:
-                            description: Timestamp when the service's readiness was last determined
-                            type: string
-      subresources: # this needs to be here to toggle the status subresource on
-        status: { }
+                    properties:
+                      ready:
+                        description: if the service is ready
+                        type: boolean
+                      reason:
+                        description: reason a service isn't ready
+                        type: string
+                      timestamp:
+                        description: the time the `ready` flag was last updated
+                        type: string
+                    required:
+                    - ready
+                    - reason
+                    type: object
+                  type: array
+                timestamp:
+                  description: the time the `ready` flag was last updated
+                  type: string
+              type: object
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

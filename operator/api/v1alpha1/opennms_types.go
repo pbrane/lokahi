@@ -19,24 +19,27 @@ import (
 )
 
 // +kubebuilder:object:generate=true
+// +groupName=k8s.opennms.com
 
 // OpenNMSSpec defines the desired state of OpenNMS
 type OpenNMSSpec struct {
 	// Domain name used in ingress rule
 	Host string `json:"host,omitempty"`
 
+	// +optional
+	// +kubebuilder:default=80
 	//HTTP port number the instance will be exposed on
 	HttpPort int `json:"httpPort"`
 
+	// +optional
+	// +kubebuilder:default=443
 	//HTTPS port number the instance will be exposed on
 	HttpsPort int `json:"httpsPort"`
 
 	// K8s namespace to use
 	Namespace string `json:"namespace"`
 
-	// Deploy an instance in a nonoperative testing mode
-	TestDeploy bool `json:"testDeploy,omitempty"` //TODO I don't think this is needed anymore
-
+	// +kubebuilder:default=false
 	// Only deploy the instance, do not run recurring updates on it
 	DeployOnly bool `json:"deployOnly,omitempty"`
 
@@ -98,8 +101,10 @@ type BaseServiceResources struct {
 }
 
 type Credentials struct {
+	// +optional
 	AdminPassword string `json:"adminPassword"`
-	UserPassword  string `json:"userPassword"`
+	// +optional
+	UserPassword string `json:"userPassword"`
 }
 
 // +kubebuilder:object:generate=true
@@ -153,7 +158,9 @@ type ServiceStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:object:generate=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=onms
 
 // OpenNMS - is the Schema for the opennms API
 type OpenNMS struct {
@@ -165,6 +172,7 @@ type OpenNMS struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:object:generate=true
 
 // OpenNMSList - contains a list of OpenNMS
 type OpenNMSList struct {

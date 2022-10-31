@@ -1,4 +1,5 @@
 charts/
+api/crd/bases
 tmp/
 testtmp/
 operator
