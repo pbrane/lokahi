@@ -32,11 +32,16 @@ import java.util.Arrays;
 
 import org.opennms.horizon.inventory.service.MonitoringLocationService;
 import org.opennms.horizon.inventory.service.MonitoringSystemService;
+import lombok.RequiredArgsConstructor;
+import org.opennms.horizon.inventory.mapper.MonitoringLocationMapper;
+import org.opennms.horizon.inventory.mapper.NodeMapper;
+import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
+import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
+import org.opennms.horizon.inventory.repository.NodeRepository;
+import org.opennms.horizon.inventory.service.grpc.DeviceGrpcService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Configuration
@@ -46,6 +51,12 @@ public class GrpcConfig {
     private final MonitoringLocationService locationService;
     @Value("${grpc.server.port:" + DEFAULT_GRPC_PORT +"}")
     private int port;
+    private final MonitoringLocationRepository locationRepo;
+    private final MonitoringLocationMapper mapper;
+    private final NodeRepository nodeRepository;
+    private final MonitoringLocationRepository monitoringLocationRepository;
+    private final IpInterfaceRepository ipInterfaceRepository;
+    private final NodeMapper nodeMapper;
 
 
     @Bean
@@ -63,10 +74,15 @@ public class GrpcConfig {
         return new MonitoringSystemGrpcService(systemService, tenantLookup);
     }
 
+    @Bean
+    public DeviceGrpcService createDeviceService() {
+        return new DeviceGrpcService(nodeRepository, monitoringLocationRepository, ipInterfaceRepository, nodeMapper);
+    }
+
     @Bean(destroyMethod = "stopServer")
-    public GrpcServerManager startServer(MonitoringLocationGrpcService locationGrpc, MonitoringSystemGrpcService systemGrpc) {
+    public GrpcServerManager startServer(MonitoringLocationGrpcService locationGrpc, MonitoringSystemGrpcService systemGrpc, DeviceGrpcService deviceGrpcService) {
         GrpcServerManager manager = new GrpcServerManager(port);
-        manager.startServer(Arrays.asList(locationGrpc, systemGrpc));
+        manager.startServer(Arrays.asList(locationGrpc, systemGrpc, deviceGrpcService));
         return manager;
     }
 }

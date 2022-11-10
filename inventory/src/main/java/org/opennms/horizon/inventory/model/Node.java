@@ -1,17 +1,19 @@
 package org.opennms.horizon.inventory.model;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -33,4 +35,11 @@ public class Node {
     @NotNull
     @Column(name = "create_time", columnDefinition = "TIMESTAMP")
     private LocalDateTime createTime;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "monitoring_location_id", referencedColumnName = "id")
+    private MonitoringLocation monitoringLocation;
+
+    @Column(name = "monitoring_location_id", insertable = false, updatable = false)
+    private long monitoringLocationId;
 }

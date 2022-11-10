@@ -6,7 +6,9 @@ import java.util.stream.Collectors;
 
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.mapper.NodeMapper;
+import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.Node;
+import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +19,16 @@ import lombok.RequiredArgsConstructor;
 public class NodeService {
     private final NodeRepository modelRepo;
 
+    private final MonitoringLocationRepository monitoringLocationRepository;
+
     private final NodeMapper mapper;
 
     public NodeDTO saveNode(NodeDTO dto) {
         Node model = mapper.dtoToModel(dto);
+
+        MonitoringLocation monitoringLocation = monitoringLocationRepository.getReferenceById(dto.getMonitoringLocationId());
+        model.setMonitoringLocation(monitoringLocation);
+
         Node ret = modelRepo.save(model);
         return mapper.modelToDTO(ret);
     }

@@ -67,20 +67,21 @@ class ForeignKeyTableIT {
 
     @BeforeEach
     public void setup() {
-        if (savedNodeId == -1) {
-            NodeDTO dto = postNode("label");
-            savedNodeId = dto.getId();
+        assertTrue(postgres.isCreated());
+        assertTrue(postgres.isRunning());
+
+        if (savedMonitoringLocationId == -1) {
+            MonitoringLocationDTO monitoringLocationDTO = postMonitoringLocation("location");
+            savedMonitoringLocationId = monitoringLocationDTO.getId();
+
+            NodeDTO nodeDTO = postNode("label");
+            savedNodeId = nodeDTO.getId();
 
             IpInterfaceDTO ipInterfaceDTO = postIpInterface("127.0.0.1");
             savedIpInterfaceId = ipInterfaceDTO.getId();
 
             MonitoredServiceTypeDTO monitoredServiceTypeDTO = postMonitoredServiceTypes("serviceName");
             savedMonitorServiceTypeId = monitoredServiceTypeDTO.getId();
-        }
-
-        if (savedMonitoringLocationId == -1) {
-            MonitoringLocationDTO dto = postMonitoringLocation("location");
-            savedMonitoringLocationId = dto.getId();
         }
     }
 
@@ -118,6 +119,7 @@ class ForeignKeyTableIT {
             .setNodeLabel(nodeLabel)
             .setTenantId(tenant.toString())
             .setCreateTime("2022-11-03T14:34:05.542488")
+            .setMonitoringLocationId(savedMonitoringLocationId)
             .build();
 
         HttpHeaders headers = new HttpHeaders();
