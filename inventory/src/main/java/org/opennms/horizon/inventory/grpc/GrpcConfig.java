@@ -28,20 +28,17 @@
 
 package org.opennms.horizon.inventory.grpc;
 
-import java.util.Arrays;
-
+import lombok.RequiredArgsConstructor;
+import org.opennms.horizon.inventory.mapper.NodeMapper;
 import org.opennms.horizon.inventory.service.MonitoringLocationService;
 import org.opennms.horizon.inventory.service.MonitoringSystemService;
-import lombok.RequiredArgsConstructor;
-import org.opennms.horizon.inventory.mapper.MonitoringLocationMapper;
-import org.opennms.horizon.inventory.mapper.NodeMapper;
-import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
-import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
-import org.opennms.horizon.inventory.repository.NodeRepository;
 import org.opennms.horizon.inventory.service.NodeService;
+import org.opennms.horizon.inventory.service.grpc.DeviceGrpcService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Configuration

@@ -1,18 +1,8 @@
 package org.opennms.horizon.inventory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.sql.DataSource;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.MonitoredServiceDTO;
 import org.opennms.horizon.inventory.dto.MonitoredServiceTypeDTO;
@@ -33,6 +23,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+
+import javax.sql.DataSource;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

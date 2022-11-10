@@ -1,15 +1,6 @@
 package org.opennms.horizon.inventory.service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import com.google.common.net.InetAddresses;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 import com.vladmihalcea.hibernate.type.basic.Inet;
-import io.grpc.protobuf.StatusProto;
-import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.inventory.dto.DeviceCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
@@ -22,11 +13,9 @@ import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
