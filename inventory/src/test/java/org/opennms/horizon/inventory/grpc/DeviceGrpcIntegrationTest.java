@@ -7,6 +7,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,6 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     classes = InventoryApplication.class)
 @Testcontainers
 public class DeviceGrpcIntegrationTest {
+
+    private static final int grpcPort = 6768;
     @Container
     private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14.5-alpine")
         .withDatabaseName("inventory").withUsername("inventory")
@@ -47,7 +51,7 @@ public class DeviceGrpcIntegrationTest {
             () -> String.format("jdbc:postgresql://localhost:%d/%s", postgres.getFirstMappedPort(), postgres.getDatabaseName()));
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("grpc.server.port", ()->6767);
+        registry.add("grpc.server.port", ()->grpcPort);
     }
 
     private ManagedChannel channel;
@@ -62,7 +66,7 @@ public class DeviceGrpcIntegrationTest {
 
     @BeforeEach
     public void prepare() {
-        channel = ManagedChannelBuilder.forAddress("localhost", 6767)
+        channel = ManagedChannelBuilder.forAddress("localhost", grpcPort)
             .usePlaintext().build();
         serviceStub = DeviceServiceGrpc.newBlockingStub(channel);
     }
