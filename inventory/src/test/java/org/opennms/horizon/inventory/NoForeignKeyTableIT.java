@@ -38,7 +38,6 @@ import org.springframework.test.context.ContextConfiguration;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = InventoryApplication.class)
 @ContextConfiguration(initializers = {PostgresInitializer.class})
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class NoForeignKeyTableIT {
     @Autowired
     private DataSource dataSource;

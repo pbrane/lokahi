@@ -38,7 +38,7 @@ import org.opennms.horizon.inventory.mapper.NodeMapper;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
-import org.opennms.horizon.inventory.service.grpc.DeviceGrpcService;
+import org.opennms.horizon.inventory.service.NodeService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,11 +51,7 @@ public class GrpcConfig {
     private final MonitoringLocationService locationService;
     @Value("${grpc.server.port:" + DEFAULT_GRPC_PORT +"}")
     private int port;
-    private final MonitoringLocationRepository locationRepo;
-    private final MonitoringLocationMapper mapper;
-    private final NodeRepository nodeRepository;
-    private final MonitoringLocationRepository monitoringLocationRepository;
-    private final IpInterfaceRepository ipInterfaceRepository;
+    private final NodeService nodeService;
     private final NodeMapper nodeMapper;
 
 
@@ -75,8 +71,8 @@ public class GrpcConfig {
     }
 
     @Bean
-    public DeviceGrpcService createDeviceService() {
-        return new DeviceGrpcService(nodeRepository, monitoringLocationRepository, ipInterfaceRepository, nodeMapper);
+    public DeviceGrpcService createDeviceService(TenantLookup tenantLookup) {
+        return new DeviceGrpcService(nodeService, nodeMapper, tenantLookup);
     }
 
     @Bean(destroyMethod = "stopServer")

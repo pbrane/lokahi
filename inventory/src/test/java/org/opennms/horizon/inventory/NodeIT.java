@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -36,14 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = InventoryApplication.class)
-@Testcontainers
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ContextConfiguration(initializers = {PostgresInitializer.class})
 class NodeIT {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14.5-alpine")
-        .withDatabaseName("inventory").withUsername("inventory")
-        .withPassword("password").withExposedPorts(5432);
 
     @Autowired
     private DataSource dataSource;
@@ -57,21 +52,10 @@ class NodeIT {
     @LocalServerPort
     private Integer port;
 
-    @DynamicPropertySource
-    static void registerDatasourceProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url",
-            () -> String.format("jdbc:postgresql://localhost:%d/%s", postgres.getFirstMappedPort(), postgres.getDatabaseName()));
-        registry.add("spring.datasource.username", () -> postgres.getUsername());
-        registry.add("spring.datasource.password", () -> postgres.getPassword());
-    }
-
     public static long savedMonitoringLocationId = -1;
 
     @BeforeEach
     public void setup() {
-        assertTrue(postgres.isCreated());
-        assertTrue(postgres.isRunning());
-
         if (savedMonitoringLocationId == -1) {
             MonitoringLocationDTO monitoringLocationDTO = postMonitoringLocation("location");
             savedMonitoringLocationId = monitoringLocationDTO.getId();

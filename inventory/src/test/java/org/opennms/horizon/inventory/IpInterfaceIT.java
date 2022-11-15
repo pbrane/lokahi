@@ -32,7 +32,6 @@ import org.springframework.test.context.ContextConfiguration;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = InventoryApplication.class)
 @ContextConfiguration(initializers = {PostgresInitializer.class})
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class IpInterfaceIT {
     @Autowired
     private DataSource dataSource;
@@ -47,9 +46,6 @@ class IpInterfaceIT {
 
     @BeforeEach
     public void setup() {
-        assertTrue(postgres.isCreated());
-        assertTrue(postgres.isRunning());
-
         if (savedMonitoringLocationId == -1) {
             MonitoringLocationDTO monitoringLocationDTO = postMonitoringLocation("location");
             savedMonitoringLocationId = monitoringLocationDTO.getId();
@@ -242,25 +238,6 @@ class IpInterfaceIT {
             .setIpAddress(ipAddress)
             .setTenantId(tenant.toString())
             .setNodeId(Long.MAX_VALUE)
-            .build();
-
-        HttpHeaders headers = new HttpHeaders();
-        HttpEntity<IpInterfaceDTO> request = new HttpEntity<>(ml, headers);
-
-        ResponseEntity<IpInterfaceDTO> response = this.testRestTemplate
-            .postForEntity("http://localhost:" + port + "/inventory/ipInterfaces", request, IpInterfaceDTO.class);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    void testPostBadTenantId() throws Exception {
-        String ipAddress = "127.0.0.1";
-
-        IpInterfaceDTO ml = IpInterfaceDTO.newBuilder()
-            .setIpAddress(ipAddress)
-            .setTenantId("0000")
-            .setNodeId(savedNodeId)
             .build();
 
         HttpHeaders headers = new HttpHeaders();

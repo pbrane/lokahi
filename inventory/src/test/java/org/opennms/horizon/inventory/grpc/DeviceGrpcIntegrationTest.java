@@ -1,18 +1,15 @@
 package org.opennms.horizon.inventory.grpc;
 
-import com.google.protobuf.StringValue;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opennms.horizon.inventory.InventoryApplication;
+import org.opennms.horizon.inventory.PostgresInitializer;
 import org.opennms.horizon.inventory.dto.DeviceCreateDTO;
 import org.opennms.horizon.inventory.dto.DeviceServiceGrpc;
 import org.opennms.horizon.inventory.dto.NodeDTO;
@@ -21,14 +18,9 @@ import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,25 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = InventoryApplication.class)
-@Testcontainers
-class DeviceGrpcIntegrationTest {
-
-    private static final int grpcPort = 6768;
-    @Container
-    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14.5-alpine")
-        .withDatabaseName("inventory").withUsername("inventory")
-        .withPassword("password").withExposedPorts(5432);
-
-    @DynamicPropertySource
-    private static void registerDatasourceProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url",
-            () -> String.format("jdbc:postgresql://localhost:%d/%s", postgres.getFirstMappedPort(), postgres.getDatabaseName()));
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("grpc.server.port", ()->grpcPort);
-    }
-
-    private ManagedChannel channel;
+@ContextConfiguration(initializers = {PostgresInitializer.class})
+class DeviceGrpcIntegrationTest extends GrpcTestBase {
     private DeviceServiceGrpc.DeviceServiceBlockingStub serviceStub;
 
     @Autowired
@@ -64,10 +39,7 @@ class DeviceGrpcIntegrationTest {
     @Autowired
     private IpInterfaceRepository ipInterfaceRepository;
 
-    @BeforeEach
-    public void prepare() {
-        channel = ManagedChannelBuilder.forAddress("localhost", grpcPort)
-            .usePlaintext().build();
+    public void initStub() {
         serviceStub = DeviceServiceGrpc.newBlockingStub(channel);
     }
 
@@ -82,12 +54,13 @@ class DeviceGrpcIntegrationTest {
 
     @Test
     void testCreateDevice() throws Exception {
+        setupGrpc();
+        initStub();
+
         String label = "label";
 
-        UUID tenant = new UUID(10, 12);
         DeviceCreateDTO createDTO = DeviceCreateDTO.newBuilder()
             .setLocation("location")
-            .setTenantId(tenant.toString())
             .setLabel(label)
             .setManagementIp("127.0.0.1")
             .build();
@@ -98,30 +71,33 @@ class DeviceGrpcIntegrationTest {
     }
 
     @Test
-    void testCreateDeviceBadUUID() throws Exception {
+    void testCreateDeviceMissingTenantId() throws Exception {
+        setupGrpcWithOutTenantID();
+        initStub();
+
         String label = "label";
 
         DeviceCreateDTO createDTO = DeviceCreateDTO.newBuilder()
             .setLocation("location")
-            .setTenantId("BAD")
             .setLabel(label)
             .setManagementIp("127.0.0.1")
             .build();
 
         StatusRuntimeException exception = Assertions.assertThrows(StatusRuntimeException.class, ()->serviceStub.createDevice(createDTO));
         Status status = StatusProto.fromThrowable(exception);
-        assertThat(status.getCode()).isEqualTo(Code.INVALID_ARGUMENT_VALUE);
-        assertThat(status.getMessage()).isEqualTo("Bad tenant_id: BAD");
+        assertThat(status.getCode()).isEqualTo(Code.UNAUTHENTICATED_VALUE);
+        assertThat(status.getMessage()).isEqualTo("Missing tenant id");
     }
 
     @Test
     void testCreateDeviceBadIPAddress() throws Exception {
+        setupGrpc();
+        initStub();
+
         String label = "label";
 
-        UUID tenant = new UUID(10, 12);
         DeviceCreateDTO createDTO = DeviceCreateDTO.newBuilder()
             .setLocation("location")
-            .setTenantId(tenant.toString())
             .setLabel(label)
             .setManagementIp("BAD")
             .build();
@@ -130,22 +106,5 @@ class DeviceGrpcIntegrationTest {
         Status status = StatusProto.fromThrowable(exception);
         assertThat(status.getCode()).isEqualTo(Code.INVALID_ARGUMENT_VALUE);
         assertThat(status.getMessage()).isEqualTo("Bad management_ip: BAD");
-    }
-
-    @Test
-    void testCreateDeviceBadUUIDAndIPAddress() throws Exception {
-        String label = "label";
-
-        DeviceCreateDTO createDTO = DeviceCreateDTO.newBuilder()
-            .setLocation("location")
-            .setTenantId("BAD")
-            .setLabel(label)
-            .setManagementIp("BAD")
-            .build();
-
-        StatusRuntimeException exception = Assertions.assertThrows(StatusRuntimeException.class, ()->serviceStub.createDevice(createDTO));
-        Status status = StatusProto.fromThrowable(exception);
-        assertThat(status.getCode()).isEqualTo(Code.INVALID_ARGUMENT_VALUE);
-        assertThat(status.getMessage()).isEqualTo("Bad tenant_id: BAD, Bad management_ip: BAD");
     }
 }

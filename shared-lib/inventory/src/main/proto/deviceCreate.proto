@@ -45,8 +45,7 @@ message NodeDTO {
 message DeviceCreateDTO {
   string label = 1;
   string location = 2;
-  string tenant_id = 3;
-  optional string management_ip = 4;
+  optional string management_ip = 3;
 }
 
 service DeviceService {
