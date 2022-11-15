@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = InventoryApplication.class)
 @Testcontainers
-public class DeviceGrpcIntegrationTest {
+class DeviceGrpcIntegrationTest {
 
     private static final int grpcPort = 6768;
     @Container

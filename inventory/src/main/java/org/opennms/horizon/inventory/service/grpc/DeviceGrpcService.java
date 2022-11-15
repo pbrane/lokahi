@@ -38,14 +38,14 @@ public class DeviceGrpcService extends DeviceServiceGrpc.DeviceServiceImplBase {
 
         MonitoringLocation monitoringLocation = saveMonitoringLocation(request);
         Node node = saveNode(request, monitoringLocation);
-        saveIpInterfaces(request, node, responseObserver);
+        saveIpInterfaces(request, node);
 
         responseObserver.onNext(nodeMapper.modelToDTO(node));
 
         responseObserver.onCompleted();
     }
 
-    private void saveIpInterfaces(DeviceCreateDTO request, Node node, StreamObserver<NodeDTO> responseObserver) {
+    private void saveIpInterfaces(DeviceCreateDTO request, Node node) {
         if (request.hasManagementIp()) {
             IpInterface ipInterface = new IpInterface();
 
@@ -87,10 +87,8 @@ public class DeviceGrpcService extends DeviceServiceGrpc.DeviceServiceImplBase {
             validTenant = false;
         }
 
-        if (request.hasManagementIp()) {
-            if (!InetAddresses.isInetAddress(request.getManagementIp())) {
-                validIp = false;
-            }
+        if (request.hasManagementIp() && !InetAddresses.isInetAddress(request.getManagementIp())) {
+            validIp = false;
         }
 
         if (!validTenant || !validIp) {

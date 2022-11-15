@@ -28,18 +28,17 @@
 
 package org.opennms.horizon.server.service;
 
-import org.opennms.horizon.server.service.gateway.PlatformGateway;
-import org.opennms.horizon.shared.dto.device.DeviceCollectionDTO;
-import org.opennms.horizon.shared.dto.device.DeviceCreateDTO;
-import org.opennms.horizon.shared.dto.device.DeviceDTO;
-import org.springframework.stereotype.Service;
-
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLEnvironment;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLQuery;
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
+import org.opennms.horizon.server.service.gateway.PlatformGateway;
+import org.opennms.horizon.shared.dto.device.DeviceCollectionDTO;
+import org.opennms.horizon.shared.dto.device.DeviceCreateDTO;
+import org.opennms.horizon.shared.dto.device.DeviceDTO;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @GraphQLApi
@@ -47,9 +46,9 @@ import reactor.core.publisher.Mono;
 public class DeviceService {
   private final PlatformGateway gateway;
 
-  public DeviceService(PlatformGateway gateway) {
-    this.gateway = gateway;
-  }
+    public DeviceService(PlatformGateway gateway) {
+        this.gateway = gateway;
+    }
 
   @GraphQLQuery
   public Mono<DeviceCollectionDTO> listDevices(@GraphQLEnvironment ResolutionEnvironment env) {
@@ -63,7 +62,7 @@ public class DeviceService {
 
   @GraphQLMutation
   public Mono<Integer> addDevice(DeviceCreateDTO device, @GraphQLEnvironment ResolutionEnvironment env) {
-    return gateway.post(PlatformGateway.URL_PATH_DEVICES, gateway.getAuthHeader(env), device, Integer.class);
+      return gateway.post(PlatformGateway.URL_PATH_DEVICES, gateway.getAuthHeader(env), device, Integer.class);
   }
 }
 
