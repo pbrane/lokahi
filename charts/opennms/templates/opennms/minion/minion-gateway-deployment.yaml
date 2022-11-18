@@ -44,6 +44,8 @@ spec:
               value: "/tmp/tls/tls.crt"
             - name: GRPC_PRIVATE_KEY_PATH
               value: "/tmp/tls/tls.key"
+            - name: IGNITE_UPDATE_NOTIFIER # Disable Ignite version lookups
+              value: "false"
           ports:
             - name: http
               containerPort: {{ .Values.OpenNMS.MinionGateway.Port }}

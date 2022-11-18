@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 mvn clean install -Pbuild-docker-images-enabled -DskipTests -Ddocker.image=opennms/horizon-stream-minion:local -Ddocker.skipPush=true
 
 eval $(crc oc-env)
