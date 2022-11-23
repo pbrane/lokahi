@@ -52,7 +52,11 @@ spec:
             - name: KC_CACHE
               value: ispn
             - name: KC_HOSTNAME
+            {{- if .Values.Keycloak.Host }}
+              value: "{{ .Values.Keycloak.Host }}"
+            {{- else}}
               value: "{{ .Values.Host }}"
+            {{- end}}
             {{- if .Values.Keycloak.HostnamePort }}
             - name: KC_HOSTNAME_PORT
               value: "{{ .Values.Keycloak.HostnamePort }}"
@@ -95,11 +99,23 @@ spec:
               value: passthrough
             - name: jgroups.dns.query
               value: "{{ .Values.Keycloak.ServiceName }}.{{ .Release.Namespace }}"
+            {{- if .Values.Keycloak.Log }}
+            - name: KC_LOG
+              value: "{{ .Values.Keycloak.Log }}"
+            {{- end }}
+            {{- if .Values.Keycloak.LogLevel }}
+            - name: KC_LOG_LEVEL
+              value: "{{ .Values.Keycloak.LogLevel }}"
+            {{- end }}
             {{- if .Values.TLS.Enabled }}
             - name: KC_HTTPS_CERTIFICATE_FILE
               value: "/mnt/certificates/tls.crt"
             - name: KC_HTTPS_CERTIFICATE_KEY_FILE
               value: "/mnt/certificates/tls.key"
+            {{- end }}
+            {{- if .Values.Keycloak.JavaOpts }}
+            - name: JAVA_OPTS
+              value: "{{ .Values.Keycloak.JavaOpts }}"
             {{- end }}
           ports:
             - name: http

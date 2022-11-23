@@ -80,6 +80,7 @@ OpenNMS:
     Image: opennms/horizon-stream-minion-gateway
     ImagePullPolicy: IfNotPresent
     Port: 8080
+    GrpcHost: grpc.onmshs
     GrpcPort: 8990
     InternalGrpcPort: 8991
     IgniteClientPort: 10800
