@@ -92,6 +92,9 @@ OpenNMS:
       Requests:
         Cpu: "1"
         Memory: 512Mi
+    IngressAnnotations:
+      "nginx.ingress.kubernetes.io/configuration-snippet": |
+         grpc_set_header tenant-id 'opennms-prime';"
   Inventory:
     ServiceName: opennms-inventory
     Image: opennms/horizon-stream-inventory

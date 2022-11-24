@@ -99,23 +99,15 @@ spec:
               value: passthrough
             - name: jgroups.dns.query
               value: "{{ .Values.Keycloak.ServiceName }}.{{ .Release.Namespace }}"
-            {{- if .Values.Keycloak.Log }}
-            - name: KC_LOG
-              value: "{{ .Values.Keycloak.Log }}"
-            {{- end }}
-            {{- if .Values.Keycloak.LogLevel }}
-            - name: KC_LOG_LEVEL
-              value: "{{ .Values.Keycloak.LogLevel }}"
-            {{- end }}
             {{- if .Values.TLS.Enabled }}
             - name: KC_HTTPS_CERTIFICATE_FILE
               value: "/mnt/certificates/tls.crt"
             - name: KC_HTTPS_CERTIFICATE_KEY_FILE
               value: "/mnt/certificates/tls.key"
             {{- end }}
-            {{- if .Values.Keycloak.JavaOpts }}
-            - name: JAVA_OPTS
-              value: "{{ .Values.Keycloak.JavaOpts }}"
+            {{- range $Variable, $Value := .Values.Keycloak.Environment }}
+            - name: {{ $Variable | quote }}
+              value: {{ $Value | quote }}
             {{- end }}
           ports:
             - name: http

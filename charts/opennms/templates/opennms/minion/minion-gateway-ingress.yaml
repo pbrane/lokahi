@@ -6,10 +6,9 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.TLS.Enabled }}"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-    nginx.ingress.kubernetes.io/server-snippet: |
-      listen 8990 http2;
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      grpc_set_header tenant-id 'opennms-prime';
+    {{- with .Values.OpenNMS.MinionGateway.IngressAnnotations }}
+    {{- toYaml . | trimSuffix "\n" | nindent 4 }}
+    {{- end }}
 spec:
   ingressClassName: nginx
   rules:

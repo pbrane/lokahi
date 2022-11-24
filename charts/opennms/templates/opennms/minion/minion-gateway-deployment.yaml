@@ -19,33 +19,35 @@ spec:
     spec:
       serviceAccountName: {{ .Values.OpenNMS.Minion.ServiceName }}-sa
       {{- if .Values.NodeRestrictions.Enabled }}
-      nodeSelector:                                                                                    
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}                       
+      nodeSelector:
+        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
       tolerations:
-        - effect: "NoSchedule"                                                                         
-          key: "{{ .Values.NodeRestrictions.Key }}"                                                    
+        - effect: "NoSchedule"
+          key: "{{ .Values.NodeRestrictions.Key }}"
           operator: "Equal"
           value: {{ .Values.NodeRestrictions.Value }} 
       affinity: 
         nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:                                             
-          - weight: 1                                                                                  
-            preference:                                                                                
-              matchExpressions:                                                                        
-              - key: "{{ .Values.NodeRestrictions.Key }}"                                              
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: "{{ .Values.NodeRestrictions.Key }}"
                 operator: In
-                values:                                                                                
-                - {{ .Values.NodeRestrictions.Value }}                                                 
+                values:
+                - {{ .Values.NodeRestrictions.Value }}
       {{- end }}
       containers:
         - name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
           image: {{ .Values.OpenNMS.MinionGateway.Image }}
           imagePullPolicy: {{ .Values.OpenNMS.Minion.ImagePullPolicy }}
           env:
-            - name: JAVA_TOOL_OPTIONS
-              value: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y"  # FIXME: Permanent debug port, enable only for dev mode
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "{{ .Values.Kafka.ServiceName }}:{{ .Values.Kafka.Port }}"
+            {{- range $Variable, $Value := .Values.OpenNMS.MinionGateway.Environment }}
+            - name: {{ $Variable | quote }}
+              value: {{ $Value | quote }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.OpenNMS.MinionGateway.Port }}

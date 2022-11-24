@@ -20,23 +20,23 @@ spec:
     spec:
       serviceAccountName: {{ .Values.OpenNMS.Minion.ServiceName }}-sa
       {{- if .Values.NodeRestrictions.Enabled }}
-      nodeSelector:                                                                                    
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}                       
+      nodeSelector:
+        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
       tolerations:
-        - effect: "NoSchedule"                                                                         
-          key: "{{ .Values.NodeRestrictions.Key }}"                                                    
+        - effect: "NoSchedule"
+          key: "{{ .Values.NodeRestrictions.Key }}"
           operator: "Equal"
           value: {{ .Values.NodeRestrictions.Value }} 
       affinity: 
         nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:                                             
-          - weight: 1                                                                                  
-            preference:                                                                                
-              matchExpressions:                                                                        
-              - key: "{{ .Values.NodeRestrictions.Key }}"                                              
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: "{{ .Values.NodeRestrictions.Key }}"
                 operator: In
-                values:                                                                                
-                - {{ .Values.NodeRestrictions.Value }}                                                 
+                values:
+                - {{ .Values.NodeRestrictions.Value }}
       {{- end }}
       volumes:
         - name: config-volume
@@ -63,10 +63,12 @@ spec:
               value: "true"
             - name: KUBERNETES_SERVICE_NAME
               value: "{{ .Values.OpenNMS.Minion.ServiceName }}"
-            - name: JAVA_TOOL_OPTIONS
-              value: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y" # FIXME: Permanent debug port, enable only for dev mode
             - name: LOCATION
               value: "Default"
+            {{- range $Variable, $Value := .Values.OpenNMS.Minion.Environment }}
+            - name: {{ $Variable | quote }}
+              value: {{ $Value | quote }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.OpenNMS.Minion.Port }}

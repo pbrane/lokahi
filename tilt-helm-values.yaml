@@ -8,6 +8,9 @@ Keycloak:
   AdminPassword: admin
   HostnamePort: 8123
   HostnameAdminUrl: http://localhost:8123/auth
+  Environment:
+    KC_LOG: console
+    KC_LOG_LEVEL: DEBUG
 
 OpenNMS:
   API:
@@ -34,6 +37,16 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
+    Environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y"
+  MinionGateway:
+    Environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y"
+    IngressAnnotations:
+      "nginx.ingress.kubernetes.io/server-snippet": |
+        listen 8990 http2;
+      "nginx.ingress.kubernetes.io/configuration-snippet": |
+        grpc_set_header tenant-id 'opennms-prime';"
   Inventory:
     Resources:
       Limits:

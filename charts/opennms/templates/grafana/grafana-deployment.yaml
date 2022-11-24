@@ -15,7 +15,7 @@ spec:
         app: {{ .Values.Grafana.ServiceName }}
     spec:
       {{- if .Values.NodeRestrictions.Enabled }}
-      nodeSelector:                                                                                    
+      nodeSelector:
         {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
       tolerations:
         - effect: "NoSchedule"
