@@ -33,11 +33,13 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.rotation.JWKPublicKeyLocator;
 import org.keycloak.representations.adapters.config.AdapterConfig;
+import org.opennms.horizon.inventory.grpc.cloud.CloudCredentialsGrpcService;
 import org.opennms.horizon.inventory.mapper.NodeMapper;
 import org.opennms.horizon.inventory.service.IpInterfaceService;
 import org.opennms.horizon.inventory.service.MonitoringLocationService;
 import org.opennms.horizon.inventory.service.MonitoringSystemService;
 import org.opennms.horizon.inventory.service.NodeService;
+import org.opennms.horizon.inventory.service.cloud.credential.CloudCredentialClient;
 import org.opennms.horizon.inventory.service.taskset.DetectorTaskSetService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -61,6 +63,7 @@ public class GrpcConfig {
     private final IpInterfaceService ipInterfaceService;
     private final NodeMapper nodeMapper;
     private final DetectorTaskSetService taskSetService;
+    private CloudCredentialClient cloudCredentialClient;
 
 
     @Bean
@@ -81,6 +84,11 @@ public class GrpcConfig {
     @Bean
     public NodeGrpcService createNodeService(TenantLookup tenantLookup) {
         return new NodeGrpcService(nodeService, ipInterfaceService, nodeMapper, tenantLookup, taskSetService);
+    }
+
+    @Bean
+    public CloudCredentialsGrpcService cloudCredentialsGrpcService(TenantLookup tenantLookup) {
+        return new CloudCredentialsGrpcService(cloudCredentialClient, tenantLookup);
     }
 
     @Bean

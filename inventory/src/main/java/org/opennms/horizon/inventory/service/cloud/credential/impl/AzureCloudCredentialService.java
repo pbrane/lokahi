@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.inventory.service.cloud.impl;
+package org.opennms.horizon.inventory.service.cloud.credential.impl;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -37,7 +37,7 @@ import org.opennms.horizon.inventory.dto.CloudCredentialsDTO;
 import org.opennms.horizon.inventory.mapper.cloud.CloudCredentialMapper;
 import org.opennms.horizon.inventory.model.cloud.AzureCloudCredential;
 import org.opennms.horizon.inventory.repository.cloud.AzureCloudCredentialRepository;
-import org.opennms.horizon.inventory.service.cloud.CloudCredentialService;
+import org.opennms.horizon.inventory.service.cloud.credential.CloudCredentialService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -59,7 +59,6 @@ public class AzureCloudCredentialService implements CloudCredentialService {
         try {
             AzureCredentialsCreateDTO request = config.unpack(AzureCredentialsCreateDTO.class);
 
-            //todo: encrypt client secret
             AzureCloudCredential credential = mapper.dtoToModel(request);
             credential.setTenantId(tenantId);
             credential.setCreateTime(LocalDateTime.now());

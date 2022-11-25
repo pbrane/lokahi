@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.inventory.service.cloud;
+package org.opennms.horizon.inventory.service.cloud.credential;
 
 import com.google.protobuf.Any;
 import org.opennms.horizon.inventory.dto.CloudCredentialsDTO;

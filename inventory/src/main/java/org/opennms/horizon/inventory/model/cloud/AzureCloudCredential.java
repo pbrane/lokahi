@@ -30,8 +30,10 @@ package org.opennms.horizon.inventory.model.cloud;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.opennms.horizon.inventory.mapper.cloud.EncryptAttributeConverter;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -58,12 +60,17 @@ public class AzureCloudCredential {
     private String clientId;
 
     @NotNull
+    @Convert(converter = EncryptAttributeConverter.class)
     @Column(name = "client_secret")
     private String clientSecret;
 
     @NotNull
     @Column(name = "subscription_id")
     private String subscriptionId;
+
+    @NotNull
+    @Column(name = "directory_id")
+    private String directoryId;
 
     @NotNull
     @Column(name = "resource_group")

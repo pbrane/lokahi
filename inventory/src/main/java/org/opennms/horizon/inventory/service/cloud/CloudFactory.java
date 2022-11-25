@@ -28,7 +28,9 @@
 
 package org.opennms.horizon.inventory.service.cloud;
 
+import org.opennms.horizon.inventory.service.cloud.credential.CloudCredentialService;
+
 public interface CloudFactory {
 
-    CloudCredentialService getCloudCredentialService(String name);
+    CloudCredentialService getCredentialService(String name);
 }

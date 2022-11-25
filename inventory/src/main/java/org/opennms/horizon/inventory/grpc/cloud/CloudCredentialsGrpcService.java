@@ -41,15 +41,14 @@ import org.opennms.horizon.inventory.dto.CloudCredentialServiceGrpc;
 import org.opennms.horizon.inventory.dto.CloudCredentialsDTO;
 import org.opennms.horizon.inventory.dto.CloudType;
 import org.opennms.horizon.inventory.grpc.TenantLookup;
-import org.opennms.horizon.inventory.service.cloud.CloudCredentialService;
-import org.opennms.horizon.inventory.service.cloud.CloudFactory;
+import org.opennms.horizon.inventory.service.cloud.credential.CloudCredentialClient;
 
 import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
 public class CloudCredentialsGrpcService extends CloudCredentialServiceGrpc.CloudCredentialServiceImplBase {
-    private final CloudFactory cloudFactory;
+    private final CloudCredentialClient client;
     private final TenantLookup tenantLookup;
 
     @Override
@@ -71,24 +70,16 @@ public class CloudCredentialsGrpcService extends CloudCredentialServiceGrpc.Clou
 
         try {
             CloudCredentialsDTO savedCredentials
-                = create(CloudType.AZURE, tenantId, Any.pack(request));
+                = client.create(CloudType.AZURE, tenantId, Any.pack(request));
 
             responseObserver.onNext(savedCredentials);
             responseObserver.onCompleted();
 
         } catch (Exception e) {
+            log.error("Failed to create credentials", e);
             responseObserver.onError(e);
         }
     }
 
     // add additional methods for other cloud types when necessary
-
-    private CloudCredentialsDTO create(CloudType cloudType, String tenantId, Any request) {
-        String azureCloudType = cloudType.name().toLowerCase();
-        String beanName = azureCloudType + CloudCredentialService.class.getSimpleName();
-
-        CloudCredentialService credentialService =
-            cloudFactory.getCloudCredentialService(beanName);
-        return credentialService.create(tenantId, request);
-    }
 }

@@ -52,14 +52,16 @@ message AzureCredentialsDTO {
   string client_id = 3;
   string resource_group = 4;
   string subscription_id = 5;
-  int64 create_time = 6;
+  string directory_id = 6;
+  int64 create_time = 7;
 }
 
 message AzureCredentialsCreateDTO {
   string client_id = 1;
   string client_secret = 2;
   string subscription_id = 3;
-  string resource_group = 4;
+  string directory_id = 4;
+  string resource_group = 5;
 }
 
 service CloudCredentialService {
