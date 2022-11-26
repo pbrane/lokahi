@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <groupId>org.opennms.features.telemetry</groupId>
-    <artifactId>org.opennms.features.telemetry.distributed</artifactId>
-    <version>32.0.0-SNAPSHOT</version>
+    <groupId>org.opennms.horizon.minion.telemetry</groupId>
+    <artifactId>org.opennms.horizon.minion.telemetry.distributed</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.opennms.features.telemetry.distributed</groupId>
-  <artifactId>org.opennms.features.telemetry.distributed.common</artifactId>
-  <name>OpenNMS :: Features :: Telemetry :: Distributed :: Common</name>
+  <groupId>org.opennms.horizon.minion.telemetry.distributed</groupId>
+  <artifactId>org.opennms.horizon.minion.telemetry.distributed.common</artifactId>
+  <name>OpenNms Horizon :: Minion :: Telemetry :: Distributed :: Common</name>
   <packaging>bundle</packaging>
   <build>
     <plugins>
@@ -28,18 +28,18 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>org.opennms.features.telemetry</groupId>
-      <artifactId>org.opennms.features.telemetry.common</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.opennms.features.telemetry.config</groupId>
-      <artifactId>org.opennms.features.telemetry.config.api</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry.config</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.config.api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.opennms.features.telemetry.config</groupId>
-      <artifactId>org.opennms.features.telemetry.config.jaxb</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry.config</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.config.jaxb</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

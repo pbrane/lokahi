@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <groupId>org.opennms.features.telemetry.protocols</groupId>
-    <artifactId>org.opennms.features.telemetry.protocols.sflow</artifactId>
-    <version>32.0.0-SNAPSHOT</version>
+    <groupId>org.opennms.horizon.minion.telemetry.protocols</groupId>
+    <artifactId>org.opennms.horizon.minion.telemetry.protocols.sflow</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.opennms.features.telemetry.protocols.sflow</groupId>
-  <artifactId>org.opennms.features.telemetry.protocols.sflow.parser</artifactId>
-  <name>OpenNMS :: Features :: Telemetry :: Protocols :: SFlow :: Parser</name>
+  <groupId>org.opennms.horizon.minion.telemetry.protocols.sflow</groupId>
+  <artifactId>org.opennms.horizon.minion.telemetry.protocols.sflow.parser</artifactId>
+  <name>OpenNms Horizon :: Minion :: Telemetry :: Protocols :: SFlow :: Parser</name>
   <packaging>bundle</packaging>
   <build>
     <plugins>
@@ -28,18 +28,18 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>org.opennms.features.telemetry</groupId>
-      <artifactId>org.opennms.features.telemetry.api</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.opennms.features.telemetry</groupId>
-      <artifactId>org.opennms.features.telemetry.common</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.opennms.features.telemetry.protocols</groupId>
-      <artifactId>org.opennms.features.telemetry.protocols.common</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry.protocols</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.protocols.common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -58,7 +58,7 @@
     <dependency>
       <groupId>org.opennms.features.dnsresolver</groupId>
       <artifactId>org.opennms.features.dnsresolver.api</artifactId>
-      <version>${project.version}</version>
+      <version>${opennmsVersion}</version>
     </dependency>
 
     <!-- Test -->
@@ -68,8 +68,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.opennms.features.telemetry.protocols.sflow</groupId>
-      <artifactId>org.opennms.features.telemetry.protocols.sflow.adapter</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry.protocols.sflow</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.protocols.sflow.adapter</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <groupId>org.opennms.features</groupId>
-    <artifactId>org.opennms.features.telemetry</artifactId>
-    <version>32.0.0-SNAPSHOT</version>
+    <groupId>org.opennms.horizon.minion</groupId>
+    <artifactId>org.opennms.horizon.minion.telemetry</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.opennms.features.telemetry</groupId>
-  <artifactId>org.opennms.features.telemetry.daemon</artifactId>
-  <name>OpenNMS :: Features :: Telemetry :: Daemon</name>
+  <groupId>org.opennms.horizon.minion.telemetry</groupId>
+  <artifactId>org.opennms.horizon.minion.telemetry.daemon</artifactId>
+  <name>OpenNms Horizon :: Minion :: Telemetry :: Daemon</name>
   <packaging>bundle</packaging>
   <build>
     <plugins>
@@ -37,13 +37,13 @@
       <artifactId>opennms-services</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.opennms.features.telemetry</groupId>
-      <artifactId>org.opennms.features.telemetry.common</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.opennms.features.telemetry.config</groupId>
-      <artifactId>org.opennms.features.telemetry.config.jaxb</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry.config</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.config.jaxb</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -54,7 +54,7 @@
     <dependency>
       <groupId>org.opennms.core.ipc.rpc</groupId>
       <artifactId>org.opennms.core.ipc.rpc.mock-impl</artifactId>
-      <version>${project.version}</version>
+      <version>${opennmsVersion}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

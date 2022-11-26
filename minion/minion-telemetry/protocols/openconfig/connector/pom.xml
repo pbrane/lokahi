@@ -3,14 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>org.opennms.features.telemetry.protocols.openconfig</artifactId>
-    <groupId>org.opennms.features.telemetry.protocols</groupId>
-    <version>32.0.0-SNAPSHOT</version>
+    <artifactId>org.opennms.horizon.minion.telemetry.protocols.openconfig</artifactId>
+    <groupId>org.opennms.horizon.minion.telemetry.protocols</groupId>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.opennms.features.telemetry.protocols.openconfig</groupId>
-  <artifactId>org.opennms.features.telemetry.protocols.openconfig.connector</artifactId>
+  <groupId>org.opennms.horizon.minion.telemetry.protocols.openconfig</groupId>
+  <artifactId>org.opennms.horizon.minion.telemetry.protocols.openconfig.connector</artifactId>
   <packaging>bundle</packaging>
 
   <build>
@@ -34,16 +34,16 @@
     <dependency>
       <groupId>org.opennms.core.ipc.rpc</groupId>
       <artifactId>org.opennms.core.ipc.rpc.utils</artifactId>
-      <version>${project.version}</version>
+      <version>${opennmsVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.opennms.features.openconfig</groupId>
       <artifactId>org.opennms.features.openconfig.api</artifactId>
-      <version>${project.version}</version>
+      <version>${opennmsVersion}</version>
     </dependency>
     <dependency>
-      <groupId>org.opennms.features.telemetry</groupId>
-      <artifactId>org.opennms.features.telemetry.api</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.api</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

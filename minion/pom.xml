@@ -27,6 +27,7 @@
         <module>plugins</module>
         <module>minion-traps</module>
         <module>minion-features</module>
+        <module>minion-telemetry</module>
         <module>docker-assembly</module>
         <module>assembly</module>
 

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <groupId>org.opennms.features.telemetry</groupId>
-    <artifactId>org.opennms.features.telemetry.protocols</artifactId>
-    <version>32.0.0-SNAPSHOT</version>
+    <groupId>org.opennms.horizon.minion.telemetry</groupId>
+    <artifactId>org.opennms.horizon.minion.telemetry.protocols</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.opennms.features.telemetry.protocols</groupId>
-  <artifactId>org.opennms.features.telemetry.protocols.adapters</artifactId>
-  <name>OpenNMS :: Features :: Telemetry :: Protocols :: Adapters</name>
+  <groupId>org.opennms.horizon.minion.telemetry.protocols</groupId>
+  <artifactId>org.opennms.horizon.minion.telemetry.protocols.adapters</artifactId>
+  <name>OpenNms Horizon :: Minion :: Telemetry :: Protocols :: Adapters</name>
   <packaging>bundle</packaging>
   <build>
     <plugins>
@@ -28,8 +28,8 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>org.opennms.features.telemetry</groupId>
-      <artifactId>org.opennms.features.telemetry.api</artifactId>
+      <groupId>org.opennms.horizon.minion.telemetry</groupId>
+      <artifactId>org.opennms.horizon.minion.telemetry.api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -61,17 +61,17 @@
     <dependency>
       <groupId>org.opennms.features</groupId>
       <artifactId>org.opennms.features.osgi-jsr223</artifactId>
-      <version>${project.version}</version>
+      <version>${opennmsVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.opennms.core</groupId>
       <artifactId>org.opennms.core.sysprops</artifactId>
-      <version>${project.version}</version>
+      <version>${opennmsVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.opennms.features.collection</groupId>
       <artifactId>org.opennms.features.collection.thresholding.impl</artifactId>
-      <version>${project.version}</version>
+      <version>${opennmsVersion}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

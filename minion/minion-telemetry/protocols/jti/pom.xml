@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <groupId>org.opennms.features.telemetry</groupId>
-    <artifactId>org.opennms.features.telemetry.protocols</artifactId>
-    <version>32.0.0-SNAPSHOT</version>
+    <groupId>org.opennms.horizon.minion.telemetry</groupId>
+    <artifactId>org.opennms.horizon.minion.telemetry.protocols</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.opennms.features.telemetry.protocols</groupId>
-  <artifactId>org.opennms.features.telemetry.protocols.jti</artifactId>
-  <name>OpenNMS :: Features :: Telemetry :: Protocols :: JTI</name>
+  <groupId>org.opennms.horizon.minion.telemetry.protocols</groupId>
+  <artifactId>org.opennms.horizon.minion.telemetry.protocols.jti</artifactId>
+  <name>OpenNms Horizon :: Minion :: Telemetry :: Protocols :: JTI</name>
   <packaging>pom</packaging>
   <modules>
     <module>adapter</module>
