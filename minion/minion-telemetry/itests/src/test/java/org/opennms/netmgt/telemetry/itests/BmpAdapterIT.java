@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -85,6 +86,7 @@ import com.google.protobuf.Timestamp;
 })
 @JUnitConfigurationEnvironment
 @JUnitTemporaryDatabase(reuseDatabase = false)
+@Ignore // FIXME: we need to enable this test again once we fully integrated telemetry into minion ng
 public class BmpAdapterIT {
     @Autowired
     InterfaceToNodeCache interfaceToNodeCache;

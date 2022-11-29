@@ -11,7 +11,7 @@
 
   <groupId>org.opennms.horizon.minion.telemetry.protocols.bmp.persistence</groupId>
   <artifactId>org.opennms.horizon.minion.telemetry.protocols.bmp.persistence.api</artifactId>
-  <name>OpenNms Horizon :: Minion :: Telemetry :: Bmp :: Persistence :: Api</name>
+  <name>OpenNms Horizon :: Minion :: Telemetry :: Protocols :: Bmp :: Persistence :: Api</name>
   <packaging>bundle</packaging>
   <build>
     <plugins>

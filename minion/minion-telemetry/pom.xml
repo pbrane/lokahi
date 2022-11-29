@@ -36,6 +36,9 @@
         <protobufVersion>3.16.3</protobufVersion>
         <rateLimitedLoggerVersion>2.0.1</rateLimitedLoggerVersion>
         <resilience4jVersion>0.17.0</resilience4jVersion>
+        <springOpenNms>4.2.9.RELEASE_1</springOpenNms>
+        <springVersion>4.2.9.RELEASE_1</springVersion>
+        <spring.version>4.2.9.RELEASE</spring.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -114,20 +117,17 @@
                 <version>${opennmsVersion}</version>
             </dependency>
             <dependency>
-                <groupId>org.opennms
-                </groupId>
+                <groupId>org.opennms</groupId>
                 <artifactId>opennms-util</artifactId>
                 <version>${opennmsVersion}</version>
             </dependency>
             <dependency>
-                <groupId>org.opennms.core
-                </groupId>
+                <groupId>org.opennms.core</groupId>
                 <artifactId>org.opennms.core.daemon</artifactId>
                 <version>${opennmsVersion}</version>
             </dependency>
             <dependency>
-                <groupId>org.opennms.core
-                </groupId>
+                <groupId>org.opennms.core</groupId>
                 <artifactId>org.opennms.core.lib</artifactId>
                 <version>${opennmsVersion}</version>
             </dependency>
