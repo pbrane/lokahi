@@ -1,27 +1,61 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
-    <version>0.1.0-SNAPSHOT</version>
-    <modules>
-        <module>main</module>
-        <module>persistence</module>
-    </modules>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
+        <artifactId>inventory</artifactId>
         <groupId>org.opennms.horizon</groupId>
-        <artifactId>horizon-parent</artifactId>
         <version>0.1.0-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <artifactId>inventory</artifactId>
-    <name>OpenNMS Horizon :: Inventory</name>
-    <description>inventory</description>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.opennms.horizon.inventory</groupId>
+    <artifactId>persistence</artifactId>
+    <name>OpenNMS Horizon :: Inventory :: Persistence</name>
+    <version>0.1.0-SNAPSHOT</version>
+    <description>Inventory Persistence</description>
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.vladmihalcea</groupId>
+            <artifactId>hibernate-types-55</artifactId>
+            <version>2.20.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>${javax.validation.version}</version>
+        </dependency>
+    </dependencies>
     <build>
         <plugins>
             <plugin>
@@ -49,17 +83,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>jib-maven-plugin</artifactId>
-                <version>${jib.version}</version>
-                <configuration>
-                    <!-- jib-maven-plugin needs to be executed only on specific submodules.
-                         This disables jib by default, which allows you to run jib goals on this parent pom without
-                         specifying a submodule. Set skip=false on submodules that need jib. -->
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
@@ -84,5 +107,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
