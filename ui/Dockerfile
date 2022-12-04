@@ -25,9 +25,6 @@ CMD ["--port", "8080"]
 FROM sources as build
 
 ARG VITE_BASE_URL
-ARG VITE_KEYCLOAK_URL
-ARG VITE_KEYCLOAK_REALM
-ARG VITE_KEYCLOAK_CLIENT_ID
 
 RUN ["yarn", "run", "build"]
 
@@ -40,5 +37,12 @@ COPY --link /nginx /etc/nginx
 # Copy prod files from prod-build stage
 COPY --from=build --link /app/dist /usr/share/nginx/html
 
+# Environment variables
+ENV KEYCLOAK_URL /auth
+ENV KEYCLOAK_REALM opennms
+ENV KEYCLOAK_CLIENT_ID horizon-stream
+
+# Generate runtime configuration from env. variables
+COPY docker-entrypoint.sh /docker-entrypoint.d/99-generate-runtime-config.sh
+
 EXPOSE 8080
-ENTRYPOINT ["nginx", "-g", "daemon off;"]

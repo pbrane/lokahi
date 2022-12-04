@@ -19,26 +19,33 @@ const isDark = useDark()
 const app = createApp(App)
   .use(router)
   .use(createPinia())
-  .use(VueKeycloak, {
-    init: {
-      onLoad: 'login-required',
-      redirectUri: (() => {
-        const redirectUrl = new URL(window.location.href)
-        redirectUrl.searchParams.set('theme', isDark.value ? 'dark' : 'light')
-        return redirectUrl.href
-      })()
-    },
-    config: {
-      realm: keycloakConfig.realm,
-      url: keycloakConfig.url,
-      clientId: keycloakConfig.clientId
-    },
-    onReady: (kc: KeycloakInstance) => {
-      setKeycloak(kc)
-      const gqlClient = getGqlClient(kc)
-      app.use(gqlClient)
-      app.mount('#app')
-    }
-  })
   .directive('date', dateFormatDirective)
   .directive('focus', featherInputFocusDirective)
+
+  // this assumes the container is mapped to the root of the webserver
+  fetch("/config.json")
+  .then((response) => response.json())
+  .then((runtimeConfig) => {
+    app.use(VueKeycloak, {
+      init: {
+        onLoad: 'login-required',
+        redirectUri: (() => {
+          const redirectUrl = new URL(window.location.href)
+          redirectUrl.searchParams.set('theme', isDark.value ? 'dark' : 'light')
+          return redirectUrl.href
+        })()
+      },
+      // Override build-time configuration w/ runtime configuration
+      config: {...{
+        realm: keycloakConfig.realm,
+        url: keycloakConfig.url,
+        clientId: keycloakConfig.clientId
+      },...runtimeConfig},
+      onReady: (kc: KeycloakInstance) => {
+        setKeycloak(kc)
+        const gqlClient = getGqlClient(kc)
+        app.use(gqlClient)
+        app.mount('#app')
+      }
+    })
+  })
