@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: opennms-grpc-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/server-alias: "grpc-ingress.default.svc.cluster.local,grpc.{{ .Values.Host }}"
+    # below settings are timeouts for streaming operations, see below page for more details:
+    # https://kubernetes.github.io/ingress-nginx/examples/grpc/#notes-on-using-responserequest-streams
+    nginx.ingress.kubernetes.io/server-snippet: |
+      listen 8990 http2;
+      grpc_read_timeout "1200s";
+      grpc_send_timeout "1200s";
+      client_body_timeout "1200s";
+
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: grpc.{{ .Values.Host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
+                port:
+                  number: {{ .Values.OpenNMS.MinionGateway.GrpcPort }}
+
+  {{- if .Values.TLS.Enabled }}
+  tls:
+    - hosts:
+        -  {{.Values.Host }}
+      secretName: {{ .Values.TLS.Cert.Name }}
+  {{- end }}

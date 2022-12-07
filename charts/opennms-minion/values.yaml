@@ -1,0 +1,27 @@
+Host: onmshs
+Port: 443 #set depending on TLS.Enabled and the Ingress ports, do not change
+Protocol: https #set depending on TLS.Enabled, do not change
+
+NodeRestrictions:
+  Enabled: false
+
+OpenNMS:
+  Minion:
+    ServiceName: opennms-minion
+    Image: opennms/horizon-stream-minion
+    ImagePullPolicy: IfNotPresent
+    Replicas: 1
+    Port: 8181
+    SshPort: 8101
+    TrapsListenerPort: 1162
+    IgniteClusterPort:
+    IgniteDiscoveryPort:
+    MinionGatewayHost: grpc-ingress.default.svc.cluster.local
+    MinionGatewayPort: 8990
+    Resources:
+      Limits:
+        Cpu: "1"
+        Memory: 2050M
+      Requests:
+        Cpu: "1"
+        Memory: 512Mi

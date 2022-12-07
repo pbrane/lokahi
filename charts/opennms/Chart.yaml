@@ -1,3 +1,9 @@
 apiVersion: v2
 name: opennms
 version: 0.5.1
+
+dependencies:
+  - name: opennms-minion
+    version: 0.5.1
+    repository: file://../opennms-minion
+

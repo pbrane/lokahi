@@ -243,5 +243,5 @@ k8s_resource(
 ### Others ###
 k8s_resource(
     'ingress-nginx-controller',
-    port_forwards=['8123:80'],
+    port_forwards=['8123:80', '8990:8990'],
 )

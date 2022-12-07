@@ -14,30 +14,30 @@ spec:
     metadata:
       labels:
         app: {{ .Values.OpenNMS.Minion.ServiceName }}
-      annotations:
-        linkerd.io/inject: enabled
-        config.linkerd.io/opaque-ports: "{{ .Values.OpenNMS.Core.IgniteClusterPort }},{{ .Values.OpenNMS.Core.IgniteDiscoveryPort }}"
+      #annotations:
+      #  linkerd.io/inject: enabled
+      #  config.linkerd.io/opaque-ports: "{{ .Values.OpenNMS.Minion.IgniteClusterPort }},{{ .Values.OpenNMS.Minion.IgniteDiscoveryPort }}"
     spec:
       serviceAccountName: {{ .Values.OpenNMS.Minion.ServiceName }}-sa
-      {{- if .Values.NodeRestrictions.Enabled }}
-      nodeSelector:                                                                                    
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}                       
-      tolerations:
-        - effect: "NoSchedule"                                                                         
-          key: "{{ .Values.NodeRestrictions.Key }}"                                                    
-          operator: "Equal"
-          value: {{ .Values.NodeRestrictions.Value }} 
-      affinity: 
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:                                             
-          - weight: 1                                                                                  
-            preference:                                                                                
-              matchExpressions:                                                                        
-              - key: "{{ .Values.NodeRestrictions.Key }}"                                              
-                operator: In
-                values:                                                                                
-                - {{ .Values.NodeRestrictions.Value }}                                                 
-      {{- end }}
+      #{{- if .Values.NodeRestrictions.Enabled }}
+      #nodeSelector:
+      #  {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
+      #tolerations:
+      #  - effect: "NoSchedule"
+      #    key: "{{ .Values.NodeRestrictions.Key }}"
+      #    operator: "Equal"
+      #    value: {{ .Values.NodeRestrictions.Value }}
+      #affinity:
+      #  nodeAffinity:
+      #    preferredDuringSchedulingIgnoredDuringExecution:
+      #    - weight: 1
+      #      preference:
+      #        matchExpressions:
+      #        - key: "{{ .Values.NodeRestrictions.Key }}"
+      #          operator: In
+      #          values:
+      #          - {{ .Values.NodeRestrictions.Value }}
+      #{{- end }}
       volumes:
         - name: config-volume
           configMap:

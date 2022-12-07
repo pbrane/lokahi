@@ -17,7 +17,7 @@ spec:
         app: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
         ignite-cluster: core
     spec:
-      serviceAccountName: {{ .Values.OpenNMS.Minion.ServiceName }}-sa
+      serviceAccountName: {{ .Values.OpenNMS.MinionGateway.ServiceName }}-sa
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:                                                                                    
         {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}                       
