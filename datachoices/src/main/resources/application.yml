@@ -59,4 +59,7 @@ keycloak:
   base-url: http://onms-keycloak:8080/auth
 
 datachoices:
+  enabled: true
   interval-ms: 30000
+#  stats-url: http://stats.opennms.org/datachoices/
+  stats-url: http://10.5.50.163:3542/

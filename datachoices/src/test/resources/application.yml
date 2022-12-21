@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: integration-test
+
+  liquibase:
+    change-log: db/changelog/changelog.xml
+    enabled: true
+
+datachoices:
+  enabled: false
+  stats-url: http://10.5.50.163:3542/
+
+keycloak:
+  realm: opennms
+  base-url: http://onms-keycloak:8080/auth

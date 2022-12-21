@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.datachoices.dto.ToggleDataChoicesDTO;
 import org.opennms.horizon.datachoices.model.DataChoices;
 import org.opennms.horizon.datachoices.repository.DataChoicesRepository;
+import org.opennms.horizon.datachoices.service.dto.CollectionResults;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
@@ -46,6 +47,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DataChoicesService {
     private final DataChoicesRepository repository;
+    private final CollectionService collectionService;
+    private final UsageStatsHandlerClient statsClient;
 
     public void toggle(ToggleDataChoicesDTO request, String tenantId) {
         if (request.getToggle()) {
@@ -77,11 +80,21 @@ public class DataChoicesService {
     }
 
     public void execute() {
+        System.out.println("DataChoicesService.execute - 1");
         List<String> tenantIds = repository.findAll().stream()
-            .map(DataChoices::getTenantId).distinct().collect(Collectors.toList());
+            .map(DataChoices::getTenantId)
+            .distinct().collect(Collectors.toList());
 
-        System.out.println("tenantIds.size() = " + tenantIds.size());
+        for (String tenantId : tenantIds) {
+            execute(tenantId);
+        }
+    }
 
-//        todo: perform queries and send HTTP request to usage-stats-handler
+    private void execute(String tenantId) {
+        System.out.println("DataChoicesService.execute - 2");
+        CollectionResults results =
+            collectionService.collect(tenantId);
+
+//        statsClient.sendStats(results);
     }
 }

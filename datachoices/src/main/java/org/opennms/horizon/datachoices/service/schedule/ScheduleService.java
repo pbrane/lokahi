@@ -29,12 +29,14 @@
 package org.opennms.horizon.datachoices.service.schedule;
 
 import lombok.extern.slf4j.Slf4j;
+import org.opennms.horizon.datachoices.exception.DataChoicesRuntimeException;
 import org.opennms.horizon.datachoices.job.DataChoicesJob;
 import org.opennms.horizon.datachoices.service.dto.CreateJobParams;
 import org.opennms.horizon.datachoices.service.dto.CreateSimpleParams;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,21 +61,44 @@ public class ScheduleService implements ApplicationRunner {
     @Autowired
     private Scheduler scheduler;
 
-    @Value("${datachoices.interval-ms}")
+    @Value("${datachoices.interval-ms:86400000}")
     private long intervalMs;
 
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
-        JobDetail jobDetail = createJobDetail();
-        Trigger trigger = createTrigger();
+    @Value("${datachoices.enabled:true}")
+    private boolean dataChoicesEnabled;
 
+    @Override
+    public void run(ApplicationArguments args) {
         JobKey jobKey = JobKey.jobKey(JOB_NAME, JOB_GROUP);
 
+        try {
+            if (dataChoicesEnabled) {
+                schedule(jobKey);
+            } else {
+                unschedule(jobKey);
+            }
+        } catch (SchedulerException e) {
+            throw new DataChoicesRuntimeException("Failed to schedule/unschedule datachoices job", e);
+        }
+    }
+
+    private void schedule(JobKey jobKey) throws SchedulerException {
         if (!scheduler.checkExists(jobKey)) {
+
+            JobDetail jobDetail = createJobDetail();
+            Trigger trigger = createTrigger();
+
             scheduler.scheduleJob(jobDetail, trigger);
             log.info("Datachoices job scheduled");
         } else {
             log.info("Datachoices job already exists");
+        }
+    }
+
+    private void unschedule(JobKey jobKey) throws SchedulerException {
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+            log.info("Datachoices job unscheduled");
         }
     }
 
