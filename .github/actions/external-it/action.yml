@@ -30,6 +30,11 @@ runs:
 
       shell: bash
 
+    - name: Run Cypress E2E Tests
+      run: |
+        cd ui/
+        yarn cypress open --e2e --browser chrome
+
     - name: Setup & Run Cucumber Tests
       run: |
 

@@ -43,6 +43,11 @@ runs:
       working-directory: ui
       shell: bash
 
+    - name: unit-tests
+      run: |
+        cd ui/
+        yarn cypress open --component --browser chrome
+
     - name: build-image
       run: |
 
