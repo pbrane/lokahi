@@ -18,7 +18,7 @@ context('Login', () => {
       .findByPlaceholderText('Username').click().type('admin').end()
       .findByPlaceholderText('Password').click().type('admin').end()
       .findByRole('button', { name: /Sign in/i }).click()
-    
-    cy.get('[data-test="header-welcome"]').should('contain', 'Welcome, admin').end()
+      
+    cy.get('[data-test="header-welcome"]').should('contain', 'Welcome, admin')
   })
 })
