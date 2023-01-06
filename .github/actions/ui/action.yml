@@ -48,6 +48,8 @@ runs:
         cd ui/
         yarn cypress open --component --browser chrome
 
+      shell: bash
+
     - name: build-image
       run: |
 

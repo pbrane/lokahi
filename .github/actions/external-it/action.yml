@@ -35,6 +35,8 @@ runs:
         cd ui/
         yarn cypress open --e2e --browser chrome
 
+      shell: bash
+
     - name: Setup & Run Cucumber Tests
       run: |
 
