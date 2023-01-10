@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #use this script to install a basic version of OpenNMS Horizon Stream locally
 
+set -e
+
 #### ENV VARS
 ################################
 
