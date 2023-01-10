@@ -86,20 +86,20 @@ elif [ "$CONTEXT" == "custom-images" ]; then
   create_cluster
 
   # Will add a kind-registry here at some point, see .github/ for sample script.
-  kind load docker-image opennms/horizon-stream-alarm:local&
-  kind load docker-image opennms/horizon-stream-core:local&
-  kind load docker-image opennms/horizon-stream-minion:local&
-  kind load docker-image opennms/horizon-stream-minion-gateway:local&
-  kind load docker-image opennms/horizon-stream-minion-gateway-grpc-proxy:local&
-  kind load docker-image opennms/horizon-stream-keycloak:local&
-  kind load docker-image opennms/horizon-stream-grafana:local&
-  kind load docker-image opennms/horizon-stream-ui:local&
-  kind load docker-image opennms/horizon-stream-notification:local&
-  kind load docker-image opennms/horizon-stream-rest-server:local&
-  kind load docker-image opennms/horizon-stream-inventory:local&
-  kind load docker-image opennms/horizon-stream-metrics-processor:local&
-  kind load docker-image opennms/horizon-stream-events:local&
-  kind load docker-image opennms/horizon-stream-datachoices:local&
+  kind load docker-image opennms/horizon-stream-alarm:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-core:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-minion:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-minion-gateway:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-minion-gateway-grpc-proxy:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-keycloak:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-grafana:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-ui:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-notification:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-rest-server:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-inventory:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-metrics-processor:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-events:local& --name kind-test
+  kind load docker-image opennms/horizon-stream-datachoices:local& --name kind-test
 
   # Need to wait for the images to be loaded.
   sleep 120
