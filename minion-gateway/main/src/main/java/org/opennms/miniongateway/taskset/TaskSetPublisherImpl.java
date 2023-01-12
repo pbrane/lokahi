@@ -28,6 +28,12 @@
 
 package org.opennms.miniongateway.taskset;
 
+import java.util.Queue;
+import java.util.UUID;
+import javax.cache.Cache;
+import org.apache.ignite.Ignite;
+import org.apache.ignite.cache.CacheAtomicityMode;
+import org.apache.ignite.configuration.CacheConfiguration;
 import org.opennms.miniongateway.grpc.server.model.TenantKey;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskSet;
@@ -45,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Process task set updates, publishing them to downstream minions and storing the latest version to provide to minions
@@ -52,18 +59,29 @@ import java.util.Set;
  */
 public class TaskSetPublisherImpl implements TaskSetPublisher, TaskSetForwarder {
 
-    private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskSetPublisherImpl.class);
+    private static final String TASK_SETS_LOCATIONS = "tasksets";
 
-    private Logger log = DEFAULT_LOGGER;
+    private final Logger log = LoggerFactory.getLogger(TaskSetPublisherImpl.class);
 
-    private Map<TenantKey, TaskSet> taskSetByLocation = new HashMap<>();
-    private Map<TenantKey, Set<TaskSetListener>> taskSetListeners = new HashMap<>();
+    private final Ignite ignite;
+
+    private final Cache<TenantKey, TaskSet> taskSetByLocation;
+    private final Map<TenantKey, Set<TaskSetListener>> taskSetListeners = new HashMap<>();
 
     private final Object lock = new Object();
 
 //========================================
 // Interface
 //----------------------------------------
+
+    public TaskSetPublisherImpl(Ignite ignite) {
+        this.ignite = ignite;
+
+        CacheConfiguration<TenantKey, TaskSet> taskSetLocationCacheCfg = new CacheConfiguration<TenantKey, TaskSet>()
+            .setAtomicityMode(CacheAtomicityMode.TRANSACTIONAL)
+            .setName(TASK_SETS_LOCATIONS);
+        taskSetByLocation = ignite.getOrCreateCache(taskSetLocationCacheCfg);
+    }
 
     @Override
     public void publishTaskSet(String tenantId, String location, TaskSet taskSet) {

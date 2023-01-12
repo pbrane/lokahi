@@ -10,16 +10,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TaskSetServiceConfig {
 
-    private TaskSetPublisherImpl taskSetService = new TaskSetPublisherImpl();
-
-    @Bean("taskSetPublisher")
-    public TaskSetPublisher taskSetPublisher() {
-        return taskSetService;
-    }
-
-    @Bean("taskSetForwarder")
-    public TaskSetForwarder taskSetForwarder() {
-        return taskSetService;
+    @Bean({"taskSetPublisher", "taskSetForwarder"})
+    public TaskSetPublisher taskSetPublisher(Ignite ignite) {
+        return new TaskSetPublisherImpl(ignite);
     }
 
     @Bean("taskSetIgniteReceiverService")

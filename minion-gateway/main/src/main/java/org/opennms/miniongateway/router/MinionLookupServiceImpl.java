@@ -36,15 +36,15 @@ public class MinionLookupServiceImpl implements MinionLookupService {
         // with competing threads that may be trying to insert the same new location. So we will configure both caches
         // to be TRANSACTIONAL and be ready for locking.
         CacheConfiguration<TenantKey, UUID> minionByIdCacheConfig =
-            new CacheConfiguration<TenantKey, UUID>().
-                setAtomicityMode(CacheAtomicityMode.TRANSACTIONAL).
-                setName(MINIONS_BY_ID);
+            new CacheConfiguration<TenantKey, UUID>()
+                .setAtomicityMode(CacheAtomicityMode.TRANSACTIONAL)
+                .setName(MINIONS_BY_ID);
         minionByIdCache = ignite.getOrCreateCache(minionByIdCacheConfig);
 
         CacheConfiguration<TenantKey, Queue<UUID>> minionByLocationCacheConfig =
-            new CacheConfiguration<TenantKey, Queue<UUID>>().
-                setAtomicityMode(CacheAtomicityMode.TRANSACTIONAL).
-                setName(MINIONS_BY_LOCATION);
+            new CacheConfiguration<TenantKey, Queue<UUID>>()
+                .setAtomicityMode(CacheAtomicityMode.TRANSACTIONAL)
+                .setName(MINIONS_BY_LOCATION);
             minionByLocationCache = ignite.getOrCreateCache(minionByLocationCacheConfig);
     }
 
