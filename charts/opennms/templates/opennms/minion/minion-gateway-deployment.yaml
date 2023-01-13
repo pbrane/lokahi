@@ -10,7 +10,8 @@ spec:
   selector:
     matchLabels:
       app: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
-  replicas: {{ .Values.OpenNMS.MinionGateway.Replicas }}
+  replicas: 2
+  #{{ .Values.OpenNMS.MinionGateway.Replicas }}
   template:
     metadata:
       labels:
@@ -48,6 +49,10 @@ spec:
               value: "{{ .Values.Kafka.ServiceName }}:{{ .Values.Kafka.Port }}"
             - name: IGNITE_UPDATE_NOTIFIER # Disable Ignite version lookups
               value: "false"
+            - name: IGNITE_KUBERNETES_SERVICE_NAME
+              value: "opennms-minion-gateway"
+            - name: IGNITE_USE_KUBERNETES
+              value: "true"
           ports:
             - name: http
               containerPort: {{ .Values.OpenNMS.MinionGateway.Port }}

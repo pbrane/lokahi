@@ -1,0 +1,139 @@
+/*******************************************************************************
+ * This file is part of OpenNMS(R).
+ *
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2021 The OpenNMS Group, Inc.
+ *
+ * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
+ *
+ * OpenNMS(R) is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * OpenNMS(R) is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OpenNMS(R).  If not, see:
+ *      http://www.gnu.org/licenses/
+ *
+ * For more information contact:
+ *     OpenNMS(R) Licensing <license@opennms.org>
+ *     http://www.opennms.org/
+ *     http://www.opennms.com/
+ *******************************************************************************/
+package org.opennms.miniongateway.grpc.controller;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.Message;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import javax.cache.Cache.Entry;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ignite.Ignite;
+import org.apache.ignite.IgniteCache;
+import org.apache.ignite.cache.query.ScanQuery;
+import org.apache.ignite.lang.IgniteBiPredicate;
+import org.apache.ignite.services.ServiceDescriptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@AllArgsConstructor
+@Slf4j
+@RestController
+public class IgniteWorkerRestControllerImpl {
+
+    @Autowired
+    private Ignite ignite;
+
+    @GetMapping(path = "/ignite-worker")
+    public ResponseEntity<Map<String, Object>> reportServiceDeploymentMetrics(boolean verbose) {
+        return ResponseEntity.ok(calculateServiceDeploymentMetrics(verbose));
+    }
+
+    private Map<String, Object> calculateServiceDeploymentMetrics(boolean includeByService) {
+        Map<String, Integer> countsByIgniteNode = new HashMap<>();
+        Map<String, Integer> countsByService = new HashMap<>();
+        AtomicInteger total = new AtomicInteger(0);
+
+        Collection<ServiceDescriptor> serviceDescriptors = ignite.services().serviceDescriptors();
+        serviceDescriptors.forEach(serviceDescriptor -> {
+            Map<UUID, Integer> topo = serviceDescriptor.topologySnapshot();
+            AtomicInteger subtotal = new AtomicInteger(0);
+
+            for (Map.Entry<UUID, Integer> topoEntry : topo.entrySet()) {
+                countsByIgniteNode.compute(String.valueOf(topoEntry.getKey()), (key, curVal) -> {
+
+                    total.addAndGet(topoEntry.getValue());
+                    subtotal.addAndGet(topoEntry.getValue());
+
+                    if (curVal != null) {
+                        return curVal + topoEntry.getValue();
+                    } else {
+                        return topoEntry.getValue();
+                    }
+                });
+            }
+
+            countsByService.put(serviceDescriptor.name(), subtotal.get());
+        });
+
+        // Sort
+        Map<String, Integer> sortedCountsByIgniteNode = new TreeMap<>(countsByIgniteNode);
+        Map<String, Integer> sortedServices = new TreeMap<>(countsByService);
+
+        Map<String, Object> top = new TreeMap<>();
+        top.put("countsByIgniteNode", sortedCountsByIgniteNode);
+
+        if (includeByService) {
+            top.put("countsByService", sortedServices);
+        }
+
+        top.put("total", total.get());
+        top.put("serviceCount", serviceDescriptors.size());
+        top.put("nodes", ignite.cluster().nodes().stream()
+            .map(node -> ImmutableMap.of(
+              "id", node.id(),
+              "addresses", node.addresses(),
+              "hostNames", node.hostNames(),
+              "version", node.version().toString()
+            ))
+            .collect(Collectors.toList())
+        );
+        Map<String, Map<Object, Object>> caches = new LinkedHashMap<>();
+        top.put("cache", caches);
+        Collection<String> cacheNames = ignite.cacheNames();
+        for (String cacheName : cacheNames) {
+            IgniteCache<Object, Object> igniteCache = ignite.cache(cacheName);
+
+            Map<Object, Object> entryMap = new LinkedHashMap<>();
+            List<Entry<Object, Object>> entries = igniteCache.query(new ScanQuery<>(new IgniteBiPredicate<Object, Object>() {
+                @Override
+                public boolean apply(Object o, Object o2) {
+                    return true;
+                }
+            })).getAll();
+            for (Entry<Object, Object> entry : entries) {
+                Object val = entry.getValue();
+                val = val instanceof Message ? val.toString() : val;
+                entryMap.put(entry.getKey(), val);
+            }
+            caches.put(cacheName, entryMap);
+        }
+
+        return top;
+    }
+}
