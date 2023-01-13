@@ -30,10 +30,10 @@ package org.opennms.horizon.alarmservice.db.entity;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
@@ -55,16 +55,21 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.ToString.Exclude;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Formula;
-import org.hibernate.annotations.Type;
 import org.opennms.horizon.alarmservice.model.AlarmSeverity;
 
 @Entity
 @Table(name="alarm")
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 public class Alarm extends TenantAwareEntity implements Serializable {
     private static final long serialVersionUID = 7275548439687562161L;
 
@@ -83,10 +88,6 @@ public class Alarm extends TenantAwareEntity implements Serializable {
 
     @Column(length=256, nullable=false)
     private String eventUei;
-
-    @Column
-    @Type(type= "org.opennms.horizon.alarmservice.utils.InetAddressUserType")
-    private InetAddress ipAddr;
 
     @Column(unique=true)
     private String reductionKey;
@@ -180,7 +181,6 @@ public class Alarm extends TenantAwareEntity implements Serializable {
     @Column(name="x733_probable_cause", nullable=false)
     private int x733ProbableCause = 0;
 
-    //TODO:MMF add in whatever is needed from the Event protobuf as individual fields.
     @Column
     private AlarmSeverity lastEventSeverity;
 
@@ -198,9 +198,11 @@ public class Alarm extends TenantAwareEntity implements Serializable {
 
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name="sticky_memo_id")
+    @Exclude
     private Memo stickyMemo;
 
-    @OneToMany(mappedBy = "situationAlarmId", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "situationAlarmId", orphanRemoval = true, cascade = CascadeType.ALL)
+    @Exclude
     private Set<AlarmAssociation> associatedAlarms = new HashSet<>();
 
     // a situation is an alarm, but an alarm is not necessarily a situation
@@ -235,6 +237,11 @@ public class Alarm extends TenantAwareEntity implements Serializable {
         this.severity = AlarmSeverity.get(severity);
         this.firstEventTime = firsteventtime;
         setLastEventTime(lasteEventTime);
+    }
+
+    @Transient
+    public void incrementCount() {
+        counter++;
     }
 
     @Transient
@@ -382,5 +389,22 @@ public class Alarm extends TenantAwareEntity implements Serializable {
             return getLastAutomationTime();
         }
         return getLastEventTime();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
+            return false;
+        }
+        Alarm alarm = (Alarm) o;
+        return alarmId != null && Objects.equals(alarmId, alarm.alarmId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

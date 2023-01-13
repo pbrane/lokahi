@@ -25,13 +25,13 @@ kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace de
 kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/mail-server 22080:8025 &
 kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/mail-server 22025:1025 &
 kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/postgres 25054:5432 &
-kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/prometheus 19080:9090 &
-kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/prometheus-pushgateway 21080:9091 &
 kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/grafana 18080:3000 &
 kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/onms-kafka 59092:59092 &
 kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/ingress-nginx-controller 8123:80 &
 kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/opennms-metrics-processor 28050:5005 &
 kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/opennms-events 30050:5005 &
+kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/opennms-datachoices 33080:8080 &
+kubectl --context kind-kind port-forward --pod-running-timeout 1s --namespace default deployment/opennms-datachoices 33050:5005 &
 
 while wait
 do

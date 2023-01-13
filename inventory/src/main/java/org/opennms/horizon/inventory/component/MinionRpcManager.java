@@ -33,7 +33,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -51,6 +50,8 @@ import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -73,7 +74,7 @@ public class MinionRpcManager {
     private final MonitoringSystemService service;
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
 
-    private int initialDelay = MONITOR_INITIAL_DELAY;
+    private final int initialDelay = MONITOR_INITIAL_DELAY;
     @Value("${kafka.topics.results:" + DEFAULT_TASK_RESULTS_TOPIC + "}")
     private String kafkaTopic;
 
@@ -86,7 +87,7 @@ public class MinionRpcManager {
 
     private ScheduledThreadPoolExecutor executor;
 
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent.class)
     public void startRpc() {
         log.info("Start RPC");
         ThreadFactory threadFactory = new ThreadFactoryBuilder()

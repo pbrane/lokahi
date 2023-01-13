@@ -20,8 +20,6 @@
 ## 16 = horizon-stream-minion-gateway
 ## 17 = horizon-stream-ui
 ## 18 = grafana
-## 19 = prometheus
-## 21 = prometheus-pushgateway
 ## 22 = mail-server
 ## 23 = zookeeper
 ## 24 = kafka
@@ -31,6 +29,7 @@
 ## 28 = metric processor
 ## 29 = horizon-stream-inventory
 ## 30 = events
+## 31 = cortex
 ##
 
 # Tilt config #
@@ -192,7 +191,7 @@ jib_project(
     port_forwards=['16080:9090', '16050:5005'],
 )
 
-### Minion Gateway GRPC Proxy ###
+### Minion Gateway gRPC Proxy ###
 jib_project(
     'minion-gateway-grpc-proxy',
     'opennms/horizon-stream-minion-gateway-grpc-proxy',
@@ -200,6 +199,15 @@ jib_project(
     'opennms-minion-gateway-grpc-proxy',
     submodule='main',
     port_forwards=['31089:8990', '31050:5005'],
+)
+
+### DataChoices ###
+jib_project(
+    'datachoices',
+    'opennms/horizon-stream-datachoices',
+    'datachoices',
+    'opennms-datachoices',
+    port_forwards=['33080:9090', '33050:5005', '33065:6565'],
 )
 
 ### Minion ###
@@ -244,16 +252,10 @@ k8s_resource(
     port_forwards=['18080:3000'],
 )
 
-### Prometheus ###
+### Cortex ###
 k8s_resource(
-    'prometheus',
-    port_forwards=['19080:9090'],
-)
-
-### Prometheus Push Gateway ###
-k8s_resource(
-    'prometheus-pushgateway',
-    port_forwards=['21080:9091'],
+    'cortex',
+    port_forwards=['19000:9000'],
 )
 
 ### Postgres ###
@@ -272,5 +274,5 @@ k8s_resource(
 ### Others ###
 k8s_resource(
     'ingress-nginx-controller',
-    port_forwards=['8123:80'],
+    port_forwards=['8123:80', '0.0.0.0:8990:8990'],
 )

@@ -11,7 +11,7 @@
 
     <artifactId>assembly</artifactId>
 
-    <name>OpenNms Horizon :: Minion :: Assembly</name>
+    <name>OpenNMS Horizon Stream :: Minion :: Assembly</name>
     <packaging>karaf-assembly</packaging>
 
     <dependencies>
@@ -126,6 +126,7 @@
                         <feature>system</feature>
                         <feature>scr</feature>
                         <feature>minion-ng</feature>
+                        <feature>flows</feature>
                         <!--
                         <feature>icmp-plugins</feature>
                         <feature>snmp-plugins</feature>

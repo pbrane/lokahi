@@ -40,36 +40,41 @@ import org.opennms.horizon.events.proto.Event;
  * Situation rules.
  */
 public interface AlarmService {
-    void kick();
 
-    void clearAlarm(Alarm alarm, Date now);
+    AlarmDTO clearAlarm(Alarm alarm, Date now);
 
-    void clearAlarm(Long alarmId, Date now);
+    AlarmDTO clearAlarm(Long alarmId, Date now);
 
-    void deleteAlarm(Alarm alarm);
+    AlarmDTO deleteAlarm(Long id);
 
-    void unclearAlarm(Alarm alarm, Date now);
+    AlarmDTO deleteAlarm(Alarm alarm);
 
-    void escalateAlarm(Alarm alarm, Date now);
+    AlarmDTO unclearAlarm(Alarm alarm, Date now);
 
-    void acknowledgeAlarm(Alarm alarm, Date now);
+    AlarmDTO unclearAlarm(Long alarmId, Date now);
 
-    void unacknowledgeAlarm(Alarm alarm, Date now);
+    AlarmDTO escalateAlarm(Alarm alarm, Date now);
 
-    void setSeverity(Alarm alarm, AlarmSeverity severity, Date now);
+    AlarmDTO escalateAlarm(Long alarmId, Date now);
 
-    void setSeverity(Long id, AlarmSeverity severity, Date now);
+    AlarmDTO acknowledgeAlarm(Alarm alarm, Date now, String userId);
 
-    void debug(String message, Object... objects);
+    AlarmDTO acknowledgeAlarm(Long alarmId, Date now, String userId);
 
-    void info(String message, Object... objects);
+    AlarmDTO unAcknowledgeAlarm(Long alarmId, Date now);
 
-    void warn(String message, Object... objects);
+    AlarmDTO unAcknowledgeAlarm(Alarm alarm, Date now);
+
+    AlarmDTO setSeverity(Alarm alarm, AlarmSeverity severity, Date now);
+
+    AlarmDTO setSeverity(Long alarmId, AlarmSeverity severity, Date now);
 
     List<AlarmDTO> getAllAlarms(String tenantId);
 
-    Alarm process(Event e);
+    AlarmDTO process(Event e);
 
-    void removeStickyMemo(long alarmId);
+    AlarmDTO removeStickyMemo(long alarmId);
+
+    AlarmDTO updateStickyMemo(Long alarmId, String body);
 
 }

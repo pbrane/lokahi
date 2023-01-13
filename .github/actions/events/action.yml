@@ -1,5 +1,5 @@
 name: 'Build and test Events'
-description: 'This implements unit and built-time integration tests on Events, dir platform.'
+description: 'This implements unit and built-time integration tests on Events.'
 inputs:
   enable-sonar-scan:
     description: 'Enables code scanning with SonarCloud.'

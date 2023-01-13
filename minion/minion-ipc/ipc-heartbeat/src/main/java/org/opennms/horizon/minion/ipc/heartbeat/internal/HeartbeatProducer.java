@@ -53,6 +53,7 @@ public class HeartbeatProducer {
     private SyncDispatcher<HeartbeatMessage> dispatcher;
     private Timer timer = new Timer();
 
+
     public void init() {
 
         dispatcher = messageDispatcherFactory.createSyncDispatcher(new HeartbeatModule());

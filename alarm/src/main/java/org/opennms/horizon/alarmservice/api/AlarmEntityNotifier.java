@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.Set;
 import org.opennms.horizon.alarmservice.db.entity.Alarm;
 import org.opennms.horizon.alarmservice.db.entity.Memo;
-import org.opennms.horizon.alarmservice.db.entity.ReductionKeyMemo;
 import org.opennms.horizon.alarmservice.model.AlarmSeverity;
 
 /**
@@ -69,12 +68,7 @@ public interface AlarmEntityNotifier {
 
     void didDeleteStickyMemo(Alarm alarm, Memo memo);
 
-    void didDeleteReductionKeyMemo(Alarm alarm, ReductionKeyMemo memo);
-
     void didUpdateLastAutomationTime(Alarm alarm, Date previousLastAutomationTime);
 
     void didUpdateRelatedAlarms(Alarm alarm, Set<Alarm> previousRelatedAlarms);
-
-//    void didChangeTicketStateForAlarm(Alarm alarm, TroubleTicketState previousState);
-
 }

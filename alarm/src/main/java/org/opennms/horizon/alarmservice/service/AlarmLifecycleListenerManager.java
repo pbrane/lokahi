@@ -45,7 +45,6 @@ import org.opennms.horizon.alarmservice.api.AlarmEntityListener;
 import org.opennms.horizon.alarmservice.api.AlarmLifecycleListener;
 import org.opennms.horizon.alarmservice.db.entity.Alarm;
 import org.opennms.horizon.alarmservice.db.entity.Memo;
-import org.opennms.horizon.alarmservice.db.entity.ReductionKeyMemo;
 import org.opennms.horizon.alarmservice.db.repository.AlarmRepository;
 import org.opennms.horizon.alarmservice.model.AlarmSeverity;
 import org.opennms.horizon.alarmservice.utils.SystemProperties;
@@ -175,11 +174,6 @@ public class AlarmLifecycleListenerManager implements AlarmEntityListener {
 
     @Override
     public void onStickyMemoDeleted(Alarm alarm, Memo memo) {
-        onNewOrUpdatedAlarm(alarm);
-    }
-
-    @Override
-    public void onReductionKeyMemoDeleted(Alarm alarm, ReductionKeyMemo memo) {
         onNewOrUpdatedAlarm(alarm);
     }
 

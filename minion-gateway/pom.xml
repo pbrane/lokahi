@@ -2,28 +2,30 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <version>0.1.0-SNAPSHOT</version>
+
     <parent>
         <groupId>org.opennms.horizon</groupId>
         <artifactId>horizon-parent</artifactId>
         <version>0.1.0-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath>../parent-pom</relativePath>
     </parent>
+
+    <name>OpenNMS Horizon Stream :: Minion Gateway</name>
+    <description>
+        Gateway which serves gRPC connections from Minions and routes traffic to and from Minions.
+    </description>
 
     <groupId>org.opennms.horizon.minion.gateway</groupId>
     <artifactId>minion-gateway</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-
-    <name>OpenNMS Horizon :: Minion Gateway</name>
-    <description>
-        Gateway which serves GRPC connections from Minions and routes traffic between the Core and the Minions.
-    </description>
 
     <properties>
         <skip-docker-image-build>true</skip-docker-image-build>
         <docker.image.tag>local</docker.image.tag>
         <docker.image.skipPush>false</docker.image.skipPush>
         <docker.it.network>rest-server-it-network</docker.it.network>
+        <skipITs>false</skipITs>
     </properties>
 
     <modules>
@@ -32,6 +34,8 @@
         <module>ipc-grpc-server</module>
         <module>rpc-request-server</module>
         <module>main</module>
+
+        <module>docker-it</module>
     </modules>
 
     <build>

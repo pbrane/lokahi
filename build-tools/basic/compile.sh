@@ -26,12 +26,13 @@ set -e
 mvn clean install -f parent-pom
 mvn clean install -f shared-lib
 
+mvn clean install -f alarm
 mvn clean install -f minion-gateway
 mvn clean install -f minion-gateway-grpc-proxy
 mvn clean install -f minion
 mvn clean install -f rest-server
 mvn clean install -f inventory
 mvn clean install -f notifications
-mvn clean install -f platform
 mvn clean install -f metrics-processor
 mvn clean install -f events
+mvn clean install -f datachoices

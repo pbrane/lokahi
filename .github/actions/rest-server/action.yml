@@ -1,5 +1,5 @@
 name: 'Build and test rest-server'
-description: 'This implements unit and built-time integration tests on rest-server, dir platform.'
+description: 'This implements unit and built-time integration tests on rest-server.'
 inputs:
   dir-location:
     description: 'The dir containing the change.'

@@ -1,46 +1,30 @@
-import { add, intervalToDuration, formatDuration } from 'date-fns'
+import { add, intervalToDuration } from 'date-fns'
 import { TimeUnit } from '@/types'
 
 /**
- * Translate timestamp to human-readeable duration
- * @param timestamp seconds/milliseconds
- * @param timeUnit milliseconds by default
+ * Translate value to human-readeable duration
+ * @param value in seconds/milliseconds
+ * @param unit of value - ms by default
  * @returns A shorted version (e.g. 28d4h22m16s) 
  */
-export const getHumanReadableDuration = (timestamp: number | undefined, timeUnit = TimeUnit.MSecs) => {
-  let durationDisplay = '--' // undefined | null
+export const getHumanReadableDuration = (value: number | undefined, unit = TimeUnit.MSecs) => {
+  if (value === undefined) return '--'
+  if (value === 0) return '0'
 
-  if(timestamp !== undefined) {
-    const timestampInSecs = timeUnit === TimeUnit.Secs ? timestamp : timestamp / 1000
+  const secs = unit === TimeUnit.Secs ? value : value / 1000
+  if (secs < 1) return value + 'ms'
 
-    if(Math.abs(timestampInSecs) < 1) {
-      durationDisplay = String(timestamp)
+  const duration = intervalToDuration({
+    start: new Date(),
+    end: add(new Date(), { seconds: secs })
+  })
 
-      if(timestampInSecs !== 0) durationDisplay += 'ms'
-    } else {
-      const duration = intervalToDuration({
-        start: new Date(),
-        end: add(new Date(), { seconds: timestampInSecs })
-      })
-        
-      let durationFormatted = formatDuration(duration, { format: ['days', 'hours', 'minutes', 'seconds']})
-      const re = /(?<s>seconds?)|(?<m>minutes?)|(?<h>hours?)|(?<d>days?)/gm
-    
-      // replace days/hours/minutes/seconds by d/h/m/s
-      for(const mat of durationFormatted.matchAll(re)) {
-        const { s, m, h, d } = mat.groups as Record<string, string>
+  const days = duration.days ? duration.days + 'd' : ''
+  const hours = duration.hours ? duration.hours + 'h' : ''
+  const minutes = duration.minutes ? duration.minutes + 'm' : ''
+  const seconds = duration.seconds ? duration.seconds + 's' : ''
 
-        if(s) durationFormatted = durationFormatted.replace(s, 's')
-        if(m) durationFormatted = durationFormatted.replace(m, 'm')
-        if(h) durationFormatted = durationFormatted.replace(h, 'h')
-        if(d) durationFormatted = durationFormatted.replace(d, 'd')
-      }
-    
-      durationDisplay = durationFormatted.replaceAll(' ', '')
-    }
-  }
-
-  return durationDisplay
+  return days + hours + minutes + seconds
 }
 
 /**

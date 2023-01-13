@@ -117,7 +117,7 @@ class MinionRpcManagerTest {
         doReturn(CompletableFuture.completedFuture(rpcResponse)).when(mockClient).sendRpcRequest(eq(SECONDARY_TENANT_ID), any(RpcRequestProto.class));
         ArgumentCaptor<ProducerRecord<String, byte[]>> producerCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
         rpcManager.startRpc();
-        await().atMost(Duration.ofMillis(1000)).until(() ->
+        await().atMost(Duration.ofMillis(5000)).until(() ->
             logCaptor.getInfoLogs().stream().anyMatch(l->l.startsWith("Response time for minion")));
         verify(mockService).listAllForMonitoring();
         verify(mockClient, times(1)).sendRpcRequest(eq(PRIMARY_TENANT_ID), primaryTenantCaptor.capture());

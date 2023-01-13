@@ -8,15 +8,22 @@
         <groupId>org.opennms.horizon</groupId>
         <artifactId>horizon-parent</artifactId>
         <version>0.1.0-SNAPSHOT</version>
-        <relativePath>../parent-pom/pom.xml</relativePath>
+        <relativePath>../parent-pom</relativePath>
     </parent>
 
+    <name>OpenNMS Horizon Stream :: Alarm Service</name>
+    <description>
+        A microservice that processes events produced by other components into alarms.
+    </description>
+
     <groupId>org.opennms.horizon.alarmservice</groupId>
-    <name>OpenNMS Horizon :: Alarm Service</name>
     <artifactId>alarm-service</artifactId>
 
     <properties>
-
+        <skipITs>false</skipITs>
+        <docker.image.name>opennms/horizon-stream-alarm</docker.image.name>
+        <docker.image.tag>local</docker.image.tag>
+        <skipJib>false</skipJib>
     </properties>
 
     <dependencyManagement>
@@ -108,9 +115,13 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.slf4j</groupId>-->
+<!--            <artifactId>slf4j-log4j12</artifactId>-->
+<!--        </dependency>-->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
         </dependency>
 
         <dependency>
@@ -145,6 +156,46 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-picocontainer</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
         </dependency>
     </dependencies>
 
@@ -185,7 +236,28 @@
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                <version>${jib.version}</version>
+                <configuration>
+                    <skip>${skipJib}</skip>
+                    <from>
+                        <image>openjdk:11</image>
+                    </from>
+                    <to>
+                        <image>${docker.image.name}:${docker.image.tag}</image>
+                    </to>
+                    <container>
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                    </container>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>build-docker-image</id>
+<!--                        Must be in package phase before docker runs-->
+                        <phase>package</phase>
+                        <goals>
+                            <goal>dockerBuild</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -205,8 +277,62 @@
                     </excludes>
                 </configuration>
             </plugin>
+
+            <!--                -->
+            <!-- TEST EXECUTION -->
+            <!--                -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <executions>
+                    <execution>
+                        <id>horizon-integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <phase>integration-test</phase>
+                        <configuration>
+                            <excludes>
+                                <exclude>none</exclude>
+                            </excludes>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+
+                    <!-- Fail the build on IT Failures.  Executed as a separate step so that post-integration-test -->
+                    <!--  phase executes even after an IT failure.                                                 -->
+                    <execution>
+                        <id>horizon-verify-it</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skipITs>${skipITs}</skipITs>
+                    <reuseForks>true</reuseForks>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+<!--                    ##########################-->
+<!--                    ### this is REQUIRED so that the the IT Tests have access to the project classes!-->
+<!--                    ##########################-->
+                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                    <systemProperties>
+                        <property>
+                            <name>application.base-url</name>
+                            <value>http://localhost:${app-http-port}</value>
+                        </property>
+                        <property>
+                            <name>kafka-rest.url</name>
+                            <value>http://localhost:${kafka-rest.port}</value>
+                        </property>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
-
-
+    
 </project>

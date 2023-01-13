@@ -4,6 +4,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgres:5432/alarm
+    username: alarm
+    password: passw0rd
 
   jpa:
     hibernate:
@@ -25,9 +28,9 @@ spring:
       client-id: "alarm-service"
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
-    bootstrap-servers: localhost:59092
+    bootstrap-servers: localhost:9092
 
 kafka:
   topics:
-    alarm-events: "events-proto"
+    alarm-events: "events"
     new-alarms: "alarms"

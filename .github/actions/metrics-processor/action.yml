@@ -1,5 +1,5 @@
 name: 'Build and test Metrics Processor'
-description: 'This implements unit and built-time integration tests on Metrics Processor, dir platform.'
+description: 'This implements unit and built-time integration tests on Metrics Processor.'
 inputs:
   enable-sonar-scan:
     description: 'Enables code scanning with SonarCloud.'

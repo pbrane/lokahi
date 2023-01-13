@@ -30,6 +30,8 @@ package org.opennms.horizon.inventory.grpc;
 
 import com.google.common.base.Strings;
 import com.google.common.net.InetAddresses;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.BoolValue;
 import com.google.protobuf.Empty;
 import com.google.protobuf.Int64Value;
 import com.google.rpc.Code;
@@ -50,12 +52,16 @@ import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.service.IpInterfaceService;
 import org.opennms.horizon.inventory.service.NodeService;
 import org.opennms.horizon.inventory.service.taskset.DetectorTaskSetService;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
     private final NodeService nodeService;
@@ -63,19 +69,22 @@ public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
     private final NodeMapper nodeMapper;
     private final TenantLookup tenantLookup;
     private final DetectorTaskSetService taskSetService;
+    private final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+        .setNameFormat("send-taskset-for-node-%d")
+        .build();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10, threadFactory);
 
     @Override
-    @Transactional
     public void createNode(NodeCreateDTO request, StreamObserver<NodeDTO> responseObserver) {
         Optional<String> tenantId = tenantLookup.lookupTenantId(Context.current());
         boolean valid = tenantId.map(id -> validateInput(request, id, responseObserver)).orElseThrow();
 
         if (valid) {
             Node node = nodeService.createNode(request, tenantId.orElseThrow());
-
-            taskSetService.sendDetectorTasks(node);
             responseObserver.onNext(nodeMapper.modelToDTO(node));
             responseObserver.onCompleted();
+            // Asynchronously send task sets to Minion
+            executorService.execute(() -> sendTaskSetsToMinion(node));
         }
     }
 
@@ -92,15 +101,10 @@ public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
         Optional<NodeDTO> node = tenantLookup.lookupTenantId(Context.current())
             .map(tenantId -> nodeService.getByIdAndTenantId(request.getValue(), tenantId))
             .orElseThrow();
-        if (node.isPresent()) {
-            responseObserver.onNext(node.get());
+        node.ifPresentOrElse(nodeDTO -> {
+            responseObserver.onNext(nodeDTO);
             responseObserver.onCompleted();
-        } else {
-            Status status = Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Node with id: " + request.getValue() + " doesn't exist.").build();
-            responseObserver.onError(StatusProto.toStatusRuntimeException(status));
-        }
+        }, () -> responseObserver.onError(StatusProto.toStatusRuntimeException(createStatusNotExits(request.getValue()))));
     }
 
     @Override
@@ -148,6 +152,33 @@ public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    @Override
+    public void deleteNode(Int64Value request, StreamObserver<BoolValue> responseObserver) {
+        Optional<NodeDTO> node = tenantLookup.lookupTenantId(Context.current())
+            .map(tenantId -> nodeService.getByIdAndTenantId(request.getValue(), tenantId))
+            .orElseThrow();
+        node.ifPresentOrElse(nodeDTO -> {
+            try {
+                nodeService.deleteNode(nodeDTO.getId());
+                responseObserver.onNext(BoolValue.newBuilder().setValue(true).build());
+                responseObserver.onCompleted();
+            } catch (Exception e) {
+                log.error("Error while deleting node with ID {}", request.getValue(), e);
+                Status status = Status.newBuilder()
+                    .setCode(Code.INTERNAL_VALUE)
+                    .setMessage("Error while deleting node with ID " + request.getValue()).build();
+                responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+            }}, () -> responseObserver.onError(StatusProto.toStatusRuntimeException(createStatusNotExits(request.getValue())))
+        );
+    }
+
+    private Status createStatusNotExits(long id) {
+        return Status.newBuilder()
+            .setCode(Code.NOT_FOUND_VALUE)
+            .setMessage(String.format("Node with id: %s doesn't exist.", id)).build();
+
+    }
+
     private boolean validateInput(NodeCreateDTO request, String tenantId, StreamObserver<NodeDTO> responseObserver) {
         boolean valid = true;
 
@@ -173,5 +204,13 @@ public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
         }
 
         return valid;
+    }
+
+    private void sendTaskSetsToMinion(Node node) {
+        try {
+            taskSetService.sendDetectorTasks(node);
+        } catch (Exception e) {
+            log.error("Error while sending detector task for node with label {}", node.getNodeLabel());
+        }
     }
 }

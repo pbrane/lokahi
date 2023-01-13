@@ -12,7 +12,7 @@
     <artifactId>minion-features</artifactId>
     <packaging>feature</packaging>
 
-    <name>OpenNms Horizon :: Minion :: Features</name>
+    <name>OpenNMS Horizon Stream :: Minion :: Features</name>
 
     <dependencies>
 
@@ -61,6 +61,13 @@
         <dependency>
             <groupId>org.opennms.horizon.minion</groupId>
             <artifactId>traps-features</artifactId>
+            <version>${project.version}</version>
+            <classifier>features</classifier>
+            <type>xml</type>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.minion</groupId>
+            <artifactId>flows-features</artifactId>
             <version>${project.version}</version>
             <classifier>features</classifier>
             <type>xml</type>

@@ -79,6 +79,9 @@ type OpenNMSSpec struct {
 	// Defines service values for Keycloak
 	Keycloak BaseServiceResources `json:"keycloak,omitempty"`
 
+    // Defines service values for DataChoices service
+    DataChoices BaseServiceResources `json:"dataChoices,omitempty"`
+
 	// Defines service values for Grafana
 	Grafana BaseServiceResources `json:"grafana,omitempty"`
 

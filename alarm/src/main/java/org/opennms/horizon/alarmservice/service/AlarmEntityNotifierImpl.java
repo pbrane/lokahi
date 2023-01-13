@@ -35,7 +35,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.opennms.horizon.alarmservice.api.AlarmEntityNotifier;
 import org.opennms.horizon.alarmservice.db.entity.Alarm;
 import org.opennms.horizon.alarmservice.db.entity.Memo;
-import org.opennms.horizon.alarmservice.db.entity.ReductionKeyMemo;
 import org.opennms.horizon.alarmservice.model.AlarmDTO;
 import org.opennms.horizon.alarmservice.model.AlarmSeverity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,11 +109,6 @@ public class AlarmEntityNotifierImpl implements AlarmEntityNotifier {
     @Override
     public void didDeleteStickyMemo(Alarm alarm, Memo memo) {
 //        forEachListener(l -> l.onStickyMemoDeleted(alarm, memo));
-    }
-
-    @Override
-    public void didDeleteReductionKeyMemo(Alarm alarm, ReductionKeyMemo memo) {
-//        forEachListener(l -> l.onReductionKeyMemoDeleted(alarm, memo));
     }
 
     @Override

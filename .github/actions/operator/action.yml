@@ -1,5 +1,5 @@
 name: 'Build and test Operator'
-description: 'This implements unit and built-time integration tests on the Operator, dir platform.'
+description: 'This implements unit and built-time integration tests on the Operator.'
 inputs:
   dir-location:
     description: 'The dir containing the change.'

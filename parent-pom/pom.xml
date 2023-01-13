@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
+
+    <name>OpenNMS Horizon Stream :: Horizon Parent</name>
+    <description>
+        Top-level Parent POM with standard dependency versions for use across multiple top-level projects.
+    </description>
 
     <groupId>org.opennms.horizon</groupId>
     <artifactId>horizon-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-
-    <name>OpenNMS Horizon :: Horizon Parent</name>
-
-    <description>
-        Top-level Parent POM with standard dependency versions for use across multiple top-level projects.
-    </description>
 
     <properties>
         <!-- Configuration properties -->
@@ -100,19 +98,21 @@
         <spring-security.version>5.7.3</spring-security.version>
         <spring-kafka.version>2.8.6</spring-kafka.version>
         <swagger.version>2.1.1</swagger.version>
-        <testcontainers.version>1.16.3</testcontainers.version>
         <lombok.version>1.18.24</lombok.version>
         <lombok.binding.version>0.2.0</lombok.binding.version>
         <zjsonpatch.version>0.4.12</zjsonpatch.version>
         <mockito.version>4.8.0</mockito.version>
         <jupiter.version>5.9.0</jupiter.version>
         <jib.version>3.2.1</jib.version>
-        <surefire.version>3.0.0-M5</surefire.version>
-        <failsafe.version>3.0.0-M5</failsafe.version>
+        <surefire.version>3.0.0-M7</surefire.version>
+        <failsafe.version>3.0.0-M7</failsafe.version>
         <zjsonpatch.version>0.4.12</zjsonpatch.version>
         <jetty.version>9.4.43.v20210629</jetty.version>
         <cron-utils.version>9.1.6</cron-utils.version>
         <eos.version>1.2.0</eos.version>
+        <okhttp.version>3.14.0</okhttp.version>
+        <resilience4j.version>1.7.0</resilience4j.version>
+        <snappy-java.version>1.1.8.4</snappy-java.version>
     </properties>
 
     <dependencyManagement>

@@ -38,19 +38,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.opennms.horizon.alarmservice.api.AlarmRestService;
 import org.opennms.horizon.alarmservice.api.AlarmService;
 import org.opennms.horizon.alarmservice.model.AlarmDTO;
+import org.opennms.horizon.alarmservice.model.AlarmSeverity;
 import org.opennms.horizon.alarmservice.rest.support.MultivaluedMapImpl;
-import org.opennms.horizon.alarmservice.rest.support.SecurityHelper;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -58,8 +56,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @AllArgsConstructor
@@ -68,7 +66,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping(path = "/alarms")
-public class AlarmRestServiceImpl implements AlarmRestService {
+public class AlarmRestServiceImpl  {
 
     @Autowired
     private AlarmService alarmService;
@@ -85,11 +83,11 @@ public class AlarmRestServiceImpl implements AlarmRestService {
 
 
     @GetMapping(path = "list", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
-    @RolesAllowed({ "admin" })
+//    @RolesAllowed({ "admin" })
     @ApiResponse(
             description = "Retrieve the list of alarms"
     )
-    public Response getAlarms(@Context final SecurityContext securityContext, @Context final UriInfo uriInfo) {
+    public ResponseEntity<AlarmCollectionDTO> getAlarms(/*@Context final SecurityContext securityContext, @Context final UriInfo uriInfo*/) {
         // replace the next line with @RolesAllowed("")
         //SecurityHelper.assertUserReadCredentials(securityContext);
 
@@ -98,68 +96,91 @@ public class AlarmRestServiceImpl implements AlarmRestService {
             AlarmCollectionDTO alarmsCollection = new AlarmCollectionDTO(dtoAlarmList);
             alarmsCollection.setTotalCount(dtoAlarmList.size());
 
-            return Response.status(Status.OK).entity(alarmsCollection).build();
+            return ResponseEntity.ok(alarmsCollection);
     }
     
-    @PostMapping(path="{id}/clear", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
-    public String clearAlarm(@PathVariable Long id) {
+    @PostMapping(path="/clear/{id}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AlarmDTO> clearAlarm(@PathVariable Long id) {
 
-        alarmService.clearAlarm(id, new Date());
-
-        return "acknowledged";
+        return ResponseEntity.ok(alarmService.clearAlarm(id, new Date()));
     }
 
-    @PostMapping(path = "kick")
-    @ResponseStatus(HttpStatus.OK)
-    public void kick() {
-        log.info("######### KICK!");
-        alarmService.kick();
+    @PostMapping(path="/unclear/{id}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AlarmDTO> unClearAlarm(@PathVariable Long id) {
+
+        return ResponseEntity.ok(alarmService.unclearAlarm(id, new Date()));
     }
 
-    @PutMapping(path = "{id}/memo",  consumes = MediaType.APPLICATION_FORM_URLENCODED)
+    @PostMapping(path="/ack/{id}/{userId}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AlarmDTO> acknowledgeAlarm(@PathVariable Long id, @PathVariable String userId) {
 
-    @RolesAllowed({ "admin" })
-    @ApiResponse(
-            description = "Update the memo for an Alarm"
-    )
+        return ResponseEntity.ok(alarmService.acknowledgeAlarm(id, new Date(), userId));
+    }
+
+    @PostMapping(path="/unAck/{id}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AlarmDTO> acknowledgeAlarm(@PathVariable Long id) {
+
+        return ResponseEntity.ok(alarmService.unAcknowledgeAlarm(id, new Date()));
+    }
+
+    @DeleteMapping(path="/delete/{id}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AlarmDTO> deleteAlarm(@PathVariable Long id) {
+
+        return ResponseEntity.ok(alarmService.deleteAlarm(id));
+    }
+
+    @PostMapping(path="/escalate/{id}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AlarmDTO> escalateAlarm(@PathVariable Long id) {
+
+        return ResponseEntity.ok(alarmService.escalateAlarm(id, new Date()));
+    }
+
+    @PostMapping(path="/severity/{id}/{label}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AlarmDTO> escalateAlarm(@PathVariable Long id, @PathVariable String label) {
+
+        return ResponseEntity.ok(alarmService.setSeverity(id, AlarmSeverity.get(label), new Date()));
+    }
+
+    @PutMapping(path = "memo/{alarmId}",  consumes = MediaType.APPLICATION_JSON, produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
+//    @RolesAllowed({ "admin" })
     @Transactional
-    public Response updateMemo(@Context final SecurityContext securityContext, @PathVariable final Long alarmId, final MultivaluedMapImpl params) {
+    public ResponseEntity updateMemo(/*@Context final SecurityContext securityContext,*/ @PathVariable final Long alarmId, @RequestBody final MultivaluedMapImpl params) {
         // replace the next two lines with @RolesAllowed("")
-        final String user = params.containsKey("user") ? params.getFirst("user") : securityContext.getUserPrincipal().getName();
-        SecurityHelper.assertUserEditCredentials(securityContext, user);
+//        final String user = params.containsKey("user") ? params.getFirst("user") : securityContext.getUserPrincipal().getName();
+//        SecurityHelper.assertUserEditCredentials(securityContext, user);
 
             final String body = params.getFirst("body");
             if (body == null) {
                 throw getException(Status.BAD_REQUEST, "Body cannot be null.");
             }
-            //alarmRepository.updateStickyMemo(alarmId, body, user); // TODO doing anything??
-            return Response.noContent().build();
+
+            return ResponseEntity.ok(alarmService.updateStickyMemo(alarmId, body));
     }
 
     @RolesAllowed({ "admin" })
     @ApiResponse(
             description = "Update the journal for an Alarm"
     )
-    @PutMapping(path = "{id}/journal", consumes = MediaType.APPLICATION_FORM_URLENCODED)
+    @PutMapping(path = "journal/{id}", consumes = MediaType.APPLICATION_FORM_URLENCODED, produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
     @Transactional
-    public Response updateJournal(@Context final SecurityContext securityContext, @PathVariable final Long alarmId, final MultivaluedMapImpl params) {
+    public ResponseEntity updateJournal(@Context final SecurityContext securityContext, @PathVariable final Long alarmId, final MultivaluedMapImpl params) {
             final String user = params.containsKey("user") ? params.getFirst("user") : securityContext.getUserPrincipal().getName();
             // SecurityHelper.assertUserEditCredentials(securityContext, user);
             final String body = params.getFirst("body");
             if (body == null) throw getException(Status.BAD_REQUEST, "Body cannot be null.");
             //alarmRepository.updateReductionKeyMemo(alarmId, body, user); // TODO doing anything??
-            return Response.noContent().build();
+            return ResponseEntity.noContent().build();
     }
 
-    @RolesAllowed({ "admin" })
+//    @RolesAllowed({ "admin" })
     @ApiResponse(
         description = "Remove the memo for an Alarm"
     )
-    @DeleteMapping(path = "{id}/memo")
-    public Response removeMemo(@Context final SecurityContext securityContext, @PathVariable final Long alarmId) {
 
-        alarmService.removeStickyMemo(alarmId);
-        return Response.ok().build();
+    @DeleteMapping(path = "removeMemo/{alarmId}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    public ResponseEntity removeMemo(/*@Context final SecurityContext securityContext, */@PathVariable final Long alarmId) {
+
+        return ResponseEntity.ok(alarmService.removeStickyMemo(alarmId));
 
     }
 }

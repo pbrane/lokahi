@@ -34,7 +34,6 @@ import org.kie.api.time.SessionClock;
 import org.opennms.horizon.alarmservice.db.entity.AlarmAssociation;
 import org.opennms.horizon.alarmservice.db.entity.Alarm;
 import org.opennms.horizon.alarmservice.model.AlarmSeverity;
-import org.opennms.horizon.alarmservice.model.TroubleTicketState;
 import java.util.LinkedList
 import org.opennms.horizon.alarmservice.db.entity.Alarm;
 
@@ -88,7 +87,7 @@ rule "SituationHasBeenAcknowledged"
     Date acknowledgeTime = new Date($sessionClock.getCurrentTime());
     // Acknowledge all of the alarms in one go or we will trigger more rule evaluations
 //    for (int i=0; i < $relatedAlarms.size(); i++) {
-//       alarmService.acknowledgeAlarm((Alarm)$relatedAlarms.get(i), acknowledgeTime);
+//       alarmService.acknowledgeAlarm((Alarm)$relatedAlarms.get(i), acknowledgeTime, "drools");
 //    }
 end
 
@@ -124,7 +123,7 @@ rule "AllRelatedAlarmsAcknowledged"
     // There is at least one alarm ACK after the Situation ACK.
 //    $triggeringAlarmAcks : LinkedList( size > 0 ) from collect (OnmsAcknowledgment($relatedAlarmIds contains refId, ackAction == AckAction.ACKNOWLEDGE, ackTime > $situationAck.getAckTime() ) )
   then
-   	alarmService.acknowledgeAlarm((Alarm)$situation, new Date($sessionClock.getCurrentTime()));
+   	alarmService.acknowledgeAlarm((Alarm)$situation, new Date($sessionClock.getCurrentTime()), "drools");
 end
 
 rule "newAlarmsUnAcknowledgesSituation"
@@ -137,7 +136,7 @@ rule "newAlarmsUnAcknowledgesSituation"
     // There is at least one un-Acknowledgment for one of the related alarms with a time after the Situation was acknowledged.
 //    $unAkedRelatedAlarms : LinkedList(size > 0) from collect (OnmsAcknowledgment($relatedAlarmIds contains refId, ackAction == AckAction.UNACKNOWLEDGE, ackTime > $situationAck.getAckTime() ) )
   then
-   	alarmService.unacknowledgeAlarm($situation, new Date($sessionClock.getCurrentTime()));
+   	alarmService.unAcknowledgeAlarm($situation, new Date($sessionClock.getCurrentTime()));
 end
 
 rule "oldAlarmsUnAcknowledgesSituation"
@@ -153,5 +152,5 @@ rule "oldAlarmsUnAcknowledgesSituation"
     // The association time of that alarm is later than the ACK time on the situation
 //	$unAkedRelatedAlarmAssociation : AlarmAssociation(situationAlarm == $situation, $unAcknowledgment.refId == relatedAlarm.getId(), mappedTime > $situationAck.getAckTime() )
   then
-   	alarmService.unacknowledgeAlarm($situation, new Date($sessionClock.getCurrentTime()));
+   	alarmService.unAcknowledgeAlarm($situation, new Date($sessionClock.getCurrentTime()));
 end

@@ -30,6 +30,7 @@ package org.opennms.horizon.alarmservice.db.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
@@ -45,14 +46,21 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.Hibernate;
 
 @Entity
 @Table(name = "memo")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="type", discriminatorType= DiscriminatorType.STRING)
 @DiscriminatorValue(value="Memo")
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 public class Memo extends TenantAwareEntity implements Serializable {
 
     private static final long serialVersionUID = 7272348439687562161L;
@@ -85,5 +93,22 @@ public class Memo extends TenantAwareEntity implements Serializable {
     @PrePersist
     private void prePersist() {
         created = new Date();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
+            return false;
+        }
+        Memo memo = (Memo) o;
+        return id != null && Objects.equals(id, memo.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

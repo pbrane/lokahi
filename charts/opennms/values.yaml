@@ -73,7 +73,17 @@ OpenNMS:
       Requests:
         Cpu: 100m
         Memory: 250Mi
+    IngressAnnotations:
+      nginx.ingress.kubernetes.io/server-snippet: |
+        listen 8990 http2;
+        grpc_read_timeout "1200s";
+        grpc_send_timeout "1200s";
+        client_body_timeout "1200s";
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        grpc_set_header tenant-id 'opennms-prime';
+
   MinionGatewayGrpcProxy:
+    Enabled: true
     ServiceName: opennms-minion-gateway-grpc-proxy
     Image: opennms/horizon-stream-minion-gateway-grpc-proxy
     ImagePullPolicy: IfNotPresent
@@ -141,6 +151,20 @@ OpenNMS:
       Requests:
         Cpu: 100m
         Memory: 250Mi
+  DataChoices:
+    ServiceName: opennms-datachoices
+    Image: opennms/horizon-stream-datachoices
+    ImagePullPolicy: IfNotPresent
+    Replicas: 1
+    Port: 8080
+    GrpcPort: 6565
+    Resources:
+      Limits:
+        Cpu: "1"
+        Memory: 500Mi
+      Requests:
+        Cpu: 100m
+        Memory: 250Mi
 Postgres:
   ServiceName: postgres
   Image: postgres:14.5-alpine
@@ -152,6 +176,7 @@ Postgres:
   InventoryPassword: notset
   AlarmPassword: notset
   EventsPassword: notset
+  DataChoicesPassword: notset
   NotificationPassword: notset
   GrafanaPassword: notset
   VolumeSize: 10Gi
@@ -176,6 +201,7 @@ Keycloak:
   AdminPassword: notset
   RealmName: opennms
 Grafana:
+  Enabled: true
   Path: /grafana
   Port: 3000
   Replicas: 1
@@ -190,34 +216,17 @@ Grafana:
     Requests:
       Cpu: 100m
       Memory: 100Mi
-Prometheus:
-  Enabled: true
-  Server:
-    ServiceName: prometheus
-    Port: 9090
-    Image: prom/prometheus:v2.39.1
-    ImagePullPolicy: IfNotPresent
-    Replicas: 1
-    Resources:
-      Limits:
-        Cpu: "1"
-        Memory: 512Mi
-      Requests:
-        Cpu: 100m
-        Memory: 100Mi
-  PushGateway:
-    ServiceName: prometheus-pushgateway
-    Port: 9091
-    Image: prom/pushgateway:v1.4.3
-    ImagePullPolicy: IfNotPresent
-    Replicas: 1
-    Resources:
-      Limits:
-        Cpu: "1"
-        Memory: 512Mi
-      Requests:
-        Cpu: 100m
-        Memory: 100Mi
+Cortex:
+  ServiceName: cortex
+  Port: 9000
+  Image: cortexproject/cortex:v1.14.0
+  Resources:
+    Limits:
+      Cpu: "1"
+      Memory: 512Mi
+    Requests:
+      Cpu: 100m
+      Memory: 100Mi
 Kafka:
   ServiceName: onms-kafka
   Image: bitnami/kafka:3.3.1-debian-11-r1
@@ -268,6 +277,7 @@ TLS:
         name: prod-clouddns-svc-acct-secret
         key: service-account.json
 Ingress:
+  Enabled: true
   HttpPort: 80
   HttpsPort: 443
   ControllerImage: registry.k8s.io/ingress-nginx/controller:v1.3.0@sha256:d1707ca76d3b044ab8a28277a2466a02100ee9f58a86af1535a3edf9323ea1b5

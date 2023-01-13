@@ -25,9 +25,6 @@
 				<constraints nullable="false" />
 			</column>
 
-			<!-- IP Address of node's interface -->
-			<column name="ip_addr" type="varchar(16)" />
-
             <!-- Used with nodeID and serviceID to match an event and increment the counter column.
     Set by configuring the optional alarm-data element in the event configuration-->
             <column name="reduction_key" type="varchar(256)" />

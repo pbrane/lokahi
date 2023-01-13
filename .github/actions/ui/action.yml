@@ -1,5 +1,5 @@
 name: 'Build and test ui'
-description: 'This implements unit and built-time integration tests on ui, dir platform.'
+description: 'This implements unit and built-time integration tests on ui.'
 inputs:
   dir-location:
     description: 'The dir containing the change.'

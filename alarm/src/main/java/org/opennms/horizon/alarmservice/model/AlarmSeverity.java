@@ -36,6 +36,7 @@ import java.util.Map;
 
 public enum AlarmSeverity implements Serializable {
     // Keep this ordered by ID so we can use the internal enum compareTo
+    UNDEFINED(0, "Undefined", "lightblue"),
     INDETERMINATE(1, "Indeterminate", "lightblue"),
     CLEARED(2, "Cleared", "white"),
     NORMAL(3, "Normal", "green"),
@@ -140,7 +141,7 @@ public enum AlarmSeverity implements Serializable {
         if (idMap.containsKey(id)) {
             return idMap.get(id);
         } else {
-            throw new IllegalArgumentException("Cannot create OnmsSeverity from unknown ID " + id);
+            throw new IllegalArgumentException("Cannot create AlarmSeverity from unknown ID " + id);
         }
     }
 
