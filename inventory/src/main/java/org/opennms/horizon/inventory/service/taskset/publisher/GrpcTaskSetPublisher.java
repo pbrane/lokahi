@@ -39,7 +39,6 @@ import org.opennms.horizon.inventory.grpc.TenantLookup;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskSet;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.opennms.taskset.service.contract.PublishTaskSetRequest;
 import org.opennms.taskset.service.contract.PublishTaskSetResponse;
 import org.opennms.taskset.service.contract.TaskSetServiceGrpc;
@@ -50,7 +49,7 @@ import org.slf4j.LoggerFactory;
 import io.grpc.Context;
 import io.grpc.ManagedChannel;
 
-public class GrpcTaskSetPublisher implements TaskSetPublisher {
+public class GrpcTaskSetPublisher implements TaskSetClient {
 
     public static final String TASK_SET_PUBLISH_BEAN_NAME = "taskSetServiceBlockingStub";
     private static final Logger log = LoggerFactory.getLogger(GrpcTaskSetPublisher.class);

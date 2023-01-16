@@ -28,18 +28,23 @@
 
 package org.opennms.miniongateway.taskset;
 
-import java.util.Queue;
-import java.util.UUID;
+import java.util.function.BiConsumer;
 import javax.cache.Cache;
+import javax.cache.configuration.MutableCacheEntryListenerConfiguration;
+import javax.cache.event.CacheEntryCreatedListener;
+import javax.cache.event.CacheEntryEvent;
+import javax.cache.event.CacheEntryListenerException;
+import javax.cache.event.CacheEntryRemovedListener;
+import javax.cache.event.CacheEntryUpdatedListener;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.opennms.miniongateway.grpc.server.model.TenantKey;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskSet;
-import org.opennms.taskset.service.api.TaskSetForwarder;
-import org.opennms.taskset.service.api.TaskSetListener;
-import org.opennms.taskset.service.api.TaskSetPublisher;
+import org.opennms.miniongateway.taskset.service.api.TaskSetForwarder;
+import org.opennms.miniongateway.taskset.service.api.TaskSetListener;
+import org.opennms.miniongateway.taskset.service.api.TaskSetPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +56,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Process task set updates, publishing them to downstream minions and storing the latest version to provide to minions
  *  on request.
  */
-public class TaskSetPublisherImpl implements TaskSetPublisher, TaskSetForwarder {
+public class TaskSetPublisherImpl implements TaskSetPublisher, TaskSetForwarder,
+    /* Ignite Specific */
+    CacheEntryCreatedListener<TenantKey, TaskSet>,
+    CacheEntryUpdatedListener<TenantKey, TaskSet>,
+    CacheEntryRemovedListener<TenantKey, TaskSet> {
 
     private static final String TASK_SETS_LOCATIONS = "tasksets";
 
@@ -81,6 +89,10 @@ public class TaskSetPublisherImpl implements TaskSetPublisher, TaskSetForwarder 
             .setAtomicityMode(CacheAtomicityMode.TRANSACTIONAL)
             .setName(TASK_SETS_LOCATIONS);
         taskSetByLocation = ignite.getOrCreateCache(taskSetLocationCacheCfg);
+        // listen for changes in cache contents
+        taskSetByLocation.registerCacheEntryListener(new MutableCacheEntryListenerConfiguration<>(
+            () -> this, () -> (entry) -> true, false, false
+        ));
     }
 
     @Override
@@ -150,5 +162,42 @@ public class TaskSetPublisherImpl implements TaskSetPublisher, TaskSetForwarder 
 
     private <X> Set<X> createIdentitySet() {
         return Collections.newSetFromMap(new IdentityHashMap<>());
+    }
+
+    @Override
+    public void onCreated(Iterable<CacheEntryEvent<? extends TenantKey, ? extends TaskSet>> cacheEntryEvents)
+        throws CacheEntryListenerException {
+        forEachListener(cacheEntryEvents, (listener, taskSet) -> {
+            listener.onTaskSetUpdate(taskSet);
+        });
+    }
+
+    @Override
+    public void onRemoved(Iterable<CacheEntryEvent<? extends TenantKey, ? extends TaskSet>> cacheEntryEvents)
+        throws CacheEntryListenerException {
+        forEachListener(cacheEntryEvents, (listener, taskSet) -> {
+            // reset state
+            listener.onTaskSetUpdate(TaskSet.newBuilder().build());
+        });
+    }
+
+    @Override
+    public void onUpdated(Iterable<CacheEntryEvent<? extends TenantKey, ? extends TaskSet>> cacheEntryEvents)
+        throws CacheEntryListenerException {
+        forEachListener(cacheEntryEvents, (listener, taskSet) -> {
+            listener.onTaskSetUpdate(taskSet);
+        });
+    }
+
+    private void forEachListener(Iterable<CacheEntryEvent<? extends TenantKey, ? extends TaskSet>> events,
+        BiConsumer<TaskSetListener, TaskSet> consumer
+    ) {
+        for (CacheEntryEvent<? extends TenantKey, ? extends TaskSet> entry : events) {
+            if (taskSetListeners.containsKey(entry.getKey())) {
+                for (TaskSetListener listener : taskSetListeners.get(entry.getKey())) {
+                    consumer.accept(listener, entry.getValue());
+                }
+            }
+        }
     }
 }

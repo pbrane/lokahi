@@ -25,8 +25,8 @@ import org.opennms.miniongateway.grpc.server.tasktresults.TaskResultsKafkaForwar
 import org.opennms.miniongateway.grpc.server.traps.TrapsKafkaForwarder;
 import org.opennms.miniongateway.grpc.twin.GrpcTwinPublisher;
 import org.opennms.miniongateway.grpc.twin.TaskSetTwinMessageProcessor;
-import org.opennms.taskset.service.api.TaskSetForwarder;
-import org.opennms.taskset.service.api.TaskSetPublisher;
+import org.opennms.miniongateway.taskset.service.api.TaskSetForwarder;
+import org.opennms.miniongateway.taskset.service.api.TaskSetPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;

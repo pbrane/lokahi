@@ -10,7 +10,7 @@ spec:
   selector:
     matchLabels:
       app: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
-  replicas: 2
+  replicas: 1
   #{{ .Values.OpenNMS.MinionGateway.Replicas }}
   template:
     metadata:

@@ -26,18 +26,30 @@
  *     http://www.opennms.com/
  */
 
-package org.opennms.taskset.service.api;
+package org.opennms.miniongateway.taskset.service.model;
 
-import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskSet;
 
-import java.util.List;
+public class LocatedTaskSet {
+    private final String tenantId;
+    private final String location;
+    private final TaskSet taskSet;
 
-public interface TaskSetPublisher {
+    public LocatedTaskSet(String tenantId, String location, TaskSet taskSet) {
+        this.tenantId = tenantId;
+        this.location = location;
+        this.taskSet = taskSet;
+    }
 
-    String TASK_SET_PUBLISH_SERVICE = "task-set.pub-task";
+    public String getTenantId() {
+        return tenantId;
+    }
 
-    void publishTaskSet(String tenantId, String location, TaskSet taskSet);
+    public String getLocation() {
+        return location;
+    }
 
-    void publishNewTasks(String tenantId, String location, List<TaskDefinition> taskList);
+    public TaskSet getTaskSet() {
+        return taskSet;
+    }
 }

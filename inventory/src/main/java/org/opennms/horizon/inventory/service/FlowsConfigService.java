@@ -32,11 +32,11 @@ import com.google.common.io.Resources;
 import com.google.protobuf.Any;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
+import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetClient;
 import org.opennms.horizon.shared.protobuf.util.ProtobufUtil;
 import org.opennms.sink.flows.contract.FlowsConfig;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -54,7 +54,7 @@ import java.util.List;
 public class FlowsConfigService {
     private static final Logger LOG = LoggerFactory.getLogger(FlowsConfigService.class);
     private final MonitoringLocationService monitoringLocationService;
-    private final TaskSetPublisher taskSetPublisher;
+    private final TaskSetClient taskSetPublisher;
 
     @EventListener(ApplicationReadyEvent.class)
     public void sendFlowConfigToMinionAfterStartup() {

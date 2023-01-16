@@ -31,13 +31,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Any;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
+import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetClient;
 import org.opennms.horizon.inventory.service.trapconfig.TrapConfigBean;
 import org.opennms.sink.traps.contract.ListenerConfig;
 import org.opennms.sink.traps.contract.SnmpV3User;
 import org.opennms.sink.traps.contract.TrapConfig;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -56,7 +56,7 @@ public class TrapConfigService {
     private static final Logger LOG = LoggerFactory.getLogger(TrapConfigService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MonitoringLocationService monitoringLocationService;
-    private final TaskSetPublisher taskSetPublisher;
+    private final TaskSetClient taskSetPublisher;
 
     @EventListener(ApplicationReadyEvent.class)
     public void sendTrapConfigToMinionAfterStartup() {

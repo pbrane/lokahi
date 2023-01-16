@@ -11,9 +11,9 @@ import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.miniongateway.grpc.server.ConnectionIdentity;
 import org.opennms.taskset.contract.TaskSet;
-import org.opennms.taskset.service.api.TaskSetForwarder;
-import org.opennms.taskset.service.api.TaskSetListener;
-import org.opennms.taskset.service.api.TaskSetPublisher;
+import org.opennms.miniongateway.taskset.service.api.TaskSetForwarder;
+import org.opennms.miniongateway.taskset.service.api.TaskSetListener;
+import org.opennms.miniongateway.taskset.service.api.TaskSetPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

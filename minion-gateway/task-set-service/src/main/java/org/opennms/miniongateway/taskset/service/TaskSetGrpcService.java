@@ -3,7 +3,7 @@ package org.opennms.miniongateway.taskset.service;
 import io.grpc.stub.StreamObserver;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcServer;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
-import org.opennms.taskset.service.api.TaskSetPublisher;
+import org.opennms.miniongateway.taskset.service.api.TaskSetPublisher;
 import org.opennms.taskset.service.contract.PublishTaskSetRequest;
 import org.opennms.taskset.service.contract.PublishTaskSetResponse;
 import org.opennms.taskset.service.contract.TaskSetServiceGrpc;
