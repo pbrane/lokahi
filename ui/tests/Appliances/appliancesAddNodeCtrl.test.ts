@@ -4,14 +4,14 @@ import { mount } from '@vue/test-utils'
 import { createClient, VILLUS_CLIENT } from 'villus'
 import { useNodeMutations } from '@/store/Mutations/nodeMutations'
 
-describe('TESTING...', () => {
+/* describe('TESTING...', () => {
   test('true is truthy', () => {
     console.log('**************no mount8')
     expect(true).toBeTruthy()
   })
-})
+}) */
 
-/* const wrapper = mount(AppliancesAddNodeCtrl, {
+const wrapper = mount(AppliancesAddNodeCtrl, {
   global: {
     stubs: {
       teleport: true
@@ -26,9 +26,9 @@ describe('TESTING...', () => {
 })
 
 test('The component mounts', () => {
-  console.log('>>>>>>> mount8 <<<<<<<<<')
+  console.log('>>>>>>> TIMEOUT? <<<<<<<<<')
   expect(wrapper).toBeTruthy()
-}) */
+})
 
 /* test('The modal should open when the add node btn is clicked', async () => {
   const btn = wrapper.get('[data-test="add-node-btn"]')
