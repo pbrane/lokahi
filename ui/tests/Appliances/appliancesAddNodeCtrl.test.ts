@@ -25,7 +25,7 @@ const wrapper = mount(AppliancesAddNodeCtrl, {
 })
 
 test('The component mounts', () => {
-  console.log('mount1')
+  console.log('mount2')
   expect(wrapper).toBeTruthy()
 })
 
