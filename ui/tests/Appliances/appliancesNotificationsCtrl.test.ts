@@ -2,6 +2,7 @@ describe('appliancesNotificationsCtrl', () => {
   test('true is truthy', () => {
     expect(true).toBeTruthy()
   })
+})
 
 // import AppliancesNotificationsCtrl from '@/components/Appliances/AppliancesNotificationsCtrl.vue'
 // import { useNotificationMutations } from '@/store/Mutations/notificationMutations'

@@ -2,6 +2,7 @@ describe('appliances', () => {
   test('true is truthy', () => {
     expect(true).toBeTruthy()
   })
+})
 
 // import Appliances from '@/containers/Appliances.vue'
 // import AppliancesNotificationsCtrl from '@/components/Appliances/AppliancesNotificationsCtrl.vue'
