@@ -5,7 +5,9 @@ import { createClient, VILLUS_CLIENT } from 'villus'
 import { useNodeMutations } from '@/store/Mutations/nodeMutations'
 
 describe('TESTING...', () => {
-  expect(true).toBeTruthy()
+  test('true is truthy', () => {
+    expect(true).toBeTruthy()
+  })
 })
 
 /* const wrapper = mount(AppliancesAddNodeCtrl, {
