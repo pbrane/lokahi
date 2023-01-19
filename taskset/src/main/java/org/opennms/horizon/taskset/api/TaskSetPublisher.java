@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  */
 
-package org.opennms.miniongateway.taskset.service.api;
+package org.opennms.horizon.taskset.api;
 
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskSet;

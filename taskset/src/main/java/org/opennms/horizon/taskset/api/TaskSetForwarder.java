@@ -1,4 +1,4 @@
-package org.opennms.miniongateway.taskset.service.api;
+package org.opennms.horizon.taskset.api;
 
 public interface TaskSetForwarder {
     /**

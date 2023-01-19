@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  */
 
-package org.opennms.miniongateway.taskset.service.model;
+package org.opennms.horizon.taskset.model;
 
 import org.opennms.taskset.contract.TaskSet;
 

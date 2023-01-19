@@ -8,6 +8,7 @@ option java_package = "org.opennms.taskset.service.contract";
 
 service TaskSetService {
   rpc publishTaskSet(PublishTaskSetRequest) returns (PublishTaskSetResponse) {}
+  rpc fetchTaskSet(FetchTaskSetRequest) returns (TaskSet) {}
 }
 
 message PublishTaskSetRequest {
@@ -16,4 +17,8 @@ message PublishTaskSetRequest {
 }
 
 message PublishTaskSetResponse {
+}
+
+message FetchTaskSetRequest {
+  string location = 1;
 }
