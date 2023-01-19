@@ -12,7 +12,7 @@ describe('Page header component', () => {
   })
 
   it(`should have ${defaultHeading} as heading`, () => {
-    console.log('>>>>>>> mount <<<<<<<<<')
+    // console.log('>>>>>>> mount <<<<<<<<<')
     console.log('>>>>>>> no mountVillus <<<<<<<<<')
     wrapper = mount(PageHeader)
 
