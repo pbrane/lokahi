@@ -26,7 +26,7 @@ const wrapper = mount(AppliancesAddNodeCtrl, {
 })
 
 test('The component mounts', () => {
-  console.log('>>>>>>> TIMEOUT? 7 <<<<<<<<<')
+  console.log('>>>>>>> mountVillus <<<<<<<<<')
   expect(wrapper).toBeTruthy()
 })
 

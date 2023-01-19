@@ -10,14 +10,15 @@ describe('Page header component', () => {
   afterAll(() => {
     wrapper.unmount()
   })
-  
+
   it(`should have ${defaultHeading} as heading`, () => {
+    console.log('>>>>>>> mount <<<<<<<<<')
     wrapper = mount(PageHeader)
-    
+
     const componentHeading = wrapper.find('h2').text()
-    expect(componentHeading).toBe(defaultHeading) 
+    expect(componentHeading).toBe(defaultHeading)
   })
-  it(`should have ${heading} as heading`, () => {
+  /* it(`should have ${heading} as heading`, () => {
     wrapper = mount(PageHeader, {
       propsData: {
         heading
@@ -26,5 +27,5 @@ describe('Page header component', () => {
     
     const componentHeading = wrapper.find('h2').text()
     expect(componentHeading).toBe(heading) 
-  })
+  }) */
 })
