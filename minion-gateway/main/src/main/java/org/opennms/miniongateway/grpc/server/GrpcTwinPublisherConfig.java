@@ -9,16 +9,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GrpcTwinPublisherConfig {
 
-    private final GrpcTwinPublisher grpcTwinPublisher = new GrpcTwinPublisher();
-
-    @Bean
-    public ServerHandler serverHandler(TenantIDGrpcServerInterceptor interceptor) {
-        return new TwinRpcHandler(grpcTwinPublisher, interceptor);
+    @Bean(initMethod = "start", destroyMethod = "close")
+    public GrpcTwinPublisher grpcTwinPublisher(TenantIDGrpcServerInterceptor interceptor) {
+        return new GrpcTwinPublisher(interceptor);
     }
 
-    @Bean(initMethod = "start", destroyMethod = "close")
-    public GrpcTwinPublisher grpcTwinPublisher() {
-        return grpcTwinPublisher;
+    @Bean
+    public ServerHandler serverHandler(GrpcTwinPublisher twinPublisher, TenantIDGrpcServerInterceptor interceptor) {
+        return new TwinRpcHandler(twinPublisher, interceptor);
     }
 
 }

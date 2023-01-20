@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.testcontainers;
 
+import java.util.Optional;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,8 @@ public class TestContainerRunnerClassRule extends ExternalResource {
     private Logger LOG = DEFAULT_LOGGER;
 
     private final String dockerImage = System.getProperty("application.docker.image");
+    private final String dockerImageTag = Optional.ofNullable(System.getProperty("application.docker.image.tag"))
+        .orElse("latest");
 
     private String confluentPlatformVersion = "7.3.0";
 
@@ -63,7 +66,7 @@ public class TestContainerRunnerClassRule extends ExternalResource {
     public TestContainerRunnerClassRule() {
         kafkaContainer = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag(confluentPlatformVersion));
         zookeeperContainer = new GenericContainer(DockerImageName.parse("confluentinc/cp-zookeeper").withTag(confluentPlatformVersion));
-        taskSetContainer = new GenericContainer(DockerImageName.parse("opennms/horizon-stream-taskset").withTag("local").toString());
+        taskSetContainer = new GenericContainer(DockerImageName.parse("opennms/horizon-stream-taskset").withTag("latest").toString());
         applicationContainer = new GenericContainer(DockerImageName.parse(dockerImage).toString());
     }
 
@@ -123,7 +126,7 @@ public class TestContainerRunnerClassRule extends ExternalResource {
     private void startTaskSetContainer() {
         taskSetContainer
             .withNetwork(network)
-            .withNetworkAliases("taskset")
+            .withNetworkAliases("taskset", "taskset-host")
             .withExposedPorts(8990)
             .withStartupTimeout(Duration.ofMinutes(5))
             //.waitingFor(Wait.forLogMessage(".*Started TaskSetApplication .*", 1))
@@ -149,11 +152,12 @@ public class TestContainerRunnerClassRule extends ExternalResource {
             .withStartupTimeout(Duration.ofMinutes(5))
             .withEnv("JAVA_TOOL_OPTIONS", "-Djava.security.egd=file:/dev/./urandom -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
             .withEnv("KAFKA_BOOTSTRAP_SERVERS", "kafka-host:9092")
+            .withEnv("GRPC_CLIENT_TASKSET_HOST", "taskset-host")
             .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("APPLICATION"))
             ;
 
         // DEBUGGING: uncomment to force local port 5005
-        // applicationContainer.getPortBindings().add("5005:5005");
+         applicationContainer.getPortBindings().add("5005:5005");
         applicationContainer.start();
 
         var httpPort = applicationContainer.getMappedPort(8080); // application-http-port

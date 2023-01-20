@@ -33,38 +33,35 @@ import java.io.IOException;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
 import org.opennms.cloud.grpc.minion.Identity;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
-import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.miniongateway.client.TaskSetClient;
+import org.opennms.miniongateway.grpc.server.ConnectionIdentity;
 import org.opennms.miniongateway.grpc.twin.TwinPublisher.Session;
 import org.opennms.taskset.contract.TaskSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.BiConsumer;
-
 public class TaskSetTwinCloudToMinionProducerFactory implements CloudToMinionProducerFactory {
-    private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskSetTwinCloudToMinionProducerFactory.class);
+    private final Logger logger = LoggerFactory.getLogger(TaskSetTwinCloudToMinionProducerFactory.class);
     private final TaskSetClient taskSetClient;
     private final GrpcTwinPublisher twinPublisher;
 
     private final TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor;
 
-    private final BiConsumer<IpcIdentity, StreamObserver<CloudToMinionMessage>> streamObserver;
-
-    private Logger log = DEFAULT_LOGGER;
 
     public TaskSetTwinCloudToMinionProducerFactory(TaskSetClient taskSetClient, GrpcTwinPublisher twinPublisher,
         TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor) {
         this.taskSetClient = taskSetClient;
         this.twinPublisher = twinPublisher;
-        this.streamObserver = twinPublisher.getStreamObserver(tenantIDGrpcServerInterceptor, taskSetClient);
         this.tenantIDGrpcServerInterceptor = tenantIDGrpcServerInterceptor;
     }
 
     @Override
     public CloudToMinionProducer create(Identity identity, StreamObserver<CloudToMinionMessage> responseObserver) {
+        // important to register stream!
+        twinPublisher.registerConnection(new ConnectionIdentity(identity), responseObserver);
+        // open session
         String tenantId = tenantIDGrpcServerInterceptor.readCurrentContextTenantId();
-        log.info("Have Message to send to Minion: tenant-id: {}; system-id={}, location={}",
+        logger.info("Have Message to send to Minion: tenant-id: {}; system-id={}, location={}",
             tenantId,
             identity.getSystemId(),
             identity.getLocation());
@@ -75,36 +72,10 @@ public class TaskSetTwinCloudToMinionProducerFactory implements CloudToMinionPro
             return new TaskSetTwinCloudToMinionProducer(session, tenantId, identity.getLocation(), taskSetClient);
         } catch (IOException e) {
             responseObserver.onError(e);
-            log.info("Could not handles incoming minion system-id: {}, location={} connection", identity.getSystemId(),
+            logger.info("Could not handles incoming minion system-id: {}, location={} connection", identity.getSystemId(),
                 identity.getLocation(), e);
             return null;
         }
     }
 
-    static class ForwardingTaskListener implements AutoCloseable {
-
-        private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(ForwardingTaskListener.class);
-
-        private Logger log = DEFAULT_LOGGER;
-
-        private String tenantId;
-        private final IpcIdentity identity;
-        private final TwinPublisher grpcPublisher;
-        private final TwinPublisher.Session<TaskSet> session;
-
-        ForwardingTaskListener(String tenantId, IpcIdentity identity, TwinPublisher grpcPublisher) throws IOException {
-            this.tenantId = tenantId;
-            this.identity = identity;
-            this.grpcPublisher = grpcPublisher;
-            this.session = grpcPublisher.register("task-set", TaskSet.class, tenantId, identity.getLocation());
-        }
-
-        @Override
-        public void close() throws Exception {
-            if (session != null) {
-                session.close();
-            }
-        }
-
-    }
 }

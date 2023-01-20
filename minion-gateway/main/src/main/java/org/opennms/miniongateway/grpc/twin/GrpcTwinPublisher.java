@@ -45,6 +45,7 @@ import org.opennms.horizon.shared.grpc.common.GrpcIpcUtils;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.miniongateway.client.TaskSetClient;
+import org.opennms.miniongateway.grpc.server.ConnectionIdentity;
 import org.opennms.miniongateway.grpc.server.model.TenantKey;
 import org.opennms.taskset.contract.TaskSet;
 import org.slf4j.Logger;
@@ -66,7 +67,10 @@ public class GrpcTwinPublisher extends AbstractTwinPublisher {
             .build();
     private final ExecutorService twinRpcExecutor = Executors.newCachedThreadPool(twinRpcThreadFactory);
 
-    public GrpcTwinPublisher() {
+    private TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor;
+
+    public GrpcTwinPublisher(TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor) {
+        this.tenantIDGrpcServerInterceptor = tenantIDGrpcServerInterceptor;
     }
 
     @Override
@@ -109,6 +113,36 @@ public class GrpcTwinPublisher extends AbstractTwinPublisher {
             twinRpcExecutor.shutdown();
             LOG.info("Stopped Twin GRPC Server");
         }
+    }
+
+    public void registerConnection(ConnectionIdentity identity, StreamObserver<CloudToMinionMessage> responseObserver) {
+        String tenantId = tenantIDGrpcServerInterceptor.readCurrentContextTenantId();
+        TenantKey systemIdKey = new TenantKey(tenantId, identity.getId());
+        TenantKey locationKey = new TenantKey(tenantId, identity.getLocation());
+        if (sinkStreamsBySystemId.containsKey(systemIdKey)) {
+            StreamObserver<TwinResponseProto> sinkStream = sinkStreamsBySystemId.remove(systemIdKey);
+            sinkStreamsByLocation.remove(locationKey, sinkStream);
+            sinkStream.onCompleted(); // force termination of session.
+        }
+
+        AdapterObserver delegate = new AdapterObserver(responseObserver);
+        delegate.setCompletionCallback(() -> {
+            sinkStreamsByLocation.remove(locationKey, delegate);
+            sinkStreamsBySystemId.remove(systemIdKey);
+        });
+        sinkStreamsByLocation.put(locationKey, delegate);
+        sinkStreamsBySystemId.put(systemIdKey, delegate);
+
+        forEachSession(tenantId, ((sessionKey, twinTracker) -> {
+            if (sessionKey.location == null || sessionKey.location.equals(locationKey.getKey())) {
+                TwinUpdate twinUpdate = new TwinUpdate(sessionKey.key, sessionKey.tenantId, sessionKey.location, twinTracker.getObj());
+                twinUpdate.setSessionId(twinTracker.getSessionId());
+                twinUpdate.setVersion(twinTracker.getVersion());
+                twinUpdate.setPatch(false);
+                TwinResponseProto twinResponseProto = mapTwinResponse(twinUpdate);
+                delegate.onNext(twinResponseProto);
+            }
+        }));
     }
 
     static class AdapterObserver implements StreamObserver<TwinResponseProto> {
@@ -163,42 +197,6 @@ public class GrpcTwinPublisher extends AbstractTwinPublisher {
         public int hashCode() {
             return Objects.hash(delegate, completionCallback);
         }
-    }
-
-    // BiConsumer<MinionHeader, StreamObserver<CloudToMinionMessage>>
-    public BiConsumer<IpcIdentity, StreamObserver<CloudToMinionMessage>> getStreamObserver(TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor, TaskSetClient taskSetClient) {
-        return new BiConsumer<>() {
-            @Override
-            public void accept(IpcIdentity minionHeader, StreamObserver<CloudToMinionMessage> responseObserver) {
-                String tenantId = tenantIDGrpcServerInterceptor.readCurrentContextTenantId();
-                TenantKey systemIdKey = new TenantKey(tenantId, minionHeader.getId());
-                TenantKey locationKey = new TenantKey(tenantId, minionHeader.getLocation());
-                if (sinkStreamsBySystemId.containsKey(systemIdKey)) {
-                    StreamObserver<TwinResponseProto> sinkStream = sinkStreamsBySystemId.remove(systemIdKey);
-                    sinkStreamsByLocation.remove(locationKey, sinkStream);
-                    sinkStream.onCompleted(); // force termination of session.
-                }
-
-                AdapterObserver delegate = new AdapterObserver(responseObserver);
-                delegate.setCompletionCallback(() -> {
-                    sinkStreamsByLocation.remove(locationKey, delegate);
-                    sinkStreamsBySystemId.remove(systemIdKey);
-                });
-                sinkStreamsByLocation.put(locationKey, delegate);
-                sinkStreamsBySystemId.put(systemIdKey, delegate);
-
-                forEachSession(tenantId, ((sessionKey, twinTracker) -> {
-                    if (sessionKey.location == null || sessionKey.location.equals(locationKey.getKey())) {
-                        TwinUpdate twinUpdate = new TwinUpdate(sessionKey.key, sessionKey.tenantId, sessionKey.location, twinTracker.getObj());
-                        twinUpdate.setSessionId(twinTracker.getSessionId());
-                        twinUpdate.setVersion(twinTracker.getVersion());
-                        twinUpdate.setPatch(false);
-                        TwinResponseProto twinResponseProto = mapTwinResponse(twinUpdate);
-                        delegate.onNext(twinResponseProto);
-                    }
-                }));
-            }
-        };
     }
 
 }

@@ -36,10 +36,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcClientInterceptor;
+import org.opennms.miniongateway.grpc.server.model.TenantKey;
 import org.opennms.taskset.contract.TaskSet;
 import org.opennms.taskset.service.contract.FetchTaskSetRequest;
+import org.opennms.taskset.service.contract.Operation;
 import org.opennms.taskset.service.contract.TaskSetServiceGrpc;
 import org.opennms.taskset.service.contract.TaskSetServiceGrpc.TaskSetServiceStub;
+import org.opennms.taskset.service.contract.TaskSetStreamMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +54,8 @@ public class TaskSetClient {
 
     public TaskSetClient(ManagedChannel channel, long deadline) {
         this.taskSetServiceStub = TaskSetServiceGrpc.newStub(channel)
-            .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS);
+        //    .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+        ;
     }
 
     public CompletableFuture<TaskSet> getTaskSet(String tenantId, String location) {
@@ -78,13 +82,40 @@ public class TaskSetClient {
         return future;
     }
 
-    public Closeable subscribe(String tenantId, String location, Consumer<TaskSet> consumer) {
-        // taskSetServiceStub.
-        return new Closeable() {
+    public void subscribe(String tenantId, String location, TaskSetListener listener) {
+        FetchTaskSetRequest request = FetchTaskSetRequest.newBuilder()
+            .setLocation(location)
+            .build();
+        TaskSetServiceStub stub = taskSetServiceStub.withInterceptors(new TenantIDGrpcClientInterceptor(() -> tenantId));
+        stub.subscribe(request, new StreamObserver<TaskSetStreamMessage>() {
             @Override
-            public void close() throws IOException {
-
+            public void onNext(TaskSetStreamMessage value) {
+                switch (value.getOperationValue()) {
+                    case Operation.CREATE_VALUE:
+                        listener.created(new TenantKey(tenantId, location), value.getTaskSet());
+                        break;
+                    case Operation.UPDATE_VALUE:
+                        listener.updated(new TenantKey(tenantId, location), value.getTaskSet());
+                        break;
+                    case Operation.DELETE_VALUE:
+                        listener.deleted(new TenantKey(tenantId, location), value.getTaskSet());
+                        break;
+                }
             }
-        };
+
+            @Override
+            public void onError(Throwable t) {
+                listener.failure(t);
+            }
+
+            @Override
+            public void onCompleted() {
+                try {
+                    listener.closed();
+                } catch (Exception e) {
+                    logger.warn("Failure while closing stream listener", e);
+                }
+            }
+        });
     }
 }

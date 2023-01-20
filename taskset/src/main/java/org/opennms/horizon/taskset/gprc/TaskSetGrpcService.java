@@ -61,6 +61,7 @@ public class TaskSetGrpcService extends TaskSetServiceGrpc.TaskSetServiceImplBas
     public void publishTaskSet(PublishTaskSetRequest request, StreamObserver<PublishTaskSetResponse> responseObserver) {
         // Retrieve the Tenant ID from the TenantID GRPC Interceptor
         String tenantId = tenantIDGrpcServerInterceptor.readCurrentContextTenantId();
+        logger.info("Store taskset for tenant-id={}, location={}", tenantId, request.getLocation());
 
         taskSetStore.store(tenantId, request.getLocation(), request.getTaskSet());
 
@@ -76,6 +77,7 @@ public class TaskSetGrpcService extends TaskSetServiceGrpc.TaskSetServiceImplBas
     @Override
     public void fetchTaskSet(FetchTaskSetRequest request, StreamObserver<TaskSet> responseObserver) {
         String tenantId = tenantIDGrpcServerInterceptor.readCurrentContextTenantId();
+        logger.info("Fetch taskset for tenant-id={}, location={}", tenantId, request.getLocation());
 
         TaskSet taskset = taskSetStore.retrieve(tenantId, request.getLocation());
         if (taskset != null) {
