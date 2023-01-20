@@ -6,9 +6,13 @@ package opennms.taskset.service;
 option java_multiple_files = true;
 option java_package = "org.opennms.taskset.service.contract";
 
+import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+
 service TaskSetService {
   rpc publishTaskSet(PublishTaskSetRequest) returns (PublishTaskSetResponse) {}
   rpc fetchTaskSet(FetchTaskSetRequest) returns (TaskSet) {}
+  rpc subscribe(FetchTaskSetRequest) returns (stream TaskSetStreamMessage) {}
 }
 
 message PublishTaskSetRequest {
@@ -21,4 +25,15 @@ message PublishTaskSetResponse {
 
 message FetchTaskSetRequest {
   string location = 1;
+}
+
+message TaskSetStreamMessage {
+  Operation operation = 1;
+  TaskSet taskSet = 2;
+}
+
+enum Operation {
+  CREATE = 0;
+  UPDATE = 1;
+  DELETE = 2;
 }

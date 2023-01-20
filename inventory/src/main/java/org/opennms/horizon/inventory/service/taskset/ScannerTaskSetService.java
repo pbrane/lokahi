@@ -33,9 +33,9 @@ import com.google.protobuf.Any;
 import lombok.RequiredArgsConstructor;
 import org.opennms.azure.contract.AzureScanRequest;
 import org.opennms.horizon.inventory.model.AzureCredential;
+import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetClient;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public class ScannerTaskSetService {
         .build();
     private final ExecutorService executorService = Executors.newFixedThreadPool(10, threadFactory);
 
-    private final TaskSetPublisher taskSetPublisher;
+    private final TaskSetClient taskSetPublisher;
 
     public void sendAzureScannerTaskAsync(AzureCredential credential) {
         executorService.execute(() -> sendAzureScannerTask(credential));

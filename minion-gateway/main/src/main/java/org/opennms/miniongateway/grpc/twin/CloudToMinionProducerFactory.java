@@ -26,21 +26,14 @@
  *     http://www.opennms.com/
  */
 
-package org.opennms.horizon.taskset.persistence;
+package org.opennms.miniongateway.grpc.twin;
 
-import org.opennms.taskset.contract.TaskSet;
+import io.grpc.stub.StreamObserver;
+import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
+import org.opennms.cloud.grpc.minion.Identity;
 
-public interface TaskSetPersistentStore {
+public interface CloudToMinionProducerFactory {
 
-    void store(String tenantId, String locationId, TaskSet taskSet);
+    CloudToMinionProducer create(Identity identity, StreamObserver<CloudToMinionMessage> responseObserver);
 
-    TaskSet retrieve(String tenantId, String locationId);
-
-    void addListener(String tenantId, String location, Listener listener);
-
-    interface Listener {
-        void created(TaskSet taskSet);
-        void updated(TaskSet taskSet);
-        void removed(TaskSet taskSet);
-    }
 }

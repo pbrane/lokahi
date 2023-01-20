@@ -44,7 +44,9 @@ import org.opennms.cloud.grpc.minion.TwinResponseProto;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcUtils;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
+import org.opennms.miniongateway.client.TaskSetClient;
 import org.opennms.miniongateway.grpc.server.model.TenantKey;
+import org.opennms.taskset.contract.TaskSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,7 +166,7 @@ public class GrpcTwinPublisher extends AbstractTwinPublisher {
     }
 
     // BiConsumer<MinionHeader, StreamObserver<CloudToMinionMessage>>
-    public BiConsumer<IpcIdentity, StreamObserver<CloudToMinionMessage>> getStreamObserver(TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor) {
+    public BiConsumer<IpcIdentity, StreamObserver<CloudToMinionMessage>> getStreamObserver(TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor, TaskSetClient taskSetClient) {
         return new BiConsumer<>() {
             @Override
             public void accept(IpcIdentity minionHeader, StreamObserver<CloudToMinionMessage> responseObserver) {
@@ -176,6 +178,7 @@ public class GrpcTwinPublisher extends AbstractTwinPublisher {
                     sinkStreamsByLocation.remove(locationKey, sinkStream);
                     sinkStream.onCompleted(); // force termination of session.
                 }
+
                 AdapterObserver delegate = new AdapterObserver(responseObserver);
                 delegate.setCompletionCallback(() -> {
                     sinkStreamsByLocation.remove(locationKey, delegate);

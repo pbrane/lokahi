@@ -36,3 +36,4 @@ mvn clean install -f notifications
 mvn clean install -f metrics-processor
 mvn clean install -f events
 mvn clean install -f datachoices
+mvn clean install -f taskset

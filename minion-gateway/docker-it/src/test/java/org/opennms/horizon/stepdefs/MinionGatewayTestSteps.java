@@ -122,6 +122,7 @@ public class MinionGatewayTestSteps {
     //
     private int internalGrpcPort;
     private int externalGrpcPort;
+    private int taskSetGrpcPort;
     private String kafkaBootstrapUrl;
     private String mockLocation;
     private String mockSystemId;
@@ -197,6 +198,14 @@ public class MinionGatewayTestSteps {
         internalGrpcPort = Integer.parseInt(value);
 
         LOG.info("Using INTERNAL GRPC PORT {}", internalGrpcPort);
+    }
+
+    @Given("TaskSet GRPC Port in system property {string}")
+    public void tasksetGRPCPortInSystemProperty(String propertyName) {
+        String value = System.getProperty(propertyName);
+        taskSetGrpcPort = Integer.parseInt(value);
+
+        LOG.info("Using TASKSET GRPC PORT {}", taskSetGrpcPort);
     }
 
     @Given("Kafka Bootstrap URL in system property {string}")
@@ -579,7 +588,7 @@ public class MinionGatewayTestSteps {
     }
 
     private void commonSendTaskSet(long timeout) {
-        NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress("localhost", internalGrpcPort)
+        NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress("localhost", taskSetGrpcPort)
             .keepAliveWithoutCalls(true);
 
         ManagedChannel channel = channelBuilder.usePlaintext().build();

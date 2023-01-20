@@ -26,30 +26,8 @@
  *     http://www.opennms.com/
  */
 
-package org.opennms.horizon.taskset.model;
+package org.opennms.miniongateway.grpc.twin;
 
-import org.opennms.taskset.contract.TaskSet;
+public interface CloudToMinionProducer extends AutoCloseable {
 
-public class LocatedTaskSet {
-    private final String tenantId;
-    private final String location;
-    private final TaskSet taskSet;
-
-    public LocatedTaskSet(String tenantId, String location, TaskSet taskSet) {
-        this.tenantId = tenantId;
-        this.location = location;
-        this.taskSet = taskSet;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public TaskSet getTaskSet() {
-        return taskSet;
-    }
 }

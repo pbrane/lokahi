@@ -26,35 +26,52 @@
  *     http://www.opennms.com/
  */
 
-package org.opennms.horizon.taskset.config;
+package org.opennms.miniongateway.client;
 
-import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
-import org.opennms.horizon.taskset.gprc.GrpcServerManager;
-import org.opennms.horizon.taskset.gprc.TaskSetGrpcService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.grpc.ManagedChannel;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class GrpcConfig {
-    private static final int DEFAULT_GRPC_PORT = 8990;
+public class TaskSetClientConfig {
 
-    @Value("${grpc.server.port:" + DEFAULT_GRPC_PORT +"}")
+    public static final String TASKSET_GRPC_CHANNEL = "taskset";
+
+    @Value("${grpc.client.taskset.host:taskset}")
+    private String host;
+
+    @Value("${grpc.client.taskset.port:8990}")
     private int port;
 
-    @Bean
-    public TenantIDGrpcServerInterceptor createTenantLookup(){
-        return new TenantIDGrpcServerInterceptor();
+    @Value("${grpc.client.taskset.tlsEnabled:false}")
+    private boolean tlsEnabled;
+
+    @Value("${grpc.client.taskset.maxMessageSize:10485760}")
+    private int maxMessageSize;
+
+    @Value("${grpc.server.deadline:60000}")
+    private long deadline;
+
+    private ManagedChannel createGrpcChannel() {
+        NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress(host, port)
+            .keepAliveWithoutCalls(true)
+            .maxInboundMessageSize(maxMessageSize);
+
+        ManagedChannel channel;
+
+        if (tlsEnabled) {
+            throw new IllegalArgumentException("TLS NOT YET IMPLEMENTED");
+        } else {
+            channel = channelBuilder.usePlaintext().build();
+        }
+        return channel;
     }
 
-    @Bean(destroyMethod = "stopServer")
-    public GrpcServerManager startServer(
-        @Autowired TaskSetGrpcService taskSetGrpcService,
-        @Autowired TenantIDGrpcServerInterceptor interceptor
-    ) {
-        GrpcServerManager manager = new GrpcServerManager(port, interceptor);
-        manager.startServer(taskSetGrpcService);
-        return manager;
+    @Bean
+    public TaskSetClient taskSetClient() {
+        return new TaskSetClient(createGrpcChannel(), deadline);
     }
+
 }

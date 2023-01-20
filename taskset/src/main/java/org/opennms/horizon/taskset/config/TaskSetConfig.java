@@ -26,18 +26,28 @@
  *     http://www.opennms.com/
  */
 
-package org.opennms.horizon.taskset.api;
+package org.opennms.horizon.taskset.config;
 
-import org.opennms.taskset.contract.TaskDefinition;
-import org.opennms.taskset.contract.TaskSet;
+import org.apache.ignite.Ignite;
+import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
+import org.opennms.horizon.taskset.gprc.TaskSetGrpcService;
+import org.opennms.horizon.taskset.persistence.IgniteCachePersistenceStore;
+import org.opennms.horizon.taskset.persistence.TaskSetPersistentStore;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
+@Configuration
+public class TaskSetConfig {
 
-public interface TaskSetPublisher {
+    @Bean
+    public TaskSetPersistentStore taskSetStore(Ignite ignite) {
+        return new IgniteCachePersistenceStore(ignite);
+    }
 
-    String TASK_SET_PUBLISH_SERVICE = "task-set.pub-task";
+    @Bean
+    public TaskSetGrpcService taskSetGrpcService(
+        TaskSetPersistentStore taskSetStore, TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor) {
+        return new TaskSetGrpcService(taskSetStore, tenantIDGrpcServerInterceptor);
+    }
 
-    void publishTaskSet(String tenantId, String location, TaskSet taskSet);
-
-    void publishNewTasks(String tenantId, String location, List<TaskDefinition> taskList);
 }

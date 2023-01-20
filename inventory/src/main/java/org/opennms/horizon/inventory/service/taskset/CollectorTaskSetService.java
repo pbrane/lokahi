@@ -41,7 +41,6 @@ import org.opennms.snmp.contract.SnmpCollectorRequest;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

@@ -19,14 +19,14 @@ import org.opennms.horizon.shared.ipc.grpc.server.manager.impl.RpcRequestTracker
 import org.opennms.horizon.shared.ipc.grpc.server.manager.rpc.LocationIndependentRpcClientFactoryImpl;
 import org.opennms.horizon.shared.ipc.grpc.server.manager.rpcstreaming.MinionRpcStreamConnectionManager;
 import org.opennms.horizon.shared.ipc.grpc.server.manager.rpcstreaming.impl.MinionRpcStreamConnectionManagerImpl;
+import org.opennms.miniongateway.client.TaskSetClient;
 import org.opennms.miniongateway.grpc.server.heartbeat.HeartbeatKafkaForwarder;
 import org.opennms.miniongateway.grpc.server.rpcrequest.flows.FlowKafkaForwarder;
 import org.opennms.miniongateway.grpc.server.tasktresults.TaskResultsKafkaForwarder;
 import org.opennms.miniongateway.grpc.server.traps.TrapsKafkaForwarder;
+import org.opennms.miniongateway.grpc.twin.CloudToMinionProducerFactory;
 import org.opennms.miniongateway.grpc.twin.GrpcTwinPublisher;
-import org.opennms.miniongateway.grpc.twin.TaskSetTwinMessageProcessor;
-import org.opennms.miniongateway.taskset.service.api.TaskSetForwarder;
-import org.opennms.miniongateway.taskset.service.api.TaskSetPublisher;
+import org.opennms.miniongateway.grpc.twin.TaskSetTwinCloudToMinionProducerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -85,12 +85,11 @@ public class GrpcServerConfig {
     }
 
     @Bean("cloudToMinionMessageProcessor")
-    public TaskSetTwinMessageProcessor stubCloudToMinionMessageProcessor(
-        @Qualifier("taskSetPublisher") TaskSetPublisher publisher,
-        @Qualifier("taskSetForwarder") TaskSetForwarder forwarder,
+    public TaskSetTwinCloudToMinionProducerFactory stubCloudToMinionMessageProcessor(
+        TaskSetClient taskSetClient,
         GrpcTwinPublisher grpcTwinPublisher,
         TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor) {
-        return new TaskSetTwinMessageProcessor(publisher, forwarder, grpcTwinPublisher, tenantIDGrpcServerInterceptor);
+        return new TaskSetTwinCloudToMinionProducerFactory(taskSetClient, grpcTwinPublisher, tenantIDGrpcServerInterceptor);
     }
 
     @Bean
@@ -118,7 +117,7 @@ public class GrpcServerConfig {
         @Autowired LocationIndependentRpcClientFactory locationIndependentRpcClientFactory,
         @Autowired MinionRpcStreamConnectionManager minionRpcStreamConnectionManager,
         @Autowired @Qualifier("minionToCloudRPCProcessor") IncomingRpcHandlerAdapter incomingRpcHandlerAdapter,
-        @Autowired @Qualifier("cloudToMinionMessageProcessor") BiConsumer<Identity, StreamObserver<CloudToMinionMessage>> cloudToMinionMessageProcessor,
+        @Autowired CloudToMinionProducerFactory cloudToMinionProducerFactory,
         @Autowired TaskResultsKafkaForwarder taskResultsKafkaForwarder,
         @Autowired HeartbeatKafkaForwarder heartbeatKafkaForwarder,
         @Autowired TrapsKafkaForwarder trapsKafkaForwarder,
@@ -139,7 +138,12 @@ public class GrpcServerConfig {
         server.setLocationIndependentRpcClientFactory(locationIndependentRpcClientFactory);
         server.setMinionRpcStreamConnectionManager(minionRpcStreamConnectionManager);
         server.setIncomingRpcHandler(incomingRpcHandlerAdapter);
-        server.setOutgoingMessageHandler(cloudToMinionMessageProcessor);
+        server.setOutgoingMessageHandler(new BiConsumer<Identity, StreamObserver<CloudToMinionMessage>>() {
+            @Override
+            public void accept(Identity identity, StreamObserver<CloudToMinionMessage> cloudToMinionMessageStreamObserver) {
+                cloudToMinionProducerFactory.create(identity, cloudToMinionMessageStreamObserver);
+            }
+        });
         server.registerConsumer(taskResultsKafkaForwarder);
         server.registerConsumer(heartbeatKafkaForwarder);
         server.registerConsumer(trapsKafkaForwarder);

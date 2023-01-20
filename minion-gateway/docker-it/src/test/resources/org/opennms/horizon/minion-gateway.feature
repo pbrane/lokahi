@@ -3,6 +3,7 @@ Feature: Minion Gateway RPC Request Processing
   Background: Common Test Setup
     Given Internal GRPC Port in system property "application-internal-grpc-port"
     Given External GRPC Port in system property "application-external-grpc-port"
+    Given TaskSet GRPC Port in system property "taskset-grpc-port"
     Given Kafka Bootstrap URL in system property "kafka.bootstrap-servers"
 
   Scenario: Send an RPC Request to a Minion that is not connected to the gateway

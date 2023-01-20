@@ -35,6 +35,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -54,6 +55,7 @@ public class TestContainerRunnerClassRule extends ExternalResource {
 
     private KafkaContainer kafkaContainer;
     private GenericContainer zookeeperContainer;
+    private GenericContainer taskSetContainer;
     private GenericContainer applicationContainer;
 
     private Network network;
@@ -61,6 +63,7 @@ public class TestContainerRunnerClassRule extends ExternalResource {
     public TestContainerRunnerClassRule() {
         kafkaContainer = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag(confluentPlatformVersion));
         zookeeperContainer = new GenericContainer(DockerImageName.parse("confluentinc/cp-zookeeper").withTag(confluentPlatformVersion));
+        taskSetContainer = new GenericContainer(DockerImageName.parse("opennms/horizon-stream-taskset").withTag("local").toString());
         applicationContainer = new GenericContainer(DockerImageName.parse(dockerImage).toString());
     }
 
@@ -74,12 +77,14 @@ public class TestContainerRunnerClassRule extends ExternalResource {
 
         startZookeeperContainer();
         startKafkaContainer();
+        startTaskSetContainer();
         startApplicationContainer();
     }
 
     @Override
     protected void after() {
         applicationContainer.stop();
+        taskSetContainer.stop();
         kafkaContainer.stop();
         zookeeperContainer.stop();
     }
@@ -115,11 +120,31 @@ public class TestContainerRunnerClassRule extends ExternalResource {
         LOG.info("KAFKA LOCALHOST BOOTSTRAP SERVERS {}", bootstrapServers);
     }
 
+    private void startTaskSetContainer() {
+        taskSetContainer
+            .withNetwork(network)
+            .withNetworkAliases("taskset")
+            .withExposedPorts(8990)
+            .withStartupTimeout(Duration.ofMinutes(5))
+            //.waitingFor(Wait.forLogMessage(".*Started TaskSetApplication .*", 1))
+            .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("TASKSET"))
+            ;
+
+        // DEBUGGING: uncomment to force local port 5005
+        // applicationContainer.getPortBindings().add("5005:5005");
+        taskSetContainer.start();
+
+        var taskSetGrpcPort = taskSetContainer.getMappedPort(8990);
+
+        LOG.info("TASKSET MAPPED PORTS: grpc={};", taskSetGrpcPort);
+        System.setProperty("taskset-grpc-port", String.valueOf(taskSetGrpcPort));
+    }
+
     private void startApplicationContainer() {
         applicationContainer
             .withNetwork(network)
             .withNetworkAliases("application", "application-host")
-            .dependsOn(zookeeperContainer, kafkaContainer)
+            .dependsOn(zookeeperContainer, kafkaContainer, taskSetContainer)
             .withExposedPorts(8080, 8990, 8991, 5005)
             .withStartupTimeout(Duration.ofMinutes(5))
             .withEnv("JAVA_TOOL_OPTIONS", "-Djava.security.egd=file:/dev/./urandom -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")

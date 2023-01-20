@@ -45,11 +45,11 @@ time {
 	echo "==="
 	mvn -f inventory jib:dockerBuild -Djib.container.creationTime=USE_CURRENT_TIMESTAMP -Dapplication.docker.image=opennms/horizon-stream-inventory:local-basic
 
-		echo ""
-  	echo "==="
-  	echo "=== ALARM SERVICE IMAGE"
-  	echo "==="
-  	mvn -f alarm jib:dockerBuild -Djib.container.creationTime=USE_CURRENT_TIMESTAMP -Dapplication.docker.image=opennms/horizon-stream-alarm:local-basic
+	echo ""
+	echo "==="
+	echo "=== ALARM SERVICE IMAGE"
+	echo "==="
+	mvn -f alarm jib:dockerBuild -Djib.container.creationTime=USE_CURRENT_TIMESTAMP -Dapplication.docker.image=opennms/horizon-stream-alarm:local-basic
 
 	echo ""
 	echo "==="
@@ -63,20 +63,27 @@ time {
 	echo "==="
 	mvn -f metrics-processor jib:dockerBuild -Djib.container.creationTime=USE_CURRENT_TIMESTAMP -Dapplication.docker.image=opennms/horizon-stream-metrics-processor:local-basic
 
-  echo ""
-  echo "==="
-  echo "=== EVENTS IMAGE"
-  echo "==="
-  mvn -f events jib:dockerBuild -Djib.container.creationTime=USE_CURRENT_TIMESTAMP -Dapplication.docker.image=opennms/horizon-stream-events:local-basic
-
-  echo ""
-  echo "==="
-  echo "=== DATACHOICES IMAGE"
-  echo "==="
-  mvn -f events jib:dockerBuild -Djib.container.creationTime=USE_CURRENT_TIMESTAMP -Dapplication.docker.image=opennms/horizon-stream-datachoices:local-basic
+	echo ""
+	echo "==="
+	echo "=== EVENTS IMAGE"
+	echo "==="
+	mvn -f events jib:dockerBuild -Djib.container.creationTime=USE_CURRENT_TIMESTAMP -Dapplication.docker.image=opennms/horizon-stream-events:local-basic
 
 	echo ""
 	echo "==="
+	echo "=== DATACHOICES IMAGE"
+	echo "==="
+	mvn -f events jib:dockerBuild -Djib.container.creationTime=USE_CURRENT_TIMESTAMP -Dapplication.docker.image=opennms/horizon-stream-datachoices:local-basic
+
+	echo ""
+	echo "==="
+	echo "=== TASKSET IMAGE"
+	echo "==="
+	mvn -f taskset jib:dockerBuild -Djib.container.creationTime=USE_CURRENT_TIMESTAMP -Dapplication.docker.image=opennms/horizon-stream-taskset:local-basic
+
+	echo ""
+	echo "==="
+
 	echo "=== KEYCLOAK UI IMAGE"
 	echo "==="
 	DOCKER_BUILDKIT=1 docker build \
