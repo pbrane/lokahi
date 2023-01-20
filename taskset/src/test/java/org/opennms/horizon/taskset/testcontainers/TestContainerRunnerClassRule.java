@@ -46,7 +46,7 @@ public class TestContainerRunnerClassRule extends ExternalResource {
     private Logger LOG = DEFAULT_LOGGER;
 
     private final String dockerImage = Optional.ofNullable(System.getProperty("application.docker.image"))
-        .orElse("opennms/horizon-stream-taskset:local");
+        .orElse("opennms/horizon-stream-taskset:latest");
 
     private GenericContainer applicationContainer;
 
@@ -87,7 +87,7 @@ public class TestContainerRunnerClassRule extends ExternalResource {
             ;
 
         // DEBUGGING: uncomment to force local port 5005
-        //applicationContainer.getPortBindings().add("5005:5005");
+//        applicationContainer.getPortBindings().add("5005:5005");
         applicationContainer.start();
 
         var tasksetGrpcPort = applicationContainer.getMappedPort(8990); // taskset-grpc-port

@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.taskset.gprc;
 
+import com.swrve.ratelimitedlogger.RateLimitedLog;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
@@ -45,9 +46,7 @@ import org.slf4j.LoggerFactory;
 
 public class TaskSetGrpcService extends TaskSetServiceGrpc.TaskSetServiceImplBase {
 
-    private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskSetGrpcService.class);
-
-    private final Logger log = DEFAULT_LOGGER;
+    private final Logger logger = LoggerFactory.getLogger(TaskSetGrpcService.class);
 
     private final TaskSetPersistentStore taskSetStore;
 
@@ -95,21 +94,23 @@ public class TaskSetGrpcService extends TaskSetServiceGrpc.TaskSetServiceImplBas
 
             @Override
             public void created(TaskSet taskSet) {
+                logger.info("Store emitted taskset created notification for tenant-id: {} and location: {}", tenantId, request.getLocation());
                 publish(Operation.CREATE, taskSet, responseObserver);
             }
 
             @Override
             public void updated(TaskSet taskSet) {
+                logger.info("Store emitted updated notification for tenant-id: {} and location: {}", tenantId, request.getLocation());
                 publish(Operation.UPDATE, taskSet, responseObserver);
             }
 
             @Override
             public void removed(TaskSet taskSet) {
+                logger.info("Store emitted deleted notification for tenant-id: {} and location: {}", tenantId, request.getLocation());
                 publish(Operation.DELETE, taskSet, responseObserver);
             }
 
-            private void publish(Operation create, TaskSet taskSet,
-                StreamObserver<TaskSetStreamMessage> responseObserver) {
+            private void publish(Operation create, TaskSet taskSet, StreamObserver<TaskSetStreamMessage> responseObserver) {
                 TaskSetStreamMessage message = TaskSetStreamMessage.newBuilder()
                     .setOperation(create)
                     .setTaskSet(taskSet)

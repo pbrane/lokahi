@@ -23,7 +23,7 @@
         <skip-docker-image-build>true</skip-docker-image-build>
         <application.docker.image.name>opennms/horizon-stream-taskset</application.docker.image.name>
         <application.docker.image.skipPush>false</application.docker.image.skipPush>
-        <docker.it.network>rest-server-it-network</docker.it.network>
+        <docker.it.network>taskset-it-network</docker.it.network>
         <skipITs>false</skipITs>
     </properties>
 
@@ -94,6 +94,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -124,11 +128,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

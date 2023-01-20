@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.taskset.persistence;
 
+import com.swrve.ratelimitedlogger.RateLimitedLog;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -39,10 +40,13 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.opennms.taskset.contract.TaskSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IgniteCachePersistenceStore implements TaskSetPersistentStore {
 
     private final static String LOCATION_TASK_SETS_CACHE_NAME = "locationTaskSets";
+    private final Logger logger = LoggerFactory.getLogger(IgniteCachePersistenceStore.class);
 
     private final Ignite ignite;
     private final Cache<TenantKey, TaskSet> locationTaskSetCache;
@@ -82,6 +86,8 @@ public class IgniteCachePersistenceStore implements TaskSetPersistentStore {
         if (!listeners.containsKey(tenantKey)) {
             listeners.put(tenantKey, new HashSet<>());
         }
+
+        logger.info("Registered taskset listener for tenant-id: {} and location: {}", tenantId, location);
         this.listeners.get(tenantKey).add(listener);
     }
 
