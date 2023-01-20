@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022-2023 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
  * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
@@ -26,29 +26,36 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.inventory.service;
+package org.opennms.horizon.minion.flows.parser;
 
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.opennms.sink.flows.contract.FlowsConfig;
-import org.opennms.taskset.service.api.TaskSetPublisher;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.opennms.horizon.minion.flows.listeners.FlowsListener;
 
-public class FlowsConfigServiceTest {
-    @Mock
-    MonitoringLocationService monitoringLocationService;
-
-    @Mock
-    TaskSetPublisher taskSetPublisher;
+public class ListenerHolderTest {
 
     @Test
-    public void canReadConfig() {
-        FlowsConfigService service = new FlowsConfigService(monitoringLocationService, taskSetPublisher);
-        FlowsConfig config = service.readFlowsConfig();
-        Assert.assertNotNull(config);
-        Assert.assertEquals("Netflow-5-UDP-8877", config.getListeners(0).getName());
-        Assert.assertEquals(1, config.getListeners(0).getParsersList().size());
-        Assert.assertEquals(2, config.getListeners(0).getParsers(0).getQueue()
-            .getAdapters(0).getParametersCount());
+    public void testAdd() {
+        FlowsListener listener = Mockito.mock(FlowsListener.class);
+        Mockito.when(listener.getName()).thenReturn("test");
+        ListenerHolder holder = new ListenerHolder();
+        holder.put(listener);
+        Assert.assertEquals(1, holder.size());
+        FlowsListener fromGet = holder.get("test");
+        Assert.assertEquals(listener, fromGet);
+        holder.remove("test");
+        Assert.assertEquals(0, holder.size());
+    }
+
+    @Test
+    public void testStartAndStop() throws Exception {
+        FlowsListener listener = Mockito.mock(FlowsListener.class);
+        ListenerHolder holder = new ListenerHolder();
+        holder.put(listener);
+        holder.stop();
+        Mockito.verify(listener, Mockito.times(1)).stop();
+        holder.start();
+        Mockito.verify(listener, Mockito.times(1)).start();
     }
 }
