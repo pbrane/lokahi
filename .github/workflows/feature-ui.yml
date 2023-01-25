@@ -73,8 +73,10 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
-          project: ./ui
+          # project: ./ui
+          working-directory: 'ui'
           component: true
+          install: false
       
       # - name: Test and coverage report
       #   timeout-minutes: 5 # This step can hang forever, see https://opennms.atlassian.net/browse/HS-841
