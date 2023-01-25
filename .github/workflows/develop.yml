@@ -195,7 +195,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
-          project: ./ui
+          working-directory: ui
       
       - name: Set up & run Cucumber tests
         shell: bash
