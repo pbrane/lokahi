@@ -15,8 +15,12 @@ limitations under the License.
 package reconciler
 
 import (
-	opennmsv1alpha1 "github.com/OpenNMS/opennms-operator/api/v1alpha1"
-	"github.com/OpenNMS/opennms-operator/internal/handlers"
+	opennmsv1alpha1 "github.com/OpenNMS-Cloud/opennms-operator/api/v1alpha1"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers/base"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers/ingress"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers/opennms"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers/thirdparty"
 	appsv1 "k8s.io/api/apps/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -31,15 +35,18 @@ func (r *OpenNMSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *OpenNMSReconciler) InitServiceHandlers() {
-	r.StandardHandlers = []handlers.ServiceHandler{
-		&handlers.BaseHandler{}, // MUST BE FIRST
-		&handlers.PostgresHandler{},
-		&handlers.KeycloakHandler{},
-		&handlers.KafkaHandler{},
-		&handlers.OpenNMSHandler{},
-		&handlers.CortexHandler{},
-		&handlers.GrafanaHandler{},
-		&handlers.MailServerHandler{},
-		&handlers.IngressHandler{}, // MUST BE LAST
-	}
+	r.StandardHandlers = []handlers.ServiceHandler{}
+	r.StandardHandlers = append(r.StandardHandlers,
+		&base.BaseHandler{}, // MUST BE FIRST
+		&thirdparty.PostgresHandler{},
+		&thirdparty.KeycloakHandler{},
+		&thirdparty.KafkaHandler{},
+	)
+	r.StandardHandlers = append(r.StandardHandlers, opennms.GetOpenNMSHandlers()...)
+	r.StandardHandlers = append(r.StandardHandlers,
+		&thirdparty.CortexHandler{},
+		&thirdparty.GrafanaHandler{},
+		&thirdparty.MailServerHandler{},
+		&ingress.IngressHandler{}, //MUST BE LAST
+	)
 }

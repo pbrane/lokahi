@@ -17,12 +17,12 @@ limitations under the License.
 package yaml
 
 import (
-	"github.com/OpenNMS/opennms-operator/internal/model/values"
-	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/apps/v1"
-	"os"
-	"path/filepath"
-	"testing"
+    "github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
+    "github.com/stretchr/testify/assert"
+    v1 "k8s.io/api/apps/v1"
+    "os"
+    "path/filepath"
+    "testing"
 )
 
 var TestFilename = "./testtmp/test1.yaml"
@@ -38,30 +38,30 @@ metadata:
 `
 
 func TestLoadYaml(t *testing.T) {
-	writeTestFiles(t)
-	val := values.TemplateValues{
-		Release: values.HelmRelease{
-			Namespace: "testNamespace",
-		},
-	}
-	testInterface := v1.Deployment{}
-	err := LoadYaml(LoadTemplate{TestFilename, val, &testInterface})
-	assert.Nil(t, err)
-	assert.Equal(t, "test", testInterface.ObjectMeta.Name, "should have loaded the correct name from the yaml")
-	assert.Equal(t, "testNamespace", testInterface.ObjectMeta.Namespace, "should have templated in the correct provided namespace")
+    writeTestFiles(t)
+    val := values.TemplateValues{
+        Release: values.HelmRelease{
+            Namespace: "testNamespace",
+        },
+    }
+    testInterface := v1.Deployment{}
+    err := LoadYaml(LoadTemplate{TestFilename, val, &testInterface})
+    assert.Nil(t, err)
+    assert.Equal(t, "test", testInterface.ObjectMeta.Name, "should have loaded the correct name from the yaml")
+    assert.Equal(t, "testNamespace", testInterface.ObjectMeta.Namespace, "should have templated in the correct provided namespace")
 
-	cachedFile, ok := Cache().Get(TestFilename)
-	assert.True(t, ok)
-	assert.Equal(t, TestFileContents, cachedFile, "should have stored the untemplated file in the cache")
+    cachedFile, ok := Cache().Get(TestFilename)
+    assert.True(t, ok)
+    assert.Equal(t, TestFileContents, cachedFile, "should have stored the untemplated file in the cache")
 }
 
 func writeTestFiles(t *testing.T) {
-	file1 := []byte(TestFileContents)
+    file1 := []byte(TestFileContents)
 
-	newpath := filepath.Join(".", "testtmp")
-	err := os.MkdirAll(newpath, os.ModePerm)
-	assert.Nil(t, err)
+    newpath := filepath.Join(".", "testtmp")
+    err := os.MkdirAll(newpath, os.ModePerm)
+    assert.Nil(t, err)
 
-	err = os.WriteFile(TestFilename, file1, 0644)
-	assert.Nil(t, err)
+    err = os.WriteFile(TestFilename, file1, 0644)
+    assert.Nil(t, err)
 }

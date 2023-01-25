@@ -17,8 +17,8 @@ package yaml
 import (
 	"errors"
 	"fmt"
-	"github.com/OpenNMS/opennms-operator/internal/model/values"
-	"github.com/OpenNMS/opennms-operator/internal/util/template"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/util/template"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"os"
 	"strings"

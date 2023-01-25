@@ -15,11 +15,11 @@ limitations under the License.
 package main
 
 import (
-	"github.com/OpenNMS/opennms-operator/config"
-	"github.com/OpenNMS/opennms-operator/internal/handlers"
-	"github.com/OpenNMS/opennms-operator/internal/reconciler"
-	"github.com/OpenNMS/opennms-operator/internal/scheme"
-	"github.com/OpenNMS/opennms-operator/internal/util/values"
+	"github.com/OpenNMS-Cloud/opennms-operator/config"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/reconciler"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/scheme"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/util/values"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"

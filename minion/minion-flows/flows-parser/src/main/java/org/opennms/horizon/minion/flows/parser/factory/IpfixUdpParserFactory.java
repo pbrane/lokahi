@@ -28,24 +28,27 @@
 
 package org.opennms.horizon.minion.flows.parser.factory;
 
-import java.util.Objects;
-
-import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
-
 import org.opennms.horizon.minion.flows.listeners.Parser;
-import org.opennms.horizon.minion.flows.listeners.factory.ParserDefinition;
 import org.opennms.horizon.minion.flows.listeners.factory.TelemetryRegistry;
-import org.opennms.horizon.minion.flows.listeners.factory.UdpListenerMessage;
 import org.opennms.horizon.minion.flows.parser.IpfixUdpParser;
+import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
+import org.opennms.sink.flows.contract.ParserConfig;
+
+import java.util.Objects;
 
 public class IpfixUdpParserFactory implements ParserFactory {
 
     private final TelemetryRegistry telemetryRegistry;
     private final DnsResolver dnsResolver;
+    private final IpcIdentity identity;
 
-    public IpfixUdpParserFactory(final TelemetryRegistry telemetryRegistry, final DnsResolver dnsResolver) {
+    public IpfixUdpParserFactory(final TelemetryRegistry telemetryRegistry,
+                                 final IpcIdentity identity,
+                                 final DnsResolver dnsResolver) {
         this.telemetryRegistry = Objects.requireNonNull(telemetryRegistry);
+        this.identity = Objects.requireNonNull(identity);
         this.dnsResolver = Objects.requireNonNull(dnsResolver);
+        telemetryRegistry.addParserFactory(this);
     }
 
     @Override
@@ -54,8 +57,8 @@ public class IpfixUdpParserFactory implements ParserFactory {
     }
 
     @Override
-    public Parser createBean(ParserDefinition parserDefinition) {
-        final AsyncDispatcher<UdpListenerMessage> dispatcher = telemetryRegistry.getDispatcher(parserDefinition.getQueueName());
-        return new IpfixUdpParser(parserDefinition.getFullName(), dispatcher, dnsResolver, telemetryRegistry.getMetricRegistry());
+    public Parser createBean(ParserConfig parserConfig) {
+        final var dispatcher = telemetryRegistry.getDispatcher(parserConfig.getQueue().getName());
+        return new IpfixUdpParser(parserConfig.getName(), dispatcher, identity, dnsResolver, telemetryRegistry.getMetricRegistry());
     }
 }

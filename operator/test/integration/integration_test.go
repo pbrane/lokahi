@@ -19,10 +19,10 @@ package integration
 
 //import (
 //	"context"
-//	"github.com/OpenNMS/opennms-operator/internal/handlers"
-//	"github.com/OpenNMS/opennms-operator/internal/model/values"
-//	"github.com/OpenNMS/opennms-operator/internal/reconciler"
-//	"github.com/OpenNMS/opennms-operator/internal/scheme"
+//	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers"
+//	"github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
+//	"github.com/OpenNMS-Cloud/opennms-operator/internal/reconciler"
+//	"github.com/OpenNMS-Cloud/opennms-operator/internal/scheme"
 //	"github.com/mittwald/go-helm-client"
 //	"github.com/stretchr/testify/assert"
 //	v1 "k8s.io/api/apps/v1"

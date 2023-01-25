@@ -16,7 +16,7 @@ package crd
 
 import (
 	"context"
-	"github.com/OpenNMS/opennms-operator/api/v1alpha1"
+	"github.com/OpenNMS-Cloud/opennms-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

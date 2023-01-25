@@ -20,6 +20,10 @@
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <properties>
+        <application.docker.image.name>opennms/horizon-stream-events</application.docker.image.name>
+    </properties>
+
     <modules>
         <module>main</module>
         <module>persistence</module>
@@ -55,13 +59,30 @@
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                <version>${jib.version}</version>
                 <configuration>
                     <!-- jib-maven-plugin needs to be executed only on specific submodules.
                          This disables jib by default, which allows you to run jib goals on this parent pom without
                          specifying a submodule. Set skip=false on submodules that need jib. -->
                     <skip>true</skip>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <!-- Without these dependencies, all tests don't run with maven, either locally or in github Actions -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>5.4.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.junit.vintage</groupId>
+                        <artifactId>junit-vintage-engine</artifactId>
+                        <version>5.8.2</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

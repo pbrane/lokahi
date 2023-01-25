@@ -15,8 +15,8 @@ limitations under the License.
 package handlers
 
 import (
-	"github.com/OpenNMS/opennms-operator/internal/model/values"
-	"github.com/OpenNMS/opennms-operator/internal/util/yaml"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/util/yaml"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -80,6 +80,6 @@ func (o *ServiceHandlerObject) LoadTemplates() error {
 	return nil
 }
 
-func filepath(filename string) string {
+func Filepath(filename string) string {
 	return ConfigFilePath + filename
 }

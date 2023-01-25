@@ -32,18 +32,16 @@ const errorNotificationPlugin = definePlugin(({ afterQuery }) => {
 
     if (hasError(401)) {
       notificationMsg = 'Using invalid or expired credentials.'
-    }
-
-    else if (hasError(403)) {
+    } else if (hasError(403)) {
       notificationMsg = 'The user does not have access rights.'
-    }
-
-    else if (hasError(409)) {
+    } else if (hasError(409)) {
       notificationMsg = 'Conflicting entry has occured.'
+    } else if (hasError(500)) {
+      notificationMsg = 'Server error has occured.'
     }
 
-    else if (hasError(500)) {
-      notificationMsg = 'Server error has occured.'
+    else if ('INTERNAL:') {
+      notificationMsg = error.message.split('INTERNAL:')[1]
     }
 
     showSnackbar({
@@ -55,6 +53,4 @@ const errorNotificationPlugin = definePlugin(({ afterQuery }) => {
   })
 })
 
-export { 
-  getGqlClient 
-}
+export { getGqlClient }

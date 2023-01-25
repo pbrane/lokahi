@@ -14,8 +14,7 @@
     <description>
         Docker build-time Integration Tests for the OpenNMS Minion Gateway.
 
-        The docker-maven-plugin is used to spin up containers with the core project and exercise
-        the public endpoints.
+        Test Containers are used to spin up containers and exercise the public endpoints.
     </description>
 
     <dependencies>
@@ -85,6 +84,18 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <!--
+                temporarily required for test-containers on m1 mac
+                https://github.com/testcontainers/testcontainers-java/issues/3610
+            -->
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.12.1</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -139,6 +150,9 @@
                     <reuseForks>true</reuseForks>
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <trimStackTrace>false</trimStackTrace>
+                    <systemPropertyVariables>
+                        <application.docker.image>${application.docker.image}</application.docker.image>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 

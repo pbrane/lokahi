@@ -3,6 +3,8 @@
 
 set -e
 
+LOCAL_DOCKER_CONFIG_JSON="${HOME}/.docker/config.json"
+
 #### ENV VARS
 ################################
 
@@ -18,6 +20,8 @@ fi
 
 CONTEXT=$1
 DOMAIN=$2
+IMAGE_TAG=${3:-local}
+IMAGE_PREFIX=${4:-opennms}
 KIND_CLUSTER_NAME=kind-test
 NAMESPACE=hs-instance
 
@@ -37,11 +41,21 @@ cluster_ready_check () {
 
   # This is the last pod to run, if ready, then give back the terminal session.
   sleep 60 # Need to wait until the pod is created or else nothing comes back. Messes with the conditional.
-  while [[ $(kubectl get pods -n $NAMESPACE -l=app.kubernetes.io/component="controller-$NAMESPACE" -o jsonpath='{.items[*].status.containerStatuses[0].ready}') == 'false' ]]; do 
+  while [[ $(kubectl get pods -n $NAMESPACE -l=app.kubernetes.io/component="controller-$NAMESPACE" -o jsonpath='{.items[*].status.containerStatuses[0].ready}') == 'false' ]]; do
     echo "not-ready"
     sleep 30
   done
 
+}
+
+cluster_install_kubelet_config() {
+  # Copy the docker config.json file into the kind-control-plane container
+  if [ -f "${LOCAL_DOCKER_CONFIG_JSON}" ]
+  then
+    docker cp "${LOCAL_DOCKER_CONFIG_JSON}" "${KIND_CLUSTER_NAME}-control-plane:/var/lib/kubelet/config.json"
+  else
+    echo "NO ${HOME}/.docker/config.json: not configuring kind for external docker registry access"
+  fi
 }
 
 create_ssl_cert_secret () {
@@ -58,8 +72,117 @@ create_ssl_cert_secret () {
 
 }
 
+# WHEN kind fixes the bug, https://github.com/kubernetes-sigs/kind/issues/3063,
+# THEN changing this to load multiple images in a single command can save a huge amount of data transfer and time
+load_images_to_kind_using_slow_kind () {
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-alarm:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-datachoices:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-events:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-grafana:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-inventory:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-keycloak:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-metrics-processor:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-minion:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-minion-gateway:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-minion-gateway-grpc-proxy:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-notification:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-rest-server:${IMAGE_TAG}" &
+    kind load docker-image --name "$KIND_CLUSTER_NAME" "${IMAGE_PREFIX}/horizon-stream-ui:${IMAGE_TAG}" &
+}
+
+pull_docker_images () {
+	for image in \
+		"${IMAGE_PREFIX}/horizon-stream-alarm:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-datachoices:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-events:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-grafana:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-inventory:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-keycloak:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-metrics-processor:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-minion-gateway-grpc-proxy:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-minion-gateway:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-minion:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-notification:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-rest-server:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-ui:${IMAGE_TAG}"
+	do
+		if docker inspect "${image}" >/dev/null
+		then
+			echo "Already have ${image} locally"
+		else
+			docker pull "${image}"
+		fi
+	done
+}
+
+save_part_of_normal_docker_image_load () {
+	docker save \
+		"${IMAGE_PREFIX}/horizon-stream-alarm:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-datachoices:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-events:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-grafana:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-inventory:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-keycloak:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-metrics-processor:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-minion-gateway-grpc-proxy:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-minion-gateway:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-minion:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-notification:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-rest-server:${IMAGE_TAG}" \
+		"${IMAGE_PREFIX}/horizon-stream-ui:${IMAGE_TAG}"
+}
+
+load_part_of_normal_docker_image_load () {
+	docker exec -i "${KIND_CLUSTER_NAME}-control-plane" ctr --namespace="${NAMESPACE}" images import --snapshotter overlayfs -
+}
+
+load_images_to_kind_using_normal_docker () {
+	# Pull the images in case they are not yet available locally
+	pull_docker_images
+
+	### DEBUGGING
+	echo =====
+	docker images || crictl images || true
+	echo =====
+
+	save_part_of_normal_docker_image_load | load_part_of_normal_docker_image_load
+}
+
+install_helm_chart_custom_images () {
+  echo
+  echo ________________Installing Horizon Stream________________
+  echo
+
+  helm upgrade -i horizon-stream ./../charts/opennms \
+  -f ./tmp/install-local-opennms-horizon-stream-custom-images-values.yaml \
+  --namespace $NAMESPACE --create-namespace \
+  --set OpenNMS.Alarm.Image=${IMAGE_PREFIX}/horizon-stream-alarm:${IMAGE_TAG} \
+  --set OpenNMS.DataChoices.Image=${IMAGE_PREFIX}/horizon-stream-datachoices:${IMAGE_TAG} \
+  --set OpenNMS.Events.Image=${IMAGE_PREFIX}/horizon-stream-events:${IMAGE_TAG} \
+  --set Grafana.Image=${IMAGE_PREFIX}/horizon-stream-grafana:${IMAGE_TAG} \
+  --set OpenNMS.Inventory.Image=${IMAGE_PREFIX}/horizon-stream-inventory:${IMAGE_TAG} \
+  --set Keycloak.Image=${IMAGE_PREFIX}/horizon-stream-keycloak:${IMAGE_TAG} \
+  --set OpenNMS.MetricsProcessor.Image=${IMAGE_PREFIX}/horizon-stream-metrics-processor:${IMAGE_TAG} \
+  --set OpenNMS.Minion.Image=${IMAGE_PREFIX}/horizon-stream-minion:${IMAGE_TAG} \
+  --set OpenNMS.MinionGateway.Image=${IMAGE_PREFIX}/horizon-stream-minion-gateway:${IMAGE_TAG} \
+  --set OpenNMS.MinionGatewayGrpcProxy.Image=${IMAGE_PREFIX}/horizon-stream-minion-gateway-grpc-proxy:${IMAGE_TAG} \
+  --set OpenNMS.Notification.Image=${IMAGE_PREFIX}/horizon-stream-notification:${IMAGE_TAG} \
+  --set OpenNMS.API.Image=${IMAGE_PREFIX}/horizon-stream-rest-server:${IMAGE_TAG} \
+  --set OpenNMS.UI.Image=${IMAGE_PREFIX}/horizon-stream-ui:${IMAGE_TAG}
+}
+
 #### MAIN
 ################################
+
+# LOG some useful info
+
+echo "STARTUP CONFIG"
+echo "CONTEXT=${CONTEXT}"
+echo "DOMAIN=${DOMAIN}"
+echo "IMAGE_TAG=${IMAGE_TAG}"
+echo "IMAGE_PREFIX=${IMAGE_PREFIX}"
+echo "KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME}"
+echo "NAMESPACE=${NAMESPACE}"
 
 # Swap Domain in YAML files
 mkdir -p tmp
@@ -73,6 +196,7 @@ cat install-local-opennms-horizon-stream-custom-images-values.yaml | sed "s/onms
 if [ $CONTEXT == "local" ]; then
 
   create_cluster
+  cluster_install_kubelet_config
 
   echo
   echo ________________Installing Horizon Stream________________
@@ -80,39 +204,42 @@ if [ $CONTEXT == "local" ]; then
   helm upgrade -i horizon-stream ./../charts/opennms -f ./tmp/install-local-opennms-horizon-stream-values.yaml --namespace $NAMESPACE --create-namespace
   if [ $? -ne 0 ]; then exit; fi
 
-  create_ssl_cert_secret 
+  create_ssl_cert_secret
   cluster_ready_check
 
 elif [ "$CONTEXT" == "custom-images" ]; then
 
   create_cluster
+  cluster_install_kubelet_config
 
   # Will add a kind-registry here at some point, see .github/ for sample script.
-  kind load docker-image --name kind-test opennms/horizon-stream-alarm:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-core:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-minion:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-minion-gateway:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-minion-gateway-grpc-proxy:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-keycloak:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-grafana:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-ui:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-notification:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-rest-server:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-inventory:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-metrics-processor:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-events:local&
-  kind load docker-image --name kind-test opennms/horizon-stream-datachoices:local&
+  echo "START LOADING IMAGES INTO KIND AT $(date)"
 
-  # Need to wait for the images to be loaded.
-  sleep 120
+  time load_images_to_kind_using_normal_docker
 
-  echo
-  echo ________________Installing Horizon Stream________________
-  echo
-  helm upgrade -i horizon-stream ./../charts/opennms -f ./tmp/install-local-opennms-horizon-stream-custom-images-values.yaml --namespace $NAMESPACE --create-namespace
+  echo "FINISHED LOADING IMAGES INTO KIND AT $(date)"
+
+  install_helm_chart_custom_images
+
   if [ $? -ne 0 ]; then exit; fi
 
-  create_ssl_cert_secret 
+  create_ssl_cert_secret
+  cluster_ready_check
+
+elif [ "$CONTEXT" == "cicd" ]; then
+
+  create_cluster
+  cluster_install_kubelet_config
+
+  # assumes remote docker registry, no need to load images into cluster
+  install_helm_chart_custom_images
+
+  # output values from the release to help with debugging pipelines
+  helm get values horizon-stream --namespace $NAMESPACE
+
+  if [ $? -ne 0 ]; then exit; fi
+
+  create_ssl_cert_secret
   cluster_ready_check
 
 elif [ $CONTEXT == "existing-k8s" ]; then

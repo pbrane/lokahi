@@ -16,6 +16,5 @@ package values
 
 type CortexValues struct {
 	ServiceValues `yaml:",inline"`
-	Enabled       bool          `yaml:"Enabled"`
 	Server        ServiceValues `yaml:"Server"`
 }

@@ -17,52 +17,36 @@ limitations under the License.
 package handlers
 
 import (
-	"github.com/OpenNMS/opennms-operator/config"
-	"github.com/OpenNMS/opennms-operator/internal/model/values"
-	values2 "github.com/OpenNMS/opennms-operator/internal/util/values"
-	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/apps/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
+    "github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
+    "github.com/stretchr/testify/assert"
+    v1 "k8s.io/api/apps/v1"
+    "sigs.k8s.io/controller-runtime/pkg/client"
+    "testing"
 )
 
 func TestFilepath(t *testing.T) {
-	res := filepath("test")
-	assert.Equal(t, ConfigFilePath+"test", res)
+    res := Filepath("test")
+    assert.Equal(t, ConfigFilePath+"test", res)
 }
 
 func TestServiceHandler(t *testing.T) {
-	sh := ServiceHandlerObject{}
-	obj := v1.Deployment{}
-	obj.SetName("test")
-	sh.Config = []client.Object{
-		&obj,
-	}
+    sh := ServiceHandlerObject{}
+    obj := v1.Deployment{}
+    obj.SetName("test")
+    sh.Config = []client.Object{
+        &obj,
+    }
 
-	res := sh.GetConfig()
-	assert.NotNil(t, res)
-	assert.Equal(t, "test", res[0].GetName(), "should return the config that was set on the handler")
+    res := sh.GetConfig()
+    assert.NotNil(t, res)
+    assert.Equal(t, "test", res[0].GetName(), "should return the config that was set on the handler")
 
-	sh.SetDeployed(true)
-	resB := sh.GetDeployed()
-	assert.True(t, resB, "should return the deployed status correctly")
+    sh.SetDeployed(true)
+    resB := sh.GetDeployed()
+    assert.True(t, resB, "should return the deployed status correctly")
 
-	sh.AddToTemplates("filename", values.TemplateValues{}, &v1.Deployment{})
-	resC := sh.GetTemplates()
-	assert.Equal(t, "filename", resC[0].Filename, "should add and get templates correctly")
+    sh.AddToTemplates("filename", values.TemplateValues{}, &v1.Deployment{})
+    resC := sh.GetTemplates()
+    assert.Equal(t, "filename", resC[0].Filename, "should add and get templates correctly")
 
-}
-
-var valuesSet bool
-
-var tvals values.TemplateValues
-
-func DefaultTestValues() values.TemplateValues {
-	if !valuesSet {
-		tvals, _ = values2.GetDefaultValues(config.OperatorConfig{
-			DefaultOpenNMSValuesFile: "./../../charts/opennms/values.yaml",
-		})
-		valuesSet = true
-	}
-	return tvals
 }

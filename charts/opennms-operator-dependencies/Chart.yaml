@@ -1,8 +1,0 @@
-apiVersion: v2
-name: opennms-operator-dependencies
-version: 0.3.1
-deprecated: true
-dependencies:
-  - name: kubernetes-replicator
-    version: "2.7.3"
-    repository: "https://helm.mittwald.de"

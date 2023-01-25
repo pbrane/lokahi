@@ -29,6 +29,7 @@
 package org.opennms.horizon.minion.flows.parser;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+
 import org.opennms.cloud.grpc.minion.Identity;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessageLog;
@@ -36,19 +37,24 @@ import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.sink.api.AggregationPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
-import org.opennms.horizon.shared.ipc.sink.api.UnmarshalException;
+
+
+import java.util.Objects;
 
 public class FlowSinkModule implements SinkModule<TelemetryMessage, TelemetryMessageLog> {
 
     private final IpcIdentity identity;
 
-    public FlowSinkModule(IpcIdentity identity) {
-        this.identity = identity;
+    private final String id;
+
+    public FlowSinkModule(IpcIdentity identity, String id) {
+        this.identity = Objects.requireNonNull(identity);
+        this.id = Objects.requireNonNull(id);
     }
 
     @Override
     public String getId() {
-        return "Flow";
+        return id;
     }
 
     @Override

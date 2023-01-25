@@ -1,4 +1,5 @@
 //go:build unit
+// +build unit
 
 /*
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +19,8 @@ package crd
 
 import (
 	"context"
-	"github.com/OpenNMS/opennms-operator/api/v1alpha1"
-	"github.com/OpenNMS/opennms-operator/internal/scheme"
+	"github.com/OpenNMS-Cloud/opennms-operator/api/v1alpha1"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/scheme"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"

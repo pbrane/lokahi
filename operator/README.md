@@ -2,7 +2,7 @@
 
 # OpenNMS Operator
 
-A Kubernetes operator for deploying and maintaining [Horizon by OpenNMS](https://github.com/OpenNMS/opennms) in the cloud.
+A Kubernetes operator for deploying and maintaining [Horizon by OpenNMS](https://github.com/OpenNMS-Cloud/opennms) in the cloud.
 
 ### Versioning
 

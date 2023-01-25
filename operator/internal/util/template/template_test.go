@@ -17,30 +17,30 @@ limitations under the License.
 package template
 
 import (
-	"github.com/OpenNMS/opennms-operator/internal/model/values"
-	"github.com/stretchr/testify/assert"
-	"testing"
+    "github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
+    "github.com/stretchr/testify/assert"
+    "testing"
 )
 
 func TestTemplate(t *testing.T) {
-	namespace := "testNamespace"
-	testString := "{{ .Release.Namespace }}"
-	v := values.TemplateValues{
-		Release: values.HelmRelease{
-			Namespace: namespace,
-		},
-	}
-	res, err := TemplateConfig(testString, v)
-	assert.Nil(t, err)
-	assert.Equal(t, namespace, res, "should template correctly")
+    namespace := "testNamespace"
+    testString := "{{ .Release.Namespace }}"
+    v := values.TemplateValues{
+        Release: values.HelmRelease{
+            Namespace: namespace,
+        },
+    }
+    res, err := TemplateConfig(testString, v)
+    assert.Nil(t, err)
+    assert.Equal(t, namespace, res, "should template correctly")
 
-	testString = "<<<>>>"
+    testString = "<<<>>>"
 
-	res, err = TemplateConfig(testString, v)
-	assert.Nil(t, err)
-	assert.Equal(t, testString, res, "should not encode lessthan symbols")
+    res, err = TemplateConfig(testString, v)
+    assert.Nil(t, err)
+    assert.Equal(t, testString, res, "should not encode lessthan symbols")
 }
 
 func TestEmptyDict(t *testing.T) {
-	assert.Equal(t, map[string]interface{}{}, emptyDict())
+    assert.Equal(t, map[string]interface{}{}, emptyDict())
 }

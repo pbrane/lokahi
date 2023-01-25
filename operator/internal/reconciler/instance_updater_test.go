@@ -1,4 +1,5 @@
 //go:build unit
+// +build unit
 
 /*
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +19,8 @@ package reconciler
 
 import (
 	"context"
-	"github.com/OpenNMS/opennms-operator/api/v1alpha1"
-	"github.com/OpenNMS/opennms-operator/internal/model/values"
+	"github.com/OpenNMS-Cloud/opennms-operator/api/v1alpha1"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

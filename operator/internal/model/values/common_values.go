@@ -15,8 +15,10 @@ limitations under the License.
 package values
 
 type ServiceValues struct {
+	Enabled            bool           `yaml:"Enabled" default:"True"`
 	Path               string         `yaml:"Path"`
 	Port               int            `yaml:"Port"`
+	GrpcPort           int            `yaml:"GrpcPort"`
 	ServiceName        string         `yaml:"ServiceName"`
 	Image              string         `yaml:"Image"`
 	ImagePullPolicy    string         `yaml:"ImagePullPolicy" default:"Always"`

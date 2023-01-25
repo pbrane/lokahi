@@ -1,4 +1,5 @@
 //go:build unit
+// +build unit
 
 /*
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +18,8 @@ limitations under the License.
 package reconciler
 
 import (
-	"github.com/OpenNMS/opennms-operator/internal/handlers"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers/base"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers/ingress"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -29,6 +31,6 @@ func TestInitServiceHandlers(t *testing.T) {
 	first := r.StandardHandlers[0]
 	last := r.StandardHandlers[length-1]
 
-	assert.IsType(t, &handlers.BaseHandler{}, first, "First handler must be the base handler")
-	assert.IsType(t, &handlers.IngressHandler{}, last, "Last handler must be the ingress handler")
+	assert.IsType(t, &base.BaseHandler{}, first, "First handler must be the base handler")
+	assert.IsType(t, &ingress.IngressHandler{}, last, "Last handler must be the ingress handler")
 }

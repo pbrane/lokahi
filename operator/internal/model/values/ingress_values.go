@@ -15,6 +15,7 @@ limitations under the License.
 package values
 
 type IngressValues struct {
+	Enabled              bool   `yaml:"Enabled" default:"True"`
 	HttpPort             int    `yaml:"HttpPort"`
 	HttpsPort            int    `yaml:"HttpsPort"`
 	ControllerImage      string `yaml:"ControllerImage"`

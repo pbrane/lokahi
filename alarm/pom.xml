@@ -20,9 +20,10 @@
     <artifactId>alarm-service</artifactId>
 
     <properties>
+        <application.docker.image.name>opennms/horizon-stream-alarm</application.docker.image.name>
+        <!-- There is no sonarcloud project for the Alarm service yet, so skip scanning it -->
+        <sonar.skip>true</sonar.skip>
         <skipITs>false</skipITs>
-        <docker.image.name>opennms/horizon-stream-alarm</docker.image.name>
-        <docker.image.tag>local</docker.image.tag>
         <skipJib>false</skipJib>
     </properties>
 
@@ -70,6 +71,10 @@
             <artifactId>drools-compiler</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-mvel</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.kie</groupId>
             <artifactId>kie-api</artifactId>
         </dependency>
@@ -115,15 +120,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.slf4j</groupId>-->
-<!--            <artifactId>slf4j-log4j12</artifactId>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.aries.jpa</groupId>
             <artifactId>org.apache.aries.jpa.api</artifactId>
@@ -135,6 +131,12 @@
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
+            <version>${jakarta.annotation.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${jakarta.xml.version}</version>
         </dependency>
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
@@ -183,7 +185,6 @@
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
@@ -200,52 +201,52 @@
     </dependencies>
 
     <build>
-            <pluginManagement>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.10.1</version>
-                        <configuration>
-                            <source>${java.version}</source>
-                            <target>${java.version}</target>
-                            <annotationProcessorPaths>
-                                <path>
-                                    <groupId>org.projectlombok</groupId>
-                                    <artifactId>lombok</artifactId>
-                                    <version>${lombok.version}</version>
-                                </path>
-                                <!-- This is needed when using Lombok 1.18.16 and above -->
-                                <path>
-                                    <groupId>org.projectlombok</groupId>
-                                    <artifactId>lombok-mapstruct-binding</artifactId>
-                                    <version>0.2.0</version>
-                                </path>
-                                <!-- Mapstruct should follow the lombok path(s) -->
-                                <path>
-                                    <groupId>org.mapstruct</groupId>
-                                    <artifactId>mapstruct-processor</artifactId>
-                                    <version>${mapstruct.version}</version>
-                                </path>
-                            </annotationProcessorPaths>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </pluginManagement>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                            <!-- This is needed when using Lombok 1.18.16 and above -->
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok-mapstruct-binding</artifactId>
+                                <version>0.2.0</version>
+                            </path>
+                            <!-- Mapstruct should follow the lombok path(s) -->
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${mapstruct.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <skip>${skipJib}</skip>
-                    <from>
-                        <image>openjdk:11</image>
-                    </from>
-                    <to>
-                        <image>${docker.image.name}:${docker.image.tag}</image>
-                    </to>
                     <container>
-                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                        <jvmFlags>
+                            <jvmFlag>--add-opens=java.base/java.util=ALL-UNNAMED</jvmFlag>
+                            <jvmFlag>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmFlag>
+                            <jvmFlag>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</jvmFlag>
+                            <jvmFlag>--add-opens=java.base/java.text=ALL-UNNAMED</jvmFlag>
+                            <jvmFlag>--add-opens=java.desktop/java.awt.font=ALL-UNNAMED</jvmFlag>
+                        </jvmFlags>
                     </container>
                 </configuration>
                 <executions>
@@ -262,7 +263,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>${maven-compiler-plugin.version}</version>
             </plugin>
 
             <plugin>
@@ -284,7 +285,22 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M5</version>
+                <version>3.0.0-M7</version>
+
+                <configuration>
+                    <skipITs>${skipITs}</skipITs>
+                    <reuseForks>true</reuseForks>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+<!--                    ##########################-->
+<!--                    ### this is REQUIRED so that the IT Tests have access to the project classes!-->
+<!--                    ##########################-->
+                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                    <systemPropertyVariables>
+                        <application.base-url>http://localhost:${app-http-port}</application.base-url>
+                        <kafka-rest.url>http://localhost:${kafka-rest.port}</kafka-rest.url>
+                        <application.docker.image>${application.docker.image}</application.docker.image>
+                    </systemPropertyVariables>
+                </configuration>
                 <executions>
                     <execution>
                         <id>horizon-integration-test</id>
@@ -311,25 +327,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <skipITs>${skipITs}</skipITs>
-                    <reuseForks>true</reuseForks>
-                    <useSystemClassLoader>false</useSystemClassLoader>
-<!--                    ##########################-->
-<!--                    ### this is REQUIRED so that the the IT Tests have access to the project classes!-->
-<!--                    ##########################-->
-                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
-                    <systemProperties>
-                        <property>
-                            <name>application.base-url</name>
-                            <value>http://localhost:${app-http-port}</value>
-                        </property>
-                        <property>
-                            <name>kafka-rest.url</name>
-                            <value>http://localhost:${kafka-rest.port}</value>
-                        </property>
-                    </systemProperties>
-                </configuration>
             </plugin>
 
         </plugins>

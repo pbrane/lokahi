@@ -18,11 +18,12 @@ package reconciler
 
 import (
 	"context"
-	"github.com/OpenNMS/opennms-operator/api/v1alpha1"
-	"github.com/OpenNMS/opennms-operator/config"
-	"github.com/OpenNMS/opennms-operator/internal/handlers"
-	values "github.com/OpenNMS/opennms-operator/internal/model/values"
-	values2 "github.com/OpenNMS/opennms-operator/internal/util/values"
+	"github.com/OpenNMS-Cloud/opennms-operator/api/v1alpha1"
+	"github.com/OpenNMS-Cloud/opennms-operator/config"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/handlers/base"
+	values "github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
+	values2 "github.com/OpenNMS-Cloud/opennms-operator/internal/util/values"
 	"github.com/stretchr/testify/assert"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"testing"
@@ -43,7 +44,7 @@ func DefaultTestValues() values.TemplateValues {
 }
 
 func TestInstance(t *testing.T) {
-	handlers.ConfigFilePath = "./../../charts/opennms/templates/"
+	handlers.ConfigFilePath = "./../../../charts/opennms/templates/"
 	i := Instance{}
 	crd := v1alpha1.OpenNMS{}
 	crd.SetName("test")
@@ -51,7 +52,7 @@ func TestInstance(t *testing.T) {
 	client := fake.NewClientBuilder().Build()
 	vals := DefaultTestValues()
 	h := []handlers.ServiceHandler{
-		&handlers.BaseHandler{},
+		&base.BaseHandler{},
 	}
 	err := i.Init(
 		context.Background(),

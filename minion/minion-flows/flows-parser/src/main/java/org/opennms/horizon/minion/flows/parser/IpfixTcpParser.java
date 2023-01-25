@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2018 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2018 The OpenNMS Group, Inc.
+ * Copyright (C) 2018-2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -28,27 +28,26 @@
 
 package org.opennms.horizon.minion.flows.parser;
 
-import static org.opennms.horizon.minion.flows.listeners.utils.BufferUtils.slice;
-
-import java.net.InetSocketAddress;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-
+import com.codahale.metrics.MetricRegistry;
+import com.google.common.collect.Sets;
+import io.netty.buffer.ByteBuf;
+import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
+import org.opennms.horizon.minion.flows.listeners.TcpParser;
 import org.opennms.horizon.minion.flows.parser.factory.DnsResolver;
 import org.opennms.horizon.minion.flows.parser.ipfix.proto.Header;
 import org.opennms.horizon.minion.flows.parser.ipfix.proto.Packet;
 import org.opennms.horizon.minion.flows.parser.session.TcpSession;
 import org.opennms.horizon.minion.flows.parser.state.ParserState;
 import org.opennms.horizon.minion.flows.parser.transport.IpFixMessageBuilder;
+import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
 
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.collect.Sets;
+import java.net.InetSocketAddress;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
-import io.netty.buffer.ByteBuf;
-import org.opennms.horizon.minion.flows.listeners.TcpParser;
-import org.opennms.horizon.minion.flows.listeners.factory.UdpListenerMessage;
+import static org.opennms.horizon.minion.flows.listeners.utils.BufferUtils.slice;
 
 public class IpfixTcpParser extends ParserBase implements TcpParser {
 
@@ -57,10 +56,11 @@ public class IpfixTcpParser extends ParserBase implements TcpParser {
     private final Set<TcpSession> sessions = Sets.newConcurrentHashSet();
 
     public IpfixTcpParser(final String name,
-                          final AsyncDispatcher<UdpListenerMessage> dispatcher,
+                          final AsyncDispatcher<TelemetryMessage> dispatcher,
+                          final IpcIdentity identity,
                           final DnsResolver dnsResolver,
                           final MetricRegistry metricRegistry) {
-        super(Protocol.IPFIX, name, dispatcher, dnsResolver, metricRegistry);
+        super(Protocol.IPFIX, name, dispatcher, identity, dnsResolver, metricRegistry);
     }
 
     @Override
@@ -116,8 +116,8 @@ public class IpfixTcpParser extends ParserBase implements TcpParser {
         final ParserState.Builder parser = ParserState.builder();
 
         this.sessions.stream()
-                     .flatMap(TcpSession::dumpInternalState)
-                     .forEach(parser::withExporter);
+            .flatMap(TcpSession::dumpInternalState)
+            .forEach(parser::withExporter);
 
         return parser.build();
     }

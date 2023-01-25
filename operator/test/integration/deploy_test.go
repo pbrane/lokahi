@@ -19,9 +19,9 @@ package integration
 
 //import (
 //	"context"
-//	"github.com/OpenNMS/opennms-operator/api/v1alpha1"
-//	"github.com/OpenNMS/opennms-operator/internal/model/values"
-//	"github.com/OpenNMS/opennms-operator/internal/util/yaml"
+//	"github.com/OpenNMS-Cloud/opennms-operator/api/v1alpha1"
+//	"github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
+//	"github.com/OpenNMS-Cloud/opennms-operator/internal/util/yaml"
 //	helmclient "github.com/mittwald/go-helm-client"
 //	"github.com/stretchr/testify/assert"
 //	"sigs.k8s.io/controller-runtime/pkg/client"

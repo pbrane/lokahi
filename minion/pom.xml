@@ -39,10 +39,9 @@
     </modules>
 
     <properties>
+        <application.docker.image.name>opennms/horizon-stream-minion</application.docker.image.name>
         <skipUTs>false</skipUTs>
         <skipITs>false</skipITs>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <dependencyManagement>
@@ -167,7 +166,11 @@
                 <artifactId>metrics-core</artifactId>
                 <version>${dropwizard.metrics.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.karaf.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -179,7 +182,7 @@
                 <plugin>
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
-                    <version>0.38.1</version>
+                    <version>0.40.3</version>
                     <extensions>true</extensions>
                 </plugin>
                 <plugin>
@@ -195,10 +198,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.2.0</version>
-                    <configuration>
-                        <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -220,6 +219,12 @@
                     <artifactId>karaf-maven-plugin</artifactId>
                     <version>${karaf.version}</version>
                     <extensions>true</extensions>
+                    <configuration combine.children="append">
+                        <javase>${java.version}</javase>
+                        <framework>
+                            <feature>framework</feature>
+                        </framework>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

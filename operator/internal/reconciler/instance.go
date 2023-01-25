@@ -15,50 +15,50 @@ limitations under the License.
 package reconciler
 
 import (
-	"context"
-	"github.com/OpenNMS/opennms-operator/api/v1alpha1"
-	"github.com/OpenNMS/opennms-operator/internal/handlers"
-	"github.com/OpenNMS/opennms-operator/internal/model/values"
-	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+    "context"
+    "github.com/OpenNMS-Cloud/opennms-operator/api/v1alpha1"
+    "github.com/OpenNMS-Cloud/opennms-operator/internal/handlers"
+    "github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
+    "reflect"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Instance - represents an ONMS instance as it is known to the operator
 type Instance struct {
-	Name     string
-	CRD      v1alpha1.OpenNMS
-	Values   values.TemplateValues
-	Deployed bool
-	Handlers []handlers.ServiceHandler
-	Client   client.Client
+    Name     string
+    CRD      v1alpha1.OpenNMS
+    Values   values.TemplateValues
+    Deployed bool
+    Handlers []handlers.ServiceHandler
+    Client   client.Client
 }
 
 func (i *Instance) Init(ctx context.Context, k8sClient client.Client, defaultValues values.TemplateValues, handlers []handlers.ServiceHandler, crd v1alpha1.OpenNMS) error {
-	i.Name = crd.Name
-	i.CRD = crd
-	i.Client = k8sClient
-	i.Values = defaultValues
-	i.Handlers = handlers
-	i.Deployed = false
-	i.SetValues(ctx)
-	return i.updateHandlers()
+    i.Name = crd.Name
+    i.CRD = crd
+    i.Client = k8sClient
+    i.Values = defaultValues
+    i.Handlers = handlers
+    i.Deployed = false
+    i.SetValues(ctx)
+    return i.updateHandlers()
 }
 
 func (i *Instance) Update(ctx context.Context, crd v1alpha1.OpenNMS) error {
-	if reflect.DeepEqual(i.CRD.Spec, crd.Spec) { //no changes, no work needed
-		return nil
-	}
-	i.CRD = crd
-	i.SetValues(ctx)
-	return i.updateHandlers()
+    if reflect.DeepEqual(i.CRD.Spec, crd.Spec) { //no changes, no work needed
+        return nil
+    }
+    i.CRD = crd
+    i.SetValues(ctx)
+    return i.updateHandlers()
 }
 
 func (i *Instance) updateHandlers() error {
-	for _, handler := range i.Handlers {
-		err := handler.UpdateConfig(i.Values)
-		if err != nil {
-			return err
-		}
+    for _, handler := range i.Handlers {
+        err := handler.UpdateConfig(i.Values)
+        if err != nil {
+            return err
+        }
 	}
 	return nil
 }

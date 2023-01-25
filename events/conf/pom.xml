@@ -13,8 +13,6 @@
     <artifactId>conf</artifactId>
     <name>OpenNMS Horizon Stream :: Events Conf</name>
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
         <sonar.coverage.exclusions>
             src/main/java/org/opennms/horizon/events/**/*
         </sonar.coverage.exclusions>
@@ -79,8 +77,9 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>${jakarta.annotation.version}</version>
         </dependency>
 
         <!-- Test Dependencies -->
@@ -114,6 +113,7 @@
             <version>${jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>

@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 import (
-	"github.com/OpenNMS/opennms-operator/config"
-	"github.com/OpenNMS/opennms-operator/internal/model/values"
+	"github.com/OpenNMS-Cloud/opennms-operator/config"
+	"github.com/OpenNMS-Cloud/opennms-operator/internal/model/values"
 	uberConfig "go.uber.org/config"
 )
 

@@ -28,9 +28,12 @@
 
 package org.opennms.horizon.server.config;
 
-import org.opennms.horizon.server.service.gateway.NotificationGateway;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.server.service.grpc.EventsClient;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
+import org.opennms.horizon.server.service.grpc.NotificationClient;
 import org.opennms.horizon.server.utils.JWTValidator;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,29 +41,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 @Configuration
 public class ConfigurationUtil {
-    @Value("${horizon-stream.notifications.url}")
-    private String notificationsUrl;
     @Value("${grpc.url.inventory}")
     private String inventoryGrpcAddress;
 
     @Value("${grpc.url.events}")
     private String eventsGrpcAddress;
 
+    @Value("${grpc.server.deadline:60000}")
+    private long deadline;
+
+    @Value("${grpc.url.notification}")
+    private String notificationGrpcAddress;
+
     @Bean
     public ServerHeaderUtil createHeaderUtil(JWTValidator validator) {
         return new ServerHeaderUtil(validator);
-    }
-
-    @Bean
-    public NotificationGateway createNotificationGateway(ServerHeaderUtil util) {
-        return new NotificationGateway(notificationsUrl, util);
     }
 
     @Bean(name = "inventory")
@@ -77,13 +75,25 @@ public class ConfigurationUtil {
             .usePlaintext().build();
     }
 
+    @Bean(name = "notification")
+    public ManagedChannel createNotificationChannel() {
+        return ManagedChannelBuilder.forTarget(notificationGrpcAddress)
+            .keepAliveWithoutCalls(true)
+            .usePlaintext().build();
+    }
+
     @Bean(destroyMethod = "shutdown", initMethod = "initialStubs")
     public InventoryClient createInventoryClient(@Qualifier("inventory") ManagedChannel channel) {
-        return new InventoryClient(channel);
+        return new InventoryClient(channel, deadline);
     }
 
     @Bean(destroyMethod = "shutdown", initMethod = "initialStubs")
     public EventsClient createEventsClient(@Qualifier("events") ManagedChannel channel) {
-        return new EventsClient(channel);
+        return new EventsClient(channel, deadline);
+    }
+
+    @Bean(destroyMethod = "shutdown", initMethod = "initialStubs")
+    public NotificationClient createNotificationClient(@Qualifier("notification") ManagedChannel channel) {
+        return new NotificationClient(channel);
     }
 }
