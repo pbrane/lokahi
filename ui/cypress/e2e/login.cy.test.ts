@@ -1,7 +1,8 @@
 context('Login', () => {
   beforeEach(() => {
     // cy.visit('http://localhost:8123/')
-    cy.visit('https://onmshs')
+    // cy.visit('https://onmshs')
+    cy.visit('/')
   })
 
   // not logged
