@@ -6,12 +6,6 @@ import Components from 'unplugin-vue-components/vite'
 import featherResolver from './auto-feather-resolver'
 
 export default defineConfig(() => {
-  // console.log('mode: ', mode)
-  // const env = loadEnv(mode, process.cwd())
-  // console.log('env',env)
-
-  // console.log('>>> import.meta',import.meta)
-
   return {
     server: {
       // port: parseInt(env.VITE_SERVER_PORT)
