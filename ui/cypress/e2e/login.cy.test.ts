@@ -1,6 +1,7 @@
 context('Login', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:8123/')
+    // cy.visit('http://localhost:8123/')
+    cy.visit('https://onmshs')
   })
 
   // not logged
@@ -15,10 +16,17 @@ context('Login', () => {
   it('If logged, welcome user heading should display', () => {
     // TODO: which credentials to use if running in CI pipeline
     cy.get('form')
-      .findByPlaceholderText('Username').click().type('admin').end()
-      .findByPlaceholderText('Password').click().type('admin').end()
-      .findByRole('button', { name: /Sign in/i }).click()
-      
+      .findByPlaceholderText('Username')
+      .click()
+      .type('admin')
+      .end()
+      .findByPlaceholderText('Password')
+      .click()
+      .type('admin')
+      .end()
+      .findByRole('button', { name: /Sign in/i })
+      .click()
+
     cy.get('[data-test="header-welcome"]').should('contain', 'Welcome, admin')
   })
 })
