@@ -4,7 +4,7 @@ context('Login', () => {
   })
 
   // not logged
-  test('If not logged, Sign In form should display', () => {
+  it('If not logged, Sign In form should display', () => {
     cy.get('header > h1').should('contain', 'Sign In')
     cy.get('form')
       .findByRole('button', { name: /Sign in/i })
@@ -12,7 +12,7 @@ context('Login', () => {
   })
 
   // logging in
-  test('If logged, welcome user heading should display', () => {
+  it('If logged, welcome user heading should display', () => {
     cy.get('form')
       .findByPlaceholderText('Username')
       .click()

@@ -5,12 +5,23 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import featherResolver from './auto-feather-resolver'
 
-export default defineConfig(({ mode }) => {
+// export default defineConfig(({ mode }) => {
+export default defineConfig((args) => {
+  console.log('args', args)
+  // const env = loadEnv(mode, process.cwd())
+  const mode = args?.mode || 'development'
   const env = loadEnv(mode, process.cwd())
+  // console.log("new URL('./src/', import.meta.url)", new URL('./src/', import.meta.url))
+  // console.log("new URL('./src/', import.meta.url).pathname", new URL('./src/', import.meta.url).pathname)
+  // console.log('env', env)
+
+  // console.log('>>>>>> import.meta', import.meta)
+  // console.log('>>>>>> import.meta.env', import.meta.env)
 
   return {
     server: {
       port: parseInt(env.VITE_SERVER_PORT)
+      // port: 9999
     },
     resolve: {
       alias: {

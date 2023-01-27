@@ -2,7 +2,7 @@ import Icon from '@/components/Common/Icon.vue'
 import BubbleChart from '@material-design-icons/svg/outlined/bubble_chart.svg'
 
 describe('Icon', () => {
-  test('Should display an icon', () => {
+  it('Should display an icon', () => {
     cy.mount(Icon, {
       props: {
         icon: {
