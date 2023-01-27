@@ -1,12 +1,10 @@
 context('Login', () => {
   beforeEach(() => {
-    // cy.visit('http://localhost:8123/')
-    // cy.visit('https://onmshs')
     cy.visit('/')
   })
 
   // not logged
-  it('If not logged, Sign In form should display', () => {
+  test('If not logged, Sign In form should display', () => {
     cy.get('header > h1').should('contain', 'Sign In')
     cy.get('form')
       .findByRole('button', { name: /Sign in/i })
@@ -14,8 +12,7 @@ context('Login', () => {
   })
 
   // logging in
-  it('If logged, welcome user heading should display', () => {
-    // TODO: which credentials to use if running in CI pipeline
+  test('If logged, welcome user heading should display', () => {
     cy.get('form')
       .findByPlaceholderText('Username')
       .click()
