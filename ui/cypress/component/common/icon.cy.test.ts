@@ -12,7 +12,7 @@ describe('Icon', () => {
       }
     })
 
-    cy.get('svg').should('exist') // ok
-    cy.get('svg.feather-icon').should('be.visible') // ok
+    cy.get('svg').should('exist')
+    cy.get('svg.feather-icon').should('be.visible')
   })
 })

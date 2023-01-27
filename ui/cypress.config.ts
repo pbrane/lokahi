@@ -1,5 +1,6 @@
 import { defineConfig } from 'cypress'
-import cypressViteConfig from './cypress.vite.config'
+// import cypressViteConfig from './cypress.vite.config'
+import viteConfig from './vite.config'
 
 export default defineConfig({
   component: {
@@ -7,7 +8,8 @@ export default defineConfig({
     devServer: {
       framework: 'vue',
       bundler: 'vite',
-      viteConfig: cypressViteConfig
+      viteConfig
+      // viteConfig: cypressViteConfig
     }
   },
 
