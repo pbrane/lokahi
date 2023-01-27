@@ -76,8 +76,7 @@ jobs:
           working-directory: 'ui'
           component: true
           install: false
-          with:
-            config: baseUrl=https://onmshs
+          config: baseUrl=https://onmshs
           # env: 
             # CYPRESS_host: https://onmshs
     
