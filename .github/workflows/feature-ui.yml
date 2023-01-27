@@ -76,6 +76,7 @@ jobs:
           working-directory: 'ui'
           component: true
           install: false
+          env: host=https://onmshs
     
       - name: SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
