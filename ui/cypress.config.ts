@@ -4,7 +4,7 @@ import viteConfig from './vite.config'
 import { loadEnv } from 'vite'
 
 const env = loadEnv('development', process.cwd())
-console.log(env)
+console.log('env', env)
 
 export default defineConfig({
   component: {
