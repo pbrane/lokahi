@@ -19,7 +19,10 @@ export default defineConfig({
 
   e2e: {
     // baseUrl: 'https://onmshs',
-    baseUrl: env.VITE_CYPRESS_BASE_URL, // local
+    // baseUrl: env.VITE_CYPRESS_BASE_URL, // local
+    // baseUrl: env.VITE_CYPRESS_BASE_URL, // local
+    // "base_url": "http://localhost:8123"
+    // baseUrl: Cypress.env('base_url'),
     specPattern: 'cypress/e2e/**/*.cy.*.{js,jsx,ts,tsx}',
     setupNodeEvents(on, config) {
       // implement node event listeners here
