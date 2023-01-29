@@ -37,9 +37,14 @@ export default defineConfig({
     // baseUrl: Cypress.env('base_url'),
     specPattern: 'cypress/e2e/**/*.cy.*.{js,jsx,ts,tsx}',
     setupNodeEvents(on, config) {
+      console.log('***** on', on)
       // implement node event listeners here
       // console.log('process.env', process.env)
-      // console.log('config', config)
+      console.log('config', config)
+      return {
+        ...config,
+        baseUrl: 'https://onmshs'
+      }
     }
   }
 })
