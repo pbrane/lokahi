@@ -57,8 +57,8 @@ jobs:
     # uses: ./.github/workflows/feature-inventory.yml
     # secrets: inherit
     # with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+      # image-tag: ${{ inputs.image-tag || github.sha }}
+      # image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   keycloak-ui:
     name: Keycloak
     uses: ./.github/workflows/feature-keycloak-ui.yml
@@ -102,9 +102,9 @@ jobs:
   #     image-tag: ${{ inputs.image-tag || github.sha }}
   #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   # parent-pom:
-    name: Parent POM
-    uses: ./.github/workflows/feature-parent-pom.yml
-    secrets: inherit
+    # name: Parent POM
+    # uses: ./.github/workflows/feature-parent-pom.yml
+    # secrets: inherit
   rest-server:
     name: Vue.js BFF
     uses: ./.github/workflows/feature-rest-server.yml
@@ -113,9 +113,9 @@ jobs:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   # shared-lib:
-    name: Shared Library
-    uses: ./.github/workflows/feature-shared-lib.yml
-    secrets: inherit
+    # name: Shared Library
+    # uses: ./.github/workflows/feature-shared-lib.yml
+    # secrets: inherit
   ui:
     name: Vue.js UI
     uses: ./.github/workflows/feature-ui.yml
