@@ -67,8 +67,8 @@ jobs:
           cache-dependency-path: ui/yarn.lock
 
       - name: Install dependencies
-        run: 'yarn install --frozen-lockfile'
-        working-directory: 'ui'
+        run: yarn install --frozen-lockfile
+        working-directory: ui
 
       - name: Cypress run
         uses: cypress-io/github-action@v5
@@ -92,7 +92,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          context: '{{defaultContext}}:ui'
+          context: ${{defaultContext}}:ui
           tags: ${{ steps.docker-metadata.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha
