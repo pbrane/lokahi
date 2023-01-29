@@ -197,13 +197,13 @@ jobs:
         run: |
           # Cucumber test
           mvn install
-          INGRESS_BASE_URL=https://onmshs
-          KEYCLOAK_BASE_URL=https://onmshs/auth
+          INGRESS_BASE_URL=${{ env.INGRESS_BASE_URL }}
+          KEYCLOAK_BASE_URL=${{ env.INGRESS_BASE_URL }}/auth
           KEYCLOAK_REALM=opennms
           KEYCLOAK_USERNAME=admin
           KEYCLOAK_PASSWORD=admin
           KEYCLOAK_CLIENT_ID=horizon-stream
-          export INGRESS_BASE_URL KEYCLOAK_BASE_URL KEYCLOAK_REALM KEYCLOAK_USERNAME KEYCLOAK_PASSWORD KEYCLOAK_CLIENT_ID
+          export ${{ env.INGRESS_BASE_URL }} KEYCLOAK_BASE_URL KEYCLOAK_REALM KEYCLOAK_USERNAME KEYCLOAK_PASSWORD KEYCLOAK_CLIENT_ID
           PROJECT_VERSION="$(mvn -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive -q org.codehaus.mojo:exec-maven-plugin:1.6.0:exec)"
           java -jar "external-horizon-stream-it/target/external-horizon-stream-it-${PROJECT_VERSION}.jar"
 
