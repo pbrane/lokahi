@@ -138,7 +138,7 @@ jobs:
       # minion-gateway-grpc-proxy,
       # notifications,
       rest-server,
-      ui
+      # ui
     ]
     runs-on:
       labels: ubuntu-latest-8-cores
