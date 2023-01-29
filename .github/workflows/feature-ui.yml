@@ -77,9 +77,9 @@ jobs:
           component: true
           install: false
           # config-file: cypress.env.json
-          # config: baseUrl=https://onmshs
-          # env: 
-            # CYPRESS_host: https://onmshs
+          config: baseUrl=https://config
+          env: 
+            base_url: https://env
     
       - name: SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
