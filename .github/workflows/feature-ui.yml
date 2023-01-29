@@ -79,7 +79,7 @@ jobs:
           # config-file: cypress.env.json
           config: baseUrl=https://config
           env: 
-            base_url: 'https://env'
+            baseUrl: 'https://env'
     
       - name: SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
