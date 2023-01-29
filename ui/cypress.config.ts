@@ -2,17 +2,17 @@ import { defineConfig } from 'cypress'
 // import { env } from 'process'
 // import cypressViteConfig from './cypress.vite.config'
 import viteConfig from './vite.config'
-import { loadEnv } from 'vite'
+// import { loadEnv } from 'vite'
 // import loadenv from 'loadenv'
 
 // const env = loadEnv('development', process.cwd())
-const env = loadEnv('', process.cwd())
+// const env = loadEnv('', process.cwd())
 // const env = loadenv.restore()
-console.log('env', env)
+// console.log('env', env)
 
 // console.log('>>> ', Cypress.env['baseUrl'])
 
-console.log('process.env', process.env)
+// console.log('process.env', process.env)
 
 export default defineConfig({
   /* env: {

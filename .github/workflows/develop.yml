@@ -23,6 +23,9 @@ on:
         required: false
         type: string
 
+env:
+  INGRESS_BASE_URL: https://onmshs
+
 jobs:
   # alarm:
   #   name: Alarm Service
@@ -186,8 +189,8 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ui
-          env: baseUrl=https://env
-          command: npx cypress run --config baseUrl=https://env
+          command: npx cypress run --config baseUrl=${{ env.INGRESS_BASE_URL }}
+          # command: npx cypress run --config baseUrl=https://env
       
       - name: Set up & run Cucumber tests
         shell: bash
