@@ -2,13 +2,13 @@ import { defineConfig } from 'cypress'
 // import { env } from 'process'
 // import cypressViteConfig from './cypress.vite.config'
 import viteConfig from './vite.config'
-// import { loadEnv } from 'vite'
+import { loadEnv } from 'vite'
 // import loadenv from 'loadenv'
 
-// const env = loadEnv('development', process.cwd())
+const env = loadEnv('development', process.cwd())
 // const env = loadEnv('', process.cwd())
 // const env = loadenv.restore()
-// console.log('env', env)
+console.log('env', env)
 
 // console.log('>>> ', Cypress.env['baseUrl'])
 
@@ -29,9 +29,9 @@ export default defineConfig({
   },
 
   e2e: {
-    // baseUrl: env.baseUrl,
+    baseUrl: env.CYPRESS_E2E_BASE_URL,
     // baseUrl: Cypress.env['baseUrl'],
-    baseUrl: 'https://onmshs',
+    // baseUrl: 'https://onmshs',
     // baseUrl: 'http://localhost:8123', // local
     // baseUrl: env.VITE_CYPRESS_BASE_URL, // local
     // "base_url": "http://localhost:8123"

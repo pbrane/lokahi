@@ -34,13 +34,13 @@ jobs:
   #   with:
   #     image-tag: ${{ inputs.image-tag || github.sha }}
   #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  # datachoices:
-  #   name: DataChoices Service
-  #   uses: ./.github/workflows/feature-datachoices.yml
-  #   secrets: inherit
-  #   with:
-  #     image-tag: ${{ inputs.image-tag || github.sha }}
-  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  datachoices:
+    name: DataChoices Service
+    uses: ./.github/workflows/feature-datachoices.yml
+    secrets: inherit
+    with:
+      image-tag: ${{ inputs.image-tag || github.sha }}
+      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   # events:
   #   name: Event Service
   #   uses: ./.github/workflows/feature-events.yml
@@ -104,10 +104,10 @@ jobs:
   #   with:
   #     image-tag: ${{ inputs.image-tag || github.sha }}
   #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  # parent-pom:
-    # name: Parent POM
-    # uses: ./.github/workflows/feature-parent-pom.yml
-    # secrets: inherit
+  parent-pom:
+    name: Parent POM
+    uses: ./.github/workflows/feature-parent-pom.yml
+    secrets: inherit
   rest-server:
     name: Vue.js BFF
     uses: ./.github/workflows/feature-rest-server.yml
@@ -130,7 +130,7 @@ jobs:
     name: End-to-end Tests
     needs: [
       # alarm,
-      # datachoices,
+      datachoices,
       # events,
       grafana,
       # inventory,
