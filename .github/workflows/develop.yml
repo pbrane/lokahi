@@ -115,17 +115,17 @@ jobs:
     with:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  # shared-lib:
-    # name: Shared Library
-    # uses: ./.github/workflows/feature-shared-lib.yml
-    # secrets: inherit
-  # ui:
-  #   name: Vue.js UI
-  #   uses: ./.github/workflows/feature-ui.yml
-  #   secrets: inherit
-  #   with:
-  #     image-tag: ${{ inputs.image-tag || github.sha }}
-  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  shared-lib:
+    name: Shared Library
+    uses: ./.github/workflows/feature-shared-lib.yml
+    secrets: inherit
+  ui:
+    name: Vue.js UI
+    uses: ./.github/workflows/feature-ui.yml
+    secrets: inherit
+    with:
+      image-tag: ${{ inputs.image-tag || github.sha }}
+      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   external-it:
     name: End-to-end Tests
     needs: [
@@ -141,7 +141,7 @@ jobs:
       # minion-gateway-grpc-proxy,
       # notifications,
       rest-server,
-      # ui
+      ui
     ]
     runs-on:
       labels: ubuntu-latest-8-cores
