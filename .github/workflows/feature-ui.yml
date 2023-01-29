@@ -73,13 +73,13 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
-          working-directory: 'ui'
+          working-directory: ui
           component: true
           install: false
           # config-file: cypress.env.json
           config: baseUrl=https://config
           env: 
-            baseUrl: 'https://env'
+            baseUrl: https://env
     
       - name: SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
