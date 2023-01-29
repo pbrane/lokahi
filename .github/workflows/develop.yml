@@ -189,8 +189,8 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ui
-          command: npx cypress run --config-file cypress.env.dev.json
-          # command: npx cypress run --config baseUrl=${{ env.INGRESS_BASE_URL }}
+          # command: npx cypress run --config-file cypress.env.dev.json
+          command: npx cypress run --config baseUrl=${{ env.INGRESS_BASE_URL }}
           # command: npx cypress run --config baseUrl=https://env
       
       - name: Set up & run Cucumber tests
