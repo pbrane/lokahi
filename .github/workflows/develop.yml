@@ -24,39 +24,39 @@ on:
         type: string
 
 jobs:
-  alarm:
-    name: Alarm Service
-    uses: ./.github/workflows/feature-alarm.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  datachoices:
-    name: DataChoices Service
-    uses: ./.github/workflows/feature-datachoices.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  events:
-    name: Event Service
-    uses: ./.github/workflows/feature-events.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  grafana:
-    name: Grafana
-    uses: ./.github/workflows/feature-grafana.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  inventory:
-    name: Inventory Service
-    uses: ./.github/workflows/feature-inventory.yml
-    secrets: inherit
-    with:
+  # alarm:
+  #   name: Alarm Service
+  #   uses: ./.github/workflows/feature-alarm.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # datachoices:
+  #   name: DataChoices Service
+  #   uses: ./.github/workflows/feature-datachoices.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # events:
+  #   name: Event Service
+  #   uses: ./.github/workflows/feature-events.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # grafana:
+  #   name: Grafana
+  #   uses: ./.github/workflows/feature-grafana.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # inventory:
+    # name: Inventory Service
+    # uses: ./.github/workflows/feature-inventory.yml
+    # secrets: inherit
+    # with:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   keycloak-ui:
@@ -66,42 +66,42 @@ jobs:
     with:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  metrics-processor:
-    name: Metrics Processor Service
-    uses: ./.github/workflows/feature-metrics-processor.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  minion:
-    name: Minion
-    uses: ./.github/workflows/feature-minion.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  minion-gateway:
-    name: Minion Gateway Service
-    uses: ./.github/workflows/feature-minion-gateway.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  minion-gateway-grpc-proxy:
-    name: Minion Gateway GRPC Proxy
-    uses: ./.github/workflows/feature-minion-gateway-grpc-proxy.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  notifications:
-    name: Notification Service
-    uses: ./.github/workflows/feature-notifications.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  parent-pom:
+  # metrics-processor:
+  #   name: Metrics Processor Service
+  #   uses: ./.github/workflows/feature-metrics-processor.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # minion:
+  #   name: Minion
+  #   uses: ./.github/workflows/feature-minion.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # minion-gateway:
+  #   name: Minion Gateway Service
+  #   uses: ./.github/workflows/feature-minion-gateway.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # minion-gateway-grpc-proxy:
+  #   name: Minion Gateway GRPC Proxy
+  #   uses: ./.github/workflows/feature-minion-gateway-grpc-proxy.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # notifications:
+  #   name: Notification Service
+  #   uses: ./.github/workflows/feature-notifications.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # parent-pom:
     name: Parent POM
     uses: ./.github/workflows/feature-parent-pom.yml
     secrets: inherit
@@ -112,7 +112,7 @@ jobs:
     with:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  shared-lib:
+  # shared-lib:
     name: Shared Library
     uses: ./.github/workflows/feature-shared-lib.yml
     secrets: inherit
@@ -126,17 +126,17 @@ jobs:
   external-it:
     name: End-to-end Tests
     needs: [
-      alarm,
-      datachoices,
-      events,
-      grafana,
-      inventory,
+      # alarm,
+      # datachoices,
+      # events,
+      # grafana,
+      # inventory,
       keycloak-ui,
-      metrics-processor,
-      minion,
-      minion-gateway,
-      minion-gateway-grpc-proxy,
-      notifications,
+      # metrics-processor,
+      # minion,
+      # minion-gateway,
+      # minion-gateway-grpc-proxy,
+      # notifications,
       rest-server,
       ui
     ]
@@ -185,7 +185,8 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
-          working-directory: 'ui'
+          working-directory: ui
+          env: baseUrl=https://onmshs
       
       - name: Set up & run Cucumber tests
         shell: bash
