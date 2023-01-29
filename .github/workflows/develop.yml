@@ -59,13 +59,13 @@ jobs:
     # with:
       # image-tag: ${{ inputs.image-tag || github.sha }}
       # image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  keycloak-ui:
-    name: Keycloak
-    uses: ./.github/workflows/feature-keycloak-ui.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # keycloak-ui:
+  #   name: Keycloak
+  #   uses: ./.github/workflows/feature-keycloak-ui.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   # metrics-processor:
   #   name: Metrics Processor Service
   #   uses: ./.github/workflows/feature-metrics-processor.yml
@@ -105,13 +105,13 @@ jobs:
     # name: Parent POM
     # uses: ./.github/workflows/feature-parent-pom.yml
     # secrets: inherit
-  rest-server:
-    name: Vue.js BFF
-    uses: ./.github/workflows/feature-rest-server.yml
-    secrets: inherit
-    with:
-      image-tag: ${{ inputs.image-tag || github.sha }}
-      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  # rest-server:
+  #   name: Vue.js BFF
+  #   uses: ./.github/workflows/feature-rest-server.yml
+  #   secrets: inherit
+  #   with:
+  #     image-tag: ${{ inputs.image-tag || github.sha }}
+  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   # shared-lib:
     # name: Shared Library
     # uses: ./.github/workflows/feature-shared-lib.yml
@@ -131,13 +131,13 @@ jobs:
       # events,
       # grafana,
       # inventory,
-      keycloak-ui,
+      # keycloak-ui,
       # metrics-processor,
       # minion,
       # minion-gateway,
       # minion-gateway-grpc-proxy,
       # notifications,
-      rest-server,
+      # rest-server,
       # ui
     ]
     runs-on:

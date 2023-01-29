@@ -29,9 +29,9 @@ export default defineConfig({
   },
 
   e2e: {
-    baseUrl: env.baseUrl,
+    // baseUrl: env.baseUrl,
     // baseUrl: Cypress.env['baseUrl'],
-    // baseUrl: 'https://onmshs',
+    baseUrl: 'https://onmshs',
     // baseUrl: 'http://localhost:8123', // local
     // baseUrl: env.VITE_CYPRESS_BASE_URL, // local
     // "base_url": "http://localhost:8123"
