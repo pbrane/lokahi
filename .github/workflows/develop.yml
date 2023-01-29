@@ -55,6 +55,13 @@ jobs:
     with:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  inventory:
+    name: Inventory Service
+    uses: ./.github/workflows/feature-inventory.yml
+    secrets: inherit
+    with:
+      image-tag: ${{ inputs.image-tag || github.sha }}
+      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   keycloak-ui:
     name: Keycloak
     uses: ./.github/workflows/feature-keycloak-ui.yml
