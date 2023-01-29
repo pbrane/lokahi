@@ -59,13 +59,13 @@ jobs:
     # with:
       # image-tag: ${{ inputs.image-tag || github.sha }}
       # image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  # keycloak-ui:
-  #   name: Keycloak
-  #   uses: ./.github/workflows/feature-keycloak-ui.yml
-  #   secrets: inherit
-  #   with:
-  #     image-tag: ${{ inputs.image-tag || github.sha }}
-  #     image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  keycloak-ui:
+    name: Keycloak
+    uses: ./.github/workflows/feature-keycloak-ui.yml
+    secrets: inherit
+    with:
+      image-tag: ${{ inputs.image-tag || github.sha }}
+      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   # metrics-processor:
   #   name: Metrics Processor Service
   #   uses: ./.github/workflows/feature-metrics-processor.yml
@@ -131,7 +131,7 @@ jobs:
       # events,
       # grafana,
       # inventory,
-      # keycloak-ui,
+      keycloak-ui,
       # metrics-processor,
       # minion,
       # minion-gateway,
@@ -186,7 +186,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ui
-          env: baseUrl=https://onmshs
+          env: baseUrl=https://env
       
       - name: Set up & run Cucumber tests
         shell: bash
