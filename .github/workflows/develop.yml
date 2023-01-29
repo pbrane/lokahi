@@ -198,7 +198,7 @@ jobs:
           # Cucumber test
           mvn install
           INGRESS_BASE_URL=${{ env.INGRESS_BASE_URL }}
-          KEYCLOAK_BASE_URL=INGRESS_BASE_URL/auth
+          KEYCLOAK_BASE_URL=${{ env.INGRESS_BASE_URL }}/auth
           KEYCLOAK_REALM=opennms
           KEYCLOAK_USERNAME=admin
           KEYCLOAK_PASSWORD=admin
