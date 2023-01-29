@@ -115,10 +115,10 @@ jobs:
     with:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  shared-lib:
-    name: Shared Library
-    uses: ./.github/workflows/feature-shared-lib.yml
-    secrets: inherit
+  # shared-lib:
+  #   name: Shared Library
+  #   uses: ./.github/workflows/feature-shared-lib.yml
+  #   secrets: inherit
   ui:
     name: Vue.js UI
     uses: ./.github/workflows/feature-ui.yml
