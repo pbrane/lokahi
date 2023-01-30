@@ -1,6 +1,4 @@
 import { defineConfig } from 'cypress'
-// import { env } from 'process'
-// import cypressViteConfig from './cypress.vite.config'
 import viteConfig from './vite.config'
 import { loadEnv } from 'vite'
 
