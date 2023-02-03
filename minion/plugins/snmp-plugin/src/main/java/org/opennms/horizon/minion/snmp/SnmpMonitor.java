@@ -38,6 +38,7 @@ import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse.Status;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl.ServiceMonitorResponseImplBuilder;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
+import org.opennms.horizon.shared.snmp.SnmpConfiguration;
 import org.opennms.horizon.shared.snmp.SnmpHelper;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
 import org.opennms.horizon.shared.snmp.SnmpValue;
@@ -45,6 +46,7 @@ import org.opennms.horizon.shared.snmp.StrategyResolver;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.snmp.contract.SnmpMonitorRequest;
 import org.opennms.taskset.contract.MonitorType;
+import org.opennms.taskset.contract.Resilience;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +121,7 @@ public class SnmpMonitor extends AbstractServiceMonitor {
      */
 
     @Override
-    public CompletableFuture<ServiceMonitorResponse> poll(MonitoredService svc, Any config) {
+    public CompletableFuture<ServiceMonitorResponse> poll(MonitoredService svc, Any config, Resilience resilience) {
 
         CompletableFuture<ServiceMonitorResponse> future = null;
         String hostAddress = null;
@@ -140,11 +142,16 @@ public class SnmpMonitor extends AbstractServiceMonitor {
 
             // Get configuration parameters
             //
-            String oid = snmpMonitorRequest.hasField(oidFieldDescriptor) ? snmpMonitorRequest.getOid() : DEFAULT_OBJECT_IDENTIFIER;
+            String oid = snmpMonitorRequest.getOid();
             String operator = protobufDefaultNullHelper(snmpMonitorRequest, operatorFieldDescriptor);
             String operand = protobufDefaultNullHelper(snmpMonitorRequest, operandFieldDescriptor);
+            //String reasonTemplate = effectiveSnmpMonitorRequest.getReasonTemplate();
 
 
+            Resilience effectiveResilience = cascadedResilience(
+                Resilience.newBuilder().setRetries(agentConfig.getRetries()).setTimeout(agentConfig.getTimeout()).build(),
+                populateResilience(resilience, SnmpConfiguration.DEFAULT_RETRIES, SnmpConfiguration.DEFAULT_TIMEOUT)
+            );
             final String finalHostAddress = hostAddress;
             SnmpObjId snmpObjectId = SnmpObjId.get(oid);
 
@@ -152,8 +159,8 @@ public class SnmpMonitor extends AbstractServiceMonitor {
 
             future =
                 snmpHelper.getAsync(agentConfig, new SnmpObjId[]{ snmpObjectId })
-                    .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand, startTimestamp, svc.getNodeId()))
-                    .completeOnTimeout(this.createTimeoutResponse(finalHostAddress), agentConfig.getTimeout(), TimeUnit.MILLISECONDS)
+                    .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand, startTimestamp))
+                    .completeOnTimeout(this.createTimeoutResponse(finalHostAddress), effectiveResilience.getTimeout(), TimeUnit.MILLISECONDS)
                     .exceptionally(thrown -> this.createExceptionResponse(thrown, finalHostAddress));
 
             return future;
@@ -198,8 +205,7 @@ public class SnmpMonitor extends AbstractServiceMonitor {
         SnmpObjId oid,
         String operator,
         String operand,
-        long startTimestamp,
-        long nodeId) {
+        long startTimestamp) {
         long endTimestamp = System.nanoTime();
         long elapsedTimeNs = ( endTimestamp - startTimestamp );
         double elapsedTimeMs = (double) elapsedTimeNs / NANOSECOND_PER_MILLISECOND;
@@ -209,8 +215,7 @@ public class SnmpMonitor extends AbstractServiceMonitor {
             .status(Status.Unknown)
             .responseTime(elapsedTimeMs)
             .ipAddress(hostAddress)
-            .timestamp(System.currentTimeMillis())
-            .nodeId(nodeId);
+            .timestamp(System.currentTimeMillis());
 
         Map<String, Number> metrics = new HashMap<>();
 

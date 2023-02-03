@@ -58,6 +58,7 @@ import org.opennms.node.scan.contract.NodeScanResult;
 import org.opennms.node.scan.contract.ServiceResult;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.ScannerResponse;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TenantLocationSpecificTaskSetResults;
 import org.opennms.taskset.service.contract.UpdateSingleTaskOp;
@@ -365,8 +366,12 @@ public class InventoryProcessingStepDefinitions {
                     .setIdentity(
                         org.opennms.taskset.contract.Identity.newBuilder()
                             .setSystemId(systemId)
-                            .build()
                     )
+                    .setContext(TaskContext.newBuilder()
+                        .setNodeId(node.getId())
+                    )
+
+
                     .setScannerResponse(ScannerResponse.newBuilder()
                         .setResult(Any.pack(nodeScanResult)).build())
                     .build();

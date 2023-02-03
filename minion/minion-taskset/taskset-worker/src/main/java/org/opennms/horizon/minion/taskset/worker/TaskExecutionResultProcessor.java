@@ -3,6 +3,7 @@ package org.opennms.horizon.minion.taskset.worker;
 import org.opennms.horizon.minion.plugin.api.CollectionSet;
 import org.opennms.horizon.minion.plugin.api.ScanResultsResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
+import org.opennms.taskset.contract.TaskContext;
 
 public interface TaskExecutionResultProcessor {
     /**
@@ -11,7 +12,7 @@ public interface TaskExecutionResultProcessor {
      * @param uuid
      * @param scanResultsResponse
      */
-    void queueSendResult(String uuid, ScanResultsResponse scanResultsResponse);
+    void queueSendResult(String uuid, TaskContext taskContext, ScanResultsResponse scanResultsResponse);
 
 
     /**
@@ -20,8 +21,8 @@ public interface TaskExecutionResultProcessor {
      * @param uuid
      * @param serviceMonitorResponse
      */
-    void queueSendResult(String uuid, ServiceMonitorResponse serviceMonitorResponse);
+    void queueSendResult(String uuid, TaskContext taskContext, ServiceMonitorResponse serviceMonitorResponse);
 
 
-    void queueSendResult(String uuid, CollectionSet collectionSet);
+    void queueSendResult(String uuid, TaskContext taskContext, CollectionSet collectionSet);
 }

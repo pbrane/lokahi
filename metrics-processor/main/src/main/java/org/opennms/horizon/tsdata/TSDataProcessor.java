@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import lombok.extern.slf4j.Slf4j;
+import prometheus.PrometheusTypes;
 
 @Slf4j
 @Service
@@ -96,5 +97,46 @@ public class TSDataProcessor {
             runnable.run();
             return null;    // Not doing anything with the Future, so the value is of no consequence
         });
+    }
+
+
+    private String getTenantId(Map<String, Object> headers) {
+        return Optional.ofNullable(headers.get(GrpcConstants.TENANT_ID_KEY))
+            .map(tenantId -> {
+                if (tenantId instanceof byte[]) {
+                    return new String((byte[]) tenantId);
+                }
+                if (tenantId instanceof String) {
+                    return (String) tenantId;
+                }
+                return "" + tenantId;
+            })
+            .orElseThrow(() -> new RuntimeException("Could not determine tenant id"));
+    }
+
+
+    private static Optional<String> nodeId(TaskResult result) {
+        return Optional.of(result.getContext())
+            .map(TaskContext::getNodeId)
+            .filter(value -> value > 0L)
+            .map(val -> Long.toString(val));
+    }
+
+    private static void addContext(Builder builder, Message contextData) {
+        Descriptor descriptor = contextData.getDescriptorForType();
+        for (FieldDescriptor field : descriptor.getFields()) {
+            if (field.getName().equals(NODE_ID_KEY)) {
+                continue;
+            }
+
+            Object value = contextData.getField(field);
+            if (value instanceof Number) {
+                builder.addLabels(PrometheusTypes.Label.newBuilder()
+                    .setName(CortexTSS.sanitizeLabelName(field.getName()))
+                    .setValue(CortexTSS.sanitizeLabelValue("" + value)));
+            } else if (value instanceof Message) {
+                addContext(builder, (Message) value);
+            }
+        }
     }
 }

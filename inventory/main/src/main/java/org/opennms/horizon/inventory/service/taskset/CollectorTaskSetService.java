@@ -29,6 +29,7 @@
 package org.opennms.horizon.inventory.service.taskset;
 
 import com.google.protobuf.Any;
+import com.google.protobuf.Value;
 import lombok.RequiredArgsConstructor;
 import org.opennms.azure.contract.AzureCollectorRequest;
 import org.opennms.horizon.azure.api.AzureScanItem;
@@ -43,6 +44,7 @@ import org.opennms.snmp.contract.SnmpInterfaceElement;
 import org.opennms.snmp.contract.SnmpInterfaceElement.Builder;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskType;
 import org.springframework.stereotype.Component;
 
@@ -110,7 +112,7 @@ public class CollectorTaskSetService {
             TaskDefinition.newBuilder()
                 .setType(TaskType.COLLECTOR)
                 .setPluginName(pluginName)
-                .setNodeId(nodeId)
+                .setContext(TaskContext.newBuilder().setNodeId(nodeId))
                 .setId(taskId)
                 .setConfiguration(configuration)
                 .setSchedule(TaskUtils.DEFAULT_SCHEDULE);
@@ -136,7 +138,7 @@ public class CollectorTaskSetService {
         return TaskDefinition.newBuilder()
             .setType(TaskType.COLLECTOR)
             .setPluginName("AZURECollector")
-            .setNodeId(nodeId)
+            .setContext(TaskContext.newBuilder().setNodeId(nodeId))
             .setId(taskId)
             .setConfiguration(configuration)
             .setSchedule(TaskUtils.AZURE_COLLECTOR_SCHEDULE)

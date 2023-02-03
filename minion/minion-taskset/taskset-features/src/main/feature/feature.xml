@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <features name="minion-taskset-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.6.0">
 
-    <repository>mvn:org.opennms.lokahi.minion/ipc-features/${project.version}/xml/features</repository>
-
     <feature name="taskset-rest-utils-internal" version="${project.version}">
         <feature>cxf-jaxrs</feature>
         <feature>cxf-sse</feature>
@@ -47,8 +45,9 @@
         <feature>taskset-scheduler-internal</feature>
         <feature>plugins-api</feature>
 
-        <bundle>mvn:org.opennms.lokahi.minion/taskset-ipc/${project.version}</bundle>
-        <bundle>mvn:org.opennms.lokahi.minion/taskset-worker/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.minion/taskset-ipc/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.minion/taskset-rpc/${project.version}</bundle>
+        <bundle>mvn:org.opennms.horizon.minion/taskset-worker/${project.version}</bundle>
     </feature>
 
 </features>

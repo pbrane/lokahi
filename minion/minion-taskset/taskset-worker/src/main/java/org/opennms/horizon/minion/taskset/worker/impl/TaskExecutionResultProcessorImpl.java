@@ -11,6 +11,7 @@ import org.opennms.taskset.contract.CollectorResponse;
 import org.opennms.taskset.contract.Identity;
 import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.ScannerResponse;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 import org.slf4j.Logger;
@@ -39,8 +40,8 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
 //----------------------------------------
 
     @Override
-    public void queueSendResult(String id, ScanResultsResponse response) {
-        TaskSetResults taskSetResults = formatTaskSetResults(id, response);
+    public void queueSendResult(String id, TaskContext taskContext, ScanResultsResponse response) {
+        TaskSetResults taskSetResults = formatTaskSetResults(id, taskContext, response);
         log.info("Scan Status: id = {}, results = {} ", id, response.getResults());
         try {
             taskSetSinkDispatcher.send(taskSetResults);
@@ -50,10 +51,10 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
     }
 
     @Override
-    public void queueSendResult(String id, ServiceMonitorResponse response) {
+    public void queueSendResult(String id, TaskContext taskContext, ServiceMonitorResponse response) {
         log.info("Poll Status: id = {} , status = {}; ", id, response.getStatus());
 
-        TaskSetResults taskSetResults = formatTaskSetResults(id, response);
+        TaskSetResults taskSetResults = formatTaskSetResults(id, taskContext, response);
 
         try {
             taskSetSinkDispatcher.send(taskSetResults);
@@ -63,8 +64,8 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
     }
 
     @Override
-    public void queueSendResult(String id, CollectionSet collectionSet) {
-        TaskSetResults taskSetResults = formatTaskSetResults(id, collectionSet);
+    public void queueSendResult(String id, TaskContext taskContext, CollectionSet collectionSet) {
+        TaskSetResults taskSetResults = formatTaskSetResults(id, taskContext, collectionSet);
         log.info("Collect Status: id = {}, status = {} ", id, collectionSet.getStatus());
         try {
             taskSetSinkDispatcher.send(taskSetResults);
@@ -77,12 +78,13 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
 // Internals
 //----------------------------------------
 
-    private TaskSetResults formatTaskSetResults(String id, ScanResultsResponse result) {
+    private TaskSetResults formatTaskSetResults(String id, TaskContext taskContext, ScanResultsResponse result) {
         ScannerResponse scannerResponse = formatScanResultsResponse(result);
 
         TaskResult taskResult =
             TaskResult.newBuilder()
                 .setId(id)
+                .setContext(taskContext)
                 .setScannerResponse(scannerResponse)
                 .setIdentity(Identity.newBuilder().setSystemId(identity.getId()))
                 .build();
@@ -95,12 +97,13 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
         return taskSetResults;
     }
 
-    private TaskSetResults formatTaskSetResults(String id, ServiceMonitorResponse result) {
+    private TaskSetResults formatTaskSetResults(String id, TaskContext taskContext, ServiceMonitorResponse result) {
         MonitorResponse monitorResponse = formatMonitorResponse(result);
 
         TaskResult taskResult =
             TaskResult.newBuilder()
                 .setId(id)
+                .setContext(taskContext)
                 .setMonitorResponse(monitorResponse)
                 .setIdentity(Identity.newBuilder().setSystemId(identity.getId()))
                 .build();
@@ -131,19 +134,20 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
                 .setStatus(Optional.of(smr).map(ServiceMonitorResponse::getStatus).map(Object::toString).orElse(MonitorResponse.getDefaultInstance().getStatus()))
                 .setReason(Optional.of(smr).map(ServiceMonitorResponse::getReason).orElse(MonitorResponse.getDefaultInstance().getReason()))
                 .putAllMetrics(Optional.of(smr).map(ServiceMonitorResponse::getProperties).orElse(Collections.EMPTY_MAP))
-                .setNodeId(smr.getNodeId())
+                //.setNodeId(smr.getNodeId())
                 .setTimestamp(smr.getTimestamp())
                 .build();
 
         return result;
     }
 
-    private TaskSetResults formatTaskSetResults(String id, CollectionSet collectionSet) {
+    private TaskSetResults formatTaskSetResults(String id, TaskContext taskContext, CollectionSet collectionSet) {
         CollectorResponse collectorResponse = formatCollectorResponse(collectionSet);
 
         TaskResult taskResult =
             TaskResult.newBuilder()
                 .setId(id)
+                .setContext(taskContext)
                 .setCollectorResponse(collectorResponse)
                 .setIdentity(Identity.newBuilder().setSystemId(identity.getId()))
                 .build();
@@ -158,7 +162,7 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
 
         return CollectorResponse.newBuilder()
             .setStatus(collectionSet.getStatus())
-            .setNodeId(collectionSet.getNodeId())
+            //.setNodeId(collectionSet.getNodeId())
             .setIpAddress(collectionSet.getIpAddress())
             .setMonitorType(collectionSet.getMonitorType())
             .setTimestamp(collectionSet.getTimeStamp())

@@ -72,6 +72,7 @@ import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.PingResponse;
 import org.opennms.taskset.contract.ScanType;
 import org.opennms.taskset.contract.ScannerResponse;
+import org.opennms.taskset.contract.TaskContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,7 +101,7 @@ public class ScannerResponseService {
     private final MonitoredServiceService monitoredServiceService;
 
     @Transactional
-    public void accept(String tenantId, Long locationId, ScannerResponse response) throws InvalidProtocolBufferException {
+    public void accept(String tenantId, Long locationId, ScannerResponse response, TaskContext taskContext) throws InvalidProtocolBufferException {
         Any result = response.getResult();
 
         switch (getType(response)) {

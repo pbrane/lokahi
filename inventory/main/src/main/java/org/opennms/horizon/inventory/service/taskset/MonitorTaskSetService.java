@@ -38,7 +38,9 @@ import org.opennms.horizon.snmp.api.SnmpConfiguration;
 import org.opennms.icmp.contract.IcmpMonitorRequest;
 import org.opennms.snmp.contract.SnmpMonitorRequest;
 import org.opennms.taskset.contract.MonitorType;
+import org.opennms.taskset.contract.Resilience;
 import org.opennms.taskset.contract.TaskDefinition;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,17 +62,25 @@ public class MonitorTaskSetService {
         String name = String.format("%s-monitor", monitorTypeValue.toLowerCase());
         String pluginName = String.format("%sMonitor", monitorTypeValue);
         TaskDefinition taskDefinition = null;
+        Resilience resilience = null;
         Any configuration = null;
 
         switch (monitorType) {
-            case ICMP -> configuration =
-                Any.pack(IcmpMonitorRequest.newBuilder()
+            case ICMP -> {
+                configuration = Any.pack(IcmpMonitorRequest.newBuilder()
                     .setHost(ipAddress)
-                    .setTimeout(TaskUtils.ICMP_DEFAULT_TIMEOUT_MS)
                     .setDscp(TaskUtils.ICMP_DEFAULT_DSCP)
                     .setAllowFragmentation(TaskUtils.ICMP_DEFAULT_ALLOW_FRAGMENTATION)
                     .setPacketSize(TaskUtils.ICMP_DEFAULT_PACKET_SIZE)
+                    .build());
+                resilience = Resilience.newBuilder()
+                    .setTimeout(TaskUtils.ICMP_DEFAULT_TIMEOUT_MS)
                     .setRetries(TaskUtils.ICMP_DEFAULT_RETRIES)
+                    .build();
+                }
+            case SNMP -> {
+                configuration = Any.pack(SnmpMonitorRequest.newBuilder()
+                    .setHost(ipAddress)
                     .build());
             case SNMP -> {
                 var requestBuilder = SnmpMonitorRequest.newBuilder()
@@ -79,6 +89,10 @@ public class MonitorTaskSetService {
                     requestBuilder.setAgentConfig(snmpConfiguration);
                 }
                 configuration = Any.pack(requestBuilder.build());
+                resilience = Resilience.newBuilder()
+                    .setTimeout(TaskUtils.SNMP_DEFAULT_TIMEOUT_MS)
+                    .setRetries(TaskUtils.SNMP_DEFAULT_RETRIES)
+                    .build();
             }
             case UNRECOGNIZED -> log.warn("Unrecognized monitor type");
             case UNKNOWN -> log.warn("Unknown monitor type");
@@ -90,9 +104,10 @@ public class MonitorTaskSetService {
                 TaskDefinition.newBuilder()
                     .setType(TaskType.MONITOR)
                     .setPluginName(pluginName)
-                    .setNodeId(nodeId)
+                    .setContext(TaskContext.newBuilder().setNodeId(nodeId).build())
                     .setId(taskId)
                     .setConfiguration(configuration)
+                    .setResilience(resilience)
                     .setSchedule(TaskUtils.DEFAULT_SCHEDULE);
             taskDefinition = builder.build();
         }
@@ -119,7 +134,7 @@ public class MonitorTaskSetService {
         return TaskDefinition.newBuilder()
             .setType(TaskType.MONITOR)
             .setPluginName("AZUREMonitor")
-            .setNodeId(nodeId)
+            .setContext(TaskContext.newBuilder().setNodeId(nodeId))
             .setId(taskId)
             .setConfiguration(configuration)
             .setSchedule(TaskUtils.AZURE_MONITOR_SCHEDULE)

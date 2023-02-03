@@ -30,6 +30,8 @@ package org.opennms.horizon.inventory.service.taskset;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Any;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 import lombok.RequiredArgsConstructor;
 import org.opennms.azure.contract.AzureScanRequest;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
@@ -47,6 +49,7 @@ import org.opennms.inventory.types.ServiceType;
 import org.opennms.node.scan.contract.DetectRequest;
 import org.opennms.node.scan.contract.NodeScanRequest;
 import org.opennms.taskset.contract.TaskDefinition;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +64,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import static org.opennms.horizon.inventory.service.taskset.TaskUtils.DEFAULT_SCHEDULE;
 import static org.opennms.horizon.inventory.service.taskset.TaskUtils.DEFAULT_SCHEDULE_FOR_SCAN;
 import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForAzureTask;
 import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForDiscoveryTask;
@@ -226,9 +230,9 @@ public class ScannerTaskSetService {
                 .setType(TaskType.SCANNER)
                 .setPluginName("NodeScanner")
                 .setId(taskId)
-                .setNodeId(node.getId())
                 .setConfiguration(taskConfig)
-                .setSchedule(DEFAULT_SCHEDULE_FOR_SCAN)
+                .setSchedule(TaskUtils.DEFAULT_SCHEDULE)
+                .setContext(TaskContext.newBuilder().setNodeId(node.getId()))
                 .build();
         }).or(Optional::empty);
     }

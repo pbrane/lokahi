@@ -71,7 +71,7 @@ public class TaskSetResultsConsumer {
 
                     ScannerResponse response = taskResult.getScannerResponse();
 
-                    scannerResponseService.accept(tenantId, Long.valueOf(locationId), response);
+                    scannerResponseService.accept(tenantId, Long.valueOf(locationId), response, taskResult.getContext());
                 }
             }
         } catch (Exception e) {

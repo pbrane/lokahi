@@ -147,6 +147,13 @@ class TSDataProcessorTest {
 
             Mockito.verifyNoInteractions(mockTaskSetMonitorResultProcessor);
         }
+
+
+//        verify(cortexTSS, timeout(5000).only()).store(anyString(), and(
+//            new HasLabelWithValue("node_id", "10"),
+//            new HasLabelWithValue("synthetic_transaction_id", "20"),
+//            new HasLabelWithValue("synthetic_test_id", "30")
+//        ));
     }
 
 //========================================
@@ -162,5 +169,39 @@ class TSDataProcessorTest {
     private void testExecutionSubmissionOp(Runnable runnable) {
         // Immediately pass-through the call
         runnable.run();
+    }
+
+    static <T> T and(ArgumentMatcher<T> ... matchers) {
+        argThat((ArgumentMatcher<T>) arg -> {
+            for (ArgumentMatcher<T> eval : matchers) {
+                if (!eval.matches(arg)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+        return null;
+    }
+
+    static class HasLabelWithValue implements ArgumentMatcher<Builder> {
+
+        private final String label;
+        private final String value;
+
+        public HasLabelWithValue(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+
+        @Override
+        public boolean matches(Builder argument) {
+            List<Label> labels = argument.getLabelsList();
+            for (Label metricLabel : labels) {
+                if (label.equals(metricLabel.getName())) {
+                    return metricLabel.getValue().equals(value);
+                }
+            }
+            return false;
+        }
     }
 }

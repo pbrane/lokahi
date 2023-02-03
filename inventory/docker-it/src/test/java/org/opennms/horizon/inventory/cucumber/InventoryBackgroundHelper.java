@@ -50,6 +50,7 @@ import org.opennms.horizon.inventory.dto.MonitoringLocationServiceGrpc;
 import org.opennms.horizon.inventory.dto.MonitoringSystemServiceGrpc;
 import org.opennms.horizon.inventory.dto.NodeServiceGrpc;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryServiceGrpc;
+import org.opennms.horizon.inventory.dto.SyntheticTransactionServiceGrpc;
 import org.opennms.horizon.inventory.dto.TagServiceGrpc;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
@@ -78,6 +79,7 @@ public class InventoryBackgroundHelper {
     private IcmpActiveDiscoveryServiceGrpc.IcmpActiveDiscoveryServiceBlockingStub icmpActiveDiscoveryServiceBlockingStub;
     private AzureActiveDiscoveryServiceGrpc.AzureActiveDiscoveryServiceBlockingStub azureActiveDiscoveryServiceBlockingStub;
     private PassiveDiscoveryServiceGrpc.PassiveDiscoveryServiceBlockingStub passiveDiscoveryServiceBlockingStub;
+    private SyntheticTransactionServiceGrpc.SyntheticTransactionServiceBlockingStub syntheticTransactionServiceBlockingStub;
 
     private static KafkaConsumer<String, byte[]> kafkaConsumer;
 
@@ -165,6 +167,8 @@ public class InventoryBackgroundHelper {
         azureActiveDiscoveryServiceBlockingStub = AzureActiveDiscoveryServiceGrpc.newBlockingStub(managedChannel)
             .withInterceptors(prepareGrpcHeaderInterceptor()).withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
         passiveDiscoveryServiceBlockingStub = PassiveDiscoveryServiceGrpc.newBlockingStub(managedChannel)
+            .withInterceptors(prepareGrpcHeaderInterceptor()).withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
+        syntheticTransactionServiceBlockingStub = SyntheticTransactionServiceGrpc.newBlockingStub(managedChannel)
             .withInterceptors(prepareGrpcHeaderInterceptor()).withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
     }
 
