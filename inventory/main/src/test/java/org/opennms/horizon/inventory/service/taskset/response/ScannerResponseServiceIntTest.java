@@ -30,6 +30,12 @@ package org.opennms.horizon.inventory.service.taskset.response;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,18 +64,15 @@ import org.opennms.node.scan.contract.NodeScanResult;
 import org.opennms.node.scan.contract.SnmpInterfaceResult;
 import org.opennms.taskset.contract.ScanType;
 import org.opennms.taskset.contract.ScannerResponse;
+import org.opennms.taskset.contract.TaskMetadata;
 import org.opennms.taskset.contract.TaskType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -138,7 +141,7 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
         AzureScanResponse azureScanResponse = AzureScanResponse.newBuilder().addAllResults(azureScanItems).build();
         ScannerResponse response = ScannerResponse.newBuilder().setResult(Any.pack(azureScanResponse)).build();
 
-        service.accept(TEST_TENANT_ID, TEST_LOCATION, response);
+        service.accept(TEST_TENANT_ID, TEST_LOCATION, response, TaskMetadata.newBuilder().build());
 
         // monitor and collect tasks
         await().atMost(10, TimeUnit.SECONDS).until(() -> testGrpcService.getTaskDefinitions(TEST_LOCATION).stream()
@@ -174,7 +177,7 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
         SnmpInterface snmpIf = createSnmpInterface(node, ifIndex);
         NodeScanResult result = createNodeScanResult(node.getId(), managedIp, ifIndex);
 
-        service.accept(TEST_TENANT_ID, TEST_LOCATION, ScannerResponse.newBuilder().setResult(Any.pack(result)).build());
+        service.accept(TEST_TENANT_ID, TEST_LOCATION, ScannerResponse.newBuilder().setResult(Any.pack(result)).build(), TaskMetadata.newBuilder().build());
         assertNodeSystemGroup(node, null);
         nodeRepository.findByIdAndTenantId(node.getId(), TEST_TENANT_ID).ifPresentOrElse(dbNode ->
             assertNodeSystemGroup(dbNode, result.getNodeInfo()), () -> fail("Node not found"));

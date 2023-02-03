@@ -28,10 +28,14 @@
 
 package org.opennms.horizon.tsdata;
 
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Message;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -48,6 +52,7 @@ import org.opennms.taskset.contract.CollectorResponse;
 import org.opennms.taskset.contract.DetectorResponse;
 import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.MonitorType;
+import org.opennms.taskset.contract.TaskMetadata;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 import org.springframework.context.annotation.PropertySource;
@@ -61,6 +66,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import lombok.extern.slf4j.Slf4j;
 import prometheus.PrometheusTypes;
+import prometheus.PrometheusTypes.TimeSeries.Builder;
 
 @Slf4j
 @Service
@@ -70,12 +76,12 @@ public class TSDataProcessor {
     private static final String METRICS_NAME_RESPONSE = "response_time_msec";
     public static final String METRIC_NAME_LABEL = "__name__";
 
+    public static final String NODE_ID_KEY = "node_id";
     private static final String[] MONITOR_METRICS_LABEL_NAMES = {
         "instance",
         "location",
         "system_id",
-        "monitor",
-        "node_id"};
+        "monitor"};
     private final CortexTSS cortexTSS;
 
     public TSDataProcessor(CortexTSS cortexTSS) {
@@ -120,11 +126,12 @@ public class TSDataProcessor {
 
     private void processMonitorResponse(String tenantId, TaskResult result) throws IOException {
         MonitorResponse response = result.getMonitorResponse();
-        String[] labelValues = {response.getIpAddress(), result.getLocation(), result.getSystemId(), response.getMonitorType().name(), String.valueOf(response.getNodeId())};
+        String[] labelValues = {response.getIpAddress(), result.getLocation(), result.getSystemId(), response.getMonitorType().name()};
 
         prometheus.PrometheusTypes.TimeSeries.Builder builder = prometheus.PrometheusTypes.TimeSeries.newBuilder();
+        Optional<String> nodeId = nodeId(result);
+        addLabels(response, nodeId, labelValues, builder, result.getMetadata());
 
-        addLabels(response, labelValues, builder);
         builder.addLabels(PrometheusTypes.Label.newBuilder()
             .setName(METRIC_NAME_LABEL)
             .setValue(CortexTSS.sanitizeMetricName(METRICS_NAME_RESPONSE)));
@@ -134,15 +141,15 @@ public class TSDataProcessor {
         cortexTSS.store(tenantId, builder);
 
         for (Map.Entry<String, Double> entry : response.getMetricsMap().entrySet()) {
-            processMetricMaps(entry, response, labelValues, tenantId);
+            processMetricMaps(nodeId, entry, response, labelValues, tenantId, result.getMetadata());
         }
     }
 
-    private void processMetricMaps(Map.Entry<String, Double> entry, MonitorResponse response, String[] labelValues, String tenantId) throws IOException {
+    private void processMetricMaps(Optional<String> nodeId, Map.Entry<String, Double> entry, MonitorResponse response, String[] labelValues, String tenantId, TaskMetadata metadata) throws IOException {
         prometheus.PrometheusTypes.TimeSeries.Builder builder = prometheus.PrometheusTypes.TimeSeries.newBuilder();
         String k = entry.getKey();
         Double v = entry.getValue();
-        addLabels(response, labelValues, builder);
+        addLabels(response, nodeId, labelValues, builder, metadata);
         builder.addLabels(PrometheusTypes.Label.newBuilder()
             .setName(METRIC_NAME_LABEL)
             .setValue(CortexTSS.sanitizeMetricName(METRICS_NAME_PREFIX_MONITOR + k)));
@@ -152,28 +159,33 @@ public class TSDataProcessor {
         cortexTSS.store(tenantId, builder);
     }
 
-    private void addLabels(MonitorResponse response, String[] labelValues, PrometheusTypes.TimeSeries.Builder builder) {
+    private void addLabels(MonitorResponse response, Optional<String> nodeId, String[] labelValues, Builder builder, TaskMetadata metadata) {
+        nodeId.ifPresent(node -> builder.addLabels(PrometheusTypes.Label.newBuilder()
+            .setName(CortexTSS.sanitizeLabelName(NODE_ID_KEY))
+            .setValue(CortexTSS.sanitizeLabelValue(node)))
+        );
         for (int i = 0; i < MONITOR_METRICS_LABEL_NAMES.length; i++) {
-            if (!"node_id".equals(MONITOR_METRICS_LABEL_NAMES[i]) || !"ECHO".equals(response.getMonitorType().name())) {
+            if (!NODE_ID_KEY.equals(MONITOR_METRICS_LABEL_NAMES[i]) || !"ECHO".equals(response.getMonitorType().name())) {
                 builder.addLabels(PrometheusTypes.Label.newBuilder()
                     .setName(CortexTSS.sanitizeLabelName(MONITOR_METRICS_LABEL_NAMES[i]))
                     .setValue(CortexTSS.sanitizeLabelValue(labelValues[i])));
             }
         }
+        addMetadata(builder, metadata);
     }
 
     private void processCollectorResponse(String tenantId, TaskResult result) throws IOException {
         CollectorResponse response = result.getCollectorResponse();
 
         String[] labelValues = {response.getIpAddress(), result.getLocation(), result.getSystemId(),
-            response.getMonitorType().name(), String.valueOf(response.getNodeId())};
+            response.getMonitorType().name()};
 
         if (response.hasResult()) {
             MonitorType monitorType = response.getMonitorType();
             if (monitorType.equals(MonitorType.SNMP)) {
-                processSnmpCollectorResponse(tenantId, response, labelValues);
+                processSnmpCollectorResponse(tenantId, response, labelValues, result.getMetadata());
             } else if (monitorType.equals(MonitorType.AZURE)) {
-                processAzureCollectorResponse(tenantId, response, labelValues);
+                processAzureCollectorResponse(tenantId, response, labelValues, result.getMetadata());
             } else {
                 log.warn("Unrecognized monitor type");
             }
@@ -182,7 +194,7 @@ public class TSDataProcessor {
         }
     }
 
-    private void processSnmpCollectorResponse(String tenantId, CollectorResponse response, String[] labelValues)  throws IOException {
+    private void processSnmpCollectorResponse(String tenantId, CollectorResponse response, String[] labelValues, TaskMetadata metadata)  throws IOException {
         Any collectorMetric = response.getResult();
         var snmpResponse = collectorMetric.unpack(SnmpResponseMetric.class);
         long now = Instant.now().toEpochMilli();
@@ -197,6 +209,7 @@ public class TSDataProcessor {
                         .setName(CortexTSS.sanitizeLabelName(MONITOR_METRICS_LABEL_NAMES[i]))
                         .setValue(CortexTSS.sanitizeLabelValue(labelValues[i])));
                 }
+                addMetadata(builder, metadata);
                 int type = snmpResult.getValue().getTypeValue();
                 switch (type) {
                     case SnmpValueType.INT32_VALUE:
@@ -226,7 +239,7 @@ public class TSDataProcessor {
         }
     }
 
-    private void processAzureCollectorResponse(String tenantId, CollectorResponse response, String[] labelValues) throws InvalidProtocolBufferException {
+    private void processAzureCollectorResponse(String tenantId, CollectorResponse response, String[] labelValues, TaskMetadata metadata) throws InvalidProtocolBufferException {
         Any collectorMetric = response.getResult();
         var azureResponse = collectorMetric.unpack(AzureResponseMetric.class);
         long now = Instant.now().toEpochMilli();
@@ -243,6 +256,7 @@ public class TSDataProcessor {
                         .setName(CortexTSS.sanitizeLabelName(MONITOR_METRICS_LABEL_NAMES[i]))
                         .setValue(CortexTSS.sanitizeLabelValue(labelValues[i])));
                 }
+                addMetadata(builder, metadata);
 
                 int type = azureResult.getValue().getTypeValue();
                 switch (type) {
@@ -274,4 +288,31 @@ public class TSDataProcessor {
             })
             .orElseThrow(() -> new RuntimeException("Could not determine tenant id"));
     }
+
+
+    private static Optional<String> nodeId(TaskResult result) {
+        return Optional.of(result.getMetadata())
+            .map(TaskMetadata::getNodeId)
+            .filter(value -> value > 0L)
+            .map(val -> Long.toString(val));
+    }
+
+    private static void addMetadata(Builder builder, Message metadata) {
+        Descriptor descriptor = metadata.getDescriptorForType();
+        for (FieldDescriptor field : descriptor.getFields()) {
+            if (field.getName().equals(NODE_ID_KEY)) {
+                continue;
+            }
+
+            Object value = metadata.getField(field);
+            if (value instanceof Number) {
+                builder.addLabels(PrometheusTypes.Label.newBuilder()
+                    .setName(CortexTSS.sanitizeLabelName(field.getName()))
+                    .setValue(CortexTSS.sanitizeLabelValue("" + value)));
+            } else if (value instanceof Message) {
+                addMetadata(builder, (Message) value);
+            }
+        }
+    }
+
 }
