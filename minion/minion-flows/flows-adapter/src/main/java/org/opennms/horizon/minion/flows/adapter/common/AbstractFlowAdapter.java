@@ -45,15 +45,12 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Strings;
 
 public abstract class AbstractFlowAdapter<P> implements Adapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractFlowAdapter.class);
-
-    private final Pipeline pipeline;
 
     private String metaDataNodeLookup;
     private ContextKey contextKey;
@@ -79,20 +76,20 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
 
     private final List<? extends PackageDefinition> packages;
 
+    private final TelemetryRegistry telemetryRegistry;
+
     public AbstractFlowAdapter(final AdapterDefinition adapterConfig,
-                               final MetricRegistry metricRegistry,
-                               final Pipeline pipeline) {
+                               final TelemetryRegistry telemetryRegistry) {
         Objects.requireNonNull(adapterConfig);
-        Objects.requireNonNull(metricRegistry);
+        Objects.requireNonNull(telemetryRegistry.getMetricRegistry());
+        Objects.requireNonNull(telemetryRegistry);
 
-        this.pipeline = Objects.requireNonNull(pipeline);
-
-        this.logParsingTimer = metricRegistry.timer(name("adapters", adapterConfig.getFullName(), "logParsing"));
-        this.packetsPerLogHistogram = metricRegistry.histogram(name("adapters", adapterConfig.getFullName(), "packetsPerLog"));
-        this.entriesReceived = metricRegistry.meter(name("adapters", adapterConfig.getFullName(), "entriesReceived"));
-        this.entriesParsed = metricRegistry.meter(name("adapters", adapterConfig.getFullName(), "entriesParsed"));
-        this.entriesConverted = metricRegistry.meter(name("adapters", adapterConfig.getFullName(), "entriesConverted"));
-
+        this.logParsingTimer = telemetryRegistry.getMetricRegistry().timer(name("adapters", adapterConfig.getFullName(), "logParsing"));
+        this.packetsPerLogHistogram = telemetryRegistry.getMetricRegistry().histogram(name("adapters", adapterConfig.getFullName(), "packetsPerLog"));
+        this.entriesReceived = telemetryRegistry.getMetricRegistry().meter(name("adapters", adapterConfig.getFullName(), "entriesReceived"));
+        this.entriesParsed = telemetryRegistry.getMetricRegistry().meter(name("adapters", adapterConfig.getFullName(), "entriesParsed"));
+        this.entriesConverted = telemetryRegistry.getMetricRegistry().meter(name("adapters", adapterConfig.getFullName(), "entriesConverted"));
+        this.telemetryRegistry = telemetryRegistry;
         this.packages = Objects.requireNonNull(adapterConfig.getPackages());
     }
 
@@ -123,17 +120,23 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
             packetsPerLogHistogram.update(flowPackets);
         }
 
-        try {
+      //  try {
             LOG.debug("Persisting {} packets, {} flows.", flowPackets, flows.size());
             final FlowSource source = new FlowSource(messageLog.getLocation(),
                     messageLog.getSourceAddress(),
                     contextKey);
-            this.pipeline.process(flows, source, ProcessingOptions.builder()
+
+
+
+            // TODO: Use grpc / flow sink module instead of pipeline to send data to metrics-processor
+            // telemetryRegistry.getDispatcher().send(messageLog)
+
+           /* this.pipeline.process(flows, source, ProcessingOptions.builder()
                                                                   .setApplicationThresholding(this.applicationThresholding)
                                                                   .setApplicationDataCollection(this.applicationDataCollection)
                                                                   .setPackages(this.packages)
-                                                                  .build());
-        } catch (DetailedFlowException ex) {
+                                                                  .build());  */
+    /*    } catch (DetailedFlowException ex) {
             LOG.error("Error while persisting flows: {}", ex.getMessage(), ex);
             for (final String logMessage: ex.getDetailedLogMessages()) {
                 LOG.error(logMessage);
@@ -143,7 +146,7 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
             return;
         } catch (FlowException ex) {
             LOG.error("Error while persisting flows: {}", ex.getMessage(), ex);
-        }
+        }  */
 
         LOG.debug("Completed processing {} telemetry messages.",
                 messageLog.getMessageList().size());

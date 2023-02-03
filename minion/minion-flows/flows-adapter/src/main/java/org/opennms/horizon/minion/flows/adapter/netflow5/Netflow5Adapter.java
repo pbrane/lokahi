@@ -29,18 +29,15 @@
 package org.opennms.horizon.minion.flows.adapter.netflow5;
 
 
-import com.codahale.metrics.MetricRegistry;
-
 import org.opennms.horizon.minion.flows.adapter.common.AdapterDefinition;
 import org.opennms.horizon.minion.flows.adapter.common.NetflowAdapter;
-import org.opennms.horizon.minion.flows.adapter.imported.Pipeline;
+import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
 
 public class Netflow5Adapter extends NetflowAdapter {
 
     public Netflow5Adapter(final AdapterDefinition adapterConfig,
-                           final MetricRegistry metricRegistry,
-                           final Pipeline pipeline) {
-        super(adapterConfig, metricRegistry, pipeline);
+                           final TelemetryRegistry telemetryRegistry) {
+        super(adapterConfig, telemetryRegistry);
     }
 
 }

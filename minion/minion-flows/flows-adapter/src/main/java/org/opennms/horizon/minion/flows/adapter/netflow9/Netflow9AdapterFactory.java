@@ -33,12 +33,11 @@ import java.util.Objects;
 import org.opennms.horizon.minion.flows.adapter.common.AdapterFactory;
 import org.opennms.horizon.minion.flows.adapter.common.Adapter;
 import org.opennms.horizon.minion.flows.adapter.common.AdapterDefinition;
-import org.opennms.horizon.minion.flows.adapter.imported.Pipeline;
 import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
 
 public class Netflow9AdapterFactory implements AdapterFactory {
     private TelemetryRegistry telemetryRegistry;
-    private Pipeline pipeline;
+
 
     @Override
     public Class<? extends Adapter> getBeanClass() {
@@ -48,18 +47,11 @@ public class Netflow9AdapterFactory implements AdapterFactory {
     @Override
     public Adapter createBean(final AdapterDefinition adapterConfig) {
         Objects.requireNonNull(this.telemetryRegistry);
-        Objects.requireNonNull(this.pipeline);
 
-        return new Netflow9Adapter(adapterConfig,
-                                   this.telemetryRegistry.getMetricRegistry(),
-                                   this.pipeline);
+        return new Netflow9Adapter(adapterConfig, this.telemetryRegistry);
     }
 
     public void setTelemetryRegistry(TelemetryRegistry telemetryRegistry) {
         this.telemetryRegistry = telemetryRegistry;
-    }
-
-    public void setPipeline(Pipeline pipeline) {
-        this.pipeline = pipeline;
     }
 }
