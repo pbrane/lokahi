@@ -46,6 +46,6 @@ public interface Adapter {
      */
     void handleMessageLog(TelemetryMessageLog messageLog);
 
-    void destroy();
+    default void destroy() {}
 
 }

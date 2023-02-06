@@ -78,8 +78,7 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
 
     private final TelemetryRegistry telemetryRegistry;
 
-    public AbstractFlowAdapter(final AdapterDefinition adapterConfig,
-                               final TelemetryRegistry telemetryRegistry) {
+    public AbstractFlowAdapter(final AdapterDefinition adapterConfig, final TelemetryRegistry telemetryRegistry) {
         Objects.requireNonNull(adapterConfig);
         Objects.requireNonNull(telemetryRegistry.getMetricRegistry());
         Objects.requireNonNull(telemetryRegistry);
@@ -120,45 +119,20 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
             packetsPerLogHistogram.update(flowPackets);
         }
 
-      //  try {
-            LOG.debug("Persisting {} packets, {} flows.", flowPackets, flows.size());
-            final FlowSource source = new FlowSource(messageLog.getLocation(),
-                    messageLog.getSourceAddress(),
-                    contextKey);
+        LOG.debug("Sending {} packets, {} flows to metrics-processor for enrichment step. ", flowPackets, flows.size());
+        final FlowSource source = new FlowSource(messageLog.getLocation(), messageLog.getSourceAddress(), contextKey);
 
+        // TODO: verify that the message is sent correctly
+        telemetryRegistry.getDispatcher().send(TelemetryMessageProtoCreator.createMessage(source, flows,
+            this.applicationThresholding, this.applicationDataCollection, this.packages));
+        LOG.debug("Packets and flows successfully sent to metrics-processor. ");
 
-
-            // TODO: Use grpc / flow sink module instead of pipeline to send data to metrics-processor
-            // telemetryRegistry.getDispatcher().send(messageLog)
-
-           /* this.pipeline.process(flows, source, ProcessingOptions.builder()
-                                                                  .setApplicationThresholding(this.applicationThresholding)
-                                                                  .setApplicationDataCollection(this.applicationDataCollection)
-                                                                  .setPackages(this.packages)
-                                                                  .build());  */
-    /*    } catch (DetailedFlowException ex) {
-            LOG.error("Error while persisting flows: {}", ex.getMessage(), ex);
-            for (final String logMessage: ex.getDetailedLogMessages()) {
-                LOG.error(logMessage);
-            }
-        } catch(UnrecoverableFlowException ex) {
-            LOG.error("Error while persisting flows. Cannot recover: {}. {} messages are lost.", ex.getMessage(), messageLog.getMessageList().size(), ex);
-            return;
-        } catch (FlowException ex) {
-            LOG.error("Error while persisting flows: {}", ex.getMessage(), ex);
-        }  */
-
-        LOG.debug("Completed processing {} telemetry messages.",
-                messageLog.getMessageList().size());
+        LOG.debug("Completed processing {} telemetry messages.", messageLog.getMessageList().size());
     }
 
     protected abstract P parse(TelemetryMessageLogEntry message);
 
     protected abstract List<Flow> convert(final P packet, final Instant receivedAt);
-
-    public void destroy() {
-        // not needed
-    }
 
     public String getMetaDataNodeLookup() {
         return metaDataNodeLookup;
