@@ -43,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ConfigurationService {
+    public static final String SNMP_CONFIG = "snmp-config";
     private final ConfigurationRepository modelRepo;
 
     private final ConfigurationMapper mapper;
