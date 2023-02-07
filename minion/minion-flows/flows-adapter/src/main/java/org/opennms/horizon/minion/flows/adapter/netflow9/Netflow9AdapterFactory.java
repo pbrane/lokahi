@@ -47,7 +47,6 @@ public class Netflow9AdapterFactory implements AdapterFactory {
     @Override
     public Adapter createBean(final AdapterDefinition adapterConfig) {
         Objects.requireNonNull(this.telemetryRegistry);
-
         return new Netflow9Adapter(adapterConfig, this.telemetryRegistry);
     }
 

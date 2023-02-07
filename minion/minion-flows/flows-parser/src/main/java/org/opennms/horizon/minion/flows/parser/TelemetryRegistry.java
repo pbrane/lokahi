@@ -35,6 +35,7 @@ import org.opennms.horizon.minion.flows.listeners.Parser;
 import org.opennms.horizon.minion.flows.parser.factory.ParserFactory;
 import org.opennms.horizon.minion.flows.listeners.factory.ListenerFactory;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
+import org.opennms.sink.flows.contract.AdapterConfig;
 import org.opennms.sink.flows.contract.ListenerConfig;
 import org.opennms.sink.flows.contract.ParserConfig;
 
@@ -43,9 +44,15 @@ public interface TelemetryRegistry {
 
     void addParserFactory(ParserFactory factory);
 
+    //void addAdapterFactory(AdapterFactory factory);
+
+
     FlowsListener getListener(ListenerConfig listenerConfig);
 
     Parser getParser(ParserConfig parserConfig);
+
+    FlowsListener getAdapter(AdapterConfig adapterConfig);
+
 
     MetricRegistry getMetricRegistry();
 

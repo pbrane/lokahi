@@ -35,9 +35,9 @@ import java.util.List;
 
 import org.opennms.horizon.grpc.telemetry.contract.ContextKey;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
-import org.opennms.horizon.minion.flows.adapter.copied.Flow;
-import org.opennms.horizon.minion.flows.adapter.copied.FlowSource;
-import org.opennms.horizon.minion.flows.adapter.copied.ProcessingOptions;
+import org.opennms.horizon.minion.flows.adapter.imported.Flow;
+import org.opennms.horizon.minion.flows.adapter.imported.FlowSource;
+import org.opennms.horizon.minion.flows.adapter.imported.ProcessingOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

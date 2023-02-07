@@ -37,6 +37,7 @@ import org.opennms.horizon.minion.flows.parser.factory.ParserFactory;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
 import org.opennms.horizon.shared.ipc.sink.api.MessageDispatcherFactory;
+import org.opennms.sink.flows.contract.AdapterConfig;
 import org.opennms.sink.flows.contract.ListenerConfig;
 import org.opennms.sink.flows.contract.ParserConfig;
 import org.slf4j.Logger;
@@ -56,6 +57,9 @@ public class TelemetryRegistryImpl implements TelemetryRegistry {
 
     @Getter
     private final ListenerHolder listenerHolder;
+
+   // @Getter
+   // private final AdapterHolder adapterHolder;
 
     public TelemetryRegistryImpl(MessageDispatcherFactory messageDispatcherFactory,
                                  IpcIdentity identity,
@@ -79,6 +83,7 @@ public class TelemetryRegistryImpl implements TelemetryRegistry {
         parserFactoryList.add(factory);
     }
 
+
     @Override
     public FlowsListener getListener(ListenerConfig listenerConfig) {
         var listener = listenerHolder.get(listenerConfig.getName());
@@ -98,6 +103,15 @@ public class TelemetryRegistryImpl implements TelemetryRegistry {
         }
         LOG.error("Unknown listener class: {}", listenerConfig.getClassName());
         return null;
+    }
+
+    @Override
+    public FlowsListener getAdapter(AdapterConfig adapterConfig) {
+        //var adapter = adapterHolder.get()
+
+        return null;
+
+
     }
 
     @Override

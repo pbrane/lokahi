@@ -30,6 +30,8 @@ package org.opennms.horizon.minion.flows.parser;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
+
+import org.opennms.horizon.minion.flows.listeners.FlowsListener;
 import org.opennms.horizon.minion.plugin.api.Listener;
 import org.opennms.horizon.minion.plugin.api.ListenerFactory;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
@@ -62,7 +64,16 @@ public class ConfigManager implements ListenerFactory {
         try {
             this.flowsConfig = config.unpack(FlowsConfig.class);
             holder.clear();
-            flowsConfig.getListenersList().forEach(telemetryRegistry::getListener);
+
+            flowsConfig.getListenersList().forEach(listenerConfig -> {
+                telemetryRegistry.getListener(listenerConfig);
+                listenerConfig.getParsersList().forEach(parserConfig -> {
+                    parserConfig.getQueue().getAdaptersList().forEach(adapterConfig -> {
+                        telemetryRegistry.getAdapter(adapterConfig);
+                    });
+                });
+            });
+            flowsConfig.getListenersList().get(0).getParsersList().get(0).getQueue().getAdaptersList();
         } catch (InvalidProtocolBufferException e) {
             throw new IllegalArgumentException("Error while parsing config with type-url=" + config.getTypeUrl());
         }

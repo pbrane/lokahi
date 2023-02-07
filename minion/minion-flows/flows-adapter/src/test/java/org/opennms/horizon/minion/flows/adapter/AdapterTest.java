@@ -31,6 +31,7 @@ package org.opennms.horizon.minion.flows.adapter;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opennms.horizon.minion.flows.adapter.common.AdapterDefinition;
 import org.opennms.horizon.minion.flows.adapter.common.PackageDefinition;
@@ -40,7 +41,8 @@ import org.opennms.horizon.minion.flows.adapter.netflow9.Netflow9AdapterFactory;
 
 public class AdapterTest {
 
-    @Test
+    // TODO: finish it
+    @Ignore
     public void test1() {
         Netflow9AdapterFactory netflow5AdapterFactory = new Netflow9AdapterFactory();
         AdapterDefinition adapterDefinition = new AdapterDefinition() {

@@ -9,9 +9,9 @@ import java.util.List;
 
 import org.junit.Test;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
-import org.opennms.horizon.minion.flows.adapter.copied.ContextKey;
-import org.opennms.horizon.minion.flows.adapter.copied.Flow;
-import org.opennms.horizon.minion.flows.adapter.copied.FlowSource;
+import org.opennms.horizon.minion.flows.adapter.imported.ContextKey;
+import org.opennms.horizon.minion.flows.adapter.imported.Flow;
+import org.opennms.horizon.minion.flows.adapter.imported.FlowSource;
 import org.opennms.horizon.minion.flows.parser.flowmessage.FlowMessage;
 
 public class TelemetryMessageProtoCreatorTest {

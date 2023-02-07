@@ -40,6 +40,7 @@ import org.opennms.horizon.minion.flows.adapter.imported.Flow;
 import org.opennms.horizon.minion.flows.adapter.imported.FlowSource;
 import org.opennms.horizon.minion.flows.adapter.imported.Pipeline;
 import org.opennms.horizon.minion.flows.adapter.imported.ProcessingOptions;
+import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -32,10 +32,8 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-import org.opennms.horizon.minion.flows.adapter.copied.Flow;
-import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
 import org.opennms.horizon.minion.flows.adapter.imported.Flow;
-import org.opennms.horizon.minion.flows.adapter.imported.Pipeline;
+import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
 import org.opennms.horizon.minion.flows.parser.flowmessage.FlowMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
