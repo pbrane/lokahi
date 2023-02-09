@@ -45,7 +45,7 @@ keycloak:
 
 inventory:
   encryption:
-    key: encryption-key
+    key:
   azure:
     login-url: https://login.microsoftonline.com
     management-url: https://management.azure.com
