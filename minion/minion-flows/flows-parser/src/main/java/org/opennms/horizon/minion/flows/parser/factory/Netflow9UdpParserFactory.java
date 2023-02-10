@@ -61,6 +61,6 @@ public class Netflow9UdpParserFactory implements ParserFactory {
     @Override
     public Parser createBean(final ParserConfig parserConfig) {
         final var dispatcher = telemetryRegistry.getDispatcher();
-        return new Netflow9UdpParser(parserConfig.getName(), parserConfig.getQueue().getName(), dispatcher, identity, dnsResolver, new MetricRegistry());
+        return new Netflow9UdpParser(parserConfig.getName(), parserConfig.getQueue().getName(), dispatcher, identity, dnsResolver, new MetricRegistry(), telemetryRegistry);
     }
 }

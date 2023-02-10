@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.minion.flows.parser;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Resources;
 import com.google.protobuf.Any;
 import org.junit.Assert;
@@ -58,13 +59,14 @@ public class ConfigManagerTest {
     @Test
     public void ableHandleConfig() throws IOException {
         ListenerHolder holder = new ListenerHolder();
+        AdapterHolder adapterHolder = new AdapterHolder();
         IpcIdentity identity = mock(IpcIdentity.class);
         DnsResolver dnsResolver = mock(DnsResolver.class);
 
         AsyncDispatcher<TelemetryMessage> dispatcher = mock(AsyncDispatcher.class);
         MessageDispatcherFactory messageDispatcherFactory = mock(MessageDispatcherFactory.class);
         when(messageDispatcherFactory.createAsyncDispatcher(any(FlowSinkModule.class))).thenReturn(dispatcher);
-        TelemetryRegistry registry = new TelemetryRegistryImpl(messageDispatcherFactory, identity, holder);
+        TelemetryRegistry registry = new TelemetryRegistryImpl(messageDispatcherFactory, identity, holder, adapterHolder);
 
         UdpListenerFactory udpFactory = new UdpListenerFactory(registry);
         TcpListenerFactory tcoFactory = new TcpListenerFactory(registry);

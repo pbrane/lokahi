@@ -31,7 +31,7 @@ package org.opennms.horizon.minion.flows.adapter.imported;
 
 import java.util.List;
 
-import org.opennms.horizon.minion.flows.adapter.common.PackageDefinition;
+import org.opennms.sink.flows.contract.PackageConfig;
 
 import com.google.common.collect.Lists;
 
@@ -40,7 +40,7 @@ public class ProcessingOptions {
     public final boolean applicationThresholding;
     public final boolean applicationDataCollection;
 
-    public final List<? extends PackageDefinition> packages;
+    public final List<? extends PackageConfig> packages;
 
     private ProcessingOptions(final Builder builder) {
         this.applicationThresholding = builder.applicationThresholding;
@@ -52,7 +52,7 @@ public class ProcessingOptions {
         private boolean applicationThresholding;
         private boolean applicationDataCollection;
 
-        private List<? extends PackageDefinition> packages = Lists.newArrayList();
+        private List<? extends PackageConfig> packages = Lists.newArrayList();
 
         private Builder() {}
 
@@ -66,7 +66,7 @@ public class ProcessingOptions {
             return this;
         }
 
-        public Builder setPackages(final List<? extends PackageDefinition> packages) {
+        public Builder setPackages(final List<? extends PackageConfig> packages) {
             this.packages = packages;
             return this;
         }

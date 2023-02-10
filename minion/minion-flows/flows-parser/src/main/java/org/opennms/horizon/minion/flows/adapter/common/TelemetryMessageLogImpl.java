@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2017-2017 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2017 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -28,33 +28,31 @@
 
 package org.opennms.horizon.minion.flows.adapter.common;
 
-import java.util.Map;
+import java.util.List;
 
-/**
- * Telemetry protocol package configuration.
- */
-public interface PackageDefinition {
+public class TelemetryMessageLogImpl implements TelemetryMessageLog {
+    @Override
+    public String getLocation() {
+        return null;
+    }
 
-    /**
-     * The filter rule is used to match which sources should belong to this package.
-     *
-     * If the rule is <code>null</code>, then all sources should match.
-     *
-     * @return the filter rule
-     */
-    String getFilterRule();
+    @Override
+    public String getSystemId() {
+        return null;
+    }
 
-    /**
-     * The RRD settings are use to control the control of RRD files, when applicable.
-     *
-     * @return the rrd settings
-     */
-    RrdDefinition getRrd();
+    @Override
+    public String getSourceAddress() {
+        return null;
+    }
 
-    /**
-     * Package specific parameters.
-     *
-     * @return the parameter map
-     */
-    Map<String, String> getParameterMap();
+    @Override
+    public int getSourcePort() {
+        return 0;
+    }
+
+    @Override
+    public List<? extends TelemetryMessageLogEntry> getMessageList() {
+        return null;
+    }
 }

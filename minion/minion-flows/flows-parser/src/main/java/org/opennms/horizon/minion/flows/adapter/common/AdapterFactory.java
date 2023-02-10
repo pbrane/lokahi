@@ -30,12 +30,14 @@ package org.opennms.horizon.minion.flows.adapter.common;
 
 
 import org.opennms.horizon.minion.flows.listeners.factory.TelemetryBeanFactory;
+import org.opennms.horizon.minion.flows.parser.flowmessage.NetflowVersion;
+import org.opennms.sink.flows.contract.AdapterConfig;
 
 /**
- * Factory to create {@link Adapter} from a {@link AdapterDefinition}
+ * Factory to create {@link Adapter} from a {@link AdapterConfig}
  *
  * @author mvrueden
  */
-public interface AdapterFactory extends TelemetryBeanFactory<Adapter, AdapterDefinition> {
+public interface AdapterFactory extends TelemetryBeanFactory<Adapter, AdapterConfig> {
 
 }

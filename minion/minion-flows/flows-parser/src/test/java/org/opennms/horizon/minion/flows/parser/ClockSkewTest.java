@@ -28,6 +28,10 @@
 
 package org.opennms.horizon.minion.flows.parser;
 
+import static org.hamcrest.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.net.InetAddress;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -35,17 +39,20 @@ import java.util.concurrent.CompletableFuture;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.mockito.ArgumentMatchers;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
 import org.opennms.horizon.minion.flows.parser.factory.DnsResolver;
 import org.opennms.horizon.minion.flows.parser.flowmessage.FlowMessage;
 import org.opennms.horizon.minion.flows.parser.transport.MessageBuilder;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
+import org.opennms.horizon.shared.ipc.sink.api.MessageDispatcherFactory;
 
 import com.codahale.metrics.MetricRegistry;
 
 public class ClockSkewTest {
     private int eventCount = 0;
+
 
     private final IpcIdentity identity = new IpcIdentity() {
         @Override
@@ -88,7 +95,15 @@ public class ClockSkewTest {
         public void close() {
 
         }
-    }, identity, dnsResolver, new MetricRegistry());
+    }, identity, dnsResolver, new MetricRegistry(), create());
+
+
+    public TelemetryRegistry create() {
+        AsyncDispatcher<TelemetryMessage> dispatcher = mock(AsyncDispatcher.class);
+        MessageDispatcherFactory messageDispatcherFactory = mock(MessageDispatcherFactory.class);
+        when(messageDispatcherFactory.createAsyncDispatcher(ArgumentMatchers.any(FlowSinkModule.class))).thenReturn(dispatcher);
+        return new TelemetryRegistryImpl(messageDispatcherFactory, identity, new ListenerHolder(), new AdapterHolder());
+    }
 
     @Before
     public void reset() {
@@ -137,8 +152,8 @@ public class ClockSkewTest {
 
     private static class ParserBaseExt extends ParserBase {
 
-        public ParserBaseExt(Protocol protocol, String name, AsyncDispatcher<TelemetryMessage> dispatcher, IpcIdentity identity, DnsResolver dnsResolver, MetricRegistry metricRegistry) {
-            super(protocol, name, name, dispatcher, identity, dnsResolver, metricRegistry);
+        public ParserBaseExt(Protocol protocol, String name, AsyncDispatcher<TelemetryMessage> dispatcher, IpcIdentity identity, DnsResolver dnsResolver, MetricRegistry metricRegistry, TelemetryRegistry telemetryRegistry) {
+            super(protocol, name, name, dispatcher, identity, dnsResolver, metricRegistry, telemetryRegistry);
         }
 
         @Override

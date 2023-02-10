@@ -32,8 +32,12 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
 import org.opennms.horizon.minion.flows.adapter.imported.Flow;
+import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
 import org.opennms.horizon.minion.flows.parser.flowmessage.FlowMessage;
+import org.opennms.horizon.minion.flows.parser.flowmessage.NetflowVersion;
+import org.opennms.sink.flows.contract.AdapterConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,15 +48,15 @@ public class NetflowAdapter extends AbstractFlowAdapter<FlowMessage> {
 
     private static final Logger LOG = LoggerFactory.getLogger(NetflowAdapter.class);
 
-    public NetflowAdapter(final AdapterDefinition adapterConfig,
-                          final MetricRegistry metricRegistry) {
-        super(adapterConfig, metricRegistry);
+    public NetflowAdapter(final AdapterConfig adapterConfig,
+                          final TelemetryRegistry telemetryRegistry) {
+        super(adapterConfig, telemetryRegistry);
     }
 
     @Override
-    protected FlowMessage parse(TelemetryMessageLogEntry message) {
+    protected FlowMessage parse(TelemetryMessage message) {
         try {
-            return FlowMessage.parseFrom(message.getByteArray());
+            return FlowMessage.parseFrom(message.getBytes());
         } catch (InvalidProtocolBufferException e) {
             LOG.error("Unable to parse message from proto", e);
         }
@@ -62,5 +66,15 @@ public class NetflowAdapter extends AbstractFlowAdapter<FlowMessage> {
     @Override
     public List<Flow> convert(final FlowMessage packet, final Instant receivedAt) {
         return Collections.singletonList(new NetflowMessage(packet, receivedAt));
+    }
+
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public String getClassName() {
+        return null;
     }
 }

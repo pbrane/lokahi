@@ -28,17 +28,23 @@
 
 package org.opennms.horizon.minion.flows.adapter.ipfix;
 
-import org.opennms.horizon.minion.flows.adapter.common.AdapterDefinition;
 import org.opennms.horizon.minion.flows.adapter.common.NetflowAdapter;
+import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
+import org.opennms.horizon.minion.flows.parser.flowmessage.NetflowVersion;
+import org.opennms.sink.flows.contract.AdapterConfig;
 
-import com.codahale.metrics.MetricRegistry;
 
 
 public class IpfixAdapter extends NetflowAdapter {
 
-    public IpfixAdapter(final AdapterDefinition adapterConfig,
-                        final MetricRegistry metricRegistry) {
-        super(adapterConfig, metricRegistry);
+    public IpfixAdapter(final AdapterConfig adapterConfig,
+                        final TelemetryRegistry telemetryRegistry) {
+        super(adapterConfig, telemetryRegistry);
+    }
+
+    @Override
+    public NetflowVersion getNetflowVersion() {
+        return NetflowVersion.IPFIX;
     }
 
 }

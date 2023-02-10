@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2017-2017 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2017 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -26,37 +26,38 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.minion.flows.adapter.common;
+package org.opennms.horizon.minion.flows.parser;
 
-import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
+import static org.apache.commons.lang3.StringUtils.contains;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.opennms.horizon.minion.flows.adapter.common.Adapter;
 import org.opennms.horizon.minion.flows.parser.flowmessage.NetflowVersion;
 
-/**
- * Responsible for handling telemetry messages received by the listeners
- * within a adapter definition.
- *
- * The adapter should decode the message and handle the contents appropriately.
- *
- * @author jwhite
- */
-public interface Adapter {
-    /**
-     * Handle the messages.
-     *
-     * IMPORTANT: Implementations of this method MUST be thread-safe.
-     *
-     * @param messageLog group of messages to be handled
-     */
-    void handleMessage(TelemetryMessage messageLog);
+public class AdapterHolder {
 
-    String getName();
+    private final Map<String, Adapter> adapterMap = new HashMap<>();
 
-    String getClassName();
+    public boolean containsKey(String key) {
+        return adapterMap.containsKey(key);
+    }
 
-    default void destroy() {}
+    public Adapter findByNetflowVersion(NetflowVersion netflowVersion) {
+        Optional<Adapter> adapter = adapterMap.values().stream()
+            .filter(v -> v.getNetflowVersion().equals(netflowVersion)).findFirst();
+        return adapter.get();
+    }
 
-    default NetflowVersion getNetflowVersion() {
-        return NetflowVersion.UNRECOGNIZED;
+    public Adapter get(String adapterName) {
+        return adapterMap.get(adapterName);
+    }
+
+    public void put(String name, Adapter adapter) {
+        adapterMap.put(name, adapter);
     }
 
 }

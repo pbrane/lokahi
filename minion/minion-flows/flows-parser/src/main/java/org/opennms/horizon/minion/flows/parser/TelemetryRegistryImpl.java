@@ -28,8 +28,12 @@
 package org.opennms.horizon.minion.flows.parser;
 
 import com.codahale.metrics.MetricRegistry;
+
 import lombok.Getter;
+
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
+import org.opennms.horizon.minion.flows.adapter.common.Adapter;
+import org.opennms.horizon.minion.flows.adapter.common.AdapterFactory;
 import org.opennms.horizon.minion.flows.listeners.FlowsListener;
 import org.opennms.horizon.minion.flows.listeners.Parser;
 import org.opennms.horizon.minion.flows.listeners.factory.ListenerFactory;
@@ -37,6 +41,7 @@ import org.opennms.horizon.minion.flows.parser.factory.ParserFactory;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
 import org.opennms.horizon.shared.ipc.sink.api.MessageDispatcherFactory;
+import org.opennms.sink.flows.contract.AdapterConfig;
 import org.opennms.sink.flows.contract.ListenerConfig;
 import org.opennms.sink.flows.contract.ParserConfig;
 import org.slf4j.Logger;
@@ -51,18 +56,24 @@ public class TelemetryRegistryImpl implements TelemetryRegistry {
 
     private final List<ListenerFactory> listenerFactories = new ArrayList<>();
     private final List<ParserFactory> parserFactoryList = new ArrayList<>();
+    private final List<AdapterFactory> adapterFactories = new ArrayList<>();
 
     private final AsyncDispatcher<TelemetryMessage> dispatcher;
 
     @Getter
     private final ListenerHolder listenerHolder;
 
+    @Getter
+    private final AdapterHolder adapterHolder;
+
+
     public TelemetryRegistryImpl(MessageDispatcherFactory messageDispatcherFactory,
                                  IpcIdentity identity,
-                                 ListenerHolder listenerHolder) {
+                                 ListenerHolder listenerHolder, AdapterHolder adapterHolder) {
         Objects.requireNonNull(messageDispatcherFactory);
         Objects.requireNonNull(identity);
         this.listenerHolder = Objects.requireNonNull(listenerHolder);
+        this.adapterHolder = Objects.requireNonNull(adapterHolder);
         var sink = new FlowSinkModule(identity);
         dispatcher = messageDispatcherFactory.createAsyncDispatcher(sink);
     }
@@ -77,6 +88,12 @@ public class TelemetryRegistryImpl implements TelemetryRegistry {
     public void addParserFactory(ParserFactory factory) {
         Objects.requireNonNull(factory);
         parserFactoryList.add(factory);
+    }
+
+    @Override
+    public void addAdapterFactory(AdapterFactory factory) {
+        Objects.requireNonNull(factory);
+        adapterFactories.add(factory);
     }
 
     @Override
@@ -97,6 +114,24 @@ public class TelemetryRegistryImpl implements TelemetryRegistry {
             }
         }
         LOG.error("Unknown listener class: {}", listenerConfig.getClassName());
+        return null;
+    }
+
+    @Override
+    public Adapter getAdapter(AdapterConfig adapterConfig) {
+        if (adapterHolder.containsKey(adapterConfig.getClassName())) {
+            return adapterHolder.get(adapterConfig.getClassName());
+        }
+        if (!adapterConfig.getEnabled()) {
+            LOG.info("Adapter: {} currently disabled. ", adapterConfig.getName());
+            return null;
+        }
+
+        adapterFactories.stream()
+            .filter(adapterFactory -> adapterConfig.getClassName().contains(adapterFactory.getClass().getName()))
+            .forEach(adapterFactory -> adapterHolder.put(adapterConfig.getClassName(), adapterFactory.createBean(adapterConfig)));
+
+        LOG.error("Unknown listener class: {}", adapterConfig.getClassName());
         return null;
     }
 

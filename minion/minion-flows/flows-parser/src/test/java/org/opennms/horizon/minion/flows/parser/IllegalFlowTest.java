@@ -31,13 +31,17 @@ package org.opennms.horizon.minion.flows.parser;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.codahale.metrics.MetricRegistry;
 import org.junit.Ignore;
+import org.mockito.ArgumentMatchers;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
 import org.opennms.horizon.minion.flows.listeners.UdpListener;
 import org.opennms.horizon.minion.flows.parser.factory.DnsResolver;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
+import org.opennms.horizon.shared.ipc.sink.api.MessageDispatcherFactory;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -56,6 +60,24 @@ public class IllegalFlowTest {
     private final static Path FOLDER = Paths.get("src/test/resources/flows");
     private final AtomicInteger messagesSent = new AtomicInteger();
     private final AtomicInteger eventCount = new AtomicInteger();
+
+    public TelemetryRegistry create() {
+        MetricRegistry metricRegistry = mock(MetricRegistry.class);
+        AsyncDispatcher<TelemetryMessage> dispatcher = mock(AsyncDispatcher.class);
+        MessageDispatcherFactory messageDispatcherFactory = mock(MessageDispatcherFactory.class);
+        when(messageDispatcherFactory.createAsyncDispatcher(ArgumentMatchers.any(FlowSinkModule.class))).thenReturn(dispatcher);
+        return new TelemetryRegistryImpl(messageDispatcherFactory, new IpcIdentity() {
+            @Override
+            public String getId() {
+                return null;
+            }
+
+            @Override
+            public String getLocation() {
+                return null;
+            }
+        }, new ListenerHolder(), new AdapterHolder());
+    }
 
     @Ignore
     public void testEventsForIllegalFlows() throws Exception {
@@ -93,7 +115,7 @@ public class IllegalFlowTest {
             @Override
             public void close()  {
             }
-        }, identity, dnsResolver, new MetricRegistry());
+        }, identity, dnsResolver, new MetricRegistry(), create());
 
         // setting up listener
 

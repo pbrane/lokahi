@@ -35,15 +35,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
 import org.opennms.horizon.minion.flows.adapter.imported.ContextKey;
 import org.opennms.horizon.minion.flows.adapter.imported.Flow;
 import org.opennms.horizon.minion.flows.adapter.imported.FlowSource;
+import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
+import org.opennms.sink.flows.contract.AdapterConfig;
+import org.opennms.sink.flows.contract.PackageConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Strings;
 
@@ -73,82 +76,68 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
     private boolean applicationThresholding;
     private boolean applicationDataCollection;
 
-    private final List<? extends PackageDefinition> packages;
+    private final List<PackageConfig> packages;
 
-    public AbstractFlowAdapter(final AdapterDefinition adapterConfig,
-                               final MetricRegistry metricRegistry) {
+    private TelemetryRegistry telemetryRegistry;
+
+
+    public AbstractFlowAdapter(final AdapterConfig adapterConfig,
+                               final TelemetryRegistry telemetryRegistry) {
         Objects.requireNonNull(adapterConfig);
-        Objects.requireNonNull(metricRegistry);
+        Objects.requireNonNull(telemetryRegistry.getMetricRegistry());
 
-        this.logParsingTimer = metricRegistry.timer(name("adapters", adapterConfig.getFullName(), "logParsing"));
-        this.packetsPerLogHistogram = metricRegistry.histogram(name("adapters", adapterConfig.getFullName(), "packetsPerLog"));
-        this.entriesReceived = metricRegistry.meter(name("adapters", adapterConfig.getFullName(), "entriesReceived"));
-        this.entriesParsed = metricRegistry.meter(name("adapters", adapterConfig.getFullName(), "entriesParsed"));
-        this.entriesConverted = metricRegistry.meter(name("adapters", adapterConfig.getFullName(), "entriesConverted"));
-
-        this.packages = Objects.requireNonNull(adapterConfig.getPackages());
+        this.logParsingTimer = telemetryRegistry.getMetricRegistry().timer(name("adapters", adapterConfig.getName(), "logParsing"));
+        this.packetsPerLogHistogram = telemetryRegistry.getMetricRegistry().histogram(name("adapters", adapterConfig.getName(), "packetsPerLog"));
+        this.entriesReceived = telemetryRegistry.getMetricRegistry().meter(name("adapters", adapterConfig.getName(), "entriesReceived"));
+        this.entriesParsed = telemetryRegistry.getMetricRegistry().meter(name("adapters", adapterConfig.getName(), "entriesParsed"));
+        this.entriesConverted = telemetryRegistry.getMetricRegistry().meter(name("adapters", adapterConfig.getName(), "entriesConverted"));
+        this.telemetryRegistry = telemetryRegistry;
+        this.packages = Objects.requireNonNull(adapterConfig.getPackagesList());
     }
 
     @Override
-    public void handleMessageLog(TelemetryMessageLog messageLog) {
-        LOG.debug("Received {} telemetry messages", messageLog.getMessageList().size());
+    public void handleMessage(TelemetryMessage telemetryMessage) {
+        LOG.debug("Received {} telemetry message", telemetryMessage);
 
         int flowPackets = 0;
 
         final List<Flow> flows = new LinkedList<>();
         try (Timer.Context ctx = logParsingTimer.time()) {
-            for (TelemetryMessageLogEntry eachMessage : messageLog.getMessageList()) {
-                this.entriesReceived.mark();
+            this.entriesReceived.mark();
 
-                LOG.trace("Parsing packet: {}", eachMessage);
-                final P flowPacket = parse(eachMessage);
-                if (flowPacket != null) {
-                    this.entriesParsed.mark();
+            LOG.trace("Parsing packet. ");
+            final P flowPacket = parse(telemetryMessage);
+            if (flowPacket != null) {
+                this.entriesParsed.mark();
 
-                    flowPackets += 1;
+                flowPackets += 1;
 
-                    final List<Flow> converted = this.convert(flowPacket, Instant.ofEpochMilli(eachMessage.getTimestamp()));
-                    flows.addAll(converted);
+                final List<Flow> converted = this.convert(flowPacket, Instant.ofEpochMilli(telemetryMessage.getTimestamp()));
+                flows.addAll(converted);
 
-                    this.entriesConverted.mark(converted.size());
-                }
+                this.entriesConverted.mark(converted.size());
             }
+
             packetsPerLogHistogram.update(flowPackets);
         }
 
-       // try {
-            LOG.debug("Persisting {} packets, {} flows.", flowPackets, flows.size());
-            final FlowSource source = new FlowSource(messageLog.getLocation(),
-                    messageLog.getSourceAddress(),
-                    contextKey);
-           /* this.pipeline.process(flows, source, ProcessingOptions.builder()
-                                                                  .setApplicationThresholding(this.applicationThresholding)
-                                                                  .setApplicationDataCollection(this.applicationDataCollection)
-                                                                  .setPackages(this.packages)
-                                                                  .build());  */
-      /*  } catch (DetailedFlowException ex) {
-            LOG.error("Error while persisting flows: {}", ex.getMessage(), ex);
-            for (final String logMessage: ex.getDetailedLogMessages()) {
-                LOG.error(logMessage);
-            }
-        } catch(UnrecoverableFlowException ex) {
-            LOG.error("Error while persisting flows. Cannot recover: {}. {} messages are lost.", ex.getMessage(), messageLog.getMessageList().size(), ex);
-            return;
-        } catch (FlowException ex) {
-            LOG.error("Error while persisting flows: {}", ex.getMessage(), ex);
-        } */
+        final FlowSource source = new FlowSource(telemetryMessage.getFlowSource().getLocation(),
+            telemetryMessage.getSourceAddress(),
+            contextKey);
 
-        LOG.debug("Completed processing {} telemetry messages.",
-                messageLog.getMessageList().size());
+        LOG.debug("Sending Packets and flows to metrics-processor for Enrichment step. ");
+
+        //
+        telemetryRegistry.getDispatcher().send(TelemetryMessageProtoCreator.createMessage(source, flows,
+            this.applicationThresholding, this.applicationDataCollection, this.packages));
+
+        LOG.debug("Completed Adapter and Enrichment step for {} telemetry message.", telemetryMessage);
+
     }
 
-    protected abstract P parse(TelemetryMessageLogEntry message);
+    protected abstract P parse(TelemetryMessage message);
 
     protected abstract List<Flow> convert(final P packet, final Instant receivedAt);
-
-    public void destroy() {
-        // not needed
-    }
 
     public String getMetaDataNodeLookup() {
         return metaDataNodeLookup;

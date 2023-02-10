@@ -66,8 +66,9 @@ public abstract class UdpParserBase extends ParserBase implements UdpParser {
                          final AsyncDispatcher<TelemetryMessage> dispatcher,
                          final IpcIdentity identity,
                          final DnsResolver dnsResolver,
-                         final MetricRegistry metricRegistry) {
-        super(protocol, name, queueName, dispatcher, identity, dnsResolver, metricRegistry);
+                         final MetricRegistry metricRegistry,
+                         final TelemetryRegistry telemetryRegistry) {
+        super(protocol, name, queueName, dispatcher, identity, dnsResolver, metricRegistry, telemetryRegistry);
 
         this.packetsReceived = metricRegistry.meter(MetricRegistry.name("parsers",  name, "packetsReceived"));
         this.parserErrors = metricRegistry.counter(MetricRegistry.name("parsers",  name, "parserErrors"));

@@ -61,8 +61,9 @@ public class IpfixTcpParser extends ParserBase implements TcpParser {
                           final AsyncDispatcher<TelemetryMessage> dispatcher,
                           final IpcIdentity identity,
                           final DnsResolver dnsResolver,
-                          final MetricRegistry metricRegistry) {
-        super(Protocol.IPFIX, name, queueName, dispatcher, identity, dnsResolver, metricRegistry);
+                          final MetricRegistry metricRegistry,
+                          final TelemetryRegistry  telemetryRegistry) {
+        super(Protocol.IPFIX, name, queueName, dispatcher, identity, dnsResolver, metricRegistry, telemetryRegistry);
     }
 
     @Override
