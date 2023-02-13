@@ -1,0 +1,220 @@
+syntax = "proto3";
+
+option go_package = "github.com/OpenNMS-Cloud/flows/api/flows/querier/v1";
+
+package org.opennms.dataplatform.flows.querier;
+import "google/protobuf/timestamp.proto";
+
+message TimeRangeFilter {
+    google.protobuf.Timestamp start_time = 1;
+    google.protobuf.Timestamp end_time = 2;
+}
+message DscpFilter {
+    repeated int64 dscp = 1;
+}
+message NodeFilter {
+    string foreign_source = 1;
+    string foreign_id = 2;
+    int64 node_id = 3;
+}
+message SnmpInterfaceFilter {
+    int64 smnp_interface_id = 1;
+}
+message Host {
+    string ip = 1;
+    string host_name = 2;
+}
+message Filter {
+    oneof filter {
+        TimeRangeFilter time_range = 1;
+        DscpFilter dscps = 2;
+        NodeFilter nodes = 3;
+        SnmpInterfaceFilter snmp_interfaces = 4;
+    }
+}
+
+message Application{}
+message Conversation{
+    string location = 1;
+    int64 protocol = 2;
+    Host lower_host = 3;
+    Host upper_host = 4;
+    string application = 5;
+}
+
+message TrafficSummary {
+    int64 bytes_in = 1;
+    int64 bytes_out = 2;
+    bool congestion_encountered = 3;
+    bool non_ecn_capable_transport = 4;
+    oneof node_type {
+        string application = 5; 
+        Conversation conversation = 6;
+    }
+}
+
+message Directional {
+    bool is_ingress = 1;
+    oneof node_type {
+        string application = 2;
+        Conversation conversation = 3;
+    }
+}
+
+message GetFlowCountRequest {
+    repeated Filter filters = 1;
+}
+
+message GetFlowCountResponse {
+    int64 count = 1;
+}
+
+message GetApplicationsRequest {
+    string matching_prefix = 1;
+    int64 limit = 2;
+    repeated Filter filters = 3;
+}
+
+message GetApplicationsResponse {
+    repeated string applications = 1;
+}
+
+message GetTopApplicationSummariesRequest {
+    bool include_other = 2;
+    repeated Filter filters = 3;
+}
+message ApplicationSummaries{}
+
+message GetTopNApplicationSummariesRequest {
+    int32 count = 1;
+    bool include_other = 2;
+    repeated Filter filters = 3;
+}
+message GetTopNApplicationSummariesResponse {
+    repeated TrafficSummary summaries = 1;
+}
+
+message GetApplicationSummariesResponse {
+    repeated TrafficSummary summaries = 1;
+}
+
+message GetApplicationSummariesRequest {
+    repeated string applications = 1;
+    bool include_other = 2;
+    repeated Filter filters = 3;
+}
+
+message GetApplicationSeriesRequest {
+    repeated string applications = 1;
+    int64 step = 2; //???
+    bool include_other = 3;
+    repeated Filter filters = 4;
+}
+message GetApplicationSeriesResponse {
+    map<int32, SummaryTableRow> table = 1;
+}
+message SummaryTableRow {
+    Directional directions = 1;
+    int64 some_long = 2;
+    double some_double = 3;
+
+}
+message GetTopNApplicationSeriesRequest {
+    int64 count = 1;
+    int64 step = 2;
+    bool include_other = 3;
+    repeated Filter filters = 4;
+}
+message GetTopNApplicationSeriesResponse {
+    map<int32, SummaryTableRow> table = 1;
+}
+
+
+message GetConversationsRequest {
+    string location_pattern = 1;
+    string protocol_pattern = 2;
+    string lower_ip_pattern = 3;
+    string upper_ip_pattern = 4;
+    string application_pattern = 5;
+    int64 limit = 6;
+    repeated Filter filters = 7;
+}
+
+message GetConversationsResponse {
+    repeated string conversations = 1;
+}
+
+message GetTopNConversationSummariesRequest { 
+    int64 count = 1;
+    bool include_other = 2;
+    repeated Filter filters = 3;
+}
+message GetTopNConversationSummariesResponse {}
+
+message GetConversationSummariesRequest {}
+message GetConversationSummariesResponse {}
+
+
+message GetConversationSeriesRequest {}
+message GetConversationSeriesResponse {}
+
+message GetTopNConversationSeriesRequest {}
+message GetTopNConversationSeriesResponse {}
+
+message GetHostsRequest {}
+message GetHostsResponse {}
+
+message GetTopNHostSummariesRequest {}
+message GetTopNHostSummariesResponse {}
+
+message GetHostSummariesRequest {}
+message GetHostSummariesResponse {}
+
+message GetHostSeriesRequest {}
+message GetHostSeriesResponse {}
+
+message GetTopNHostSeriesRequest {}
+message GetTopNHostSeriesResponse {}
+
+message GetFieldValuesRequest {}
+message GetFieldValuesResponse {}
+
+message GetFieldSummariesRequest {}
+message GetFieldSummariesResponse {}
+
+message GetFieldSeriesRequest {}
+message GetFieldSeriesResponse {}
+
+service FlowService {
+    rpc GetFlowCount(GetFlowCountRequest) returns (GetFlowCountResponse);
+}
+
+service ApplicationsService {
+    rpc GetApplications(GetApplicationsRequest) returns (GetApplicationsResponse);
+    rpc GetTopApplicationSummaries(GetTopApplicationSummariesRequest) returns (ApplicationSummaries);
+    rpc GetApplicationSummaries(GetApplicationSummariesRequest) returns (ApplicationSummaries);
+    rpc GetApplicationSeries(GetApplicationSeriesRequest) returns (GetApplicationSeriesResponse);
+    rpc GetTopNApplicationSeries(GetTopNApplicationSeriesRequest) returns (GetTopNApplicationSeriesRequest);
+}
+
+service ConversationsService {
+    rpc GetConversations(GetConversationsRequest) returns (GetConversationsResponse);
+    rpc GetTopNConversationSummaries(GetTopNConversationSummariesRequest) returns (GetTopNConversationSummariesResponse);
+    rpc GetConversationSummaries(GetConversationSummariesRequest) returns (GetConversationSummariesResponse);
+    rpc GetConversationSeries(GetConversationSeriesRequest) returns (GetConversationSeriesResponse);
+    rpc GetTopNConversationSeries(GetTopNConversationSeriesRequest) returns (GetTopNConversationSeriesResponse);
+}
+
+service HostsService {
+  rpc GetHosts(GetHostsRequest) returns (GetHostsResponse);
+  rpc GetTopNHostSummaries(GetTopNHostSummariesRequest) returns (GetTopNHostSummariesResponse);
+  rpc GetHostSummaries(GetHostSummariesRequest) returns (GetHostSummariesResponse);
+  rpc GetHostSeries(GetHostSeriesRequest) returns (GetHostSeriesResponse);
+  rpc GetTopNHostSeries(GetTopNHostSeriesRequest) returns (GetTopNHostSeriesResponse);
+}
+
+service FieldsService {
+    rpc GetFieldValues(GetFieldValuesRequest) returns (GetFieldValuesResponse);
+    rpc GetFieldSummaries(GetFieldSummariesRequest) returns (GetFieldSummariesResponse);
+    rpc GetFieldSeries(GetFieldSeriesRequest) returns (GetFieldSeriesResponse);
+}

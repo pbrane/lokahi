@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "github.com/OpenNMS-Cloud/flows/api/flows/ingester/v1";
+option java_multiple_files = true;
+
+package org.opennms.dataplatform.flows.ingester.v1;
+
+import "flow_document.proto";
+
+message StoreFlowDocumentRequest {
+    org.opennms.dataplatform.flows.document.FlowDocument document = 1;
+}
+
+message StoreFlowDocumentResponse {}
+
+message StoreFlowDocumentsRequest {
+    repeated org.opennms.dataplatform.flows.document.FlowDocument documents = 1;
+}
+
+message StoreFlowDocumentsResponse {}
+
+service Ingester {
+    rpc StoreFlowDocument(StoreFlowDocumentRequest) returns (StoreFlowDocumentResponse);
+    rpc StoreFlowDocuments(StoreFlowDocumentsRequest) returns (StoreFlowDocumentsResponse);
+}
+
