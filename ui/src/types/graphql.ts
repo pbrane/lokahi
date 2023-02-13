@@ -79,6 +79,11 @@ export type EventParameter = {
   value?: Maybe<Scalars['String']>;
 };
 
+export type FlowSummary = {
+  __typename?: 'FlowSummary';
+  numFlows: Scalars['Int'];
+};
+
 export type IpInterface = {
   __typename?: 'IpInterface';
   hostname?: Maybe<Scalars['String']>;
@@ -222,6 +227,7 @@ export type Query = {
   findLocationById?: Maybe<Location>;
   findMinionById?: Maybe<Minion>;
   findNodeById?: Maybe<Node>;
+  getFlowSummary?: Maybe<FlowSummary>;
   listDiscoveryConfig?: Maybe<Array<Maybe<DiscoveryConfig>>>;
   metric?: Maybe<TimeSeriesQueryResult>;
   nodeStatus?: Maybe<NodeStatus>;

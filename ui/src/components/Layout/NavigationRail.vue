@@ -27,6 +27,7 @@
         <FeatherAppRailNavItem href="/discovery" :icon="Icons.Discovery" title="Discovery" :class="{ selected: isSelected('/discovery') }" />
         <FeatherAppRailNavItem href="/monitoring-policies" :icon="Icons.Monitoring" title="Monitoring Policies" :class="{ selected: isSelected('/monitoring-policies') }" />
         <FeatherAppRailNavItem v-if="false" href="/synthetic-transactions" :icon="Icons.Cycle" title="Synthetic Transactions" :class="{ selected: isSelected('/synthetic-transactions') }" />
+        <FeatherAppRailNavItem href="/flows" :icon="Icons.Flows" title="Flows" :class="{ selected: isSelected('/flows') }" />
       </template>
     </FeatherAppRail>
 </template>
@@ -42,6 +43,7 @@ import LogoText from '@/assets/OpenNMS-logo-text.svg'
 import Discovery from '@featherds/icon/action/Search'
 import Monitoring from '@featherds/icon/hardware/MinionProfiles'
 import Cycle from '@featherds/icon/action/Cycle'
+import Flows from '@featherds/icon/hardware/Network'
 
 const Icons = markRaw({
   Appliances,
@@ -51,6 +53,7 @@ const Icons = markRaw({
   Discovery,
   Monitoring,
   Cycle
+  Flows
 })
 
 const labels = {

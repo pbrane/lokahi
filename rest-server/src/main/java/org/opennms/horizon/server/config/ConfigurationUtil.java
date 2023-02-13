@@ -32,6 +32,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.server.service.grpc.EventsClient;
+import org.opennms.horizon.server.service.grpc.FlowClient;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
 import org.opennms.horizon.server.service.grpc.NotificationClient;
 import org.opennms.horizon.server.utils.JWTValidator;
@@ -95,5 +96,10 @@ public class ConfigurationUtil {
     @Bean(destroyMethod = "shutdown", initMethod = "initialStubs")
     public NotificationClient createNotificationClient(@Qualifier("notification") ManagedChannel channel) {
         return new NotificationClient(channel);
+    }
+
+    @Bean
+    public FlowClient createFlowClient() {
+        return new FlowClient();
     }
 }

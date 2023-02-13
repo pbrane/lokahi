@@ -63,6 +63,11 @@ const router = createRouter({
       component: () => import('@/containers/SyntheticTransactions.vue')
     },
     {
+      path: '/flows',
+      name: 'Flows',
+      component: () => import('@/containers/Flows.vue')
+    },
+    {
       path: '/node/:id',
       name: 'Node',
       component: NodeStatus
