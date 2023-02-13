@@ -27,9 +27,11 @@
  *******************************************************************************/
 package org.opennms.horizon.minion.flows.parser;
 
-import com.codahale.metrics.MetricRegistry;
+import static org.apache.commons.lang3.StringUtils.contains;
 
-import lombok.Getter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
 import org.opennms.horizon.minion.flows.adapter.common.Adapter;
@@ -47,9 +49,9 @@ import org.opennms.sink.flows.contract.ParserConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import com.codahale.metrics.MetricRegistry;
+
+import lombok.Getter;
 
 public class TelemetryRegistryImpl implements TelemetryRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(TelemetryRegistryImpl.class);
@@ -127,12 +129,16 @@ public class TelemetryRegistryImpl implements TelemetryRegistry {
             return null;
         }
 
-        adapterFactories.stream()
-            .filter(adapterFactory -> adapterConfig.getClassName().contains(adapterFactory.getClass().getName()))
-            .forEach(adapterFactory -> adapterHolder.put(adapterConfig.getClassName(), adapterFactory.createBean(adapterConfig)));
-
-        LOG.error("Unknown listener class: {}", adapterConfig.getClassName());
-        return null;
+        return adapterFactories.stream()
+            .filter(adapterFactory -> contains(adapterConfig.getClassName(), adapterFactory.getBeanClass().getSimpleName()))
+            .map(adapterFactory -> {
+                Adapter matchedAdapter = adapterFactory.createBean(adapterConfig);
+                adapterHolder.put(adapterFactory.getBeanClass().getSimpleName(), matchedAdapter);
+                return matchedAdapter;
+            }).findFirst().orElseGet(() -> {
+                LOG.error("Unknown adapter class: {}", adapterConfig.getClassName());
+                return null;
+            });
     }
 
     @Override

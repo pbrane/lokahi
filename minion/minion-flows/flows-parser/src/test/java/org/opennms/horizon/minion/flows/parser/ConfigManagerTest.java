@@ -28,12 +28,14 @@
 
 package org.opennms.horizon.minion.flows.parser;
 
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Resources;
 import com.google.protobuf.Any;
-import org.junit.Assert;
+
 import org.junit.Test;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
+import org.opennms.horizon.minion.flows.adapter.ipfix.IpfixAdapterFactory;
+import org.opennms.horizon.minion.flows.adapter.netflow5.Netflow5AdapterFactory;
+import org.opennms.horizon.minion.flows.adapter.netflow9.Netflow9AdapterFactory;
 import org.opennms.horizon.minion.flows.listeners.factory.TcpListenerFactory;
 import org.opennms.horizon.minion.flows.listeners.factory.UdpListenerFactory;
 import org.opennms.horizon.minion.flows.parser.factory.DnsResolver;
@@ -50,6 +52,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -70,16 +74,23 @@ public class ConfigManagerTest {
 
         UdpListenerFactory udpFactory = new UdpListenerFactory(registry);
         TcpListenerFactory tcoFactory = new TcpListenerFactory(registry);
+        Netflow5AdapterFactory netflow5AdapterFactory = new Netflow5AdapterFactory(registry);
+        Netflow9AdapterFactory netflow9AdapterFactory = new Netflow9AdapterFactory(registry);
+        IpfixAdapterFactory ipfixAdapterFactory = new IpfixAdapterFactory(registry);
         Netflow5UdpParserFactory netflow5UdpParserFactory = new Netflow5UdpParserFactory(registry, identity, dnsResolver);
         Netflow9UdpParserFactory netflow9UdpParserFactory = new Netflow9UdpParserFactory(registry, identity, dnsResolver);
         IpfixTcpParserFactory ipfixTcpParserFactory = new IpfixTcpParserFactory(registry, identity, dnsResolver);
 
-        ConfigManager manger = new ConfigManager(registry);
-        manger.create(null, readFlowsConfig());
+        ConfigManager manager = new ConfigManager(registry);
+        manager.create(null, readFlowsConfig());
 
-        Assert.assertEquals(2, holder.size());
-        Assert.assertNotNull(holder.get("IPFIX-TCP-4730"));
-        Assert.assertNotNull(holder.get("Netflow-5-UDP-8877"));
+        assertEquals(2, holder.size());
+        assertNotNull(holder.get("IPFIX-TCP-4730"));
+        assertNotNull(holder.get("Netflow-5-UDP-8877"));
+
+        assertEquals(2, adapterHolder.size());
+        assertNotNull(adapterHolder.get("Netflow5Adapter"));
+        assertNotNull(adapterHolder.get("IpfixAdapter"));
     }
 
     Any readFlowsConfig() throws IOException {

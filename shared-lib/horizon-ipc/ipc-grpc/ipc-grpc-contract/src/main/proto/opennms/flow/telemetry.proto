@@ -5,6 +5,8 @@ option java_multiple_files = true;
 option java_package = "org.opennms.horizon.grpc.telemetry.contract";
 option java_outer_classname = "TelemetryProtos";
 
+import "flows-config.proto";
+
 message TelemetryMessage {
   uint64 timestamp = 1;
   bytes bytes = 2;
@@ -37,23 +39,5 @@ message ContextKey {
 message ProcessingOptions {
   bool applicationThresholding = 1;
   bool applicationDataCollection = 2;
-  repeated PackageConfig packageConfig = 3;
-}
-
-message PackageConfig {
-  string name = 1;
-  Filter filter = 2;
-  repeated Parameter parameters = 4;
-  string filter_rule = 5;
-  map<string, string>  parameter_map = 6;
-}
-
-message Filter {
-  string content = 1;
-}
-
-message Parameter {
-  string key = 1;
-  string value = 2;
-  optional string group = 3;
+  repeated opennms.sink.flows.PackageConfig packages = 3;
 }

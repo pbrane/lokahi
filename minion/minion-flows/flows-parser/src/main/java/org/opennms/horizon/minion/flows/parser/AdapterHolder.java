@@ -28,17 +28,18 @@
 
 package org.opennms.horizon.minion.flows.parser;
 
-import static org.apache.commons.lang3.StringUtils.contains;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
 import org.opennms.horizon.minion.flows.adapter.common.Adapter;
 import org.opennms.horizon.minion.flows.parser.flowmessage.NetflowVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AdapterHolder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AdapterHolder.class);
 
     private final Map<String, Adapter> adapterMap = new HashMap<>();
 
@@ -49,7 +50,13 @@ public class AdapterHolder {
     public Adapter findByNetflowVersion(NetflowVersion netflowVersion) {
         Optional<Adapter> adapter = adapterMap.values().stream()
             .filter(v -> v.getNetflowVersion().equals(netflowVersion)).findFirst();
-        return adapter.get();
+        if (adapter.isPresent()) {
+            return adapter.get();
+        } else {
+            LOG.error("For the given Netflow Version '{}' there is not any adapter available; list of available adapters=[{}]",
+                netflowVersion, adapterMap.values());
+            return null;
+        }
     }
 
     public Adapter get(String adapterName) {
@@ -58,6 +65,15 @@ public class AdapterHolder {
 
     public void put(String name, Adapter adapter) {
         adapterMap.put(name, adapter);
+        LOG.info("Adapter {} added into holder.", adapter.getClassName());
+    }
+
+    public void clearAll() {
+        adapterMap.clear();
+    }
+
+    public int size() {
+        return adapterMap.size();
     }
 
 }

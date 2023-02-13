@@ -29,16 +29,17 @@
 package org.opennms.horizon.minion.flows.adapter.common;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static org.opennms.horizon.minion.flows.adapter.common.TelemetryMessageProtoUtil.buildMessage;
 
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import org.opennms.horizon.grpc.telemetry.contract.FlowSource;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
 import org.opennms.horizon.minion.flows.adapter.imported.ContextKey;
 import org.opennms.horizon.minion.flows.adapter.imported.Flow;
-import org.opennms.horizon.minion.flows.adapter.imported.FlowSource;
 import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
 import org.opennms.sink.flows.contract.AdapterConfig;
 import org.opennms.sink.flows.contract.PackageConfig;
@@ -78,7 +79,7 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
 
     private final List<PackageConfig> packages;
 
-    private TelemetryRegistry telemetryRegistry;
+    private final TelemetryRegistry telemetryRegistry;
 
 
     public AbstractFlowAdapter(final AdapterConfig adapterConfig,
@@ -121,14 +122,15 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
             packetsPerLogHistogram.update(flowPackets);
         }
 
-        final FlowSource source = new FlowSource(telemetryMessage.getFlowSource().getLocation(),
-            telemetryMessage.getSourceAddress(),
-            contextKey);
+        final org.opennms.horizon.grpc.telemetry.contract.FlowSource flowSourceProto = FlowSource.newBuilder()
+            .setSourceAddress(telemetryMessage.getFlowSource().getLocation())
+                .setSourceAddress(telemetryMessage.getSourceAddress())
+                    .setContextKey(org.opennms.horizon.grpc.telemetry.contract.ContextKey.newBuilder()
+                        .setKey(contextKey.getKey()).setContext(contextKey.getContext()).build()).build();
 
         LOG.debug("Sending Packets and flows to metrics-processor for Enrichment step. ");
 
-        //
-        telemetryRegistry.getDispatcher().send(TelemetryMessageProtoCreator.createMessage(source, flows,
+        telemetryRegistry.getDispatcher().send(buildMessage(flowSourceProto, flows,
             this.applicationThresholding, this.applicationDataCollection, this.packages));
 
         LOG.debug("Completed Adapter and Enrichment step for {} telemetry message.", telemetryMessage);

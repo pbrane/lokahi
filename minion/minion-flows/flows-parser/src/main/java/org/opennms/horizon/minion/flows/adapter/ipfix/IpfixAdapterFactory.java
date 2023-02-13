@@ -33,7 +33,6 @@ import java.util.Objects;
 import org.opennms.horizon.minion.flows.adapter.common.AdapterFactory;
 import org.opennms.horizon.minion.flows.adapter.common.Adapter;
 import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
-import org.opennms.horizon.minion.flows.parser.flowmessage.NetflowVersion;
 import org.opennms.sink.flows.contract.AdapterConfig;
 
 public class IpfixAdapterFactory implements AdapterFactory {
@@ -41,6 +40,7 @@ public class IpfixAdapterFactory implements AdapterFactory {
 
     public IpfixAdapterFactory(TelemetryRegistry telemetryRegistry) {
         this.telemetryRegistry = telemetryRegistry;
+        telemetryRegistry.addAdapterFactory(this);
     }
 
     @Override
@@ -52,7 +52,6 @@ public class IpfixAdapterFactory implements AdapterFactory {
     @Override
     public Adapter createBean(final AdapterConfig adapterConfig) {
         Objects.requireNonNull(this.telemetryRegistry);
-        telemetryRegistry.addAdapterFactory(this);
         return new IpfixAdapter(adapterConfig,
                                 this.telemetryRegistry);
     }

@@ -33,34 +33,28 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-import org.opennms.horizon.grpc.telemetry.contract.ContextKey;
+import org.opennms.horizon.grpc.telemetry.contract.FlowSource;
 import org.opennms.horizon.grpc.telemetry.contract.ProcessingOptions;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
 import org.opennms.horizon.minion.flows.adapter.imported.Flow;
-import org.opennms.horizon.minion.flows.adapter.imported.FlowSource;
 import org.opennms.sink.flows.contract.PackageConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.ByteString;
 
-public class TelemetryMessageProtoCreator {
+public class TelemetryMessageProtoUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TelemetryMessageProtoCreator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TelemetryMessageProtoUtil.class);
 
-    public static TelemetryMessage createMessage(FlowSource source, List<Flow> flows,
-                                                 boolean applicationThresholding,
-                                                 boolean applicationDataCollection, Iterable<? extends PackageConfig> packageConfigs) {
-        ContextKey contextKeyProto = ContextKey.newBuilder().setContext(source.getContextKey().getContext()).setKey(source.getContextKey().getKey()).build();
-        org.opennms.horizon.grpc.telemetry.contract.FlowSource flowSourceProto = org.opennms.horizon.grpc.telemetry.contract.FlowSource.newBuilder()
-            .setLocation(source.getLocation())
-            .setContextKey(contextKeyProto).setSourceAddress(source.getSourceAddress()).build();
-
+    public static TelemetryMessage buildMessage(FlowSource flowSourceProto, List<Flow> flows,
+                                                boolean applicationThresholding,
+                                                boolean applicationDataCollection,
+                                                Iterable<? extends PackageConfig> packageConfigs) {
         ProcessingOptions processingOptionsProto = ProcessingOptions.newBuilder()
             .setApplicationDataCollection(applicationDataCollection)
             .setApplicationThresholding(applicationThresholding)
-            // TODO: pass package config as list to proto object
-           // .addAllPackageConfig(packageConfigs)
+            .addAllPackages(packageConfigs)
             .build();
         return TelemetryMessage.newBuilder()
             .setBytes(convertToByteString(flows))
