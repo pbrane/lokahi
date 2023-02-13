@@ -99,6 +99,11 @@
         </dependency>
         <dependency>
             <groupId>org.opennms.horizon.shared</groupId>
+            <artifactId>flows</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.shared</groupId>
             <artifactId>notifications</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <PageHeader heading="Flows" />
-    <h1>{{ flowSummary.numFlows }}</h1>
+    <h1>{{ flowSummary?.numFlows }}</h1>
   </div>
 </template>
 

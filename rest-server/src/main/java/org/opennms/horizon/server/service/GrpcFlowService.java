@@ -28,16 +28,13 @@
 
 package org.opennms.horizon.server.service;
 
-import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLEnvironment;
 import io.leangen.graphql.annotations.GraphQLQuery;
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.server.model.flows.FlowSummary;
-import org.opennms.horizon.server.model.inventory.Node;
 import org.opennms.horizon.server.service.grpc.FlowClient;
-import org.opennms.horizon.server.service.grpc.InventoryClient;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;

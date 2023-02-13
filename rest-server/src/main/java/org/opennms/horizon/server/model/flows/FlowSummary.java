@@ -6,5 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FlowSummary {
-    int numFlows;
+    long numFlows;
 }

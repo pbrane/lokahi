@@ -57,6 +57,9 @@ public class ConfigurationUtil {
     @Value("${grpc.url.notification}")
     private String notificationGrpcAddress;
 
+    @Value("${grpc.url.flow.querier}")
+    private String flowQuerierGrpcAddress;
+
     @Bean
     public ServerHeaderUtil createHeaderUtil(JWTValidator validator) {
         return new ServerHeaderUtil(validator);
@@ -83,6 +86,13 @@ public class ConfigurationUtil {
             .usePlaintext().build();
     }
 
+    @Bean(name = "flowQuerier")
+    public ManagedChannel createFlowQuerierChannel() {
+        return ManagedChannelBuilder.forTarget(flowQuerierGrpcAddress)
+            .keepAliveWithoutCalls(true)
+            .usePlaintext().build();
+    }
+
     @Bean(destroyMethod = "shutdown", initMethod = "initialStubs")
     public InventoryClient createInventoryClient(@Qualifier("inventory") ManagedChannel channel) {
         return new InventoryClient(channel, deadline);
@@ -98,8 +108,8 @@ public class ConfigurationUtil {
         return new NotificationClient(channel);
     }
 
-    @Bean
-    public FlowClient createFlowClient() {
-        return new FlowClient();
+    @Bean(destroyMethod = "shutdown", initMethod = "initialStubs")
+    public FlowClient createFlowClient(@Qualifier("flowQuerier") ManagedChannel channel) {
+        return new FlowClient(channel, deadline);
     }
 }
