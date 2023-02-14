@@ -11,6 +11,7 @@ import "google/protobuf/wrappers.proto";
 enum Direction {
     INGRESS = 0;
     EGRESS = 1;
+    UNKNOWN = 255;
 }
 
 enum SamplingAlgorithm {
@@ -80,7 +81,7 @@ message FlowDocument {
     google.protobuf.UInt32Value tcp_flags = 31; // TCP Flags.
     google.protobuf.UInt32Value tos = 32; // TOS
     NetflowVersion netflow_version = 33; // Netflow version
-    string vlan = 34; // VLAN ID.
+    google.protobuf.UInt32Value vlan = 34; // VLAN ID.
     NodeInfo src_node = 35;
     NodeInfo exporter_node = 36;
     NodeInfo dest_node = 37;
@@ -95,4 +96,14 @@ message FlowDocument {
     google.protobuf.UInt32Value dscp = 46; // DSCP; upper 6 bits of TOS
     google.protobuf.UInt32Value ecn = 47; // ECN; lower 2 bits of TOS
     string tenant_id = 48; //tenant id for multi-tenancy life
+    string exporter_address = 49; // Raw sending IP of the exporter
+    google.protobuf.UInt32Value exporter_port = 50; // Raw sending port of the exporter
+    string exporter_identifier = 52; // Protocol specific exporter identifier
+}
+
+message FlowDocumentLog {
+  string location = 1;
+  string system_id = 2;
+
+  repeated FlowDocument message = 5;
 }

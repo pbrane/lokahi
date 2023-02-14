@@ -31,7 +31,7 @@ package org.opennms.miniongateway.grpc.server.flows;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
-import org.opennms.horizon.grpc.flows.contract.FlowDocumentLog;
+import org.opennms.dataplatform.flows.document.FlowDocumentLog;
 import org.opennms.horizon.shared.ipc.sink.aggregation.IdentityAggregationPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.AggregationPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncPolicy;

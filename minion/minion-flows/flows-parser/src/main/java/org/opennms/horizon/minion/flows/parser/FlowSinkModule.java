@@ -31,8 +31,8 @@ package org.opennms.horizon.minion.flows.parser;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.opennms.cloud.grpc.minion.Identity;
-import org.opennms.horizon.grpc.flows.contract.FlowDocumentLog;
-import org.opennms.horizon.grpc.flows.contract.FlowDocument;
+import org.opennms.dataplatform.flows.document.FlowDocumentLog;
+import org.opennms.dataplatform.flows.document.FlowDocument;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.sink.api.AggregationPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncPolicy;

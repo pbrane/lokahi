@@ -47,6 +47,11 @@
           <version>${project.version}</version>
       </dependency>
       <dependency>
+          <groupId>org.opennms.horizon.shared</groupId>
+          <artifactId>flows</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+      <dependency>
           <groupId>org.opennms.horizon.minion</groupId>
           <artifactId>plugins-api</artifactId>
           <version>${project.version}</version>
