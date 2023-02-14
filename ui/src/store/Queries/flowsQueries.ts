@@ -1,10 +1,9 @@
 import { defineStore } from 'pinia'
 import { useQuery } from 'villus'
-import { Query, FlowSummary } from '@/types/graphql'
+import {Query, FlowSummary, TrafficSummary} from '@/types/graphql'
 
 export const useFlowQueries = defineStore('flowQueries', () => {
   const variables = ref({})
-
   const GetFlowSummary = `
     {
       getFlowSummary{
@@ -12,16 +11,33 @@ export const useFlowQueries = defineStore('flowQueries', () => {
       }
     }
   `
-
-  const { data } = useQuery({
+  const { data: flowSummaryData } = useQuery({
     query: GetFlowSummary,
     variables,
     cachePolicy: 'network-only'
   })
+  const flowSummary = computed(() => (flowSummaryData.value?.getFlowSummary as FlowSummary))
 
-  const flowSummary = computed(() => (data.value?.getFlowSummary as FlowSummary))
+
+  const GetTopNHostSummaries = `
+    {
+      getTopNHostSummaries{
+        bytesIn
+        bytesOut
+        label
+      }
+    }
+  `
+  const { data: topHostsData } = useQuery({
+    query: GetTopNHostSummaries,
+    variables,
+    cachePolicy: 'network-only'
+  })
+  const topHosts = computed(() => (topHostsData.value?.getTopNHostSummaries as TrafficSummary[]))
+
 
   return {
-    flowSummary
+    flowSummary,
+    topHosts
   }
 })
