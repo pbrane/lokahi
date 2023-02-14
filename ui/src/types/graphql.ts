@@ -81,7 +81,7 @@ export type EventParameter = {
 
 export type FlowSummary = {
   __typename?: 'FlowSummary';
-  numFlows: Scalars['Int'];
+  numFlows: Scalars['Long'];
 };
 
 export type IpInterface = {
@@ -228,6 +228,7 @@ export type Query = {
   findMinionById?: Maybe<Minion>;
   findNodeById?: Maybe<Node>;
   getFlowSummary?: Maybe<FlowSummary>;
+  getTopNHostSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
   listDiscoveryConfig?: Maybe<Array<Maybe<DiscoveryConfig>>>;
   metric?: Maybe<TimeSeriesQueryResult>;
   nodeStatus?: Maybe<NodeStatus>;
@@ -385,6 +386,13 @@ export type TimeSeriesQueryResult = {
   __typename?: 'TimeSeriesQueryResult';
   data?: Maybe<TsData>;
   status?: Maybe<Scalars['String']>;
+};
+
+export type TrafficSummary = {
+  __typename?: 'TrafficSummary';
+  bytesIn: Scalars['Long'];
+  bytesOut: Scalars['Long'];
+  label?: Maybe<Scalars['String']>;
 };
 
 export type AddAzureCredentialMutationVariables = Exact<{
