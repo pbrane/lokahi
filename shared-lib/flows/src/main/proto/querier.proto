@@ -50,6 +50,7 @@ message TrafficSummary {
     oneof node_type {
         string application = 5; 
         Conversation conversation = 6;
+        string host = 7;
     }
 }
 
@@ -164,8 +165,15 @@ message GetTopNConversationSeriesResponse {}
 message GetHostsRequest {}
 message GetHostsResponse {}
 
-message GetTopNHostSummariesRequest {}
-message GetTopNHostSummariesResponse {}
+message GetTopNHostSummariesRequest {
+    int64 count = 1;
+    bool include_other = 2;
+    repeated Filter filters = 3;
+}
+
+message GetTopNHostSummariesResponse {
+    repeated TrafficSummary summaries = 1;
+}
 
 message GetHostSummariesRequest {}
 message GetHostSummariesResponse {}
