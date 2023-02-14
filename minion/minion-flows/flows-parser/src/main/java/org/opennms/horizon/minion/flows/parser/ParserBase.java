@@ -136,7 +136,7 @@ public abstract class ParserBase implements Parser {
 
     private ExecutorService executor;
 
-    private TelemetryRegistry telemetryRegistry;
+    private final TelemetryRegistry telemetryRegistry;
 
     public ParserBase(final Protocol protocol,
                       final String name,

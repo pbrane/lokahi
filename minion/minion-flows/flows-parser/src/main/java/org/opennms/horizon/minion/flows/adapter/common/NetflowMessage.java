@@ -55,56 +55,6 @@ public class NetflowMessage implements Flow {
     }
 
     @Override
-    public Duration getClockCorrection() {
-        return null;
-    }
-
-    @Override
-    public NodeInfo getExporterNodeInfo() {
-        return null;
-    }
-
-    @Override
-    public NodeInfo getDstNodeInfo() {
-        return null;
-    }
-
-    @Override
-    public NodeInfo getSrcNodeInfo() {
-        return null;
-    }
-
-    @Override
-    public Locality getFlowLocality() {
-        return null;
-    }
-
-    @Override
-    public Locality getDstLocality() {
-        return null;
-    }
-
-    @Override
-    public Locality getSrcLocality() {
-        return null;
-    }
-
-    @Override
-    public String getLocation() {
-        return null;
-    }
-
-    @Override
-    public String getHost() {
-        return null;
-    }
-
-    @Override
-    public String getApplication() {
-        return null;
-    }
-
-    @Override
     public Instant getReceivedAt() {
         return this.receivedAt;
     }

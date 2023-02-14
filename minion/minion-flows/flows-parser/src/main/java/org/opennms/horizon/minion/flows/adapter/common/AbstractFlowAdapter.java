@@ -29,6 +29,7 @@
 package org.opennms.horizon.minion.flows.adapter.common;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.opennms.horizon.minion.flows.adapter.common.TelemetryMessageProtoUtil.buildMessage;
 
 import java.time.Instant;
@@ -36,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opennms.horizon.grpc.telemetry.contract.FlowSource;
 import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
 import org.opennms.horizon.minion.flows.adapter.imported.ContextKey;
@@ -49,12 +51,14 @@ import org.slf4j.LoggerFactory;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
-import com.google.common.base.Strings;
+
+import lombok.Getter;
 
 public abstract class AbstractFlowAdapter<P> implements Adapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractFlowAdapter.class);
 
+    @Getter
     private String metaDataNodeLookup;
     private ContextKey contextKey;
 
@@ -122,11 +126,11 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
             packetsPerLogHistogram.update(flowPackets);
         }
 
-        final org.opennms.horizon.grpc.telemetry.contract.FlowSource flowSourceProto = FlowSource.newBuilder()
+        final FlowSource flowSourceProto = FlowSource.newBuilder()
             .setSourceAddress(telemetryMessage.getFlowSource().getLocation())
-                .setSourceAddress(telemetryMessage.getSourceAddress())
-                    .setContextKey(org.opennms.horizon.grpc.telemetry.contract.ContextKey.newBuilder()
-                        .setKey(contextKey.getKey()).setContext(contextKey.getContext()).build()).build();
+            .setSourceAddress(telemetryMessage.getSourceAddress())
+            .setContextKey(org.opennms.horizon.grpc.telemetry.contract.ContextKey.newBuilder()
+                .setKey(getContextKey()).setContext(getContext()).build()).build();
 
         LOG.debug("Sending Packets and flows to metrics-processor for Enrichment step. ");
 
@@ -141,18 +145,9 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
 
     protected abstract List<Flow> convert(final P packet, final Instant receivedAt);
 
-    public String getMetaDataNodeLookup() {
-        return metaDataNodeLookup;
-    }
-
     public void setMetaDataNodeLookup(String metaDataNodeLookup) {
         this.metaDataNodeLookup = metaDataNodeLookup;
-
-        if (!Strings.isNullOrEmpty(this.metaDataNodeLookup)) {
-            this.contextKey = new ContextKey(metaDataNodeLookup);
-        } else {
-            this.contextKey = null;
-        }
+        this.contextKey = isNotBlank(this.metaDataNodeLookup) ? new ContextKey(metaDataNodeLookup) : null;
     }
 
     public boolean isApplicationThresholding() {
@@ -169,5 +164,19 @@ public abstract class AbstractFlowAdapter<P> implements Adapter {
 
     public void setApplicationDataCollection(final boolean applicationDataCollection) {
         this.applicationDataCollection = applicationDataCollection;
+    }
+
+    public String getContextKey() {
+        if (contextKey == null) {
+            return StringUtils.EMPTY;
+        }
+        else return contextKey.getKey();
+    }
+
+    public String getContext() {
+        if (contextKey == null) {
+            return StringUtils.EMPTY;
+        }
+        else return contextKey.getContext();
     }
 }

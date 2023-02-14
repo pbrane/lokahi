@@ -39,26 +39,6 @@ import org.opennms.horizon.minion.flows.parser.flowmessage.SamplingAlgorithm;
 
 public interface Flow {
 
-    Duration getClockCorrection();
-
-    NodeInfo getExporterNodeInfo();
-
-    NodeInfo getDstNodeInfo();
-
-    NodeInfo getSrcNodeInfo();
-
-    Locality getFlowLocality();
-
-    Locality getDstLocality();
-
-    Locality getSrcLocality();
-
-    String getLocation();
-
-    String getHost();
-
-    String getApplication();
-
     /**
      * Time at which the flow was received by listener in milliseconds since epoch UTC.
      */
