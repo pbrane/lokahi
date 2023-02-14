@@ -38,21 +38,36 @@
         <feature>grpc</feature>
         <bundle>mvn:org.opennms.horizon.shared/ipc-grpc-contract/${project.version}</bundle>
         <bundle>mvn:org.opennms.horizon.shared.snmp/proto/${project.version}</bundle>
-    </feature>
+        <bundle>mvn:org.opennms.horizon.shared/protobuf/${project.version}</bundle>
+        <bundle>mvn:com.fasterxml.jackson.core/jackson-databind/${jackson.version}</bundle>
+        <bundle>mvn:com.fasterxml.jackson.core/jackson-core/${jackson.version}</bundle>
+        <bundle>mvn:com.fasterxml.jackson.core/jackson-annotations/${jackson.version}</bundle>
+        <bundle>wrap:mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
+        <bundle>mvn:com.google.guava/guava/${guava.version}</bundle>
+        <bundle>wrap:mvn:com.google.protobuf/protobuf-java-util/${protobuf.version}$overwrite=merge&amp;Import-Package=com.google.common.base;version=0.0.0,com.google.common.io;version=0.0.0,com.google.common.math;version=0.0.0,com.google.common.primitives;version=0.0.0,com.google.gson;version=0.0.0,com.google.gson.stream;version=0.0.0,com.google.protobuf;version="[3.19,4)"</bundle>
+        <bundle>mvn:com.google.code.gson/gson/${gson.version}</bundle>
+       </feature>
 
-    <feature name="grpc-minion" version="${project.version}">
-        <feature>aries-blueprint</feature>
+       <feature name="grpc-minion" version="${project.version}">
+           <feature>aries-blueprint</feature>
 
-        <feature>internal-grpc-metrics</feature>
-        <feature>internal-grpc-opentracing</feature>
-        <feature>internal-grpc-guava</feature>
-        <feature>grpc-ratelimitter</feature>
-        <feature>grpc-contract</feature>
-        <feature>grpc-protobuf</feature>
+           <feature>internal-grpc-metrics</feature>
+           <feature>internal-grpc-opentracing</feature>
+           <feature>internal-grpc-guava</feature>
+           <feature>grpc-ratelimitter</feature>
+           <feature>grpc-contract</feature>
+           <feature>grpc-protobuf</feature>
 
-        <bundle>mvn:org.opennms.horizon.shared/horizon-common-logging/${project.version}</bundle>
-        <bundle>mvn:org.opennms.horizon.shared/ipc-api/${project.version}</bundle>
-        <bundle>mvn:org.opennms.horizon.minion/grpc-client/${project.version}</bundle>
-    </feature>
+           <bundle>mvn:org.opennms.horizon.shared/horizon-common-logging/${project.version}</bundle>
+           <bundle>mvn:org.opennms.horizon.shared/ipc-api/${project.version}</bundle>
+           <bundle>mvn:org.opennms.horizon.minion/grpc-client/${project.version}</bundle>
+           <bundle>mvn:com.fasterxml.jackson.core/jackson-databind/${jackson.version}</bundle>
+           <bundle>mvn:com.fasterxml.jackson.core/jackson-core/${jackson.version}</bundle>
+           <bundle>mvn:com.fasterxml.jackson.core/jackson-annotations/${jackson.version}</bundle>
+           <bundle>mvn:com.google.code.gson/gson/${gson.version}</bundle>
+           <bundle>wrap:mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
+           <bundle>mvn:com.google.guava/guava/${guava.version}</bundle>
+           <bundle>wrap:mvn:com.google.protobuf/protobuf-java-util/${protobuf.version}$overwrite=merge&amp;Import-Package=com.google.common.base;version=0.0.0,com.google.common.io;version=0.0.0,com.google.common.math;version=0.0.0,com.google.common.primitives;version=0.0.0,com.google.gson;version=0.0.0,com.google.gson.stream;version=0.0.0,com.google.protobuf;version="[3.19,4)"</bundle>
+        </feature>
 
 </features>
