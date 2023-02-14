@@ -37,10 +37,13 @@ import org.opennms.horizon.shared.ipc.sink.api.AggregationPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncPolicy;
 import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
 import org.opennms.horizon.shared.ipc.sink.api.UnmarshalException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 // TODO: Why do we even unpack?
 public class FlowSinkModule implements SinkModule<Message, Message> {
+
     @Override
     public String getId() {
         return "Flow";

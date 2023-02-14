@@ -4,6 +4,7 @@ import io.grpc.ManagedChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.dataplatform.flows.document.FlowDocument;
+import org.opennms.dataplatform.flows.document.FlowDocumentLog;
 import org.opennms.dataplatform.flows.ingester.v1.IngesterGrpc;
 import org.opennms.dataplatform.flows.ingester.v1.StoreFlowDocumentRequest;
 import org.springframework.context.event.EventListener;
@@ -25,19 +26,10 @@ public class FlowIngesterClient {
         }
     }
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void triggerFlowPushAfterStartup() {
-        log.info("Triggering flow push...");
-        pushFlowToIngester();
-    }
-
-    public void pushFlowToIngester() {
-        log.info("Pushing flow to ingester.");
-        FlowDocument flowDocument = FlowDocument.newBuilder()
-            .setApplication("sonos")
-            .build();
+    public void pushFlowToIngester(final FlowDocument flow) {
+        log.trace("Pushing flow to ingester.");
         flowIngesterStub.storeFlowDocument(StoreFlowDocumentRequest.newBuilder()
-            .setDocument(flowDocument).build());
-        log.info("Done pushing flow to ingester.");
+            .setDocument(flow).build());
+        log.trace("Done pushing flow to ingester.");
     }
 }

@@ -76,7 +76,7 @@ public class FlowKafkaForwarder implements MessageConsumer<Message, Message> {
     public void handleMessage(Message message) {
         // Retrieve the Tenant ID from the TenantID GRPC Interceptor
         String tenantId = tenantIDGrpcInterceptor.readCurrentContextTenantId();
-        logger.trace("Received flow; sending to Kafka: tenant-id: {}; kafka-topic={}; message={}", tenantId, kafkaTopic, message);
+        logger.info("Received flow; sending to Kafka: tenant-id: {}; kafka-topic={}", tenantId, kafkaTopic);
 
         byte[] rawContent = message.toByteArray();
         ProducerRecord<String, byte[]> producerRecord = formatProducerRecord(rawContent, tenantId);
