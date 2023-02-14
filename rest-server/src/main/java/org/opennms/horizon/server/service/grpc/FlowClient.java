@@ -11,7 +11,6 @@ import org.opennms.horizon.shared.constants.GrpcConstants;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor

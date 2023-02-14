@@ -66,5 +66,20 @@
             <artifactId>metrics-core</artifactId>
             <version>${dropwizard.metrics.version}</version>
         </dependency>
+
+        <!-- flows ingestion -->
+        <dependency>
+            <groupId>org.opennms.horizon.shared</groupId>
+            <artifactId>flows</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+        </dependency>
     </dependencies>
 </project>

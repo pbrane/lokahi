@@ -28,8 +28,12 @@
 
 package org.opennms.horizon.tsdata;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import org.opennms.horizon.flows.FlowIngesterClient;
 import org.opennms.horizon.timeseries.cortex.CortexTSS;
 import org.opennms.horizon.timeseries.cortex.CortexTSSConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,5 +67,24 @@ public class ApplicationConfig {
     public CortexTSS createCortex() {
         return new CortexTSS(cortexTSSConfig());
     }
+
+    @Value("${grpc.server.deadline:60000}")
+    private long deadline;
+
+    @Value("${grpc.url.flow.ingester}")
+    private String flowIngesterGrpcAddress;
+
+    @Bean(name = "flowIngester")
+    public ManagedChannel createFlowIngesterChannel() {
+        return ManagedChannelBuilder.forTarget(flowIngesterGrpcAddress)
+            .keepAliveWithoutCalls(true)
+            .usePlaintext().build();
+    }
+
+    @Bean(destroyMethod = "shutdown", initMethod = "initialStubs")
+    public FlowIngesterClient createFlowClient(@Qualifier("flowIngester") ManagedChannel channel) {
+        return new FlowIngesterClient(channel, deadline);
+    }
+
 }
 
