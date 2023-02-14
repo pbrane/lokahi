@@ -81,5 +81,16 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.horizon.shared</groupId>
+            <artifactId>horizon-common-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

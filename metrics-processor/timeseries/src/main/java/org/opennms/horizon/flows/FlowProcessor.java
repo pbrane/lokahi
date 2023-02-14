@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.flows;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,6 +36,13 @@ import java.util.concurrent.CompletableFuture;
 
 import org.opennms.dataplatform.flows.document.FlowDocument;
 import org.opennms.dataplatform.flows.document.FlowDocumentLog;
+import org.opennms.horizon.flows.classification.api.ClassificationEngine;
+import org.opennms.horizon.flows.classification.api.ClassificationRequestBuilder;
+import org.opennms.horizon.flows.classification.api.ClassificationRuleProvider;
+import org.opennms.horizon.flows.classification.api.FilterService;
+import org.opennms.horizon.flows.classification.api.model.Protocols;
+import org.opennms.horizon.flows.classification.engine.DefaultClassificationEngine;
+import org.opennms.horizon.flows.classification.engine.csv.CsvImporter;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -52,8 +60,18 @@ import lombok.extern.slf4j.Slf4j;
 public class FlowProcessor {
     private final FlowIngesterClient ingesterClient;
 
-    public FlowProcessor(final FlowIngesterClient ingesterClient) {
+    private final ClassificationEngine classificationEngine;
+
+    public FlowProcessor(final FlowIngesterClient ingesterClient) throws IOException, InterruptedException {
         this.ingesterClient = Objects.requireNonNull(ingesterClient);
+
+        final var rules = CsvImporter.parseCSV(
+            FlowProcessor.class.getResourceAsStream("/pre-defined-rules.csv"),
+            true);
+
+        this.classificationEngine = new DefaultClassificationEngine(
+            ClassificationRuleProvider.forList(rules),
+            FilterService.ANY);
     }
 
     @KafkaListener(topics = "flows", concurrency = "1")
@@ -66,11 +84,25 @@ public class FlowProcessor {
             log.info("Processing flows for {} from location={}", tenantId, flows.getLocation());
 
             flows.getMessageList().forEach(flow -> CompletableFuture.supplyAsync(() -> {
-                try {
-                    this.ingesterClient.pushFlowToIngester(FlowDocument.newBuilder(flow)
-                        .setTenantId(tenantId)
-                        .build());
+                final var enrichedFlow = FlowDocument.newBuilder(flow)
+                    .setTenantId(tenantId);
 
+                final var application = this.classificationEngine.classify(new ClassificationRequestBuilder()
+                    .withSrcAddress(flow.getSrcAddress())
+                    .withSrcPort(flow.getSrcPort().getValue())
+                    .withDstPort(flow.getDstPort().getValue())
+                    .withDstAddress(flow.getDstAddress())
+                    .withProtocol(Protocols.getProtocol(flow.getProtocol().getValue()))
+                    .withExporterAddress(flow.getExporterAddress())
+                    .withLocation(flow.getLocation())
+                    .build());
+                if (application != null) {
+                    enrichedFlow.setApplication(application);
+                }
+
+                try {
+                    this.ingesterClient.pushFlowToIngester(enrichedFlow
+                        .build());
 
                 } catch (final Exception exc) {
                     log.warn("Error processing flow", exc);
