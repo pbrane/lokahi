@@ -13,7 +13,7 @@ kafka:
 grpc:
   url:
     flow:
-      ingester: flow-ingester:9000
+      ingester: flows-ingester:9000
   server:
     deadline: 60000
 
