@@ -1,0 +1,9 @@
+elasticsearch:
+  enabled: true
+  url: http://elasticsearch-es-http:9200
+  certificate:
+    secretName: elasticsearch-es-http-certs-public
+    certificateKey: ca.crt
+  authentication:
+    usernamePasswordSecret:
+      secretName: elasticsearch-es-elastic-user
