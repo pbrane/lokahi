@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flows-querier
+  labels:
+    app: flows-querier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flows-querier
+  template:
+    metadata:
+      labels:
+        app: flows-querier
+    spec:
+      containers:
+      - image: flows-querier:0.0.1-hackz
+        imagePullPolicy: IfNotPresent
+        name: flows-querier
+        ports:
+        - name: grpc
+          containerPort: 9000
+        - name: http
+          containerPort: 8282
+        env:
+        - name: DP_LOG
+          value: INFO
+        - name: ELASTICSEARCH_URL
+          value: http://elasticsearch-es-http:9200
+        resources:
+          limits:
+            cpu: 100m
+            memory: 256Mi

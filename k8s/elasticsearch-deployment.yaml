@@ -1,0 +1,44 @@
+---
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: elasticsearch
+spec:
+  version: 7.17.5
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  nodeSets:
+  - name: default
+    count: 1
+    config:
+      node.master: true
+      node.data: true
+      node.ingest: true
+      node.store.allow_mmap: false
+      xpack.security.authc:
+        anonymous:
+          username: anonymous
+          roles: superuser
+          authz_exception: false
+    podTemplate:
+      spec:
+        initContainers:
+        - name: install-plugins
+          command:
+          - sh
+          - -c
+          - bin/elasticsearch-plugin install https://github.com/OpenNMS/elasticsearch-drift-plugin/releases/download/v2.0.3_es-7.6.2%2Ces-7.10.2%2Ces-7.16.2%2Ces-7.16.3%2Ces-7.17.5/elasticsearch-drift-plugin-7.17.5-2.0.3.zip
+          securityContext:
+            privileged: true
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms500m -Xmx500m
+          resources:
+            requests:
+              memory: 800Mi
+            limits:
+              memory: 1.5Gi

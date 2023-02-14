@@ -31,6 +31,6 @@ grpc:
     events: localhost:30065
     notification: localhost:15065
     flow:
-      querier: 192.168.178.158:9000
+      querier: flows-querier:9000
   server:
     deadline: 60000
