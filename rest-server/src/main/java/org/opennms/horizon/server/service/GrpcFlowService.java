@@ -33,11 +33,17 @@ import io.leangen.graphql.annotations.GraphQLQuery;
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import lombok.RequiredArgsConstructor;
+import org.opennms.dataplatform.flows.querier.Querier;
 import org.opennms.horizon.server.model.flows.FlowSummary;
+import org.opennms.horizon.server.model.flows.TrafficSummary;
+import org.opennms.horizon.server.model.inventory.Location;
 import org.opennms.horizon.server.service.grpc.FlowClient;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @GraphQLApi
@@ -52,5 +58,28 @@ public class GrpcFlowService {
         FlowSummary flowSummary = new FlowSummary();
         flowSummary.setNumFlows(client.getNumFlows(headerUtil.getAuthHeader(env)));
         return Mono.just(flowSummary);
+    }
+
+    @GraphQLQuery(name = "getTopNHostSummaries")
+    public Flux<TrafficSummary> getTopNHostSummaries(@GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNHostSummaries(10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
+    }
+
+    private TrafficSummary toTrafficSummary(Querier.TrafficSummary summary) {
+        TrafficSummary trafficSummary = new TrafficSummary();
+        trafficSummary.setBytesIn(summary.getBytesIn());
+        trafficSummary.setBytesOut(summary.getBytesOut());
+        if (summary.hasApplication()) {
+            trafficSummary.setLabel(summary.getApplication());
+        } else if (summary.hasHost()) {
+            trafficSummary.setLabel(summary.getHost());
+        } else if (summary.hasConversation()) {
+            Querier.Conversation conversation = summary.getConversation();
+            trafficSummary.setLabel(String.format("%s <-> %s (%s)",
+                conversation.getLowerHost(),
+                conversation.getUpperHost(),
+                conversation.getApplication()));
+        }
+        return trafficSummary;
     }
 }
