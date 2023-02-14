@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flows-querier
+  name: flows-ingester
   labels:
-    app: flows-querier
+    app: flows-ingester
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: flows-querier
+      app: flows-ingester
   template:
     metadata:
       labels:
-        app: flows-querier
+        app: flows-ingester
     spec:
       containers:
-      - image: flows-querier:0.0.1-hackz
+      - image: flows-ingester:0.0.1-hackz
         imagePullPolicy: IfNotPresent
-        name: flows-querier
+        name: flows-ingester
         ports:
         - name: grpc
           containerPort: 9000
