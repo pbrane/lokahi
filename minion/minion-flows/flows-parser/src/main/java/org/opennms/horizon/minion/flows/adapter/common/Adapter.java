@@ -49,8 +49,6 @@ public interface Adapter {
      */
     void handleMessage(TelemetryMessage messageLog);
 
-    default void destroy() {}
-
     default NetflowVersion getNetflowVersion() {
         return NetflowVersion.UNRECOGNIZED;
     }
