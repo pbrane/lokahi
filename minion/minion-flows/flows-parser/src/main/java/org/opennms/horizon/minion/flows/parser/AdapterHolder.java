@@ -65,7 +65,7 @@ public class AdapterHolder {
 
     public void put(String name, Adapter adapter) {
         adapterMap.put(name, adapter);
-        LOG.info("Adapter {} added into holder.", adapter.getClassName());
+        LOG.info("{} added into AdapterHolder.", adapter.getClass().getSimpleName());
     }
 
     public void clearAll() {

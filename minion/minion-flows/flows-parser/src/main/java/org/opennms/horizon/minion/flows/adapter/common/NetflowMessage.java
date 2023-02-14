@@ -29,7 +29,7 @@
 package org.opennms.horizon.minion.flows.adapter.common;
 
 
-import java.time.Duration;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,7 +44,7 @@ import org.opennms.horizon.minion.flows.parser.flowmessage.SamplingAlgorithm;
 
 import com.google.common.base.Strings;
 
-public class NetflowMessage implements Flow {
+public class NetflowMessage implements Flow, Serializable {
 
     private final FlowMessage flowMessageProto;
     private final Instant receivedAt;

@@ -49,10 +49,6 @@ public interface Adapter {
      */
     void handleMessage(TelemetryMessage messageLog);
 
-    String getName();
-
-    String getClassName();
-
     default void destroy() {}
 
     default NetflowVersion getNetflowVersion() {

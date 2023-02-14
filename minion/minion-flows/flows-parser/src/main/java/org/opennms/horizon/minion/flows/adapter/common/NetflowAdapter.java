@@ -67,14 +67,4 @@ public class NetflowAdapter extends AbstractFlowAdapter<FlowMessage> {
     public List<Flow> convert(final FlowMessage packet, final Instant receivedAt) {
         return Collections.singletonList(new NetflowMessage(packet, receivedAt));
     }
-
-    @Override
-    public String getName() {
-        return null;
-    }
-
-    @Override
-    public String getClassName() {
-        return null;
-    }
 }
