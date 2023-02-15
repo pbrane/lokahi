@@ -113,7 +113,7 @@ public class GrpcFlowService {
         } else if (point.hasConversation()) {
             flowingPoint.setLabel(conversationToLabel(point.getConversation()));
         }
-        flowingPoint.setValue(flowingPoint.getValue());
+        flowingPoint.setValue(point.getValue());
         return flowingPoint;
     }
 
