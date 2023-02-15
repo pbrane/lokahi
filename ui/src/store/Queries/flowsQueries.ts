@@ -36,8 +36,42 @@ export const useFlowQueries = defineStore('flowQueries', () => {
   const topHosts = computed(() => (topHostsData.value?.getTopNHostSummaries as TrafficSummary[]))
 
 
+  const GetTopNApplicationSummaries = `
+    {
+      getTopNApplicationSummaries{
+        bytesIn
+        bytesOut
+        label
+      }
+    }
+  `
+  const { data: topApplicationsData } = useQuery({
+    query: GetTopNApplicationSummaries,
+    variables,
+    cachePolicy: 'network-only'
+  })
+  const topApplications = computed(() => (topApplicationsData.value?.getTopNApplicationSummaries as TrafficSummary[]))
+
+  const GetTopNConversationSummaries = `
+    {
+      getTopNConversationSummaries{
+        bytesIn
+        bytesOut
+        label
+      }
+    }
+  `
+  const { data: topConversationsData } = useQuery({
+    query: GetTopNConversationSummaries,
+    variables,
+    cachePolicy: 'network-only'
+  })
+  const topConversations = computed(() => (topConversationsData.value?.getTopNConversationSummaries as TrafficSummary[]))
+
   return {
     flowSummary,
-    topHosts
+    topHosts,
+    topApplications,
+    topConversations
   }
 })
