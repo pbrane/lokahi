@@ -53,7 +53,7 @@ def jib_project(resource_name, image_name, base_path, k8s_resource_name, resourc
 
     local_resource(
         compile_resource_name,
-        'mvn compile -f {} -am {}'.format(base_path, submodule_flag),
+        'mvn install -f {} -am {}'.format(base_path, submodule_flag),
         deps=['{}/src'.format(base_path), '{}/pom.xml'.format(base_path)],
         ignore=['**/target'],
         labels=labels,
