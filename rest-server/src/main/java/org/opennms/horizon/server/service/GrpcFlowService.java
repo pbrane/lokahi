@@ -65,6 +65,16 @@ public class GrpcFlowService {
         return Flux.fromIterable(client.getTopNHostSummaries(10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
     }
 
+    @GraphQLQuery(name = "getTopNApplicationSummaries")
+    public Flux<TrafficSummary> getTopNApplicationSummaries(@GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNApplicationSummaries(10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
+    }
+
+    @GraphQLQuery(name = "getTopNConversationSummaries")
+    public Flux<TrafficSummary> getTopNConversationSummaries(@GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNConversationSummaries(10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
+    }
+
     private TrafficSummary toTrafficSummary(Querier.TrafficSummary summary) {
         TrafficSummary trafficSummary = new TrafficSummary();
         trafficSummary.setBytesIn(summary.getBytesIn());

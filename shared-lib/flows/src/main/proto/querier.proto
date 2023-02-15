@@ -80,17 +80,13 @@ message GetApplicationsResponse {
     repeated string applications = 1;
 }
 
-message GetTopApplicationSummariesRequest {
+message GetTopNApplicationSummariesRequest {
+    int64 count = 1;
     bool include_other = 2;
     repeated Filter filters = 3;
 }
 message ApplicationSummaries{}
 
-message GetTopNApplicationSummariesRequest {
-    int32 count = 1;
-    bool include_other = 2;
-    repeated Filter filters = 3;
-}
 message GetTopNApplicationSummariesResponse {
     repeated TrafficSummary summaries = 1;
 }
@@ -150,7 +146,9 @@ message GetTopNConversationSummariesRequest {
     bool include_other = 2;
     repeated Filter filters = 3;
 }
-message GetTopNConversationSummariesResponse {}
+message GetTopNConversationSummariesResponse {
+    repeated TrafficSummary summaries = 1;
+}
 
 message GetConversationSummariesRequest {}
 message GetConversationSummariesResponse {}
@@ -199,7 +197,7 @@ service FlowService {
 
 service ApplicationsService {
     rpc GetApplications(GetApplicationsRequest) returns (GetApplicationsResponse);
-    rpc GetTopApplicationSummaries(GetTopApplicationSummariesRequest) returns (ApplicationSummaries);
+    rpc GetTopNApplicationSummaries(GetTopNApplicationSummariesRequest) returns (GetTopNApplicationSummariesResponse);
     rpc GetApplicationSummaries(GetApplicationSummariesRequest) returns (ApplicationSummaries);
     rpc GetApplicationSeries(GetApplicationSeriesRequest) returns (GetApplicationSeriesResponse);
     rpc GetTopNApplicationSeries(GetTopNApplicationSeriesRequest) returns (GetTopNApplicationSeriesRequest);

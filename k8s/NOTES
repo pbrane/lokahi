@@ -1,0 +1,7 @@
+# Accessing Kibana
+
+kubectl port-forward service/kibana-kb-http 5601
+
+# User
+
+kubectl get secret elasticsearch-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo

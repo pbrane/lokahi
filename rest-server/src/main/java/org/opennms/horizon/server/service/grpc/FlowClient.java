@@ -5,9 +5,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import lombok.RequiredArgsConstructor;
-import org.opennms.dataplatform.flows.querier.FlowServiceGrpc;
-import org.opennms.dataplatform.flows.querier.HostsServiceGrpc;
-import org.opennms.dataplatform.flows.querier.Querier;
+import org.opennms.dataplatform.flows.querier.*;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 
 import java.time.Instant;
@@ -20,12 +18,15 @@ public class FlowClient {
     private final ManagedChannel channel;
     private final long deadlineMs;
     private FlowServiceGrpc.FlowServiceBlockingStub flowServiceStub;
-
     private HostsServiceGrpc.HostsServiceBlockingStub hostsServiceBlockingStub;
+    private ApplicationsServiceGrpc.ApplicationsServiceBlockingStub applicationsServiceBlockingStub;
+    private ConversationsServiceGrpc.ConversationsServiceBlockingStub conversationsServiceBlockingStub;
 
     protected void initialStubs() {
         flowServiceStub = FlowServiceGrpc.newBlockingStub(channel);
         hostsServiceBlockingStub = HostsServiceGrpc.newBlockingStub(channel);
+        applicationsServiceBlockingStub = ApplicationsServiceGrpc.newBlockingStub(channel);
+        conversationsServiceBlockingStub = ConversationsServiceGrpc.newBlockingStub(channel);
     }
 
     public void shutdown() {
@@ -59,6 +60,30 @@ public class FlowClient {
             .setCount(N)
             .build();
         return hostsServiceBlockingStub.getTopNHostSummaries(hostSummariesRequest).getSummariesList();
+    }
+
+    public List<Querier.TrafficSummary> getTopNApplicationSummaries(long N, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+
+        Querier.Filter timeRangeFilter = getTimeRangeFilter();
+        Querier.GetTopNApplicationSummariesRequest appSummariesRequest = Querier.GetTopNApplicationSummariesRequest.newBuilder()
+            .addFilters(timeRangeFilter)
+            .setCount(N)
+            .build();
+        return applicationsServiceBlockingStub.getTopNApplicationSummaries(appSummariesRequest).getSummariesList();
+    }
+
+    public List<Querier.TrafficSummary> getTopNConversationSummaries(long N, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+
+        Querier.Filter timeRangeFilter = getTimeRangeFilter();
+        Querier.GetTopNConversationSummariesRequest convoSummariesRequest = Querier.GetTopNConversationSummariesRequest.newBuilder()
+            .addFilters(timeRangeFilter)
+            .setCount(N)
+            .build();
+        return conversationsServiceBlockingStub.getTopNConversationSummaries(convoSummariesRequest).getSummariesList();
     }
 
     private Querier.Filter getTimeRangeFilter() {

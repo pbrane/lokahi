@@ -228,6 +228,8 @@ export type Query = {
   findMinionById?: Maybe<Minion>;
   findNodeById?: Maybe<Node>;
   getFlowSummary?: Maybe<FlowSummary>;
+  getTopNApplicationSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
+  getTopNConversationSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
   getTopNHostSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
   listDiscoveryConfig?: Maybe<Array<Maybe<DiscoveryConfig>>>;
   metric?: Maybe<TimeSeriesQueryResult>;
