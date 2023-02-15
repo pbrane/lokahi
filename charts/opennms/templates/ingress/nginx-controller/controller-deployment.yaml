@@ -105,6 +105,7 @@ spec:
           name: webhook
           protocol: TCP
         - containerPort: 8990
+          hostPort: {{ .Values.Ingress.GrpcPort }}
           name: grpc
           protocol: TCP
         readinessProbe:

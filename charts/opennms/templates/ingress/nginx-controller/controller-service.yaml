@@ -23,6 +23,11 @@ spec:
       port: {{ .Values.Ingress.HttpsPort }}
       protocol: TCP
       targetPort: https
+    - appProtocol: grpc
+      name: grpc
+      port: {{ .Values.Ingress.GrpcPort }}
+      protocol: TCP
+      targetPort: grpc
   selector:
     app.kubernetes.io/component: controller-{{ .Release.Namespace }}
     app.kubernetes.io/name: ingress-nginx-{{ .Release.Namespace }}
