@@ -3,7 +3,7 @@ import { useQuery } from 'villus'
 import {Query, FlowSummary, TrafficSummary} from '@/types/graphql'
 
 export const useFlowQueries = defineStore('flowQueries', () => {
-  const variables = ref({})
+  const variables = ref({hours:1})
   const GetFlowSummary = `
     {
       getFlowSummary{
@@ -19,56 +19,59 @@ export const useFlowQueries = defineStore('flowQueries', () => {
   const flowSummary = computed(() => (flowSummaryData.value?.getFlowSummary as FlowSummary))
 
 
-  const GetTopNHostSummaries = `
-    {
-      getTopNHostSummaries{
+  const GetTopNHostSummaries = computed(() => {
+    return `{
+      getTopNHostSummaries(hours: ${variables.value.hours}){
         bytesIn
         bytesOut
         label
       }
-    }
-  `
+    }`
+  })
+
   const { data: topHostsData } = useQuery({
     query: GetTopNHostSummaries,
-    variables,
     cachePolicy: 'network-only'
   })
   const topHosts = computed(() => (topHostsData.value?.getTopNHostSummaries as TrafficSummary[]))
 
 
-  const GetTopNApplicationSummaries = `
-    {
-      getTopNApplicationSummaries{
+  const GetTopNApplicationSummaries = computed(() => {
+    return `{
+      getTopNApplicationSummaries(hours: ${variables.value.hours}){
         bytesIn
         bytesOut
         label
       }
-    }
-  `
+    }`
+  })
   const { data: topApplicationsData } = useQuery({
     query: GetTopNApplicationSummaries,
-    variables,
     cachePolicy: 'network-only'
   })
   const topApplications = computed(() => (topApplicationsData.value?.getTopNApplicationSummaries as TrafficSummary[]))
 
-  const GetTopNConversationSummaries = `
-    {
-      getTopNConversationSummaries{
+  const GetTopNConversationSummaries = computed(() => {
+    return `{
+      getTopNConversationSummaries(hours: ${variables.value.hours}){
         bytesIn
         bytesOut
         label
       }
-    }
-  `
+    }`
+  })
   const { data: topConversationsData } = useQuery({
     query: GetTopNConversationSummaries,
-    variables,
     cachePolicy: 'network-only'
   })
   const topConversations = computed(() => (topConversationsData.value?.getTopNConversationSummaries as TrafficSummary[]))
 
+  const setTimeWindow = (hours: number) => {
+    variables.value = { hours }
+  }
+
   return {
+    setTimeWindow,
     flowSummary,
     topHosts,
     topApplications,

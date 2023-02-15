@@ -39,7 +39,7 @@ public class FlowClient {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
-        Querier.Filter timeRangeFilter = getTimeRangeFilter();
+        Querier.Filter timeRangeFilter = getTimeRangeFilter(null);
         Querier.GetFlowCountRequest flowCountRequest = Querier.GetFlowCountRequest.newBuilder()
             .addFilters(timeRangeFilter)
             .build();
@@ -50,11 +50,11 @@ public class FlowClient {
             .getCount();
     }
 
-    public List<Querier.TrafficSummary> getTopNHostSummaries(long N, String accessToken) {
+    public List<Querier.TrafficSummary> getTopNHostSummaries(Long hours, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
-        Querier.Filter timeRangeFilter = getTimeRangeFilter();
+        Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
         Querier.GetTopNHostSummariesRequest hostSummariesRequest = Querier.GetTopNHostSummariesRequest.newBuilder()
             .addFilters(timeRangeFilter)
             .setCount(N)
@@ -62,11 +62,11 @@ public class FlowClient {
         return hostsServiceBlockingStub.getTopNHostSummaries(hostSummariesRequest).getSummariesList();
     }
 
-    public List<Querier.TrafficSummary> getTopNApplicationSummaries(long N, String accessToken) {
+    public List<Querier.TrafficSummary> getTopNApplicationSummaries(Long hours, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
-        Querier.Filter timeRangeFilter = getTimeRangeFilter();
+        Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
         Querier.GetTopNApplicationSummariesRequest appSummariesRequest = Querier.GetTopNApplicationSummariesRequest.newBuilder()
             .addFilters(timeRangeFilter)
             .setCount(N)
@@ -74,11 +74,11 @@ public class FlowClient {
         return applicationsServiceBlockingStub.getTopNApplicationSummaries(appSummariesRequest).getSummariesList();
     }
 
-    public List<Querier.TrafficSummary> getTopNConversationSummaries(long N, String accessToken) {
+    public List<Querier.TrafficSummary> getTopNConversationSummaries(Long hours, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
-        Querier.Filter timeRangeFilter = getTimeRangeFilter();
+        Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
         Querier.GetTopNConversationSummariesRequest convoSummariesRequest = Querier.GetTopNConversationSummariesRequest.newBuilder()
             .addFilters(timeRangeFilter)
             .setCount(N)
@@ -86,13 +86,15 @@ public class FlowClient {
         return conversationsServiceBlockingStub.getTopNConversationSummaries(convoSummariesRequest).getSummariesList();
     }
 
-    private Querier.Filter getTimeRangeFilter() {
+    private Querier.Filter getTimeRangeFilter(Long hours) {
+        long effectiveHours = hours != null ? hours : 24;
+
         Instant nowTime = Instant.now();
         Timestamp nowTimestamp = Timestamp.newBuilder()
             .setSeconds(nowTime.getEpochSecond())
             .setNanos(nowTime.getNano()).build();
 
-        Instant thenTime = nowTime.minus(24, ChronoUnit.HOURS);
+        Instant thenTime = nowTime.minus(effectiveHours, ChronoUnit.HOURS);
         Timestamp thenTimestamp = Timestamp.newBuilder()
             .setSeconds(thenTime.getEpochSecond())
             .setNanos(thenTime.getNano()).build();

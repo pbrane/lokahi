@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.server.service;
 
+import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLEnvironment;
 import io.leangen.graphql.annotations.GraphQLQuery;
 import io.leangen.graphql.execution.ResolutionEnvironment;
@@ -61,18 +62,18 @@ public class GrpcFlowService {
     }
 
     @GraphQLQuery(name = "getTopNHostSummaries")
-    public Flux<TrafficSummary> getTopNHostSummaries(@GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.getTopNHostSummaries(10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
+    public Flux<TrafficSummary> getTopNHostSummaries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNHostSummaries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
     }
 
     @GraphQLQuery(name = "getTopNApplicationSummaries")
-    public Flux<TrafficSummary> getTopNApplicationSummaries(@GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.getTopNApplicationSummaries(10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
+    public Flux<TrafficSummary> getTopNApplicationSummaries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNApplicationSummaries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
     }
 
     @GraphQLQuery(name = "getTopNConversationSummaries")
-    public Flux<TrafficSummary> getTopNConversationSummaries(@GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.getTopNConversationSummaries(10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
+    public Flux<TrafficSummary> getTopNConversationSummaries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNConversationSummaries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
     }
 
     private TrafficSummary toTrafficSummary(Querier.TrafficSummary summary) {

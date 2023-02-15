@@ -271,6 +271,24 @@ export type QueryFindNodeByIdArgs = {
 
 
 /** Query root */
+export type QueryGetTopNApplicationSummariesArgs = {
+  hours?: InputMaybe<Scalars['Long']>;
+};
+
+
+/** Query root */
+export type QueryGetTopNConversationSummariesArgs = {
+  hours?: InputMaybe<Scalars['Long']>;
+};
+
+
+/** Query root */
+export type QueryGetTopNHostSummariesArgs = {
+  hours?: InputMaybe<Scalars['Long']>;
+};
+
+
+/** Query root */
 export type QueryMetricArgs = {
   labels?: InputMaybe<Scalars['Map_String_StringScalar']>;
   name?: InputMaybe<Scalars['String']>;
