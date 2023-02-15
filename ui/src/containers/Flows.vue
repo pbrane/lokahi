@@ -27,7 +27,7 @@
           </tr>
           </thead>
           <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="(topHost, index) in topHosts" :key="(topHost.label as string)" :data-index="index" data-test="top-host">
+            <tr v-for="(topHost, index) in topHostSummaries" :key="(topHost.label as string)" :data-index="index" data-test="top-host">
               <td>{{ topHost.label }}</td>
               <td>{{ topHost.bytesIn }}</td>
               <td>{{ topHost.bytesOut }}</td>
@@ -47,10 +47,29 @@
           </tr>
           </thead>
           <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="(topApp, index) in topApplications" :key="(topApp.label as string)" :data-index="index" data-test="top-host">
+            <tr v-for="(topApp, index) in topApplicationSummaries" :key="(topApp.label as string)" :data-index="index" data-test="top-host">
               <td>{{ topApp.label }}</td>
               <td>{{ topApp.bytesIn }}</td>
               <td>{{ topApp.bytesOut }}</td>
+            </tr>
+          </TransitionGroup>
+        </table>
+
+        <table class="data-table" aria-label="Top 10 applications" data-test="Top 10 applications">
+          <thead>
+          <tr>
+            <th scope="col" data-test="col-timestamp">Timestamp</th>
+            <th scope="col" data-test="col-direction">Direction</th>
+            <th scope="col" data-test="col-label">Label</th>
+            <th scope="col" data-test="col-value">Value</th>
+          </tr>
+          </thead>
+          <TransitionGroup name="data-table" tag="tbody">
+            <tr v-for="(topApp, index) in topApplicationSeries" :key="[topApp.timestamp, topApp.direction, topApp.label]" :data-index="index" data-test="top-host">
+              <td>{{ topApp.timestamp }}</td>
+              <td>{{ topApp.direction }}</td>
+              <td>{{ topApp.label }}</td>
+              <td>{{ topApp.value }}</td>
             </tr>
           </TransitionGroup>
         </table>
@@ -67,7 +86,7 @@
           </tr>
           </thead>
           <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="(topConvo, index) in topConversations" :key="(topConvo.label as string)" :data-index="index" data-test="top-host">
+            <tr v-for="(topConvo, index) in topConversationSummaries" :key="(topConvo.label as string)" :data-index="index" data-test="top-host">
               <td>{{ topConvo.label }}</td>
               <td>{{ topConvo.bytesIn }}</td>
               <td>{{ topConvo.bytesOut }}</td>
@@ -119,16 +138,20 @@ const flowSummary = computed(() => {
   return store.flowSummary
 })
 
-const topHosts = computed(() => {
-  return store.topHosts
+const topHostSummaries = computed(() => {
+  return store.topHostSummaries
 })
 
-const topApplications = computed(() => {
-  return store.topApplications
+const topApplicationSummaries = computed(() => {
+  return store.topApplicationSummaries
 })
 
-const topConversations = computed(() => {
-  return store.topConversations
+const topApplicationSeries = computed(() => {
+  return store.topApplicationSeries
+})
+
+const topConversationSummaries = computed(() => {
+  return store.topConversationSummaries
 })
 </script>
 

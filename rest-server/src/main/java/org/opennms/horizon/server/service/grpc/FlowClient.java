@@ -1,17 +1,23 @@
 package org.opennms.horizon.server.service.grpc;
 
-import com.google.protobuf.Timestamp;
-import io.grpc.ManagedChannel;
-import io.grpc.Metadata;
-import io.grpc.stub.MetadataUtils;
-import lombok.RequiredArgsConstructor;
-import org.opennms.dataplatform.flows.querier.*;
-import org.opennms.horizon.shared.constants.GrpcConstants;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import org.opennms.dataplatform.flows.querier.ApplicationsServiceGrpc;
+import org.opennms.dataplatform.flows.querier.ConversationsServiceGrpc;
+import org.opennms.dataplatform.flows.querier.FlowServiceGrpc;
+import org.opennms.dataplatform.flows.querier.HostsServiceGrpc;
+import org.opennms.dataplatform.flows.querier.Querier;
+import org.opennms.horizon.shared.constants.GrpcConstants;
+
+import com.google.protobuf.Timestamp;
+
+import io.grpc.ManagedChannel;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class FlowClient {
@@ -72,6 +78,18 @@ public class FlowClient {
             .setCount(N)
             .build();
         return applicationsServiceBlockingStub.getTopNApplicationSummaries(appSummariesRequest).getSummariesList();
+    }
+
+    public List<Querier.FlowingPoint> getTopNApplicationSeries(Long hours, long N, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+
+        Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
+        Querier.GetTopNApplicationSeriesRequest appSeriesRequest = Querier.GetTopNApplicationSeriesRequest.newBuilder()
+            .addFilter(timeRangeFilter)
+            .setCount(N)
+            .build();
+        return applicationsServiceBlockingStub.getTopNApplicationSeries(appSeriesRequest).getPointList();
     }
 
     public List<Querier.TrafficSummary> getTopNConversationSummaries(Long hours, long N, String accessToken) {

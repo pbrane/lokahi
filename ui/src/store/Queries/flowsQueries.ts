@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { useQuery } from 'villus'
-import {Query, FlowSummary, TrafficSummary} from '@/types/graphql'
+import {Query, FlowSummary, TrafficSummary, FlowingPoint} from '@/types/graphql'
 
 export const useFlowQueries = defineStore('flowQueries', () => {
   const variables = ref({hours:1})
@@ -29,11 +29,11 @@ export const useFlowQueries = defineStore('flowQueries', () => {
     }`
   })
 
-  const { data: topHostsData } = useQuery({
+  const { data: topHostSummeriesData } = useQuery({
     query: GetTopNHostSummaries,
     cachePolicy: 'network-only'
   })
-  const topHosts = computed(() => (topHostsData.value?.getTopNHostSummaries as TrafficSummary[]))
+  const topHostSummaries = computed(() => (topHostSummeriesData.value?.getTopNHostSummaries as TrafficSummary[]))
 
 
   const GetTopNApplicationSummaries = computed(() => {
@@ -45,12 +45,30 @@ export const useFlowQueries = defineStore('flowQueries', () => {
       }
     }`
   })
-  const { data: topApplicationsData } = useQuery({
+  const { data: topApplicationSummeriesData } = useQuery({
     query: GetTopNApplicationSummaries,
     cachePolicy: 'network-only'
   })
-  const topApplications = computed(() => (topApplicationsData.value?.getTopNApplicationSummaries as TrafficSummary[]))
+  const topApplicationSummaries = computed(() => (topApplicationSummeriesData.value?.getTopNApplicationSummaries as TrafficSummary[]))
 
+
+  const GetTopNApplicationSeries = computed(() => {
+    return `{
+      getTopNApplicationSeries(hours: ${variables.value.hours}){
+        timestamp
+        direction
+        label
+        value
+      }
+    }`
+  })
+  const { data: topApplicationSeriesData } = useQuery({
+    query: GetTopNApplicationSeries,
+    cachePolicy: 'network-only'
+  })
+  const topApplicationSeries = computed(() => (topApplicationSeriesData.value?.getTopNApplicationSummaries as FlowingPoint[]))
+  
+  
   const GetTopNConversationSummaries = computed(() => {
     return `{
       getTopNConversationSummaries(hours: ${variables.value.hours}){
@@ -60,11 +78,11 @@ export const useFlowQueries = defineStore('flowQueries', () => {
       }
     }`
   })
-  const { data: topConversationsData } = useQuery({
+  const { data: topConversationSummeriesData } = useQuery({
     query: GetTopNConversationSummaries,
     cachePolicy: 'network-only'
   })
-  const topConversations = computed(() => (topConversationsData.value?.getTopNConversationSummaries as TrafficSummary[]))
+  const topConversationSummaries = computed(() => (topConversationSummeriesData.value?.getTopNConversationSummaries as TrafficSummary[]))
 
   const setTimeWindow = (hours: number) => {
     variables.value = { hours }
@@ -73,8 +91,9 @@ export const useFlowQueries = defineStore('flowQueries', () => {
   return {
     setTimeWindow,
     flowSummary,
-    topHosts,
-    topApplications,
-    topConversations
+    topHostSummaries,
+    topApplicationSummaries,
+    topConversationSummaries,
+    topApplicationSeries
   }
 })

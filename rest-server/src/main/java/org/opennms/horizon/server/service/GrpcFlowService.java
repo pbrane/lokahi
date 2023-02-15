@@ -28,23 +28,25 @@
 
 package org.opennms.horizon.server.service;
 
+import java.time.Instant;
+import java.util.stream.Collectors;
+
+import org.opennms.dataplatform.flows.querier.Querier;
+import org.opennms.horizon.server.model.flows.FlowSummary;
+import org.opennms.horizon.server.model.flows.FlowingPoint;
+import org.opennms.horizon.server.model.flows.TrafficSummary;
+import org.opennms.horizon.server.service.grpc.FlowClient;
+import org.opennms.horizon.server.utils.ServerHeaderUtil;
+import org.springframework.stereotype.Service;
+
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLEnvironment;
 import io.leangen.graphql.annotations.GraphQLQuery;
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import lombok.RequiredArgsConstructor;
-import org.opennms.dataplatform.flows.querier.Querier;
-import org.opennms.horizon.server.model.flows.FlowSummary;
-import org.opennms.horizon.server.model.flows.TrafficSummary;
-import org.opennms.horizon.server.model.inventory.Location;
-import org.opennms.horizon.server.service.grpc.FlowClient;
-import org.opennms.horizon.server.utils.ServerHeaderUtil;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @GraphQLApi
@@ -71,6 +73,11 @@ public class GrpcFlowService {
         return Flux.fromIterable(client.getTopNApplicationSummaries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
     }
 
+    @GraphQLQuery(name = "getTopNApplicationSeries")
+    public Flux<FlowingPoint> getTopNApplicationSeries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNApplicationSeries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toFlowingPoint).collect(Collectors.toList()));
+    }
+
     @GraphQLQuery(name = "getTopNConversationSummaries")
     public Flux<TrafficSummary> getTopNConversationSummaries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
         return Flux.fromIterable(client.getTopNConversationSummaries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
@@ -85,12 +92,35 @@ public class GrpcFlowService {
         } else if (summary.hasHost()) {
             trafficSummary.setLabel(summary.getHost());
         } else if (summary.hasConversation()) {
-            Querier.Conversation conversation = summary.getConversation();
-            trafficSummary.setLabel(String.format("%s <-> %s (%s)",
-                conversation.getLowerHost(),
-                conversation.getUpperHost(),
-                conversation.getApplication()));
+            trafficSummary.setLabel(conversationToLabel(summary.getConversation()));
         }
         return trafficSummary;
+    }
+
+    private FlowingPoint toFlowingPoint(Querier.FlowingPoint point) {
+        final var flowingPoint = new FlowingPoint();
+        flowingPoint.setTimestamp(Instant.ofEpochSecond(point.getTimestamp().getSeconds(), point.getTimestamp().getNanos()));
+        flowingPoint.setDirection(switch (point.getDirection()) {
+            case INGRESS -> "INGRESS";
+            case EGRESS -> "EGRESS";
+            case UNKNOWN -> "UNKNOWN";
+            case UNRECOGNIZED -> null;
+        });
+        if (point.hasApplication()) {
+            flowingPoint.setLabel(point.getApplication());
+        } else if (point.hasHost()) {
+            flowingPoint.setLabel(point.getHost());
+        } else if (point.hasConversation()) {
+            flowingPoint.setLabel(conversationToLabel(point.getConversation()));
+        }
+        flowingPoint.setValue(flowingPoint.getValue());
+        return flowingPoint;
+    }
+
+    private String conversationToLabel(final Querier.Conversation conversation) {
+        return String.format("%s <-> %s (%s)",
+            conversation.getLowerHost(),
+            conversation.getUpperHost(),
+            conversation.getApplication());
     }
 }

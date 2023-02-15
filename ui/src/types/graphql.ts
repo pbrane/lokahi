@@ -11,6 +11,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  Instant: any;
   Long: any;
   Map_String_StringScalar: any;
   UNREPRESENTABLE: any;
@@ -82,6 +83,14 @@ export type EventParameter = {
 export type FlowSummary = {
   __typename?: 'FlowSummary';
   numFlows: Scalars['Long'];
+};
+
+export type FlowingPoint = {
+  __typename?: 'FlowingPoint';
+  direction?: Maybe<Scalars['String']>;
+  label?: Maybe<Scalars['String']>;
+  timestamp?: Maybe<Scalars['Instant']>;
+  value: Scalars['Float'];
 };
 
 export type IpInterface = {
@@ -228,6 +237,7 @@ export type Query = {
   findMinionById?: Maybe<Minion>;
   findNodeById?: Maybe<Node>;
   getFlowSummary?: Maybe<FlowSummary>;
+  getTopNApplicationSeries?: Maybe<Array<Maybe<FlowingPoint>>>;
   getTopNApplicationSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
   getTopNConversationSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
   getTopNHostSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
@@ -267,6 +277,12 @@ export type QueryFindMinionByIdArgs = {
 /** Query root */
 export type QueryFindNodeByIdArgs = {
   id?: InputMaybe<Scalars['Long']>;
+};
+
+
+/** Query root */
+export type QueryGetTopNApplicationSeriesArgs = {
+  hours?: InputMaybe<Scalars['Long']>;
 };
 
 
