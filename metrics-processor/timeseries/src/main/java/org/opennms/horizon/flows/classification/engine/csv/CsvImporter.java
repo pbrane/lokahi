@@ -73,6 +73,8 @@ public class CsvImporter {
             rule.setProtocol("".equals(protocol) ? null : protocol);
             rule.setExporterFilter("".equals(exportFilter) ? null : exportFilter);
             rule.setOmnidirectional(Boolean.parseBoolean(omnidirectional));
+
+            result.add(rule);
         }
 
         return result;
