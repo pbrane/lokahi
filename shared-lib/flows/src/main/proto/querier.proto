@@ -5,6 +5,11 @@ option go_package = "github.com/OpenNMS-Cloud/flows/api/flows/querier/v1";
 package org.opennms.dataplatform.flows.querier;
 import "google/protobuf/timestamp.proto";
 
+enum Direction {
+    INGRESS = 0;
+    EGRESS = 1;
+    UNKNOWN = 255;
+}
 message TimeRangeFilter {
     google.protobuf.Timestamp start_time = 1;
     google.protobuf.Timestamp end_time = 2;
@@ -51,14 +56,6 @@ message TrafficSummary {
         string application = 5; 
         Conversation conversation = 6;
         string host = 7;
-    }
-}
-
-message Directional {
-    bool is_ingress = 1;
-    oneof node_type {
-        string application = 2;
-        Conversation conversation = 3;
     }
 }
 
@@ -114,7 +111,7 @@ message GetApplicationSeriesResponse {
 message FlowingPoint {
     google.protobuf.Timestamp timestamp = 1;
     double value = 2;
-    Directional direction = 3;
+    Direction direction = 3;
     oneof type {
         string application = 4;
         Conversation conversation = 5;
@@ -126,11 +123,11 @@ message GetTopNApplicationSeriesRequest {
     int64 count = 1;
     int64 step = 2;
     bool include_other = 3;
-    repeated Filter filters = 4;
+    repeated Filter filter = 4;
 }
 
 message GetTopNApplicationSeriesResponse {
-    repeated FlowingPoint points = 1;
+    repeated FlowingPoint point = 1;
 }
 
 message GetConversationsRequest {
