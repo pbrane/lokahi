@@ -108,24 +108,30 @@ message GetApplicationSeriesRequest {
     repeated Filter filters = 4;
 }
 message GetApplicationSeriesResponse {
-    map<int32, SummaryTableRow> table = 1;
+    repeated FlowingPoint points = 1;
 }
-message SummaryTableRow {
-    Directional directions = 1;
-    int64 some_long = 2;
-    double some_double = 3;
 
+message FlowingPoint {
+    google.protobuf.Timestamp timestamp = 1;
+    double value = 2;
+    Directional direction = 3;
+    oneof type {
+        string application = 4;
+        Conversation conversation = 5;
+        string host = 6;
+    }
 }
+
 message GetTopNApplicationSeriesRequest {
     int64 count = 1;
     int64 step = 2;
     bool include_other = 3;
     repeated Filter filters = 4;
 }
-message GetTopNApplicationSeriesResponse {
-    map<int32, SummaryTableRow> table = 1;
-}
 
+message GetTopNApplicationSeriesResponse {
+    repeated FlowingPoint points = 1;
+}
 
 message GetConversationsRequest {
     string location_pattern = 1;
@@ -200,7 +206,7 @@ service ApplicationsService {
     rpc GetTopNApplicationSummaries(GetTopNApplicationSummariesRequest) returns (GetTopNApplicationSummariesResponse);
     rpc GetApplicationSummaries(GetApplicationSummariesRequest) returns (ApplicationSummaries);
     rpc GetApplicationSeries(GetApplicationSeriesRequest) returns (GetApplicationSeriesResponse);
-    rpc GetTopNApplicationSeries(GetTopNApplicationSeriesRequest) returns (GetTopNApplicationSeriesRequest);
+    rpc GetTopNApplicationSeries(GetTopNApplicationSeriesRequest) returns (GetTopNApplicationSeriesResponse);
 }
 
 service ConversationsService {
