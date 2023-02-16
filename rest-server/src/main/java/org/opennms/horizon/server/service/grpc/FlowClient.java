@@ -46,14 +46,19 @@ public class FlowClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        final var flowCountRequest = Querier.GetFlowCountRequest.newBuilder()
-            .addFilters(timeRangeFilter)
-            .addFilters(getHostFilter(hostFilter))
-            .addFilters(getApplicationFilter(applicationFilter));
+        final var request = Querier.GetFlowCountRequest.newBuilder()
+            .addFilters(timeRangeFilter);
+
+        if (hostFilter != null) {
+            request.addFilters(getHostFilter(hostFilter));
+        }
+        if (applicationFilter != null) {
+            request.addFilters(getApplicationFilter(applicationFilter));
+        }
 
         return flowServiceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
             .withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS)
-            .getFlowCount(flowCountRequest.build())
+            .getFlowCount(request.build())
             .getCount();
     }
 
@@ -62,12 +67,18 @@ public class FlowClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        final var hostSummariesRequest = Querier.GetTopNHostSummariesRequest.newBuilder()
+        final var request = Querier.GetTopNHostSummariesRequest.newBuilder()
             .addFilters(timeRangeFilter)
-            .addFilters(getHostFilter(hostFilter))
-            .addFilters(getApplicationFilter(applicationFilter))
             .setCount(N);
-        return hostsServiceBlockingStub.getTopNHostSummaries(hostSummariesRequest.build()).getSummariesList();
+
+        if (hostFilter != null) {
+            request.addFilters(getHostFilter(hostFilter));
+        }
+        if (applicationFilter != null) {
+            request.addFilters(getApplicationFilter(applicationFilter));
+        }
+
+        return hostsServiceBlockingStub.getTopNHostSummaries(request.build()).getSummariesList();
     }
 
     public List<Querier.FlowingPoint> getTopNHostSeries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
@@ -75,12 +86,18 @@ public class FlowClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        final var hostSeriesRequest = Querier.GetTopNHostSeriesRequest.newBuilder()
+        final var request = Querier.GetTopNHostSeriesRequest.newBuilder()
             .addFilter(timeRangeFilter)
-            .addFilter(getHostFilter(hostFilter))
-            .addFilter(getApplicationFilter(applicationFilter))
             .setCount(N);
-        return hostsServiceBlockingStub.getTopNHostSeries(hostSeriesRequest.build()).getPointsList();
+
+        if (hostFilter != null) {
+            request.addFilter(getHostFilter(hostFilter));
+        }
+        if (applicationFilter != null) {
+            request.addFilter(getApplicationFilter(applicationFilter));
+        }
+
+        return hostsServiceBlockingStub.getTopNHostSeries(request.build()).getPointsList();
     }
 
     public List<Querier.TrafficSummary> getTopNApplicationSummaries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
@@ -88,12 +105,18 @@ public class FlowClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        final var appSummariesRequest = Querier.GetTopNApplicationSummariesRequest.newBuilder()
+        final var request = Querier.GetTopNApplicationSummariesRequest.newBuilder()
             .addFilters(timeRangeFilter)
-            .addFilters(getHostFilter(hostFilter))
-            .addFilters(getApplicationFilter(applicationFilter))
             .setCount(N);
-        return applicationsServiceBlockingStub.getTopNApplicationSummaries(appSummariesRequest.build()).getSummariesList();
+
+        if (hostFilter != null) {
+            request.addFilters(getHostFilter(hostFilter));
+        }
+        if (applicationFilter != null) {
+            request.addFilters(getApplicationFilter(applicationFilter));
+        }
+
+        return applicationsServiceBlockingStub.getTopNApplicationSummaries(request.build()).getSummariesList();
     }
 
     public List<Querier.FlowingPoint> getTopNApplicationSeries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
@@ -101,12 +124,18 @@ public class FlowClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        final var appSeriesRequest = Querier.GetTopNApplicationSeriesRequest.newBuilder()
+        final var request = Querier.GetTopNApplicationSeriesRequest.newBuilder()
             .addFilter(timeRangeFilter)
-            .addFilter(getHostFilter(hostFilter))
-            .addFilter(getApplicationFilter(applicationFilter))
             .setCount(N);
-        return applicationsServiceBlockingStub.getTopNApplicationSeries(appSeriesRequest.build()).getPointList();
+
+        if (hostFilter != null) {
+            request.addFilter(getHostFilter(hostFilter));
+        }
+        if (applicationFilter != null) {
+            request.addFilter(getApplicationFilter(applicationFilter));
+        }
+
+        return applicationsServiceBlockingStub.getTopNApplicationSeries(request.build()).getPointList();
     }
 
     public List<Querier.TrafficSummary> getTopNConversationSummaries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
@@ -114,12 +143,18 @@ public class FlowClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        final var convoSummariesRequest = Querier.GetTopNConversationSummariesRequest.newBuilder()
+        final var request = Querier.GetTopNConversationSummariesRequest.newBuilder()
             .addFilters(timeRangeFilter)
-            .addFilters(getHostFilter(hostFilter))
-            .addFilters(getApplicationFilter(applicationFilter))
             .setCount(N);
-        return conversationsServiceBlockingStub.getTopNConversationSummaries(convoSummariesRequest.build()).getSummariesList();
+
+        if (hostFilter != null) {
+            request.addFilters(getHostFilter(hostFilter));
+        }
+        if (applicationFilter != null) {
+            request.addFilters(getApplicationFilter(applicationFilter));
+        }
+
+        return conversationsServiceBlockingStub.getTopNConversationSummaries(request.build()).getSummariesList();
     }
 
     public List<Querier.FlowingPoint> getTopNConversationSeries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
@@ -127,12 +162,18 @@ public class FlowClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        final var convSeriesRequest = Querier.GetTopNConversationSeriesRequest.newBuilder()
+        final var request = Querier.GetTopNConversationSeriesRequest.newBuilder()
             .addFilter(timeRangeFilter)
-            .addFilter(getHostFilter(hostFilter))
-            .addFilter(getApplicationFilter(applicationFilter))
             .setCount(N);
-        return conversationsServiceBlockingStub.getTopNConversationSeries(convSeriesRequest.build()).getPointsList();
+
+        if (hostFilter != null) {
+            request.addFilter(getHostFilter(hostFilter));
+        }
+        if (applicationFilter != null) {
+            request.addFilter(getApplicationFilter(applicationFilter));
+        }
+
+        return conversationsServiceBlockingStub.getTopNConversationSeries(request.build()).getPointsList();
     }
 
     private Querier.Filter getTimeRangeFilter(Long hours) {
