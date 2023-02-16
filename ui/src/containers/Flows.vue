@@ -4,6 +4,18 @@
       Flows
     </div>
 
+    <FeatherChipList label="mmmm chips">
+      <FeatherChip v-if="hostFilter" @click="onViewHost(null)">
+        <template v-slot:icon> <FeatherIcon :icon="cancelIcon" /> </template>
+        Host: {{ hostFilter }}
+      </FeatherChip>
+
+      <FeatherChip v-if="appFilter" @click="onViewApp(null)">
+        <template v-slot:icon> <FeatherIcon :icon="cancelIcon" /> </template>
+        Application: {{ appFilter }}
+      </FeatherChip>
+    </FeatherChipList>
+
     <div class="my-select-div">
       <FeatherSelect
         class="my-select"
@@ -31,6 +43,7 @@
         <table class="data-table" aria-label="Top 10 hosts" data-test="Top 10 host">
           <thead>
           <tr>
+            <th scope="col" data-test="col-filter">Filter</th>
             <th scope="col" data-test="col-host">Host</th>
             <th scope="col" data-test="col-bytes-in">Bytes In</th>
             <th scope="col" data-test="col-bytes-out">Bytes Out</th>
@@ -39,6 +52,15 @@
           <TransitionGroup name="data-table" tag="tbody">
             <tr v-for="(topHost, index) in topHostSummaries" :key="(topHost.label as string)" :data-index="index"
                 data-test="top-host">
+              <td>
+                <FeatherButton
+                  icon="Filter"
+                  @click="onViewHost(topHost.label)"
+                  data-test="btn-view-host"
+                >
+                  <FeatherIcon :icon="viewIcon" />
+                </FeatherButton>
+              </td>
               <td>{{ topHost.label }}</td>
               <td>{{ toBytesDisplay(topHost.bytesIn) }}</td>
               <td>{{ toBytesDisplay(topHost.bytesOut) }}</td>
@@ -47,7 +69,6 @@
         </table>
       </div>
     </FeatherExpansionPanel>
-
 
     <FeatherExpansionPanel title="Top Applications">
       <div class="table-row">
@@ -60,6 +81,7 @@
         <table class="data-table" aria-label="Top 10 applications" data-test="Top 10 applications">
           <thead>
           <tr>
+            <th scope="col" data-test="col-filter">Filter</th>
             <th scope="col" data-test="col-app">Application</th>
             <th scope="col" data-test="col-bytes-in">Bytes In</th>
             <th scope="col" data-test="col-bytes-out">Bytes Out</th>
@@ -68,6 +90,15 @@
           <TransitionGroup name="data-table" tag="tbody">
             <tr v-for="(topApp, index) in topApplicationSummaries" :key="(topApp.label as string)" :data-index="index"
                 data-test="top-host">
+              <td>
+                <FeatherButton
+                  icon="Filter"
+                  @click="onViewApp(topApp.label)"
+                  data-test="btn-view-host"
+                >
+                  <FeatherIcon :icon="viewIcon" />
+                </FeatherButton>
+              </td>
               <td>{{ topApp.label }}</td>
               <td>{{ toBytesDisplay(topApp.bytesIn) }}</td>
               <td>{{ toBytesDisplay(topApp.bytesOut) }}</td>
@@ -109,6 +140,24 @@
 </template>
 
 <script setup lang="ts">
+
+import View from '@featherds/icon/action/View'
+import Cancel from '@featherds/icon/action/Cancel'
+
+const viewIcon = markRaw(View)
+const cancelIcon = markRaw(Cancel)
+
+const hostFilter = ref()
+const onViewHost = function(host: string) {
+  hostFilter.value = host
+  store.setFilters(hostFilter.value, appFilter.value)
+}
+
+const appFilter = ref()
+const onViewApp = function(app: string) {
+  appFilter.value = app
+  store.setFilters(hostFilter.value, appFilter.value)
+}
 
 const toBytesDisplay = function(bytes:number, si=false, dp=1) {
   // pulled from https://stackoverflow.com/a/14919494

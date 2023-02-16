@@ -6,13 +6,13 @@ import _ from 'underscore'
 export const useFlowQueries = defineStore('flowQueries', () => {
   const timeWindow = ref({hours: 1})
 
-  const hostFilter = ref(null)
-  const applicationFilter = ref(null)
+  const hostFilter = ref()
+  const applicationFilter = ref()
 
   const variables = computed(() => ({
     hours: timeWindow.value.hours,
     hostFilter: hostFilter.value,
-    applicationFilter: applicationFilter.value,
+    applicationFilter: applicationFilter.value
   }))
 
   const { data: flowSummaryData } = useQuery({
@@ -120,12 +120,12 @@ export const useFlowQueries = defineStore('flowQueries', () => {
   const topConversationSeries = computed(() => (topConversationSeriesData.value?.getTopNConversationSeries as FlowingPoint[]))
 
   const setTimeWindow = (hours: number) => {
-    timeWindow.value.hours = hours;
+    timeWindow.value.hours = hours
   }
 
   const setFilters = (host: string, application: string) => {
-    hostFilter.value = host;
-    applicationFilter.value = application;
+    hostFilter.value = host
+    applicationFilter.value = application
   }
 
   return {
@@ -137,6 +137,6 @@ export const useFlowQueries = defineStore('flowQueries', () => {
     topApplicationSummaries,
     topApplicationSeries,
     topConversationSummaries,
-    topConversationSeries,
+    topConversationSeries
   }
 })

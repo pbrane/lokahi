@@ -142,6 +142,9 @@ const render = async (update?: boolean) => {
   }
 }
 
+onUpdated(async() => {
+  render(true)
+})
 onMounted(async () => {
   render()
 })
