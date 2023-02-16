@@ -1,7 +1,8 @@
 <template>
-  <div class="container">
-    <PageHeader heading="Flows" />
-    <h3>Total flows: {{ flowSummary?.numFlows }}</h3>
+  <div class="header-container">
+    <div class="header" data-test="page-header">
+      Flows
+    </div>
 
     <div class="my-select-div">
       <FeatherSelect
@@ -14,14 +15,17 @@
       >
       </FeatherSelect>
     </div>
+  </div>
 
-    <div class="mytablegrid">
-      <div class="container">
-        <h2>Top Hosts</h2>
+  <div class="container">
+    <h3>Total flows: {{ flowSummary?.numFlows }}</h3>
 
+    <FeatherExpansionPanel title="Top Hosts">
+      <div class="table-row">
         <TrafficGraph v-if="topHostSeries?.length > 0"
-          label="Top Hosts"
-          :topKSeries="topHostSeries"
+                      label="Top Hosts"
+                      :topKSeries="topHostSeries"
+                      class="flowchart"
         />
 
         <table class="data-table" aria-label="Top 10 hosts" data-test="Top 10 host">
@@ -33,42 +37,24 @@
           </tr>
           </thead>
           <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="(topHost, index) in topHostSummaries" :key="(topHost.label as string)" :data-index="index" data-test="top-host">
+            <tr v-for="(topHost, index) in topHostSummaries" :key="(topHost.label as string)" :data-index="index"
+                data-test="top-host">
               <td>{{ topHost.label }}</td>
               <td>{{ topHost.bytesIn }}</td>
               <td>{{ topHost.bytesOut }}</td>
             </tr>
           </TransitionGroup>
         </table>
-
-        <FeatherExpansionPanel title="Host Series Data">
-          <table class="data-table" aria-label="Top 10 hosts" data-test="Top 10 hosts">
-            <thead>
-            <tr>
-              <th scope="col" data-test="col-timestamp">Timestamp</th>
-              <th scope="col" data-test="col-direction">Direction</th>
-              <th scope="col" data-test="col-label">Label</th>
-              <th scope="col" data-test="col-value">Value</th>
-            </tr>
-            </thead>
-            <TransitionGroup name="data-table" tag="tbody">
-              <tr v-for="(topHost, index) in topHostSeries" :key="[topHost.timestamp, topHost.direction, topHost.label]" :data-index="index" data-test="top-host">
-                <td>{{ topHost.timestamp }}</td>
-                <td>{{ topHost.direction }}</td>
-                <td>{{ topHost.label }}</td>
-                <td>{{ topHost.value }}</td>
-              </tr>
-            </TransitionGroup>
-          </table>
-        </FeatherExpansionPanel>
       </div>
+    </FeatherExpansionPanel>
 
-      <div class="container">
-        <h2>Top Applications</h2>
 
+    <FeatherExpansionPanel title="Top Applications">
+      <div class="table-row">
         <TrafficGraph v-if="topApplicationSeries?.length > 0"
-          label="Top Applications"
-          :topKSeries="topApplicationSeries"
+                      label="Top Applications"
+                      :topKSeries="topApplicationSeries"
+                      class="flowchart"
         />
 
         <table class="data-table" aria-label="Top 10 applications" data-test="Top 10 applications">
@@ -80,42 +66,23 @@
           </tr>
           </thead>
           <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="(topApp, index) in topApplicationSummaries" :key="(topApp.label as string)" :data-index="index" data-test="top-host">
+            <tr v-for="(topApp, index) in topApplicationSummaries" :key="(topApp.label as string)" :data-index="index"
+                data-test="top-host">
               <td>{{ topApp.label }}</td>
               <td>{{ topApp.bytesIn }}</td>
               <td>{{ topApp.bytesOut }}</td>
             </tr>
           </TransitionGroup>
         </table>
-
-        <FeatherExpansionPanel title="Application Series Data">
-          <table class="data-table" aria-label="Top 10 applications" data-test="Top 10 applications">
-            <thead>
-            <tr>
-              <th scope="col" data-test="col-timestamp">Timestamp</th>
-              <th scope="col" data-test="col-direction">Direction</th>
-              <th scope="col" data-test="col-label">Label</th>
-              <th scope="col" data-test="col-value">Value</th>
-            </tr>
-            </thead>
-            <TransitionGroup name="data-table" tag="tbody">
-              <tr v-for="(topApp, index) in topApplicationSeries" :key="[topApp.timestamp, topApp.direction, topApp.label]" :data-index="index" data-test="top-host">
-                <td>{{ topApp.timestamp }}</td>
-                <td>{{ topApp.direction }}</td>
-                <td>{{ topApp.label }}</td>
-                <td>{{ topApp.value }}</td>
-              </tr>
-            </TransitionGroup>
-          </table>
-        </FeatherExpansionPanel>
       </div>
+    </FeatherExpansionPanel>
 
-      <div class="container">
-        <h2>Top Conversations</h2>
-
+    <FeatherExpansionPanel title="Top Conversations">
+      <div class="table-row">
         <TrafficGraph v-if="topConversationSeries?.length > 0"
-          label="Top Conversations"
-          :topKSeries="topConversationSeries"
+                      label="Top Conversations"
+                      :topKSeries="topConversationSeries"
+                      class="flowchart"
         />
 
         <table class="data-table" aria-label="Top 10 conversations" data-test="Top 10 conversations">
@@ -127,36 +94,17 @@
           </tr>
           </thead>
           <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="(topConvo, index) in topConversationSummaries" :key="(topConvo.label as string)" :data-index="index" data-test="top-host">
+            <tr v-for="(topConvo, index) in topConversationSummaries" :key="(topConvo.label as string)"
+                :data-index="index" data-test="top-host">
               <td>{{ topConvo.label }}</td>
               <td>{{ topConvo.bytesIn }}</td>
               <td>{{ topConvo.bytesOut }}</td>
             </tr>
           </TransitionGroup>
         </table>
-
-        <FeatherExpansionPanel title="Conversation Series Data">
-          <table class="data-table" aria-label="Top 10 conversations" data-test="Top 10 conversations">
-            <thead>
-            <tr>
-              <th scope="col" data-test="col-timestamp">Timestamp</th>
-              <th scope="col" data-test="col-direction">Direction</th>
-              <th scope="col" data-test="col-label">Label</th>
-              <th scope="col" data-test="col-value">Value</th>
-            </tr>
-            </thead>
-            <TransitionGroup name="data-table" tag="tbody">
-              <tr v-for="(topConvo, index) in topConversationSeries" :key="[topConvo.timestamp, topConvo.direction, topConvo.label]" :data-index="index" data-test="top-host">
-                <td>{{ topConvo.timestamp }}</td>
-                <td>{{ topConvo.direction }}</td>
-                <td>{{ topConvo.label }}</td>
-                <td>{{ topConvo.value }}</td>
-              </tr>
-            </TransitionGroup>
-          </table>
-        </FeatherExpansionPanel>
       </div>
-    </div>
+    </FeatherExpansionPanel>
+
   </div>
 </template>
 
@@ -189,10 +137,11 @@ const timeWindows = [
 ]
 const timeWindow = ref()
 
-import { useFlowQueries } from '@/store/Queries/flowsQueries'
+import {useFlowQueries} from '@/store/Queries/flowsQueries'
+
 const store = useFlowQueries()
 
-const setTimeWindow = function() {
+const setTimeWindow = function () {
   store.setTimeWindow(timeWindow.value.hours)
 }
 
@@ -231,8 +180,25 @@ const topConversationSeries = computed(() => {
 @use "@featherds/table/scss/table";
 @use "@featherds/styles/mixins/typography";
 
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 1.5rem 1rem;
+
+  .header {
+    @include typography.headline2;
+    font-weight: bold;
+  }
+
+  .my-select-div {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+  }
+}
+
 .container {
-  margin-left: 5px;
+  margin: 5px;
 }
 
 .my-select-div {
@@ -240,28 +206,31 @@ const topConversationSeries = computed(() => {
   justify-content: flex-end;
 }
 
-.my-select {
-  width: 400px;
-  align-self: flex-end;
-}
-
-.mytablegrid {
+.table-row {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   gap: 10px;
 
+  .flowchart {
+    flex-grow: 1;
+  }
+
   table {
-    width: 100%;
     @include table.table;
     @include table.table-condensed;
+
+    flex-grow: 0.3;
+
     thead {
       background: var(typography.$background);
       text-transform: uppercase;
     }
+
     td {
       white-space: nowrap;
       display: table-cell;
+
       div {
         border-radius: 5px;
         padding: 0px 5px 0px 5px;
