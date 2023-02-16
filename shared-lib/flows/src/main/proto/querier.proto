@@ -160,8 +160,15 @@ message GetConversationSummariesResponse {}
 message GetConversationSeriesRequest {}
 message GetConversationSeriesResponse {}
 
-message GetTopNConversationSeriesRequest {}
-message GetTopNConversationSeriesResponse {}
+message GetTopNConversationSeriesRequest {
+    int64 count = 1;
+    int64 step = 2;
+    bool include_other = 3;
+    repeated Filter filter = 4;
+}
+message GetTopNConversationSeriesResponse {
+    repeated FlowingPoint points = 1;
+}
 
 message GetHostsRequest {}
 message GetHostsResponse {}
@@ -182,8 +189,15 @@ message GetHostSummariesResponse {}
 message GetHostSeriesRequest {}
 message GetHostSeriesResponse {}
 
-message GetTopNHostSeriesRequest {}
-message GetTopNHostSeriesResponse {}
+message GetTopNHostSeriesRequest {
+    int64 count = 1;
+    int64 step = 2;
+    bool include_other = 3;
+    repeated Filter filter = 4;
+}
+message GetTopNHostSeriesResponse {
+    repeated FlowingPoint points = 1;
+}
 
 message GetFieldValuesRequest {}
 message GetFieldValuesResponse {}
