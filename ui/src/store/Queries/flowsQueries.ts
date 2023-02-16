@@ -8,11 +8,10 @@ export const useFlowQueries = defineStore('flowQueries', () => {
 
   const hostFilter = ref(null)
   const applicationFilter = ref(null)
-  const conversationFilter = ref(null)
 
   const GetFlowSummary = computed(() => {
     return `{
-      getFlowSummary(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}, conversationFilter: ${conversationFilter.value}){
+      getFlowSummary(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
         numFlows
       }
     }`
@@ -26,7 +25,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
 
   const GetTopNHostSummaries = computed(() => {
     return `{
-      getTopNHostSummaries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}, conversationFilter: ${conversationFilter.value}){
+      getTopNHostSummaries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
         bytesIn
         bytesOut
         label
@@ -45,7 +44,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
 
   const GetTopNHostSeries = computed(() => {
     return `{
-      getTopNHostSeries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}, conversationFilter: ${conversationFilter.value}){
+      getTopNHostSeries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
         timestamp
         direction
         label
@@ -62,7 +61,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
 
   const GetTopNApplicationSummaries = computed(() => {
     return `{
-      getTopNApplicationSummaries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}, conversationFilter: ${conversationFilter.value}){
+      getTopNApplicationSummaries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
         bytesIn
         bytesOut
         label
@@ -80,7 +79,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
 
   const GetTopNApplicationSeries = computed(() => {
     return `{
-      getTopNApplicationSeries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}, conversationFilter: ${conversationFilter.value}){
+      getTopNApplicationSeries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
         timestamp
         direction
         label
@@ -97,7 +96,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
   
   const GetTopNConversationSummaries = computed(() => {
     return `{
-      getTopNConversationSummaries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}, conversationFilter: ${conversationFilter.value}){
+      getTopNConversationSummaries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
         bytesIn
         bytesOut
         label
@@ -115,7 +114,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
 
   const GetTopNConversationSeries = computed(() => {
     return `{
-      getTopNConversationSeries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}, conversationFilter: ${conversationFilter.value}){
+      getTopNConversationSeries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
         timestamp
         direction
         label
@@ -133,10 +132,9 @@ export const useFlowQueries = defineStore('flowQueries', () => {
     timeWindow.value.hours = hours;
   }
 
-  const setFilters = (host: string, application: string, conversation: string) => {
+  const setFilters = (host: string, application: string) => {
     hostFilter.value = host;
     applicationFilter.value = application;
-    conversationFilter.value = conversation;
   }
 
   return {
