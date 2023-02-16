@@ -239,7 +239,9 @@ export type Query = {
   getFlowSummary?: Maybe<FlowSummary>;
   getTopNApplicationSeries?: Maybe<Array<Maybe<FlowingPoint>>>;
   getTopNApplicationSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
+  getTopNConversationSeries?: Maybe<Array<Maybe<FlowingPoint>>>;
   getTopNConversationSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
+  getTopNHostSeries?: Maybe<Array<Maybe<FlowingPoint>>>;
   getTopNHostSummaries?: Maybe<Array<Maybe<TrafficSummary>>>;
   listDiscoveryConfig?: Maybe<Array<Maybe<DiscoveryConfig>>>;
   metric?: Maybe<TimeSeriesQueryResult>;
@@ -281,6 +283,12 @@ export type QueryFindNodeByIdArgs = {
 
 
 /** Query root */
+export type QueryGetFlowSummaryArgs = {
+  hours?: InputMaybe<Scalars['Long']>;
+};
+
+
+/** Query root */
 export type QueryGetTopNApplicationSeriesArgs = {
   hours?: InputMaybe<Scalars['Long']>;
 };
@@ -293,7 +301,19 @@ export type QueryGetTopNApplicationSummariesArgs = {
 
 
 /** Query root */
+export type QueryGetTopNConversationSeriesArgs = {
+  hours?: InputMaybe<Scalars['Long']>;
+};
+
+
+/** Query root */
 export type QueryGetTopNConversationSummariesArgs = {
+  hours?: InputMaybe<Scalars['Long']>;
+};
+
+
+/** Query root */
+export type QueryGetTopNHostSeriesArgs = {
   hours?: InputMaybe<Scalars['Long']>;
 };
 

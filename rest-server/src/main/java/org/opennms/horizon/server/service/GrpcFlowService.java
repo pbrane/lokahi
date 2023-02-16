@@ -57,9 +57,9 @@ public class GrpcFlowService {
     private final ServerHeaderUtil headerUtil;
 
     @GraphQLQuery(name = "getFlowSummary")
-    public Mono<FlowSummary> getFlowSummary(@GraphQLEnvironment ResolutionEnvironment env) {
+    public Mono<FlowSummary> getFlowSummary(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
         FlowSummary flowSummary = new FlowSummary();
-        flowSummary.setNumFlows(client.getNumFlows(headerUtil.getAuthHeader(env)));
+        flowSummary.setNumFlows(client.getNumFlows(hours, headerUtil.getAuthHeader(env)));
         return Mono.just(flowSummary);
     }
 

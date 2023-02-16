@@ -41,11 +41,11 @@ public class FlowClient {
         }
     }
 
-    public long getNumFlows(String accessToken) {
+    public long getNumFlows(Long hours, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
-        Querier.Filter timeRangeFilter = getTimeRangeFilter(null);
+        Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
         Querier.GetFlowCountRequest flowCountRequest = Querier.GetFlowCountRequest.newBuilder()
             .addFilters(timeRangeFilter)
             .build();

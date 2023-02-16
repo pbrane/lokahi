@@ -5,13 +5,14 @@ import _ from 'underscore'
 
 export const useFlowQueries = defineStore('flowQueries', () => {
   const variables = ref({hours:1})
-  const GetFlowSummary = `
-    {
-      getFlowSummary{
+
+  const GetFlowSummary = computed(() => {
+    return `{
+      getFlowSummary(hours: ${variables.value.hours}){
         numFlows
       }
-    }
-  `
+    }`
+  })
   const { data: flowSummaryData } = useQuery({
     query: GetFlowSummary,
     variables,
