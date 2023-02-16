@@ -68,6 +68,18 @@ public class FlowClient {
         return hostsServiceBlockingStub.getTopNHostSummaries(hostSummariesRequest).getSummariesList();
     }
 
+    public List<Querier.FlowingPoint> getTopNHostSeries(Long hours, long N, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+
+        Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
+        Querier.GetTopNHostSeriesRequest hostSeriesRequest = Querier.GetTopNHostSeriesRequest.newBuilder()
+            .addFilter(timeRangeFilter)
+            .setCount(N)
+            .build();
+        return hostsServiceBlockingStub.getTopNHostSeries(hostSeriesRequest).getPointsList();
+    }
+
     public List<Querier.TrafficSummary> getTopNApplicationSummaries(Long hours, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
@@ -102,6 +114,18 @@ public class FlowClient {
             .setCount(N)
             .build();
         return conversationsServiceBlockingStub.getTopNConversationSummaries(convoSummariesRequest).getSummariesList();
+    }
+
+    public List<Querier.FlowingPoint> getTopNConversationSeries(Long hours, long N, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+
+        Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
+        Querier.GetTopNConversationSeriesRequest convSeriesRequest = Querier.GetTopNConversationSeriesRequest.newBuilder()
+            .addFilter(timeRangeFilter)
+            .setCount(N)
+            .build();
+        return conversationsServiceBlockingStub.getTopNConversationSeries(convSeriesRequest).getPointsList();
     }
 
     private Querier.Filter getTimeRangeFilter(Long hours) {

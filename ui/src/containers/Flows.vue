@@ -34,6 +34,25 @@
             </tr>
           </TransitionGroup>
         </table>
+
+        <table class="data-table" aria-label="Top 10 hosts" data-test="Top 10 hosts">
+          <thead>
+          <tr>
+            <th scope="col" data-test="col-timestamp">Timestamp</th>
+            <th scope="col" data-test="col-direction">Direction</th>
+            <th scope="col" data-test="col-label">Label</th>
+            <th scope="col" data-test="col-value">Value</th>
+          </tr>
+          </thead>
+          <TransitionGroup name="data-table" tag="tbody">
+            <tr v-for="(topHost, index) in topHostSeries" :key="[topHost.timestamp, topHost.direction, topHost.label]" :data-index="index" data-test="top-host">
+              <td>{{ topHost.timestamp }}</td>
+              <td>{{ topHost.direction }}</td>
+              <td>{{ topHost.label }}</td>
+              <td>{{ topHost.value }}</td>
+            </tr>
+          </TransitionGroup>
+        </table>
       </div>
 
       <div class="container">
@@ -93,6 +112,25 @@
             </tr>
           </TransitionGroup>
         </table>
+
+        <table class="data-table" aria-label="Top 10 conversations" data-test="Top 10 conversations">
+          <thead>
+          <tr>
+            <th scope="col" data-test="col-timestamp">Timestamp</th>
+            <th scope="col" data-test="col-direction">Direction</th>
+            <th scope="col" data-test="col-label">Label</th>
+            <th scope="col" data-test="col-value">Value</th>
+          </tr>
+          </thead>
+          <TransitionGroup name="data-table" tag="tbody">
+            <tr v-for="(topConvo, index) in topConversationSeries" :key="[topConvo.timestamp, topConvo.direction, topConvo.label]" :data-index="index" data-test="top-host">
+              <td>{{ topConvo.timestamp }}</td>
+              <td>{{ topConvo.direction }}</td>
+              <td>{{ topConvo.label }}</td>
+              <td>{{ topConvo.value }}</td>
+            </tr>
+          </TransitionGroup>
+        </table>
       </div>
     </div>
   </div>
@@ -142,6 +180,10 @@ const topHostSummaries = computed(() => {
   return store.topHostSummaries
 })
 
+const topHostSeries = computed(() => {
+  return store.topHostSeries
+})
+
 const topApplicationSummaries = computed(() => {
   return store.topApplicationSummaries
 })
@@ -152,6 +194,10 @@ const topApplicationSeries = computed(() => {
 
 const topConversationSummaries = computed(() => {
   return store.topConversationSummaries
+})
+
+const topConversationSeries = computed(() => {
+  return store.topConversationSeries
 })
 </script>
 
