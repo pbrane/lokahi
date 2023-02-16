@@ -49,6 +49,7 @@ declare module '@vue/runtime-core' {
     FeatherDrawer: typeof import('@featherds/drawer')['FeatherDrawer']
     FeatherDropdown: typeof import('@featherds/dropdown')['FeatherDropdown']
     FeatherDropdownItem: typeof import('@featherds/dropdown')['FeatherDropdownItem']
+    FeatherExpansionPanel: typeof import('@featherds/expansion')['FeatherExpansionPanel']
     FeatherIcon: typeof import('@featherds/icon')['FeatherIcon']
     FeatherInput: typeof import('@featherds/input')['FeatherInput']
     FeatherList: typeof import('@featherds/list')['FeatherList']
@@ -106,6 +107,7 @@ declare module '@vue/runtime-core' {
     TopologyModal: typeof import('./src/components/Topology/TopologyModal.vue')['default']
     TopologyRightDrawer: typeof import('./src/components/Topology/TopologyRightDrawer.vue')['default']
     TopologySearch: typeof import('./src/components/Topology/TopologySearch.vue')['default']
+    TrafficGraph: typeof import('./src/components/Graphs/TrafficGraph.vue')['default']
     ViewSelect: typeof import('./src/components/Topology/ViewSelect.vue')['default']
   }
 }

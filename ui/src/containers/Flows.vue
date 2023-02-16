@@ -2,6 +2,7 @@
   <div class="container">
     <PageHeader heading="Flows" />
     <h3>Total flows: {{ flowSummary?.numFlows }}</h3>
+
     <div class="my-select-div">
       <FeatherSelect
         class="my-select"
@@ -14,10 +15,15 @@
       </FeatherSelect>
     </div>
 
-
     <div class="mytablegrid">
       <div class="container">
         <h2>Top Hosts</h2>
+
+        <TrafficGraph v-if="topHostSeries?.length > 0"
+          label="Top Hosts"
+          :topKSeries="topHostSeries"
+        />
+
         <table class="data-table" aria-label="Top 10 hosts" data-test="Top 10 host">
           <thead>
           <tr>
@@ -35,28 +41,36 @@
           </TransitionGroup>
         </table>
 
-        <table class="data-table" aria-label="Top 10 hosts" data-test="Top 10 hosts">
-          <thead>
-          <tr>
-            <th scope="col" data-test="col-timestamp">Timestamp</th>
-            <th scope="col" data-test="col-direction">Direction</th>
-            <th scope="col" data-test="col-label">Label</th>
-            <th scope="col" data-test="col-value">Value</th>
-          </tr>
-          </thead>
-          <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="(topHost, index) in topHostSeries" :key="[topHost.timestamp, topHost.direction, topHost.label]" :data-index="index" data-test="top-host">
-              <td>{{ topHost.timestamp }}</td>
-              <td>{{ topHost.direction }}</td>
-              <td>{{ topHost.label }}</td>
-              <td>{{ topHost.value }}</td>
+        <FeatherExpansionPanel title="Host Series Data">
+          <table class="data-table" aria-label="Top 10 hosts" data-test="Top 10 hosts">
+            <thead>
+            <tr>
+              <th scope="col" data-test="col-timestamp">Timestamp</th>
+              <th scope="col" data-test="col-direction">Direction</th>
+              <th scope="col" data-test="col-label">Label</th>
+              <th scope="col" data-test="col-value">Value</th>
             </tr>
-          </TransitionGroup>
-        </table>
+            </thead>
+            <TransitionGroup name="data-table" tag="tbody">
+              <tr v-for="(topHost, index) in topHostSeries" :key="[topHost.timestamp, topHost.direction, topHost.label]" :data-index="index" data-test="top-host">
+                <td>{{ topHost.timestamp }}</td>
+                <td>{{ topHost.direction }}</td>
+                <td>{{ topHost.label }}</td>
+                <td>{{ topHost.value }}</td>
+              </tr>
+            </TransitionGroup>
+          </table>
+        </FeatherExpansionPanel>
       </div>
 
       <div class="container">
         <h2>Top Applications</h2>
+
+        <TrafficGraph v-if="topApplicationSeries?.length > 0"
+          label="Top Applications"
+          :topKSeries="topApplicationSeries"
+        />
+
         <table class="data-table" aria-label="Top 10 applications" data-test="Top 10 applications">
           <thead>
           <tr>
@@ -74,28 +88,36 @@
           </TransitionGroup>
         </table>
 
-        <table class="data-table" aria-label="Top 10 applications" data-test="Top 10 applications">
-          <thead>
-          <tr>
-            <th scope="col" data-test="col-timestamp">Timestamp</th>
-            <th scope="col" data-test="col-direction">Direction</th>
-            <th scope="col" data-test="col-label">Label</th>
-            <th scope="col" data-test="col-value">Value</th>
-          </tr>
-          </thead>
-          <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="(topApp, index) in topApplicationSeries" :key="[topApp.timestamp, topApp.direction, topApp.label]" :data-index="index" data-test="top-host">
-              <td>{{ topApp.timestamp }}</td>
-              <td>{{ topApp.direction }}</td>
-              <td>{{ topApp.label }}</td>
-              <td>{{ topApp.value }}</td>
+        <FeatherExpansionPanel title="Application Series Data">
+          <table class="data-table" aria-label="Top 10 applications" data-test="Top 10 applications">
+            <thead>
+            <tr>
+              <th scope="col" data-test="col-timestamp">Timestamp</th>
+              <th scope="col" data-test="col-direction">Direction</th>
+              <th scope="col" data-test="col-label">Label</th>
+              <th scope="col" data-test="col-value">Value</th>
             </tr>
-          </TransitionGroup>
-        </table>
+            </thead>
+            <TransitionGroup name="data-table" tag="tbody">
+              <tr v-for="(topApp, index) in topApplicationSeries" :key="[topApp.timestamp, topApp.direction, topApp.label]" :data-index="index" data-test="top-host">
+                <td>{{ topApp.timestamp }}</td>
+                <td>{{ topApp.direction }}</td>
+                <td>{{ topApp.label }}</td>
+                <td>{{ topApp.value }}</td>
+              </tr>
+            </TransitionGroup>
+          </table>
+        </FeatherExpansionPanel>
       </div>
 
       <div class="container">
         <h2>Top Conversations</h2>
+
+        <TrafficGraph v-if="topConversationSeries?.length > 0"
+          label="Top Conversations"
+          :topKSeries="topConversationSeries"
+        />
+
         <table class="data-table" aria-label="Top 10 conversations" data-test="Top 10 conversations">
           <thead>
           <tr>
@@ -113,24 +135,26 @@
           </TransitionGroup>
         </table>
 
-        <table class="data-table" aria-label="Top 10 conversations" data-test="Top 10 conversations">
-          <thead>
-          <tr>
-            <th scope="col" data-test="col-timestamp">Timestamp</th>
-            <th scope="col" data-test="col-direction">Direction</th>
-            <th scope="col" data-test="col-label">Label</th>
-            <th scope="col" data-test="col-value">Value</th>
-          </tr>
-          </thead>
-          <TransitionGroup name="data-table" tag="tbody">
-            <tr v-for="(topConvo, index) in topConversationSeries" :key="[topConvo.timestamp, topConvo.direction, topConvo.label]" :data-index="index" data-test="top-host">
-              <td>{{ topConvo.timestamp }}</td>
-              <td>{{ topConvo.direction }}</td>
-              <td>{{ topConvo.label }}</td>
-              <td>{{ topConvo.value }}</td>
+        <FeatherExpansionPanel title="Conversation Series Data">
+          <table class="data-table" aria-label="Top 10 conversations" data-test="Top 10 conversations">
+            <thead>
+            <tr>
+              <th scope="col" data-test="col-timestamp">Timestamp</th>
+              <th scope="col" data-test="col-direction">Direction</th>
+              <th scope="col" data-test="col-label">Label</th>
+              <th scope="col" data-test="col-value">Value</th>
             </tr>
-          </TransitionGroup>
-        </table>
+            </thead>
+            <TransitionGroup name="data-table" tag="tbody">
+              <tr v-for="(topConvo, index) in topConversationSeries" :key="[topConvo.timestamp, topConvo.direction, topConvo.label]" :data-index="index" data-test="top-host">
+                <td>{{ topConvo.timestamp }}</td>
+                <td>{{ topConvo.direction }}</td>
+                <td>{{ topConvo.label }}</td>
+                <td>{{ topConvo.value }}</td>
+              </tr>
+            </TransitionGroup>
+          </table>
+        </FeatherExpansionPanel>
       </div>
     </div>
   </div>

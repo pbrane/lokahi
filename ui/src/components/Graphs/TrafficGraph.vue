@@ -1,46 +1,36 @@
 <template>
-  <div v-if="graphs.dataSets.value.length" class="container">
-      <div class="canvas-wrapper">
-        <FeatherTooltip
-          title="Download to PDF"
-          v-slot="{ attrs, on }"
-        >
-          <FeatherButton
-            v-bind="attrs" 
-            v-on="on" 
-            icon="Download" 
-            class="download-icon" 
-            @click="onDownload" 
-          >
-            <FeatherIcon :icon="DownloadFile" />
-          </FeatherButton>
-        </FeatherTooltip>
-        <canvas class="canvas" :id="`${graph.label}`"></canvas>
-      </div>
+  <div class="container">
+    <div class="canvas-wrapper">
+      <canvas class="canvas" :id="`${label}`"></canvas>
+    </div>
   </div>
 </template>
-  
+
 <script setup lang="ts">
+import _ from 'underscore';
 import { useGraphs } from '@/composables/useGraphs'
 import { ChartOptions, TitleOptions, ChartData } from 'chart.js'
 import Chart from 'chart.js/auto'
-// import zoomPlugin from 'chartjs-plugin-zoom'
 import { PropType } from 'vue'
 import { formatTimestamp, downloadCanvas } from './utils'
 import { GraphProps } from '@/types/graphs'
 import DownloadFile from '@featherds/icon/action/DownloadFile'
 import { format } from 'd3'
-
-// Chart.register(zoomPlugin) disable zoom until phase 2
+import {FlowingPoint} from '@/types/graphql'
 
 const graphs = useGraphs()
 
 const props = defineProps({
-  graph: {
+  label: {
     required: true,
-    type: Object as PropType<GraphProps>
+    type: String
+  },
+  topKSeries: {
+    required: true,
+    type: Object as PropType<FlowingPoint[]>
   }
 })
+
 
 const yAxisFormatter = format('.3s')
 
@@ -52,7 +42,7 @@ const options = computed<ChartOptions>(() => ({
   plugins: {
     title: {
       display: true,
-      text: props.graph.label
+      text: props.label
     } as TitleOptions,
     zoom: {
       zoom: {
@@ -71,7 +61,7 @@ const options = computed<ChartOptions>(() => ({
     y: {
       title: {
         display: false,
-        text: props.graph.label
+        text: props.label
       } as TitleOptions,
       ticks: {
         callback: (value) => yAxisFormatter(value as number),
@@ -88,35 +78,32 @@ const options = computed<ChartOptions>(() => ({
 }))
 
 const xAxisLabels = computed(() => {
-  const graphsDataSetsValues = graphs.dataSets.value[0]?.values as any || [] as any
-
-  const totalLabels = graphsDataSetsValues.map((val: any) => {
-    return formatTimestamp(val[0], 'minutes')
+  let timestamps = props.topKSeries.map(x => Date.parse(x.timestamp))
+  let uniqueTimestamps = [...new Set(timestamps)]
+  uniqueTimestamps.sort()
+  return uniqueTimestamps.map((val: any) => {
+    return formatTimestamp(val, 'minutes')
   })
-
-  return totalLabels
 })
 
 const dataSets = computed(() => {
-  const bgColor = ['green', 'blue'] // TODO: find solution to set bg color, in regards to FeatherDS theme switching
-  return [{
-    label: '# of Votes',
-    data: [12, 19, 3, 5, 2, 3],
-    backgroundColor: bgColor[0],
-    borderColor: bgColor[0],
-    hitRadius: 5,
-    hoverRadius: 6
-  }]
+  // every unique label and direction should be its own data set
+  let seriesByKey = _.groupBy(props.topKSeries, function(point){
+    return `${point.label} (${point.direction})`
+  })
 
-  /*
-  return graphs.dataSets.value.map((data: any ,i) => ({
-    label: data.metric.__name__,
-    data: data.values.map((val: any) => val[1]),
-    backgroundColor: bgColor[i],
-    borderColor: bgColor[i],
-    hitRadius: 5,
-    hoverRadius: 6
-  }))*/
+  return _.map(seriesByKey, function(points, label){
+    let sortedPoints = _.sortBy(points, function(point){
+      return Date.parse(point.timestamp)
+    })
+    let values = _.map(sortedPoints, function(point){ return point.value})
+    return {
+      label,
+      data: values,
+      hitRadius: 5,
+      hoverRadius: 6
+    }
+  })
 })
 
 const chartData = computed<ChartData<any>>(() => {
@@ -132,8 +119,8 @@ const render = async (update?: boolean) => {
       chart.data = chartData.value
       chart.update()
     } else {
-      if(chartData.value.datasets.length) {
-        const ctx: any = document.getElementById(`${props.graph.label}`)
+      if(props.topKSeries && chartData.value.datasets.length) {
+        const ctx: any = document.getElementById(`${props.label}`)
         chart = new Chart(ctx, {
           type: 'line',
           data: chartData.value,
@@ -144,22 +131,15 @@ const render = async (update?: boolean) => {
     }
   } catch (error) {
     console.log(error)
-    console.log('Could not render graph for ', props.graph.label)
+    console.log('Could not render graph for ', props.label)
   }
 }
 
-const onDownload = () => {
-  const canvas = document.getElementById(props.graph.label) as HTMLCanvasElement
-  downloadCanvas(canvas, props.graph.label)
-}
-
 onMounted(async () => {
-  await graphs.getMetrics(props.graph)
   render()
 })
 </script>
 
-<!-- TODO: make theme switching works in graphs -->
 <style scoped lang="scss">
 @use "@featherds/styles/themes/variables";
 
@@ -173,15 +153,5 @@ onMounted(async () => {
 }
 .canvas-wrapper {
   height: 300px;
-
-  .download-icon {
-    position: absolute;
-    right: 15px;
-    top: 19px;
-
-    svg {
-      font-size: 15px;
-    }
-  }
 }
 </style>
