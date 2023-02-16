@@ -9,32 +9,25 @@ export const useFlowQueries = defineStore('flowQueries', () => {
   const hostFilter = ref(null)
   const applicationFilter = ref(null)
 
-  const GetFlowSummary = computed(() => {
-    return `{
-      getFlowSummary(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
+  const { data: flowSummaryData } = useQuery({
+    query: `query GetFlowSummary($hours: Long, $hostFilter: String, $applicationFilter: String) {
+      getFlowSummary(hours: $hours, hostFilter: $hostFilter, applicationFilter: $applicationFilter) {
         numFlows
       }
-    }`
-  })
-  const { data: flowSummaryData } = useQuery({
-    query: GetFlowSummary,
+    }`,
     cachePolicy: 'network-only'
   })
   const flowSummary = computed(() => (flowSummaryData.value?.getFlowSummary as FlowSummary))
 
 
-  const GetTopNHostSummaries = computed(() => {
-    return `{
-      getTopNHostSummaries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
+  const { data: topHostSummeriesData } = useQuery({
+    query: `query GetTopNHostSummaries($hours: Long, $hostFilter: String, $applicationFilter: String) {
+      getTopNHostSummaries(hours: $hours, hostFilter: $hostFilter, applicationFilter: $applicationFilter) {
         bytesIn
         bytesOut
         label
       }
-    }`
-  })
-
-  const { data: topHostSummeriesData } = useQuery({
-    query: GetTopNHostSummaries,
+    }`,
     cachePolicy: 'network-only'
   })
   const topHostSummaries = computed(() => (
@@ -42,34 +35,28 @@ export const useFlowQueries = defineStore('flowQueries', () => {
       function(summary){return -(summary.bytesIn+summary.bytesOut)})
   ))
 
-  const GetTopNHostSeries = computed(() => {
-    return `{
-      getTopNHostSeries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
+  const { data: topHostSeriesData } = useQuery({
+    query: `query GetTopNHostSeries($hours: Long, $hostFilter: String, $applicationFilter: String) {
+      getTopNHostSeries(hours: $hours, hostFilter: $hostFilter, applicationFilter: $applicationFilter) {
         timestamp
         direction
         label
         value
       }
-    }`
-  })
-  const { data: topHostSeriesData } = useQuery({
-    query: GetTopNHostSeries,
+    }`,
     cachePolicy: 'network-only'
   })
   const topHostSeries = computed(() => (topHostSeriesData.value?.getTopNHostSeries as FlowingPoint[]))
 
 
-  const GetTopNApplicationSummaries = computed(() => {
-    return `{
-      getTopNApplicationSummaries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
+  const { data: topApplicationSummeriesData } = useQuery({
+    query: `query GetTopNApplicationSummaries($hours: Long, $hostFilter: String, $applicationFilter: String) {
+      getTopNApplicationSummaries(hours: $hours, hostFilter: $hostFilter, applicationFilter: $applicationFilter) {
         bytesIn
         bytesOut
         label
       }
-    }`
-  })
-  const { data: topApplicationSummeriesData } = useQuery({
-    query: GetTopNApplicationSummaries,
+    }`,
     cachePolicy: 'network-only'
   })
   const topApplicationSummaries = computed(() => (
@@ -77,34 +64,28 @@ export const useFlowQueries = defineStore('flowQueries', () => {
       function(summary){return -(summary.bytesIn+summary.bytesOut)})
   ))
 
-  const GetTopNApplicationSeries = computed(() => {
-    return `{
-      getTopNApplicationSeries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
+  const { data: topApplicationSeriesData } = useQuery({
+    query: `query GetTopNApplicationSeries($hours: Long, $hostFilter: String, $applicationFilter: String) {
+      getTopNApplicationSeries(hours: $hours, hostFilter: $hostFilter, applicationFilter: $applicationFilter) {
         timestamp
         direction
         label
         value
       }
-    }`
-  })
-  const { data: topApplicationSeriesData } = useQuery({
-    query: GetTopNApplicationSeries,
+    }`,
     cachePolicy: 'network-only'
   })
   const topApplicationSeries = computed(() => (topApplicationSeriesData.value?.getTopNApplicationSeries as FlowingPoint[]))
 
   
-  const GetTopNConversationSummaries = computed(() => {
-    return `{
-      getTopNConversationSummaries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
+  const { data: topConversationSummeriesData } = useQuery({
+    query: `query GetTopNConversationSummaries($hours: Long, $hostFilter: String, $applicationFilter: String) {
+      getTopNConversationSummaries(hours: $hours, hostFilter: $hostFilter, applicationFilter: $applicationFilter) {
         bytesIn
         bytesOut
         label
       }
-    }`
-  })
-  const { data: topConversationSummeriesData } = useQuery({
-    query: GetTopNConversationSummaries,
+    }`,
     cachePolicy: 'network-only'
   })
   const topConversationSummaries = computed(() => (
@@ -112,18 +93,15 @@ export const useFlowQueries = defineStore('flowQueries', () => {
       function(summary){return -(summary.bytesIn+summary.bytesOut)})
   ))
 
-  const GetTopNConversationSeries = computed(() => {
-    return `{
-      getTopNConversationSeries(hours: ${timeWindow.value.hours}, hostFilter: ${hostFilter.value}, applicationFilter: ${applicationFilter.value}){
+  const { data: topConversationSeriesData } = useQuery({
+    query: `query GetTopNConversationSeries($hours: Long, $hostFilter: String, $applicationFilter: String) {
+      getTopNConversationSeries(hours: $hours, hostFilter: $hostFilter, applicationFilter: $applicationFilter) {
         timestamp
         direction
         label
         value
       }
-    }`
-  })
-  const { data: topConversationSeriesData } = useQuery({
-    query: GetTopNConversationSeries,
+    }`,
     cachePolicy: 'network-only'
   })
   const topConversationSeries = computed(() => (topConversationSeriesData.value?.getTopNConversationSeries as FlowingPoint[]))
