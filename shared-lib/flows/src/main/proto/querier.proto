@@ -25,16 +25,31 @@ message NodeFilter {
 message SnmpInterfaceFilter {
     int64 smnp_interface_id = 1;
 }
+message HostFilter {
+    string ip = 1;
+}
+message ApplicationFilter {
+    string application = 1;
+}
+message ConversationFilter {
+    Conversation conversation = 1;
+}
+
 message Host {
     string ip = 1;
     string host_name = 2;
 }
+
 message Filter {
     oneof filter {
         TimeRangeFilter time_range = 1;
         DscpFilter dscps = 2;
         NodeFilter nodes = 3;
         SnmpInterfaceFilter snmp_interfaces = 4;
+        // new ones
+        HostFilter host = 5;
+        ApplicationFilter application = 6;
+        ConversationFilter conversation = 7;
     }
 }
 
