@@ -41,91 +41,98 @@ public class FlowClient {
         }
     }
 
-    public long getNumFlows(Long hours, String accessToken) {
+    public long getNumFlows(Long hours, String hostFilter, String applicationFilter, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        Querier.GetFlowCountRequest flowCountRequest = Querier.GetFlowCountRequest.newBuilder()
+        final var flowCountRequest = Querier.GetFlowCountRequest.newBuilder()
             .addFilters(timeRangeFilter)
-            .build();
+            .addFilters(getHostFilter(hostFilter))
+            .addFilters(getApplicationFilter(applicationFilter));
 
         return flowServiceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
             .withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS)
-            .getFlowCount(flowCountRequest)
+            .getFlowCount(flowCountRequest.build())
             .getCount();
     }
 
-    public List<Querier.TrafficSummary> getTopNHostSummaries(Long hours, long N, String accessToken) {
+    public List<Querier.TrafficSummary> getTopNHostSummaries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        Querier.GetTopNHostSummariesRequest hostSummariesRequest = Querier.GetTopNHostSummariesRequest.newBuilder()
+        final var hostSummariesRequest = Querier.GetTopNHostSummariesRequest.newBuilder()
             .addFilters(timeRangeFilter)
-            .setCount(N)
-            .build();
-        return hostsServiceBlockingStub.getTopNHostSummaries(hostSummariesRequest).getSummariesList();
+            .addFilters(getHostFilter(hostFilter))
+            .addFilters(getApplicationFilter(applicationFilter))
+            .setCount(N);
+        return hostsServiceBlockingStub.getTopNHostSummaries(hostSummariesRequest.build()).getSummariesList();
     }
 
-    public List<Querier.FlowingPoint> getTopNHostSeries(Long hours, long N, String accessToken) {
+    public List<Querier.FlowingPoint> getTopNHostSeries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        Querier.GetTopNHostSeriesRequest hostSeriesRequest = Querier.GetTopNHostSeriesRequest.newBuilder()
+        final var hostSeriesRequest = Querier.GetTopNHostSeriesRequest.newBuilder()
             .addFilter(timeRangeFilter)
-            .setCount(N)
-            .build();
-        return hostsServiceBlockingStub.getTopNHostSeries(hostSeriesRequest).getPointsList();
+            .addFilter(getHostFilter(hostFilter))
+            .addFilter(getApplicationFilter(applicationFilter))
+            .setCount(N);
+        return hostsServiceBlockingStub.getTopNHostSeries(hostSeriesRequest.build()).getPointsList();
     }
 
-    public List<Querier.TrafficSummary> getTopNApplicationSummaries(Long hours, long N, String accessToken) {
+    public List<Querier.TrafficSummary> getTopNApplicationSummaries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        Querier.GetTopNApplicationSummariesRequest appSummariesRequest = Querier.GetTopNApplicationSummariesRequest.newBuilder()
+        final var appSummariesRequest = Querier.GetTopNApplicationSummariesRequest.newBuilder()
             .addFilters(timeRangeFilter)
-            .setCount(N)
-            .build();
-        return applicationsServiceBlockingStub.getTopNApplicationSummaries(appSummariesRequest).getSummariesList();
+            .addFilters(getHostFilter(hostFilter))
+            .addFilters(getApplicationFilter(applicationFilter))
+            .setCount(N);
+        return applicationsServiceBlockingStub.getTopNApplicationSummaries(appSummariesRequest.build()).getSummariesList();
     }
 
-    public List<Querier.FlowingPoint> getTopNApplicationSeries(Long hours, long N, String accessToken) {
+    public List<Querier.FlowingPoint> getTopNApplicationSeries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        Querier.GetTopNApplicationSeriesRequest appSeriesRequest = Querier.GetTopNApplicationSeriesRequest.newBuilder()
+        final var appSeriesRequest = Querier.GetTopNApplicationSeriesRequest.newBuilder()
             .addFilter(timeRangeFilter)
-            .setCount(N)
-            .build();
-        return applicationsServiceBlockingStub.getTopNApplicationSeries(appSeriesRequest).getPointList();
+            .addFilter(getHostFilter(hostFilter))
+            .addFilter(getApplicationFilter(applicationFilter))
+            .setCount(N);
+        return applicationsServiceBlockingStub.getTopNApplicationSeries(appSeriesRequest.build()).getPointList();
     }
 
-    public List<Querier.TrafficSummary> getTopNConversationSummaries(Long hours, long N, String accessToken) {
+    public List<Querier.TrafficSummary> getTopNConversationSummaries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        Querier.GetTopNConversationSummariesRequest convoSummariesRequest = Querier.GetTopNConversationSummariesRequest.newBuilder()
+        final var convoSummariesRequest = Querier.GetTopNConversationSummariesRequest.newBuilder()
             .addFilters(timeRangeFilter)
-            .setCount(N)
-            .build();
-        return conversationsServiceBlockingStub.getTopNConversationSummaries(convoSummariesRequest).getSummariesList();
+            .addFilters(getHostFilter(hostFilter))
+            .addFilters(getApplicationFilter(applicationFilter))
+            .setCount(N);
+        return conversationsServiceBlockingStub.getTopNConversationSummaries(convoSummariesRequest.build()).getSummariesList();
     }
 
-    public List<Querier.FlowingPoint> getTopNConversationSeries(Long hours, long N, String accessToken) {
+    public List<Querier.FlowingPoint> getTopNConversationSeries(Long hours, String hostFilter, String applicationFilter, long N, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
         Querier.Filter timeRangeFilter = getTimeRangeFilter(hours);
-        Querier.GetTopNConversationSeriesRequest convSeriesRequest = Querier.GetTopNConversationSeriesRequest.newBuilder()
+        final var convSeriesRequest = Querier.GetTopNConversationSeriesRequest.newBuilder()
             .addFilter(timeRangeFilter)
-            .setCount(N)
-            .build();
-        return conversationsServiceBlockingStub.getTopNConversationSeries(convSeriesRequest).getPointsList();
+            .addFilter(getHostFilter(hostFilter))
+            .addFilter(getApplicationFilter(applicationFilter))
+            .setCount(N);
+        return conversationsServiceBlockingStub.getTopNConversationSeries(convSeriesRequest.build()).getPointsList();
     }
 
     private Querier.Filter getTimeRangeFilter(Long hours) {
@@ -144,6 +151,26 @@ public class FlowClient {
         return Querier.Filter.newBuilder().setTimeRange(Querier.TimeRangeFilter.newBuilder()
                 .setStartTime(thenTimestamp)
                 .setEndTime(nowTimestamp))
+            .build();
+    }
+
+    private Querier.Filter getHostFilter(final String hostFilter) {
+        if (hostFilter == null) {
+            return null;
+        }
+
+        return Querier.Filter.newBuilder()
+            .setHost(Querier.HostFilter.newBuilder().setIp(hostFilter))
+            .build();
+    }
+
+    private Querier.Filter getApplicationFilter(final String applicationFilter) {
+        if (applicationFilter == null) {
+            return null;
+        }
+
+        return Querier.Filter.newBuilder()
+            .setApplication(Querier.ApplicationFilter.newBuilder().setApplication(applicationFilter))
             .build();
     }
 }

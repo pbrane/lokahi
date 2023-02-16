@@ -57,40 +57,61 @@ public class GrpcFlowService {
     private final ServerHeaderUtil headerUtil;
 
     @GraphQLQuery(name = "getFlowSummary")
-    public Mono<FlowSummary> getFlowSummary(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
+    public Mono<FlowSummary> getFlowSummary(@GraphQLArgument(name = "hours") Long hours,
+                                            @GraphQLArgument(name = "hostFilter") String hostFilter,
+                                            @GraphQLArgument(name = "applicationFilter") String applicationFilter,
+                                            @GraphQLEnvironment ResolutionEnvironment env) {
         FlowSummary flowSummary = new FlowSummary();
-        flowSummary.setNumFlows(client.getNumFlows(hours, headerUtil.getAuthHeader(env)));
+        flowSummary.setNumFlows(client.getNumFlows(hours, hostFilter, applicationFilter, headerUtil.getAuthHeader(env)));
         return Mono.just(flowSummary);
     }
 
     @GraphQLQuery(name = "getTopNHostSummaries")
-    public Flux<TrafficSummary> getTopNHostSummaries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.getTopNHostSummaries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
+    public Flux<TrafficSummary> getTopNHostSummaries(@GraphQLArgument(name = "hours") Long hours,
+                                                     @GraphQLArgument(name = "hostFilter") String hostFilter,
+                                                     @GraphQLArgument(name = "applicationFilter") String applicationFilter,
+                                                     @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNHostSummaries(hours, hostFilter, applicationFilter, 10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
     }
 
     @GraphQLQuery(name = "getTopNHostSeries")
-    public Flux<FlowingPoint> getTopNHostSeries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.getTopNHostSeries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toFlowingPoint).collect(Collectors.toList()));
+    public Flux<FlowingPoint> getTopNHostSeries(@GraphQLArgument(name = "hours") Long hours,
+                                                @GraphQLArgument(name = "hostFilter") String hostFilter,
+                                                @GraphQLArgument(name = "applicationFilter") String applicationFilter,
+                                                @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNHostSeries(hours, hostFilter, applicationFilter, 10, headerUtil.getAuthHeader(env)).stream().map(this::toFlowingPoint).collect(Collectors.toList()));
     }
 
     @GraphQLQuery(name = "getTopNApplicationSummaries")
-    public Flux<TrafficSummary> getTopNApplicationSummaries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.getTopNApplicationSummaries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
+    public Flux<TrafficSummary> getTopNApplicationSummaries(@GraphQLArgument(name = "hours") Long hours,
+                                                            @GraphQLArgument(name = "hostFilter") String hostFilter,
+                                                            @GraphQLArgument(name = "applicationFilter") String applicationFilter,
+                                                            @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNApplicationSummaries(hours, hostFilter, applicationFilter, 10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
     }
 
     @GraphQLQuery(name = "getTopNApplicationSeries")
-    public Flux<FlowingPoint> getTopNApplicationSeries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.getTopNApplicationSeries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toFlowingPoint).collect(Collectors.toList()));
+    public Flux<FlowingPoint> getTopNApplicationSeries(@GraphQLArgument(name = "hours") Long hours,
+                                                       @GraphQLArgument(name = "hostFilter") String hostFilter,
+                                                       @GraphQLArgument(name = "applicationFilter") String applicationFilter,
+                                                       @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNApplicationSeries(hours, hostFilter, applicationFilter, 10, headerUtil.getAuthHeader(env)).stream().map(this::toFlowingPoint).collect(Collectors.toList()));
     }
 
     @GraphQLQuery(name = "getTopNConversationSummaries")
-    public Flux<TrafficSummary> getTopNConversationSummaries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.getTopNConversationSummaries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
+    public Flux<TrafficSummary> getTopNConversationSummaries(@GraphQLArgument(name = "hours") Long hours,
+                                                             @GraphQLArgument(name = "hostFilter") String hostFilter,
+                                                             @GraphQLArgument(name = "applicationFilter") String applicationFilter,
+                                                             @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNConversationSummaries(hours, hostFilter, applicationFilter, 10, headerUtil.getAuthHeader(env)).stream().map(this::toTrafficSummary).collect(Collectors.toList()));
     }
 
     @GraphQLQuery(name = "getTopNConversationSeries")
-    public Flux<FlowingPoint> getTopNConversationSeries(@GraphQLArgument(name = "hours") Long hours, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.getTopNConversationSeries(hours,10, headerUtil.getAuthHeader(env)).stream().map(this::toFlowingPoint).collect(Collectors.toList()));
+    public Flux<FlowingPoint> getTopNConversationSeries(@GraphQLArgument(name = "hours") Long hours,
+                                                        @GraphQLArgument(name = "hostFilter") String hostFilter,
+                                                        @GraphQLArgument(name = "applicationFilter") String applicationFilter,
+                                                        @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(client.getTopNConversationSeries(hours, hostFilter, applicationFilter, 10, headerUtil.getAuthHeader(env)).stream().map(this::toFlowingPoint).collect(Collectors.toList()));
     }
 
     private TrafficSummary toTrafficSummary(Querier.TrafficSummary summary) {

@@ -284,42 +284,56 @@ export type QueryFindNodeByIdArgs = {
 
 /** Query root */
 export type QueryGetFlowSummaryArgs = {
+  applicationFilter?: InputMaybe<Scalars['String']>;
+  hostFilter?: InputMaybe<Scalars['String']>;
   hours?: InputMaybe<Scalars['Long']>;
 };
 
 
 /** Query root */
 export type QueryGetTopNApplicationSeriesArgs = {
+  applicationFilter?: InputMaybe<Scalars['String']>;
+  hostFilter?: InputMaybe<Scalars['String']>;
   hours?: InputMaybe<Scalars['Long']>;
 };
 
 
 /** Query root */
 export type QueryGetTopNApplicationSummariesArgs = {
+  applicationFilter?: InputMaybe<Scalars['String']>;
+  hostFilter?: InputMaybe<Scalars['String']>;
   hours?: InputMaybe<Scalars['Long']>;
 };
 
 
 /** Query root */
 export type QueryGetTopNConversationSeriesArgs = {
+  applicationFilter?: InputMaybe<Scalars['String']>;
+  hostFilter?: InputMaybe<Scalars['String']>;
   hours?: InputMaybe<Scalars['Long']>;
 };
 
 
 /** Query root */
 export type QueryGetTopNConversationSummariesArgs = {
+  applicationFilter?: InputMaybe<Scalars['String']>;
+  hostFilter?: InputMaybe<Scalars['String']>;
   hours?: InputMaybe<Scalars['Long']>;
 };
 
 
 /** Query root */
 export type QueryGetTopNHostSeriesArgs = {
+  applicationFilter?: InputMaybe<Scalars['String']>;
+  hostFilter?: InputMaybe<Scalars['String']>;
   hours?: InputMaybe<Scalars['Long']>;
 };
 
 
 /** Query root */
 export type QueryGetTopNHostSummariesArgs = {
+  applicationFilter?: InputMaybe<Scalars['String']>;
+  hostFilter?: InputMaybe<Scalars['String']>;
   hours?: InputMaybe<Scalars['Long']>;
 };
 
