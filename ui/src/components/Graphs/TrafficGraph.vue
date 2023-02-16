@@ -13,8 +13,6 @@ import { ChartOptions, TitleOptions, ChartData } from 'chart.js'
 import Chart from 'chart.js/auto'
 import { PropType } from 'vue'
 import { formatTimestamp, downloadCanvas } from './utils'
-import { GraphProps } from '@/types/graphs'
-import DownloadFile from '@featherds/icon/action/DownloadFile'
 import { format } from 'd3'
 import {FlowingPoint} from '@/types/graphql'
 
@@ -54,6 +52,15 @@ const options = computed<ChartOptions>(() => ({
       pan: {
         enabled: true,
         mode: 'x'
+      }
+    },
+    legend: {
+      display: true,
+      position: 'bottom',
+      align: 'start',
+      maxHeight: 100,
+      labels: {
+        boxWidth: 10
       }
     }
   },
