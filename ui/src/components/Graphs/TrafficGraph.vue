@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import _ from 'underscore';
+import _ from 'underscore'
 import { useGraphs } from '@/composables/useGraphs'
 import { ChartOptions, TitleOptions, ChartData } from 'chart.js'
 import Chart from 'chart.js/auto'
@@ -159,6 +159,6 @@ onMounted(async () => {
   padding: var(variables.$spacing-l) var(variables.$spacing-l);
 }
 .canvas-wrapper {
-  height: 300px;
+  height: 400px;
 }
 </style>

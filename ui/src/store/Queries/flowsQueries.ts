@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { useQuery } from 'villus'
-import {Query, FlowSummary, TrafficSummary, FlowingPoint} from '@/types/graphql'
+import {FlowSummary, TrafficSummary, FlowingPoint} from '@/types/graphql'
+import _ from 'underscore'
 
 export const useFlowQueries = defineStore('flowQueries', () => {
   const variables = ref({hours:1})
@@ -33,8 +34,10 @@ export const useFlowQueries = defineStore('flowQueries', () => {
     query: GetTopNHostSummaries,
     cachePolicy: 'network-only'
   })
-  const topHostSummaries = computed(() => (topHostSummeriesData.value?.getTopNHostSummaries as TrafficSummary[]))
-
+  const topHostSummaries = computed(() => (
+    _.sortBy(topHostSummeriesData.value?.getTopNHostSummaries as TrafficSummary[],
+      function(summary){return -(summary.bytesIn+summary.bytesOut)})
+  ))
 
   const GetTopNHostSeries = computed(() => {
     return `{
@@ -66,8 +69,10 @@ export const useFlowQueries = defineStore('flowQueries', () => {
     query: GetTopNApplicationSummaries,
     cachePolicy: 'network-only'
   })
-  const topApplicationSummaries = computed(() => (topApplicationSummeriesData.value?.getTopNApplicationSummaries as TrafficSummary[]))
-
+  const topApplicationSummaries = computed(() => (
+    _.sortBy(topApplicationSummeriesData.value?.getTopNApplicationSummaries as TrafficSummary[],
+      function(summary){return -(summary.bytesIn+summary.bytesOut)})
+  ))
 
   const GetTopNApplicationSeries = computed(() => {
     return `{
@@ -99,8 +104,10 @@ export const useFlowQueries = defineStore('flowQueries', () => {
     query: GetTopNConversationSummaries,
     cachePolicy: 'network-only'
   })
-  const topConversationSummaries = computed(() => (topConversationSummeriesData.value?.getTopNConversationSummaries as TrafficSummary[]))
-
+  const topConversationSummaries = computed(() => (
+    _.sortBy(topConversationSummeriesData.value?.getTopNConversationSummaries as TrafficSummary[],
+      function(summary){return -(summary.bytesIn+summary.bytesOut)})
+  ))
 
   const GetTopNConversationSeries = computed(() => {
     return `{

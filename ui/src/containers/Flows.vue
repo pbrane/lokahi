@@ -40,8 +40,8 @@
             <tr v-for="(topHost, index) in topHostSummaries" :key="(topHost.label as string)" :data-index="index"
                 data-test="top-host">
               <td>{{ topHost.label }}</td>
-              <td>{{ topHost.bytesIn }}</td>
-              <td>{{ topHost.bytesOut }}</td>
+              <td>{{ toBytesDisplay(topHost.bytesIn) }}</td>
+              <td>{{ toBytesDisplay(topHost.bytesOut) }}</td>
             </tr>
           </TransitionGroup>
         </table>
@@ -69,8 +69,8 @@
             <tr v-for="(topApp, index) in topApplicationSummaries" :key="(topApp.label as string)" :data-index="index"
                 data-test="top-host">
               <td>{{ topApp.label }}</td>
-              <td>{{ topApp.bytesIn }}</td>
-              <td>{{ topApp.bytesOut }}</td>
+              <td>{{ toBytesDisplay(topApp.bytesIn) }}</td>
+              <td>{{ toBytesDisplay(topApp.bytesOut) }}</td>
             </tr>
           </TransitionGroup>
         </table>
@@ -97,8 +97,8 @@
             <tr v-for="(topConvo, index) in topConversationSummaries" :key="(topConvo.label as string)"
                 :data-index="index" data-test="top-host">
               <td>{{ topConvo.label }}</td>
-              <td>{{ topConvo.bytesIn }}</td>
-              <td>{{ topConvo.bytesOut }}</td>
+              <td>{{ toBytesDisplay(topConvo.bytesIn) }}</td>
+              <td>{{ toBytesDisplay(topConvo.bytesOut) }}</td>
             </tr>
           </TransitionGroup>
         </table>
@@ -109,6 +109,26 @@
 </template>
 
 <script setup lang="ts">
+
+const toBytesDisplay = function(bytes:number, si=false, dp=1) {
+  // pulled from https://stackoverflow.com/a/14919494
+  const thresh = si ? 1000 : 1024
+  if (Math.abs(bytes) < thresh) {
+    return bytes + ' B'
+  }
+  const units = si
+    ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+    : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+  let u = -1
+  const r = 10**dp
+  do {
+    bytes /= thresh
+    ++u
+  } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1)
+  return bytes.toFixed(dp) + ' ' + units[u]
+}
+
+
 const timeWindows = [
   {
     hours: 1,
