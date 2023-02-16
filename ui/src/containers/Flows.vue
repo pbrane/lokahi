@@ -231,6 +231,10 @@ const topConversationSeries = computed(() => {
 @use "@featherds/table/scss/table";
 @use "@featherds/styles/mixins/typography";
 
+.container {
+  margin-left: 5px;
+}
+
 .my-select-div {
   display: flex;
   justify-content: flex-end;

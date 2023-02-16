@@ -111,10 +111,9 @@ public class GrpcFlowService {
         final var flowingPoint = new FlowingPoint();
         flowingPoint.setTimestamp(Instant.ofEpochSecond(point.getTimestamp().getSeconds(), point.getTimestamp().getNanos()));
         flowingPoint.setDirection(switch (point.getDirection()) {
-            case INGRESS -> "INGRESS";
-            case EGRESS -> "EGRESS";
-            case UNKNOWN -> "UNKNOWN";
-            case UNRECOGNIZED -> null;
+            case INGRESS -> "In";
+            case EGRESS -> "Out";
+            case UNKNOWN, UNRECOGNIZED -> "(Unknown)";
         });
         if (point.hasApplication()) {
             flowingPoint.setLabel(point.getApplication());
@@ -129,8 +128,8 @@ public class GrpcFlowService {
 
     private String conversationToLabel(final Querier.Conversation conversation) {
         return String.format("%s <-> %s (%s)",
-            conversation.getLowerHost(),
-            conversation.getUpperHost(),
+            conversation.getLowerHost().getHostName(),
+            conversation.getUpperHost().getHostName(),
             conversation.getApplication());
     }
 }
