@@ -3,6 +3,7 @@ apiVersion: es.eck.github.com/v1alpha1
 kind: IndexTemplate
 metadata:
   name: netflow-template
+  namespace: opennms-hs
 spec:
   body: |
     {

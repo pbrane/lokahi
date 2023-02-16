@@ -5,6 +5,7 @@ metadata:
   name: flows-querier
   labels:
     app: flows-querier
+  namespace: opennms-hs
 spec:
   type: ClusterIP
   ports:

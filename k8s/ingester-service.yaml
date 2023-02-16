@@ -5,6 +5,7 @@ metadata:
   name: flows-ingester
   labels:
     app: flows-ingester
+  namespace: opennms-hs
 spec:
   type: ClusterIP
   ports:

@@ -3,6 +3,7 @@ apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
   name: elasticsearch
+  namespace: opennms-hs
 spec:
   version: 7.17.5
   http:
@@ -22,6 +23,16 @@ spec:
           username: anonymous
           roles: superuser
           authz_exception: false
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data # Do not change this name unless you set up a volume mount for the data path.
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: local-storage        
     podTemplate:
       spec:
         initContainers:

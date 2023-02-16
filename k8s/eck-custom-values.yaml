@@ -1,4 +1,6 @@
 elasticsearch:
+  metadata:
+    namespace: opennms-hs
   enabled: true
   url: http://elasticsearch-es-http:9200
   certificate:
