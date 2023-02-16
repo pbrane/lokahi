@@ -9,12 +9,19 @@ export const useFlowQueries = defineStore('flowQueries', () => {
   const hostFilter = ref(null)
   const applicationFilter = ref(null)
 
+  const variables = computed(() => ({
+    hours: timeWindow.value.hours,
+    hostFilter: hostFilter.value,
+    applicationFilter: applicationFilter.value,
+  }))
+
   const { data: flowSummaryData } = useQuery({
     query: `query GetFlowSummary($hours: Long, $hostFilter: String, $applicationFilter: String) {
       getFlowSummary(hours: $hours, hostFilter: $hostFilter, applicationFilter: $applicationFilter) {
         numFlows
       }
     }`,
+    variables,
     cachePolicy: 'network-only'
   })
   const flowSummary = computed(() => (flowSummaryData.value?.getFlowSummary as FlowSummary))
@@ -28,6 +35,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
         label
       }
     }`,
+    variables,
     cachePolicy: 'network-only'
   })
   const topHostSummaries = computed(() => (
@@ -44,6 +52,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
         value
       }
     }`,
+    variables,
     cachePolicy: 'network-only'
   })
   const topHostSeries = computed(() => (topHostSeriesData.value?.getTopNHostSeries as FlowingPoint[]))
@@ -57,6 +66,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
         label
       }
     }`,
+    variables,
     cachePolicy: 'network-only'
   })
   const topApplicationSummaries = computed(() => (
@@ -73,6 +83,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
         value
       }
     }`,
+    variables,
     cachePolicy: 'network-only'
   })
   const topApplicationSeries = computed(() => (topApplicationSeriesData.value?.getTopNApplicationSeries as FlowingPoint[]))
@@ -86,6 +97,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
         label
       }
     }`,
+    variables,
     cachePolicy: 'network-only'
   })
   const topConversationSummaries = computed(() => (
@@ -102,6 +114,7 @@ export const useFlowQueries = defineStore('flowQueries', () => {
         value
       }
     }`,
+    variables,
     cachePolicy: 'network-only'
   })
   const topConversationSeries = computed(() => (topConversationSeriesData.value?.getTopNConversationSeries as FlowingPoint[]))
