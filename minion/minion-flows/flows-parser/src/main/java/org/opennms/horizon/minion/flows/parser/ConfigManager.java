@@ -28,17 +28,17 @@
 
 package org.opennms.horizon.minion.flows.parser;
 
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.Objects;
 
 import org.opennms.horizon.minion.plugin.api.Listener;
+import org.opennms.horizon.minion.plugin.api.ListenerFactory;
 import org.opennms.sink.flows.contract.FlowsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
+import com.google.protobuf.Any;
 
-public class ConfigManager implements org.opennms.horizon.minion.plugin.api.ListenerFactory {
+public class ConfigManager implements ListenerFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConfigManager.class);
 
@@ -57,14 +57,25 @@ public class ConfigManager implements org.opennms.horizon.minion.plugin.api.List
         if (!config.is(FlowsConfig.class)) {
             throw new IllegalArgumentException("configuration must be FlowsConfig; type-url=" + config.getTypeUrl());
         }
-        var holder = telemetryRegistry.getListenerHolder();
-        try {
-            this.flowsConfig = config.unpack(FlowsConfig.class);
-            holder.clear();
-            flowsConfig.getListenersList().forEach(telemetryRegistry::createListener);
-        } catch (InvalidProtocolBufferException e) {
-            throw new IllegalArgumentException("Error while parsing config with type-url=" + config.getTypeUrl());
-        }
-        return holder;
+
+        final var listeners = this.flowsConfig.getListenersList().stream()
+                .map(telemetryRegistry::createListener)
+                .toList();
+
+        return new Listener() {
+            @Override
+            public void start() throws Exception {
+                for (final var listener : listeners) {
+                    listener.start();
+                }
+            }
+
+            @Override
+            public void stop() {
+                for (final var listener : listeners) {
+                    listener.stop();
+                }
+            }
+        };
     }
 }

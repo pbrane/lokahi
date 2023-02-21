@@ -31,13 +31,10 @@ package org.opennms.horizon.minion.flows.parser;
 import static org.opennms.horizon.minion.flows.listeners.utils.BufferUtils.slice;
 import static org.opennms.horizon.minion.flows.listeners.utils.BufferUtils.uint16;
 
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-import io.netty.buffer.ByteBuf;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import org.opennms.dataplatform.flows.document.FlowDocument;
-import org.opennms.dataplatform.flows.document.FlowDocumentLog;
 import org.opennms.horizon.minion.flows.listeners.Dispatchable;
 import org.opennms.horizon.minion.flows.listeners.UdpParser;
 import org.opennms.horizon.minion.flows.parser.factory.DnsResolver;
@@ -51,8 +48,11 @@ import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
 import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import com.codahale.metrics.MetricRegistry;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+
+import io.netty.buffer.ByteBuf;
 
 
 public class IpfixUdpParser extends UdpParserBase implements UdpParser, Dispatchable {
@@ -60,7 +60,7 @@ public class IpfixUdpParser extends UdpParserBase implements UdpParser, Dispatch
     private final IpFixMessageBuilder messageBuilder = new IpFixMessageBuilder();
 
     public IpfixUdpParser(final String name,
-                          final AsyncDispatcher<FlowDocumentLog> dispatcher,
+                          final AsyncDispatcher<FlowDocument> dispatcher,
                           final IpcIdentity identity,
                           final DnsResolver dnsResolver,
                           final MetricRegistry metricRegistry) {
