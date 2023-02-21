@@ -32,27 +32,22 @@ package org.opennms.horizon.minion.snmp;
 import static org.opennms.horizon.shared.snmp.SnmpConfiguration.DEFAULT_SECURITY_LEVEL;
 import static org.opennms.horizon.shared.snmp.SnmpConfiguration.DEFAULT_SECURITY_NAME;
 
-import com.googlecode.concurentlocks.ReadWriteUpdateLock;
-import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
+
 import org.apache.commons.io.IOUtils;
-//import org.opennms.core.spring.FileReloadCallback;
-//import org.opennms.core.spring.FileReloadContainer;
-//import org.opennms.core.xml.JaxbUtils;
-//import org.opennms.horizon.core.lib.LocationUtils;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.snmp.SnmpConfiguration;
 import org.opennms.horizon.shared.snmp.conf.SnmpAgentConfigFactory;
@@ -67,9 +62,14 @@ import org.opennms.horizon.shared.utils.LocationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.googlecode.concurentlocks.ReadWriteUpdateLock;
+import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock;
+
 /**
  * This class is the main repository for SNMP configuration information used by
- * the capabilities daemon. When this class is loaded it reads the snmp
+ * the capabilities' daemon. When this class is loaded it reads the snmp
  * configuration into memory, and uses the configuration to find the
  * {@link SnmpAgentConfig SnmpAgentConfig} objects for specific
  * addresses. If an address cannot be located in the configuration then a
@@ -90,6 +90,11 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
 
     private static File s_configFile;
 
+    final String VERSION_KEY = "version";
+    final String READ_COMMUNITY_KEY = "read-community";
+    final String TIMEOUT_KEY = "timeout";
+    final String RETRY_KEY = "retry";
+
     /**
      * The singleton instance of this factory
      */
@@ -98,7 +103,7 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
     /**
      * This member is set to true if the configuration file has been loaded.
      */
-    private static AtomicBoolean s_loaded = new AtomicBoolean(false);
+    private static final AtomicBoolean s_loaded = new AtomicBoolean(false);
 
     private final ReadWriteUpdateLock m_globalLock = new ReentrantReadWriteUpdateLock();
     private final Lock m_readLock = m_globalLock.updateLock();
@@ -109,10 +114,6 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
      */
     private SnmpConfig m_config;
 
-//    private FileReloadContainer<SnmpConfig> m_container;
-//
-//    private FileReloadCallback<SnmpConfig> m_callback;
-
     /**
      * <p>Constructor for SnmpPeerFactory.</p>
      *
@@ -121,27 +122,26 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
     public SnmpPeerFactory(final File resource) {
         LOG.debug("creating new instance for resource {}: {}", resource, this);
 
-//        final SnmpConfig config = JaxbUtils.unmarshal(SnmpConfig.class, resource);
+        try {
+            // Use try-with-resources to read the file and close the resources automatically
+            String json = Files.readString(resource.toPath());
 
-//      Disable reload behavior
-//        try {
-//            if (resource != null) {
-//                m_callback = new FileReloadCallback<SnmpConfig>() {
-//                    @Override
-//                    public SnmpConfig reload(final SnmpConfig object, final Resource resource) throws IOException {
-//                        return JaxbUtils.unmarshal(SnmpConfig.class, resource);
-//                    }
-//                };
-//                m_container = new FileReloadContainer<SnmpConfig>(config, resource, m_callback);
-//                return;
-//            }
-//        } catch (final IOException e) {
-//            LOG.debug("No file associated with resource {}, skipping reload container initialization. Reason: ", resource, e.getMessage());
-//        }
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> map = mapper.readValue(json, new TypeReference<>() {});
 
-        // if we fall through to here, then the file was null, or something else went wrong store the config directly
-//        m_config = config;
-        throw new UnsupportedOperationException();
+            // Set configuration parameters for SnmpConfig
+            SnmpConfig snmpConfig = new SnmpConfig();
+            snmpConfig.setTimeout((Integer) map.get(TIMEOUT_KEY));
+            snmpConfig.setVersion((String) map.get(VERSION_KEY));
+            snmpConfig.setRetry((Integer) map.get(RETRY_KEY));
+            snmpConfig.setReadCommunity((String) map.get(READ_COMMUNITY_KEY));
+            m_config = snmpConfig;
+            LOG.debug("Successfully created new SnmpPeerFactory instance for resource: {}", resource);
+        } catch (IOException e) {
+            LOG.error("An error occurred while reading the file: {}", resource, e);
+        } catch (Exception e) {
+            LOG.error("An error occurred while creating SnmpPeerFactory instance: {}", e.getMessage(), e);
+        }
     }
 
     protected Lock getReadLock() {
@@ -163,8 +163,6 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
 
     /**
      * Load the config from the default config file and create the singleton instance of this factory.
-     *
-     * @exception IOException Thrown if the specified config file cannot be read
      */
     public static synchronized SnmpPeerFactory getInstance() {
         if (!s_loaded.get()) {
@@ -220,7 +218,7 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
         saveToFile(getFile());
     }
 
-    public void saveToFile(final File file) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+    public void saveToFile(final File file) throws IOException {
         // Marshal to a string first, then write the string to the file. This
         // way the original config isn't lost if the XML from the marshal is hosed.
         getWriteLock().lock();
@@ -236,9 +234,6 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
                 fileWriter.write(marshalledConfig);
                 fileWriter.flush();
                 fileWriter.close();
-//                if (m_container != null) {
-//                    m_container.reload();
-//                }
             }
         } finally {
             IOUtils.closeQuietly(fileWriter);
@@ -405,17 +400,7 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
      * @return a {@link SnmpConfig} object.
      */
     public SnmpConfig getSnmpConfig() {
-        throw new UnsupportedOperationException();
-//        getReadLock().lock();
-//        try {
-//            if (m_container == null) {
-//                return m_config;
-//            } else {
-//                return m_container.getObject();
-//            }
-//        } finally {
-//            getReadLock().unlock();
-//        }
+        return m_config;
     }
 
     /**

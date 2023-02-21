@@ -1,0 +1,6 @@
+{
+  "version":"v2c",
+  "read-community":"public",
+  "timeout":1800,
+  "retry":1
+}

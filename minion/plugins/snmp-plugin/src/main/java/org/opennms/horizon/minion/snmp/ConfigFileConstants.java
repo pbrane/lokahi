@@ -31,6 +31,7 @@ package org.opennms.horizon.minion.snmp;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -592,7 +593,7 @@ public abstract class ConfigFileConstants {
         FILE_ID_TO_NAME[NOTIF_COMMANDS_CONF_FILE_NAME] = "notificationCommands.xml";
         FILE_ID_TO_NAME[DESTINATION_PATHS_CONF_FILE_NAME] = "destinationPaths.xml";
 
-        FILE_ID_TO_NAME[SNMP_CONF_FILE_NAME] = "snmp-config.xml";
+        FILE_ID_TO_NAME[SNMP_CONF_FILE_NAME] = "snmp-config.json";
         FILE_ID_TO_NAME[EVENT_CONF_FILE_NAME] = "eventconf.xml";
         FILE_ID_TO_NAME[DATA_COLLECTION_CONF_FILE_NAME] = "datacollection-config.xml";
         FILE_ID_TO_NAME[REPORT_PDF_XSL] = "PDFAvailReport.xsl";
