@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Appliances from '@/containers/Appliances.vue'
+import NodeStatus from '@/containers/NodeStatus.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -57,9 +58,14 @@ const router = createRouter({
       component: () => import('@/containers/MonitoringPolicies.vue')
     },
     {
+      path: '/synthetic-transactions',
+      name: 'Synthetic Transactions',
+      component: () => import('@/containers/SyntheticTransactions.vue')
+    },
+    {
       path: '/node/:id',
       name: 'Node',
-      component: () => import('@/containers/NodeStatus.vue')
+      component: NodeStatus
     },
     {
       path: '/:pathMatch(.*)*', // catch other paths and redirect

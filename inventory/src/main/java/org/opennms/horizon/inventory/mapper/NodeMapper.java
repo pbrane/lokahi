@@ -28,28 +28,42 @@
 
 package org.opennms.horizon.inventory.mapper;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.CollectionMappingStrategy;
-import org.mapstruct.Condition;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Mappings;
+import org.mapstruct.NullValueCheckStrategy;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.model.Node;
+import org.opennms.node.scan.contract.NodeInfoResult;
 
 
-@Mapper(componentModel = "spring", uses = IpInterfaceMapper.class,
+@Mapper(componentModel = "spring", uses = {EmptyStringMapper.class, IpInterfaceMapper.class, SnmpInterfaceMapper.class},
     // Needed for grpc proto mapping
     collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
 public interface NodeMapper extends DateTimeMapper {
 
-    @Mapping(source = "ipInterfacesList", target = "ipInterfaces")
+    @Mappings({
+        @Mapping(source = "ipInterfacesList", target = "ipInterfaces"),
+        @Mapping(source = "snmpInterfacesList", target = "snmpInterfaces")
+    })
     Node dtoToModel(NodeDTO dto);
 
-    @Mapping(source = "ipInterfaces", target = "ipInterfacesList")
+    @Mappings({
+        @Mapping(source = "ipInterfaces", target = "ipInterfacesList"),
+        @Mapping(source = "snmpInterfaces", target = "snmpInterfacesList"),
+    })
+    @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     NodeDTO modelToDTO(Node model);
 
-    //need for string value check
-    @Condition
-    default boolean isNotEmpty(String value) {
-        return value != null && !value.isEmpty();
-    }
+    @Mappings({
+        @Mapping(target = "objectId", source = "objectId", qualifiedByName = "emptyString"),
+        @Mapping(target = "systemName", source = "systemName", qualifiedByName = "emptyString"),
+        @Mapping(target = "systemDescr", source = "systemDescr", qualifiedByName = "emptyString"),
+        @Mapping(target = "systemLocation", source = "systemLocation", qualifiedByName = "emptyString"),
+        @Mapping(target = "systemContact", source = "systemContact", qualifiedByName = "emptyString"),
+    })
+    void updateFromNodeInfo(NodeInfoResult nodeInfoResult, @MappingTarget Node node);
 }

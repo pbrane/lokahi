@@ -29,6 +29,7 @@
 package org.opennms.horizon.minion.nodescan;
 
 import java.net.InetAddress;
+import java.util.Optional;
 
 import org.opennms.horizon.shared.snmp.AggregateTracker;
 import org.opennms.horizon.shared.snmp.ErrorStatus;
@@ -211,7 +212,7 @@ public class SystemGroupTracker extends AggregateTracker {
      *
      * @return a {@link java.lang.String} object.
      */
-    public String getSysName() {
+    public Optional<String> getSysName() {
         return m_store.getDisplayString(SYS_NAME);
     }
 
@@ -220,7 +221,7 @@ public class SystemGroupTracker extends AggregateTracker {
      *
      * @return a {@link java.lang.String} object.
      */
-    public String getSysObjectID() {
+    public Optional<String> getSysObjectID() {
         return m_store.getObjectID(SYS_OBJECTID);
     }
 
@@ -229,7 +230,7 @@ public class SystemGroupTracker extends AggregateTracker {
      *
      * @return a {@link java.lang.String} object.
      */
-    public String getSysDescr() {
+    public Optional<String> getSysDescr() {
         return m_store.getDisplayString(SYS_DESCR);
     }
 
@@ -238,7 +239,7 @@ public class SystemGroupTracker extends AggregateTracker {
      *
      * @return a {@link java.lang.String} object.
      */
-    public String getSysLocation() {
+    public Optional<String> getSysLocation() {
         return m_store.getDisplayString(SYS_LOCATION);
     }
 
@@ -247,7 +248,7 @@ public class SystemGroupTracker extends AggregateTracker {
      *
      * @return a {@link java.lang.String} object.
      */
-    public String getSysContact() {
+    public Optional<String> getSysContact() {
         return m_store.getDisplayString(SYS_CONTACT);
     }
 
@@ -287,21 +288,11 @@ public class SystemGroupTracker extends AggregateTracker {
         NodeInfoResult.Builder builder = NodeInfoResult.newBuilder();
         if(!failed()){
             LOG.info("create node info");
-            if(getSysName()!=null) {
-                builder.setSystemName(getSysName());
-            }
-            if(getSysLocation()!=null) {
-                builder.setSystemLocation(getSysLocation());
-            }
-            if(getSysContact()!=null) {
-                builder.setSystemContact(getSysContact());
-            }
-            if(getSysDescr()!=null) {
-                builder.setSystemDesc(getSysDescr());
-            }
-            if(getSysObjectID()!=null) {
-                builder.setObjectId(getSysObjectID());
-            }
+            getSysName().ifPresent(builder::setSystemName);
+            getSysLocation().ifPresent(builder::setSystemLocation);
+            getSysContact().ifPresent(builder::setSystemContact);
+            getSysDescr().ifPresent(builder::setSystemDescr);
+            getSysObjectID().ifPresent(builder::setObjectId);
         }
         return builder.build();
     }

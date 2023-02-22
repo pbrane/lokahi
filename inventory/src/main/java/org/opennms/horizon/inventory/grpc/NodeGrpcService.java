@@ -28,13 +28,19 @@
 
 package org.opennms.horizon.inventory.grpc;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
+import com.google.common.base.Strings;
+import com.google.common.net.InetAddresses;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.BoolValue;
+import com.google.protobuf.Empty;
+import com.google.protobuf.Int64Value;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import io.grpc.Context;
+import io.grpc.protobuf.StatusProto;
+import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
@@ -48,22 +54,16 @@ import org.opennms.horizon.inventory.service.IpInterfaceService;
 import org.opennms.horizon.inventory.service.NodeService;
 import org.opennms.horizon.inventory.service.taskset.DetectorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
+import org.opennms.horizon.shared.constants.GrpcConstants;
+import org.opennms.taskset.contract.ScanType;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Strings;
-import com.google.common.net.InetAddresses;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.protobuf.BoolValue;
-import com.google.protobuf.Empty;
-import com.google.protobuf.Int64Value;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-
-import io.grpc.Context;
-import io.grpc.protobuf.StatusProto;
-import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 @Slf4j
 @Component
@@ -86,11 +86,12 @@ public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
         boolean valid = tenantId.map(id -> validateInput(request, id, responseObserver)).orElseThrow();
 
         if (valid) {
-            Node node = nodeService.createNode(request, tenantId.orElseThrow());
+            Node node = nodeService.createNode(request, ScanType.NODE_SCAN, tenantId.orElseThrow());
             responseObserver.onNext(nodeMapper.modelToDTO(node));
             responseObserver.onCompleted();
+
             // Asynchronously send task sets to Minion
-            executorService.execute(() -> sendTaskSetsToMinion(node));
+            executorService.execute(() -> sendTaskSetsToMinion(node, tenantId.orElseThrow()));
         }
     }
 
@@ -233,19 +234,25 @@ public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
         return valid;
     }
 
-    private void sendTaskSetsToMinion(Node node) {
-        try {
-            taskSetService.sendDetectorTasks(node);
-            scannerService.sendNodeScannerTask(List.of(nodeMapper.modelToDTO(node)),
-                node.getMonitoringLocation().getLocation(), node.getTenantId());
-        } catch (Exception e) {
-            log.error("Error while sending detector task for node with label {}", node.getNodeLabel());
-        }
+    private void sendTaskSetsToMinion(Node node, String tenantId) {
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
+        {
+            try {
+                taskSetService.sendDetectorTasks(node);
+                scannerService.sendNodeScannerTask(List.of(nodeMapper.modelToDTO(node)),
+                    node.getMonitoringLocation().getLocation(), node.getTenantId());
+            } catch (Exception e) {
+                log.error("Error while sending detector task for node with label {}", node.getNodeLabel());
+            }
+        });
     }
 
     private void sendTaskSetsToMinion(Map<String, List<NodeDTO>> locationNodes, String tenantId) {
-        for(String location: locationNodes.keySet()) {
-            scannerService.sendNodeScannerTask(locationNodes.get(location), location, tenantId);
-        }
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
+        {
+            for (String location : locationNodes.keySet()) {
+                scannerService.sendNodeScannerTask(locationNodes.get(location), location, tenantId);
+            }
+        });
     }
 }

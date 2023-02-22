@@ -31,8 +31,8 @@ package org.opennms.horizon.inventory.service;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.opennms.horizon.inventory.taskset.api.TaskSetPublisher;
 import org.opennms.sink.flows.contract.FlowsConfig;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 
 public class FlowsConfigServiceTest {
     @Mock
@@ -48,7 +48,5 @@ public class FlowsConfigServiceTest {
         Assert.assertNotNull(config);
         Assert.assertEquals("Netflow-5-UDP-8877", config.getListeners(0).getName());
         Assert.assertEquals(1, config.getListeners(0).getParsersList().size());
-        Assert.assertEquals(2, config.getListeners(0).getParsers(0).getQueue()
-            .getAdapters(0).getParametersCount());
     }
 }

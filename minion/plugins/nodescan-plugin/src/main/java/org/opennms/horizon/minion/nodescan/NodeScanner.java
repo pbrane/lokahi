@@ -40,7 +40,7 @@ import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.snmp.SnmpConfiguration;
 import org.opennms.horizon.shared.snmp.SnmpHelper;
 import org.opennms.horizon.shared.snmp.SnmpWalker;
-import org.opennms.node.scan.contract.IpTableScanResult;
+import org.opennms.node.scan.contract.IpInterfaceResult;
 import org.opennms.node.scan.contract.NodeInfoResult;
 import org.opennms.node.scan.contract.NodeScanRequest;
 import org.opennms.node.scan.contract.NodeScanResult;
@@ -74,12 +74,12 @@ public class NodeScanner implements Scanner {
                 NodeInfoResult nodeInfo = scanSystem(agentConfig);
 
 
-                List<IpTableScanResult> ipAddrTblResults = scanIpAddrTable(agentConfig);
+                List<IpInterfaceResult> ipInterfaceResults = scanIpAddrTable(agentConfig);
                 List<SnmpInterfaceResult> snmpInterfaceResults = scanSnmpInterface(agentConfig);
                 NodeScanResult scanResult = NodeScanResult.newBuilder()
+                    .setNodeId(scanRequest.getNodeId())
                     .setNodeInfo(nodeInfo)
-                    .addAllIpInterfaces(ipAddrTblResults.stream().map(IpTableScanResult::getIpInterface).toList())
-                    .addAllSnmpInterfaces(ipAddrTblResults.stream().map(IpTableScanResult::getSnmpInterface).toList())
+                    .addAllIpInterfaces(ipInterfaceResults)
                     .addAllSnmpInterfaces(snmpInterfaceResults)
                     .build();
                 return ScanResultsResponseImpl.builder().results(scanResult).build();
@@ -105,12 +105,12 @@ public class NodeScanner implements Scanner {
         return results;
     }
 
-    private List<IpTableScanResult> scanIpAddrTable(SnmpAgentConfig agentConfig) throws InterruptedException {
-        List<IpTableScanResult> results = new ArrayList<>();
+    private List<IpInterfaceResult> scanIpAddrTable(SnmpAgentConfig agentConfig) throws InterruptedException {
+        List<IpInterfaceResult> results = new ArrayList<>();
         IPAddrTracker tracker = new IPAddrTracker() {
             @Override
             public void processIPInterfaceRow(IPInterfaceRow row) {
-                results.add(row.createInterfaceFromRow());
+                row.createInterfaceFromRow().ifPresent(results::add);
             }
         };
         try(var walker = snmpHelper.createWalker(agentConfig, "ipAddrEntry", tracker)) {
@@ -120,7 +120,7 @@ public class NodeScanner implements Scanner {
         IPAddressTableTracker ipAddressTableTracker = new IPAddressTableTracker() {
             @Override
             public void processIPAddressRow(IPAddressRow row) {
-                results.add(row.createInterfaceFromRow());
+                row.createInterfaceFromRow().ifPresent(results::add);
             }
         };
         try(var walker = snmpHelper.createWalker(agentConfig, "ipAddressTableEntry", ipAddressTableTracker)) {

@@ -26,6 +26,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.verify;
 @CucumberContextConfiguration
 @SpringBootTest
 @EnableAutoConfiguration
+@ContextConfiguration(initializers = {SpringContextTestInitializer.class})
 public class NotificationCucumberTestSteps extends GrpcTestBase {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationCucumberTestSteps.class);
 

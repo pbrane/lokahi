@@ -41,10 +41,7 @@ import org.opennms.snmp.contract.SnmpCollectorRequest;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
 
 import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForAzureTask;
 import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForIpTask;
@@ -52,25 +49,8 @@ import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityFo
 @Component
 @RequiredArgsConstructor
 public class CollectorTaskSetService {
-    private final TaskSetPublisher taskSetPublisher;
 
-    public void sendCollectorTask(String location, MonitorType monitorType, IpInterface ipInterface, long nodeId) {
-        String tenantId = ipInterface.getTenantId();
-        var task = addCollectorTask(monitorType, ipInterface, nodeId);
-        if (task != null) {
-            taskSetPublisher.publishNewTasks(tenantId, location, Arrays.asList(task));
-        }
-    }
-
-    public void sendAzureCollectorTasks(AzureCredential credential, AzureScanItem item, String ipAddress, long nodeId) {
-        String tenantId = credential.getTenantId();
-        String location = credential.getMonitoringLocation().getLocation();
-
-        TaskDefinition task = addAzureCollectorTask(credential, item, ipAddress, nodeId);
-        taskSetPublisher.publishNewTasks(tenantId, location, Arrays.asList(task));
-    }
-
-    private TaskDefinition addCollectorTask(MonitorType monitorType, IpInterface ipInterface, long nodeId) {
+    public TaskDefinition getCollectorTask(MonitorType monitorType, IpInterface ipInterface, long nodeId) {
         String monitorTypeValue = monitorType.getValueDescriptor().getName();
         String ipAddress = InetAddressUtils.toIpAddrString(ipInterface.getIpAddress());
 
@@ -78,35 +58,32 @@ public class CollectorTaskSetService {
         String pluginName = String.format("%sCollector", monitorTypeValue);
         TaskDefinition taskDefinition = null;
 
-        switch (monitorType) {
-            case SNMP: {
-                Any configuration =
-                    Any.pack(SnmpCollectorRequest.newBuilder()
-                        .setHost(ipAddress)
-                        .setAgentConfig(SnmpConfiguration.newBuilder()
-                            .setAddress(ipAddress)
-                            .setVersion(Version.v2)
-                            .setTimeout(30000).build())
-                        .setNodeId(nodeId)
-                        .build());
+        if (monitorType == MonitorType.SNMP) {
+            Any configuration =
+                Any.pack(SnmpCollectorRequest.newBuilder()
+                    .setHost(ipAddress)
+                    .setAgentConfig(SnmpConfiguration.newBuilder()
+                        .setAddress(ipAddress)
+                        .setVersion(Version.v2)
+                        .setTimeout(30000).build())
+                    .setNodeId(nodeId)
+                    .build());
 
-                String taskId = identityForIpTask(ipAddress, name);
-                TaskDefinition.Builder builder =
-                    TaskDefinition.newBuilder()
-                        .setType(TaskType.COLLECTOR)
-                        .setPluginName(pluginName)
-                        .setNodeId(nodeId)
-                        .setId(taskId)
-                        .setConfiguration(configuration)
-                        .setSchedule(TaskUtils.DEFAULT_SCHEDULE);
-                taskDefinition = builder.build();
-                break;
-            }
+            String taskId = identityForIpTask(nodeId, ipAddress, name);
+            TaskDefinition.Builder builder =
+                TaskDefinition.newBuilder()
+                    .setType(TaskType.COLLECTOR)
+                    .setPluginName(pluginName)
+                    .setNodeId(nodeId)
+                    .setId(taskId)
+                    .setConfiguration(configuration)
+                    .setSchedule(TaskUtils.DEFAULT_SCHEDULE);
+            taskDefinition = builder.build();
         }
         return taskDefinition;
     }
 
-    private TaskDefinition addAzureCollectorTask(AzureCredential credential, AzureScanItem scanItem, String ipAddress, long nodeId) {
+    public TaskDefinition addAzureCollectorTask(AzureCredential credential, AzureScanItem scanItem, String ipAddress, long nodeId) {
         Any configuration =
             Any.pack(AzureCollectorRequest.newBuilder()
                 .setResource(scanItem.getName())
@@ -121,7 +98,8 @@ public class CollectorTaskSetService {
                 .build());
 
         String name = String.join("-", "azure", "collector", scanItem.getId());
-        String taskId = identityForAzureTask(name);
+        String id = String.join("-", String.valueOf(credential.getId()), String.valueOf(nodeId));
+        String taskId = identityForAzureTask(name, id);
         return TaskDefinition.newBuilder()
             .setType(TaskType.COLLECTOR)
             .setPluginName("AZURECollector")

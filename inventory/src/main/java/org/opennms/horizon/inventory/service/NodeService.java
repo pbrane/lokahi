@@ -28,14 +28,9 @@
 
 package org.opennms.horizon.inventory.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
@@ -47,14 +42,31 @@ import org.opennms.horizon.inventory.model.Tag;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
+import org.opennms.horizon.inventory.service.taskset.CollectorTaskSetService;
+import org.opennms.horizon.inventory.service.taskset.DetectorTaskSetService;
+import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
+import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
+import org.opennms.horizon.inventory.taskset.api.TaskSetPublisher;
 import org.opennms.horizon.inventory.repository.TagRepository;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
+import org.opennms.taskset.contract.MonitorType;
+import org.opennms.taskset.contract.TaskDefinition;
+import org.opennms.node.scan.contract.NodeInfoResult;
+import org.opennms.taskset.contract.ScanType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -62,11 +74,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NodeService {
 
+    private final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+        .setNameFormat("delete-node-task-publish-%d")
+        .build();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10, threadFactory);
     private final NodeRepository nodeRepository;
     private final MonitoringLocationRepository monitoringLocationRepository;
     private final IpInterfaceRepository ipInterfaceRepository;
     private final TagRepository tagRepository;
     private final ConfigUpdateService configUpdateService;
+    private final DetectorTaskSetService detectorTaskSetService;
+    private final CollectorTaskSetService collectorTaskSetService;
+    private final MonitorTaskSetService monitorTaskSetService;
+    private final ScannerTaskSetService scannerTaskSetService;
+    private final TaskSetPublisher taskSetPublisher;
+
+
     private final NodeMapper mapper;
 
     @Transactional(readOnly = true)
@@ -79,23 +102,26 @@ public class NodeService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<NodeDTO> getByIdAndTenantId(long id, String tenantId){
+    public Optional<NodeDTO> getByIdAndTenantId(long id, String tenantId) {
         return nodeRepository.findByIdAndTenantId(id, tenantId).map(mapper::modelToDTO);
     }
 
     private void saveIpInterfaces(NodeCreateDTO request, Node node, String tenantId) {
         if (request.hasManagementIp()) {
-                IpInterface ipInterface = new IpInterface();
-                ipInterface.setNode(node);
-                ipInterface.setTenantId(tenantId);
-                ipInterface.setIpAddress(InetAddressUtils.getInetAddress(request.getManagementIp()));
-                ipInterface.setSnmpPrimary(true);
-                ipInterfaceRepository.save(ipInterface);
+
+            IpInterface ipInterface = new IpInterface();
+            ipInterface.setNode(node);
+            ipInterface.setTenantId(tenantId);
+            ipInterface.setIpAddress(InetAddressUtils.getInetAddress(request.getManagementIp()));
+            ipInterface.setSnmpPrimary(true);
+            ipInterfaceRepository.save(ipInterface);
+            node.setIpInterfaces(List.of(ipInterface));
+
         }
     }
 
     private MonitoringLocation saveMonitoringLocation(NodeCreateDTO request, String tenantId) {
-        String location = StringUtils.isEmpty(request.getLocation()) ? GrpcConstants.DEFAULT_LOCATION: request.getLocation();
+        String location = StringUtils.isEmpty(request.getLocation()) ? GrpcConstants.DEFAULT_LOCATION : request.getLocation();
         Optional<MonitoringLocation> found =
             monitoringLocationRepository.findByLocationAndTenantId(location, tenantId);
 
@@ -114,11 +140,14 @@ public class NodeService {
         }
     }
 
-    private Node saveNode(NodeCreateDTO request, MonitoringLocation monitoringLocation, String tenantId) {
+    private Node saveNode(NodeCreateDTO request, MonitoringLocation monitoringLocation,
+                          ScanType scanType, String tenantId) {
+
         Node node = new Node();
 
         node.setTenantId(tenantId);
         node.setNodeLabel(request.getLabel());
+        node.setScanType(scanType);
         node.setCreateTime(LocalDateTime.now());
         node.setMonitoringLocation(monitoringLocation);
         node.setMonitoringLocationId(monitoringLocation.getId());
@@ -127,9 +156,9 @@ public class NodeService {
     }
 
     @Transactional
-    public Node createNode(NodeCreateDTO request, String tenantId) {
+    public Node createNode(NodeCreateDTO request, ScanType scanType, String tenantId) {
         MonitoringLocation monitoringLocation = saveMonitoringLocation(request, tenantId);
-        Node node = saveNode(request, monitoringLocation, tenantId);
+        Node node = saveNode(request, monitoringLocation, scanType, tenantId);
         saveIpInterfaces(request, node, tenantId);
 
         return node;
@@ -140,7 +169,7 @@ public class NodeService {
         Map<String, Map<String, List<NodeDTO>>> nodesByTenantLocation = new HashMap<>();
         nodeRepository.findAll().forEach(node -> {
             Map<String, List<NodeDTO>> nodeByLocation = nodesByTenantLocation.computeIfAbsent(node.getTenantId(), (tenantId) -> new HashMap<>());
-            List<NodeDTO> nodeList = nodeByLocation.computeIfAbsent(node.getMonitoringLocation().getLocation(), location-> new ArrayList<>());
+            List<NodeDTO> nodeList = nodeByLocation.computeIfAbsent(node.getMonitoringLocation().getLocation(), location -> new ArrayList<>());
             nodeList.add(mapper.modelToDTO(node));
         });
         return nodesByTenantLocation;
@@ -158,19 +187,47 @@ public class NodeService {
 
     @Transactional
     public void deleteNode(long id) {
-        nodeRepository.findById(id).ifPresent(node -> {
+        Optional<Node> optionalNode = nodeRepository.findById(id);
+        if (optionalNode.isEmpty()) {
+            log.warn("Node with ID {} doesn't exist", id);
+            throw new IllegalArgumentException("Node with ID : " + id + "doesn't exist");
+        } else {
+            var node = optionalNode.get();
+            var tenantId = node.getTenantId();
+            var location = node.getMonitoringLocation().getLocation();
+            var tasks = getTasksForNode(node);
             removeAssociatedTags(node);
-            nodeRepository.delete(node);
+            nodeRepository.deleteById(id);
+            executorService.execute(() -> taskSetPublisher.publishTaskDeletion(tenantId, location, tasks));
+        }
+    }
+
+    public List<TaskDefinition> getTasksForNode(Node node) {
+        var tasks = new ArrayList<TaskDefinition>();
+        var detectorTasks = detectorTaskSetService.getDetectorTasks(node);
+        scannerTaskSetService.getNodeScanTasks(node).ifPresent(tasks::add);
+        tasks.addAll(detectorTasks);
+        node.getIpInterfaces().forEach(ipInterface -> {
+            ipInterface.getMonitoredServices().forEach((ms) -> {
+                String serviceName = ms.getMonitoredServiceType().getServiceName();
+                var monitorType = MonitorType.valueOf(serviceName);
+                var monitorTask = monitorTaskSetService.getMonitorTask(monitorType, ipInterface, node.getId());
+                Optional.ofNullable(monitorTask).ifPresent(tasks::add);
+                var collectorTask = collectorTaskSetService.getCollectorTask(monitorType, ipInterface, node.getId());
+                Optional.ofNullable(collectorTask).ifPresent(tasks::add);
+            });
         });
+        return tasks;
+    }
+
+    public void updateNodeInfo(Node node, NodeInfoResult nodeInfo) {
+        mapper.updateFromNodeInfo(nodeInfo, node);
+        nodeRepository.save(node);
     }
 
     private void removeAssociatedTags(Node node) {
         for (Tag tag : node.getTags()) {
-            if (tag.getNodes().size() == 1) {
-                tagRepository.delete(tag);
-            } else {
-                tag.getNodes().remove(node);
-            }
+            tag.getNodes().remove(node);
         }
     }
 }

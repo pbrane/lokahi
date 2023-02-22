@@ -28,6 +28,14 @@
 
 package org.opennms.horizon.inventory.grpc;
 
+import com.google.protobuf.Empty;
+import com.google.protobuf.StringValue;
+import io.grpc.Metadata;
+import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.MetadataUtils;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,6 +44,7 @@ import static org.mockito.Mockito.verify;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import io.grpc.Context;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,23 +58,26 @@ import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.MonitoringSystem;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.MonitoringSystemRepository;
+import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.google.protobuf.Empty;
-import com.google.protobuf.StringValue;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
-import io.grpc.Metadata;
-import io.grpc.ServerCall;
-import io.grpc.ServerCallHandler;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
-import io.grpc.stub.MetadataUtils;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @ContextConfiguration(initializers = {SpringContextTestInitializer.class})
 public class MonitoringSystemGrpcItTest extends GrpcTestBase {
+    private String otherTenantId = new UUID(5, 6).toString();
     @Autowired
     private MonitoringSystemRepository systemRepo;
     @Autowired
@@ -73,6 +85,8 @@ public class MonitoringSystemGrpcItTest extends GrpcTestBase {
     @Autowired
     private MonitoringSystemMapper mapper;
     private MonitoringSystem system1;
+    private MonitoringSystem system2;
+    private MonitoringSystem system3;
     private MonitoringSystemServiceGrpc.MonitoringSystemServiceBlockingStub serviceStub;
 
     @BeforeEach
@@ -80,7 +94,11 @@ public class MonitoringSystemGrpcItTest extends GrpcTestBase {
         MonitoringLocation location = new MonitoringLocation();
             location.setLocation("test-location");
             location.setTenantId(tenantId);
-        locationRepo.save(location);
+
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
+        {
+            locationRepo.save(location);
+        });
 
         system1 = new MonitoringSystem();
         system1.setSystemId("test-system-id-1");
@@ -90,31 +108,47 @@ public class MonitoringSystemGrpcItTest extends GrpcTestBase {
         system1.setLabel("system1");
         system1.setLastCheckedIn(LocalDateTime.now());
 
-        MonitoringSystem system2 = new MonitoringSystem();
+        system2 = new MonitoringSystem();
         system2.setSystemId("test-system-id-2");
         system2.setTenantId(tenantId);
         system2.setMonitoringLocation(location);
         system2.setLabel("system2");
         system2.setLastCheckedIn(LocalDateTime.now());
 
-        MonitoringSystem system3 = new MonitoringSystem();
+        system3 = new MonitoringSystem();
         system3.setSystemId("test-system-id-3");
-        system3.setTenantId(new UUID(5, 6).toString());
+        system3.setTenantId(otherTenantId);
         system3.setMonitoringLocation(location);
         system3.setLabel("system3");
         system3.setLastCheckedIn(LocalDateTime.now());
 
-        systemRepo.save(system1);
-        systemRepo.save(system2);
-        systemRepo.save(system3);
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
+        {
+            systemRepo.save(system1);
+            systemRepo.save(system2);
+        });
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, otherTenantId).run(()->
+        {
+            systemRepo.save(system3);
+        });
+
         prepareServer();
         serviceStub = MonitoringSystemServiceGrpc.newBlockingStub(channel);
     }
 
     @AfterEach
     public void cleanup() throws InterruptedException {
-        systemRepo.deleteAll();
-        locationRepo.deleteAll();
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
+        {
+            systemRepo.deleteAll();
+            locationRepo.deleteAll();
+        });
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, otherTenantId).run(()->
+        {
+            systemRepo.deleteAll();
+            locationRepo.deleteAll();
+        });
+
         afterTest();
     }
 
@@ -183,10 +217,33 @@ public class MonitoringSystemGrpcItTest extends GrpcTestBase {
 
     @Test
     void testDeleteMonitoringSystem() throws VerificationException {
+        // Delete system but location shouldn't be deleted
         assertThat(serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader)))
             .deleteMonitoringSystem(StringValue.of(system1.getSystemId())));
-        verify(spyInterceptor).verifyAccessToken(authHeader);
-        verify(spyInterceptor).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
+        {
+            var monitoringSystem = systemRepo.findBySystemId(system1.getSystemId());
+            assertFalse(monitoringSystem.isPresent());
+            var optionalLocation = locationRepo.findByLocation(system1.getMonitoringLocation().getLocation());
+            assertTrue(optionalLocation.isPresent());
+        });
+
+        // Delete system and location should be deleted as it doesn't have any other monitoring systems,
+        // ( system1, system2 belongs to same tenant but system3 is on different tenant)
+        assertThat(serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader)))
+            .deleteMonitoringSystem(StringValue.of(system2.getSystemId())));
+
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
+        {
+            var monitoringSystem = systemRepo.findBySystemId(system2.getSystemId());
+            assertFalse(monitoringSystem.isPresent());
+            var optionalLocation = locationRepo.findByLocation(system2.getMonitoringLocation().getLocation());
+            assertFalse(optionalLocation.isPresent());
+        });
+
+        verify(spyInterceptor, times(2)).verifyAccessToken(authHeader);
+        verify(spyInterceptor, times(2)).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
+
     }
 
     @Test

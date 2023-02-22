@@ -107,10 +107,8 @@ export const useAppliancesQueries = defineStore('appliancesQueries', {
       tableNodes.value = []
 
       allNodes.forEach(async (node) => {
-        const { data, isFetching } = await fetchNodeMetrics(
-          node.id as number,
-          node.ipInterfaces?.[0].ipAddress as string
-        ) // currently only 1 interface per node
+        const { ipAddress: snmpPrimaryIpAddress } = node.ipInterfaces?.filter((ii) => ii.snmpPrimary)[0] || {} // not getting ipAddress from snmpPrimary interface can result in missing metrics for ICMP
+        const { data, isFetching } = await fetchNodeMetrics(node.id as number, snmpPrimaryIpAddress as string)
         const latencyResult = data.value?.nodeLatency?.data?.result?.[0]?.values?.[0]
         const status = data.value?.nodeStatus?.status
 

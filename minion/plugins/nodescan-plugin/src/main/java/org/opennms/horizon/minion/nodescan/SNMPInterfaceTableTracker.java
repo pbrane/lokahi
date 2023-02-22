@@ -28,6 +28,9 @@
 
 package org.opennms.horizon.minion.nodescan;
 
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.opennms.horizon.shared.snmp.RowCallback;
 import org.opennms.horizon.shared.snmp.SnmpInstId;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
@@ -108,83 +111,83 @@ public class SNMPInterfaceTableTracker extends TableTracker {
             super(columnCount, instance);
         }
 
-        public Integer getIfIndex() {
+        public Optional<Integer> getIfIndex() {
             final SnmpValue value = getValue(IF_INDEX);
             if (value != null) {
-                return value.toInt();
+                return Optional.of(value.toInt());
             } else {
                 // ifIndex is the instance id as well
                 final SnmpInstId inst = getInstance();
                 if (inst != null && inst.length() == 1) {
-                    return inst.toInt();
+                    return Optional.of(inst.toInt());
                 }
             }
-            return null;
+            return Optional.empty();
         }
 
-        private Integer getIfType() {
+        private Optional<Integer> getIfType() {
             final SnmpValue value = getValue(IF_TYPE);
-            return value == null ? null : value.toInt();
+            return Optional.ofNullable(value == null ? null : value.toInt());
 
         }
 
-        private Long getIfSpeed() {
+        private Optional<Long> getIfSpeed() {
             final SnmpValue value = getValue(IF_SPEED);
-            return value == null ? null : value.toLong();
+            return Optional.ofNullable(value == null ? null : value.toLong());
         }
 
-        private Long getIfHighSpeed() {
+        private Optional<Long> getIfHighSpeed() {
             final SnmpValue value = getValue(IF_HIGH_SPEED);
-            return value == null ? null : value.toLong();
+            return Optional.ofNullable(value == null ? null : value.toLong());
         }
 
-        private Long getSpeed() {
-            final Long highSpeed = getIfHighSpeed();
-            final Long ifSpeed = getIfSpeed();
-            if (highSpeed != null && highSpeed > 4294L) {
-                return highSpeed * 1000000L;
+        private Optional<Long> getSpeed() {
+            final Optional<Long> highSpeed = getIfHighSpeed();
+            final Optional<Long> ifSpeed = getIfSpeed();
+            if (highSpeed.isPresent() && highSpeed.get() > 4294L) {
+                return highSpeed.map(h -> h * 1000000L);
             }
-            if (ifSpeed == null) {
-                if (highSpeed != null && highSpeed > 0) {
+            if (ifSpeed.isEmpty()) {
+                if (highSpeed.isPresent() && highSpeed.get() > 0) {
                     LOG.warn("the ifSpeed for ifIndex {} is null, which is a violation of the standard (this seems to be related to a broken SNMP agent). But, the ifHighSpeed is {}, so that value will be used instead.", getIfIndex(), highSpeed);
-                    return highSpeed * 1000000L;
+                    return highSpeed.map(h -> h * 1000000L);
                 } else {
                     LOG.warn("the ifSpeed for ifIndex {} is null, which is a violation of the standard (this seems to be related to a broken SNMP agent). Returning 0 instead", getIfIndex());
-                    return 0L;
+                    return Optional.of(0L);
                 }
             }
             return ifSpeed;
         }
 
-        private Integer getIfOperStatus() {
+        private Optional<Integer> getIfOperStatus() {
             final SnmpValue value = getValue(IF_OPER_STATUS);
-            return value == null ? null : value.toInt();
+            return Optional.ofNullable(value == null ? null : value.toInt());
         }
 
-        private String getIfName() {
+        private Optional<String> getIfName() {
             final SnmpValue value = getValue(IF_NAME);
-            return value == null ? null : value.toDisplayString();
+            return Optional.ofNullable(value == null ? null : value.toDisplayString());
         }
 
-        private String getIfDescr() {
+        private Optional<String> getIfDescr() {
             final SnmpValue value = getValue(IF_DESCR);
-            return value == null ? null : value.toDisplayString();
+            return Optional.ofNullable(value == null ? null : value.toDisplayString());
         }
 
-        private String getIfAlias() {
+        private Optional<String> getIfAlias() {
             final SnmpValue value = getValue(IF_ALIAS);
-            return value == null ? null : value.toDisplayString();
+            return Optional.ofNullable(value == null ? null : value.toDisplayString());
         }
 
-        private Integer getIfAdminStatus() {
+        private Optional<Integer> getIfAdminStatus() {
             final SnmpValue value = getValue(IF_ADMIN_STATUS);
-            return value == null ? null : value.toInt();
+            return Optional.ofNullable(value == null ? null : value.toInt());
         }
 
-        private String getPhysAddr() {
+        private Optional<String> getPhysAddr() {
             final SnmpValue value = getValue(IF_PHYS_ADDR);
             if (value == null || value.isError()) {
-                return null;
+                return Optional.empty();
             }
             String hexString = value == null ? null : value.toHexString();
             String displayString = value == null ? null : value.toDisplayString();
@@ -194,33 +197,32 @@ public class SNMPInterfaceTableTracker extends TableTracker {
                     // If the hex string is 12 characters long, than the agent is kinda weird and
                     // is returning the value as a raw binary value that is 6 bytes in length.
                     // But that's OK, as long as we can convert it into a string, that's fine.
-                    return hexString;
+                    return Optional.of(hexString);
                 } else {
                     // This is the normal case that most agents conform to: the value is an ASCII
                     // string representing the colon-separated MAC address. We just need to reformat
                     // it to remove the colons and convert it into a 12-character string.
-                    return displayString == null || displayString.trim().isEmpty() ? null : InetAddressUtils.normalizeMacAddress(displayString);
+                    return Optional.ofNullable(displayString == null || displayString.trim().isEmpty() ? null : InetAddressUtils.normalizeMacAddress(displayString));
                 }
             } catch (IllegalArgumentException e) {
                 LOG.warn(e.getMessage(), e);
-                return displayString;
+                return Optional.ofNullable(displayString);
             }
         }
 
         public SnmpInterfaceResult createInterfaceFromRow() {
-            return SnmpInterfaceResult.newBuilder()
-                .setIfIndex(getIfIndex())
-                .setIfAdminStatus(getIfAdminStatus())
-                .setIfAlias(getIfAlias())
-                .setIfDesc(getIfDescr())
-                .setIfName(getIfName())
-                .setIfOperatorStatus(getIfOperStatus())
-                .setIfSpeed(getIfSpeed())
-                .setIfType(getIfType())
-                .setPhysicalAddr(getPhysAddr())
-                .build();
+            SnmpInterfaceResult.Builder builder = SnmpInterfaceResult.newBuilder();
+            getIfIndex().ifPresent(builder::setIfIndex);
+            getIfAdminStatus().ifPresent(builder::setIfAdminStatus);
+            getIfAlias().ifPresent(builder::setIfAlias);
+            getIfDescr().ifPresent(builder::setIfDescr);
+            getIfName().ifPresent(builder::setIfName);
+            getIfOperStatus().ifPresent(builder::setIfOperatorStatus);
+            getIfSpeed().ifPresent(builder::setIfSpeed);
+            getIfType().ifPresent(builder::setIfType);
+            getPhysAddr().ifPresent(builder::setPhysicalAddr);
+            return builder.build();
         }
-
     }
 
     /**

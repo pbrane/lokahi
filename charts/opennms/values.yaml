@@ -52,6 +52,7 @@ OpenNMS:
     TrapsListenerPort: 1162
     Netflow5ListenerPort: 8877
     Netflow9ListenerPort: 4729
+    NetflowListenerPort: 9999
     Resources:
       Limits:
         Cpu: "1"
@@ -112,6 +113,7 @@ OpenNMS:
       Requests:
         Cpu: 100m
         Memory: 250Mi
+    EncryptionKey: ~
   Alarm:
     ServiceName: opennms-alarm
     Image: opennms/horizon-stream-alarm
@@ -203,6 +205,7 @@ Keycloak:
   AdminUsername: admin
   AdminPassword: notset
   RealmName: opennms
+  DynamicRealmConfig: true
 Grafana:
   Enabled: true
   Path: /grafana

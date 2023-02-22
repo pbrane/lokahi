@@ -30,6 +30,7 @@ package org.opennms.horizon.minion.nodescan;
 
 import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.opennms.horizon.shared.snmp.RowCallback;
 import org.opennms.horizon.shared.snmp.SnmpInstId;
@@ -40,8 +41,6 @@ import org.opennms.horizon.shared.snmp.SnmpValue;
 import org.opennms.horizon.shared.snmp.TableTracker;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.node.scan.contract.IpInterfaceResult;
-import org.opennms.node.scan.contract.IpTableScanResult;
-import org.opennms.node.scan.contract.SnmpInterfaceResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,7 +190,7 @@ public class IPAddressTableTracker extends TableTracker {
             }
         }
 
-        public IpTableScanResult createInterfaceFromRow() {
+        public Optional<IpInterfaceResult> createInterfaceFromRow() {
 
             final Integer ifIndex = getIfIndex();
             final String ipAddr = getIpAddress();
@@ -201,24 +200,18 @@ public class IPAddressTableTracker extends TableTracker {
             LOG.debug("createInterfaceFromRow: ifIndex = {}, ipAddress = {}, type = {}, netmask = {}", ifIndex, ipAddr, type, netMask);
 
             if (type != IP_ADDRESS_TYPE_UNICAST || ipAddr == null) {
-                return null;
+                return Optional.empty();
             }
 
             final InetAddress inetAddress = InetAddressUtils.addr(ipAddr);
             IpInterfaceResult.Builder ipInterfaceBuilder = IpInterfaceResult.newBuilder();
             ipInterfaceBuilder.setIpAddress(inetAddress.getHostAddress());
-            ipInterfaceBuilder.setNetMask(netMask.getHostAddress());
+            ipInterfaceBuilder.setNetmask(netMask.getHostAddress());
             ipInterfaceBuilder.setIpHostName(inetAddress.getHostName());
-
-            IpTableScanResult.Builder resultBuilder = IpTableScanResult.newBuilder();
-            resultBuilder.setIpInterface(ipInterfaceBuilder.build());
-
-            if (ifIndex != null) {
-                resultBuilder.setSnmpInterface(SnmpInterfaceResult.newBuilder()
-                    .setIpAddress(inetAddress.getHostAddress())
-                    .setIfIndex(ifIndex).build());
+            if(ifIndex != null) {
+                ipInterfaceBuilder.setIfIndex(ifIndex);
             }
-            return resultBuilder.build();
+            return Optional.of(ipInterfaceBuilder.build());
         }
 
         private SnmpResult getResult(final SnmpObjId base) {

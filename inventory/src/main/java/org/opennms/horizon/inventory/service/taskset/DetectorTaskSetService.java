@@ -36,13 +36,13 @@ import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
+import org.opennms.horizon.inventory.taskset.api.TaskSetPublisher;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.icmp.contract.IcmpDetectorRequest;
 import org.opennms.snmp.contract.SnmpDetectorRequest;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -66,7 +66,14 @@ public class DetectorTaskSetService {
 
     @Transactional
     public void sendDetectorTasks(Node node) {
+        var tasks = getDetectorTasks(node);
+        String tenantId = node.getTenantId();
+        MonitoringLocation monitoringLocation = node.getMonitoringLocation();
+        String location = monitoringLocation.getLocation();
+        taskSetPublisher.publishNewTasks(tenantId, location, tasks);
+    }
 
+    public List<TaskDefinition> getDetectorTasks(Node node) {
         List<IpInterface> ipInterfaces =
             ipInterfaceRepository.findByNodeId(node.getId());
         List<TaskDefinition> tasks = new ArrayList<>();
@@ -74,10 +81,7 @@ public class DetectorTaskSetService {
             var list = addDetectorTasks(node, ipInterfaces, monitorType);
             tasks.addAll(list);
         }
-        String tenantId = node.getTenantId();
-        MonitoringLocation monitoringLocation = node.getMonitoringLocation();
-        String location = monitoringLocation.getLocation();
-        taskSetPublisher.publishNewTasks(tenantId, location, tasks);
+        return tasks;
     }
 
     public void sendDetectorTaskForNodes(Map<String, Map<String, List<NodeDTO>>> nodeListMap) {
@@ -117,39 +121,26 @@ public class DetectorTaskSetService {
         Any configuration = null;
 
         switch (monitorType) {
-            case ICMP: {
-                configuration =
-                    Any.pack(IcmpDetectorRequest.newBuilder()
-                        .setHost(ipAddress)
-                        .setTimeout(TaskUtils.ICMP_DEFAULT_TIMEOUT_MS)
-                        .setDscp(TaskUtils.ICMP_DEFAULT_DSCP)
-                        .setAllowFragmentation(TaskUtils.ICMP_DEFAULT_ALLOW_FRAGMENTATION)
-                        .setPacketSize(TaskUtils.ICMP_DEFAULT_PACKET_SIZE)
-                        .setRetries(TaskUtils.ICMP_DEFAULT_RETRIES)
-                        .build());
-                break;
-            }
-            case SNMP: {
-                configuration =
-                    Any.pack(SnmpDetectorRequest.newBuilder()
-                        .setHost(ipAddress)
-                        .setTimeout(TaskUtils.SNMP_DEFAULT_TIMEOUT_MS)
-                        .setRetries(TaskUtils.SNMP_DEFAULT_RETRIES)
-                        .build());
-
-                break;
-            }
-            case UNRECOGNIZED: {
-                log.warn("Unrecognized monitor type");
-                break;
-            }
-            case UNKNOWN: {
-                log.warn("Unknown monitor type");
-                break;
-            }
+            case ICMP -> configuration =
+                Any.pack(IcmpDetectorRequest.newBuilder()
+                    .setHost(ipAddress)
+                    .setTimeout(TaskUtils.ICMP_DEFAULT_TIMEOUT_MS)
+                    .setDscp(TaskUtils.ICMP_DEFAULT_DSCP)
+                    .setAllowFragmentation(TaskUtils.ICMP_DEFAULT_ALLOW_FRAGMENTATION)
+                    .setPacketSize(TaskUtils.ICMP_DEFAULT_PACKET_SIZE)
+                    .setRetries(TaskUtils.ICMP_DEFAULT_RETRIES)
+                    .build());
+            case SNMP -> configuration =
+                Any.pack(SnmpDetectorRequest.newBuilder()
+                    .setHost(ipAddress)
+                    .setTimeout(TaskUtils.SNMP_DEFAULT_TIMEOUT_MS)
+                    .setRetries(TaskUtils.SNMP_DEFAULT_RETRIES)
+                    .build());
+            case UNRECOGNIZED -> log.warn("Unrecognized monitor type");
+            case UNKNOWN -> log.warn("Unknown monitor type");
         }
         if (configuration != null) {
-            String taskId = identityForIpTask(ipAddress, name);
+            String taskId = identityForIpTask(nodeId, ipAddress, name);
             TaskDefinition.Builder builder =
                 TaskDefinition.newBuilder()
                     .setType(TaskType.DETECTOR)

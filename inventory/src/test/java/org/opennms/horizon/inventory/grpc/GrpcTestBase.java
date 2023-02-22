@@ -28,27 +28,26 @@
 
 package org.opennms.horizon.inventory.grpc;
 
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-
-import java.io.IOException;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import org.keycloak.common.VerificationException;
-import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-
 import io.grpc.BindableService;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Server;
 import io.grpc.inprocess.InProcessServerBuilder;
+import org.keycloak.common.VerificationException;
+import org.opennms.horizon.shared.constants.GrpcConstants;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
+import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public abstract class GrpcTestBase {
     @DynamicPropertySource
@@ -57,6 +56,7 @@ public abstract class GrpcTestBase {
     }
 
     protected final String tenantId = "test-tenant";
+    protected final String invalidTenantId = "invalid-tenant";
     protected final String authHeader = "Bearer esgs12345";
     protected final String headerWithoutTenant = "Bearer esgs12345invalid";
     protected final String differentTenantHeader = "Bearer esgs12345different";
@@ -68,7 +68,7 @@ public abstract class GrpcTestBase {
         channel = ManagedChannelBuilder.forAddress("localhost", 6767)
                 .usePlaintext().build();
         doReturn(Optional.of(tenantId)).when(spyInterceptor).verifyAccessToken(authHeader);
-        doReturn(Optional.of("invalid-tenant")).when(spyInterceptor).verifyAccessToken(differentTenantHeader);
+        doReturn(Optional.of(invalidTenantId)).when(spyInterceptor).verifyAccessToken(differentTenantHeader);
         doReturn(Optional.empty()).when(spyInterceptor).verifyAccessToken(headerWithoutTenant);
         doThrow(new VerificationException()).when(spyInterceptor).verifyAccessToken(null);
     }
@@ -96,6 +96,12 @@ public abstract class GrpcTestBase {
                 builder.addService(service);
             }
         }
-        return builder.build().start();
+        server = builder.build().start();
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            
+        }
+        return server;
     }
 }
