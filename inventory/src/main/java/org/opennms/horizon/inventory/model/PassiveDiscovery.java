@@ -36,12 +36,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-import jakarta.validation.constraints.NotNull;
-
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,34 +51,35 @@ import java.util.List;
 @Setter
 @RequiredArgsConstructor
 @Entity
-public class Tag extends TenantAwareEntity {
+public class PassiveDiscovery extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @NotNull
-    @Column(name = "name")
-    private String name;
+    @Column(name = "toggle")
+    private boolean toggle;
+
+    @NotNull
+    @Column(name = "create_time", columnDefinition = "TIMESTAMP")
+    private LocalDateTime createTime;
+
+    @Column(name = "snmp_ports", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<Integer> snmpPorts;
+
+    @Column(name = "snmp_communities", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<String> snmpCommunities;
 
     @ManyToMany
     @JoinTable(
-        name = "node_tag",
-        joinColumns = @JoinColumn(name = "tag_id"),
-        inverseJoinColumns = @JoinColumn(name = "node_id"))
-    private List<Node> nodes = new ArrayList<>();
+        name = "passive_discovery_monitoring_location",
+        joinColumns = @JoinColumn(name = "passive_discovery_id"),
+        inverseJoinColumns = @JoinColumn(name = "monitoring_location_id"))
+    private List<MonitoringLocation> monitoringLocations = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-        name = "azure_credential_tag",
-        joinColumns = @JoinColumn(name = "tag_id"),
-        inverseJoinColumns = @JoinColumn(name = "azure_credential_id"))
-    private List<AzureCredential> azureCredentials = new ArrayList<>();
-
-    @ManyToMany
-    @JoinTable(
-        name = "passive_discovery_tag",
-        joinColumns = @JoinColumn(name = "tag_id"),
-        inverseJoinColumns = @JoinColumn(name = "passive_discovery_id"))
-    private List<PassiveDiscovery> passiveDiscoveries = new ArrayList<>();
+    @ManyToMany(mappedBy = "passiveDiscoveries")
+    private List<Tag> tags = new ArrayList<>();
 }

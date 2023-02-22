@@ -32,6 +32,14 @@ package org.opennms.horizon.server.service.grpc;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+
+import com.google.protobuf.Empty;
+import com.google.protobuf.Int64Value;
+import com.google.protobuf.StringValue;
+import io.grpc.ManagedChannel;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
+import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.inventory.discovery.DiscoveryConfigDTO;
 import org.opennms.horizon.inventory.discovery.DiscoveryConfigOperationGrpc;
 import org.opennms.horizon.inventory.discovery.DiscoveryConfigRequest;
@@ -49,6 +57,10 @@ import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.NodeIdList;
 import org.opennms.horizon.inventory.dto.NodeServiceGrpc;
+import org.opennms.horizon.inventory.dto.PassiveDiscoveryCreateDTO;
+import org.opennms.horizon.inventory.dto.PassiveDiscoveryDTO;
+import org.opennms.horizon.inventory.dto.PassiveDiscoveryResponseDTO;
+import org.opennms.horizon.inventory.dto.PassiveDiscoveryServiceGrpc;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
 import org.opennms.horizon.inventory.dto.TagListDTO;
 import org.opennms.horizon.inventory.dto.TagListParamsDTO;
@@ -58,14 +70,8 @@ import org.opennms.horizon.server.config.DataLoaderFactory;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.springframework.util.StringUtils;
 
-import com.google.protobuf.Empty;
-import com.google.protobuf.Int64Value;
-import com.google.protobuf.StringValue;
-
-import io.grpc.ManagedChannel;
-import io.grpc.Metadata;
-import io.grpc.stub.MetadataUtils;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 public class InventoryClient {
@@ -77,6 +83,7 @@ public class InventoryClient {
     private AzureCredentialServiceGrpc.AzureCredentialServiceBlockingStub azureCredentialStub;
     private TagServiceGrpc.TagServiceBlockingStub tagStub;
     private DiscoveryConfigOperationGrpc.DiscoveryConfigOperationBlockingStub discoveryConfigStub;
+    private PassiveDiscoveryServiceGrpc.PassiveDiscoveryServiceBlockingStub passiveDiscoveryServiceBlockingStub;
 
     protected void initialStubs() {
         locationStub = MonitoringLocationServiceGrpc.newBlockingStub(channel);
@@ -85,6 +92,7 @@ public class InventoryClient {
         azureCredentialStub = AzureCredentialServiceGrpc.newBlockingStub(channel);
         tagStub = TagServiceGrpc.newBlockingStub(channel);
         discoveryConfigStub = DiscoveryConfigOperationGrpc.newBlockingStub(channel);
+        passiveDiscoveryServiceBlockingStub = PassiveDiscoveryServiceGrpc.newBlockingStub(channel);
     }
 
     public void shutdown() {
@@ -160,7 +168,7 @@ public class InventoryClient {
         return keys.stream().map(DataLoaderFactory.Key::getToken).findFirst().map(accessToken -> {
             Metadata metadata = new Metadata();
             metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
-            List<Int64Value> idValues = keys.stream().map(k->Int64Value.of(k.getId())).toList();
+            List<Int64Value> idValues = keys.stream().map(k -> Int64Value.of(k.getId())).toList();
             return locationStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listLocationsByIds(IdList.newBuilder().addAllIds(idValues).build()).getLocationsList();
         }).orElseThrow();
     }
@@ -194,6 +202,18 @@ public class InventoryClient {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         return azureCredentialStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).createCredentials(azureCredential);
+    }
+
+    public PassiveDiscoveryDTO createPassiveDiscovery(PassiveDiscoveryCreateDTO passiveDiscovery, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return passiveDiscoveryServiceBlockingStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).createDiscovery(passiveDiscovery);
+    }
+
+    public PassiveDiscoveryResponseDTO getPassiveDiscovery(String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return passiveDiscoveryServiceBlockingStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).getDiscovery(Empty.getDefaultInstance());
     }
 
     public TagListDTO addTags(TagCreateListDTO tagCreateList, String accessToken) {
