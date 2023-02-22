@@ -27,6 +27,7 @@
  *******************************************************************************/
 package org.opennms.horizon.inventory.service;
 
+import org.opennms.horizon.inventory.dto.ConfigKey;
 import org.opennms.horizon.inventory.dto.ConfigurationDTO;
 import org.opennms.horizon.inventory.model.Configuration;
 import org.opennms.horizon.inventory.service.snmpconfig.SnmpConfigBean;
@@ -50,7 +51,7 @@ public class SnmpConfigService {
 
     private ConfigurationDTO mapSnmpConfigToConfigurationDTO(SnmpConfig config, String tenantId, String location) {
         return ConfigurationDTO.newBuilder()
-            .setKey(ConfigurationService.SNMP_CONFIG)
+            .setKey(ConfigKey.SNMP)
             .setTenantId(tenantId)
             .setValue(mapSnmpConfigToJson(config))
             .setLocation(location)

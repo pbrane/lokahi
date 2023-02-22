@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.opennms.horizon.inventory.dto.ConfigKey;
 import org.opennms.horizon.inventory.dto.ConfigurationDTO;
 import org.opennms.horizon.inventory.model.Configuration;
 import org.opennms.horizon.inventory.service.snmpconfig.SnmpConfigBean;
@@ -70,7 +71,7 @@ public class SnmpConfigServiceTest {
         snmpConfigBean.setRetry(1);
 
         configuration = new Configuration();
-        configuration.setKey(ConfigurationService.SNMP_CONFIG);
+        configuration.setKey(ConfigKey.SNMP);
         configuration.setTenantId("tenantId");
         configuration.setLocation("location");
         configuration.setValue(new ObjectMapper().readTree(new ObjectMapper().writeValueAsString(snmpConfigBean)));
@@ -83,7 +84,7 @@ public class SnmpConfigServiceTest {
         ArgumentCaptor<ConfigurationDTO> captor = ArgumentCaptor.forClass(ConfigurationDTO.class);
         when(configurationService.createSingle(captor.capture())).thenReturn(configuration);
         Configuration ret = service.persistSnmpConfig(snmpConfig, "tenantId", "location");
-        assertThat(captor.getValue().getKey()).isEqualTo(ConfigurationService.SNMP_CONFIG);
+        assertThat(captor.getValue().getKey()).isEqualTo(ConfigKey.SNMP);
         assertThat(captor.getValue().getTenantId()).isEqualTo("tenantId");
         assertThat(captor.getValue().getLocation()).isEqualTo("location");
         assertThat(captor.getValue().getValue()).isEqualTo(new ObjectMapper().writeValueAsString(snmpConfigBean));
