@@ -28,12 +28,15 @@
 
 package org.opennms.horizon.inventory.service.taskset;
 
-import com.google.protobuf.Any;
-import lombok.RequiredArgsConstructor;
+import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForAzureTask;
+import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForIpTask;
+
 import org.opennms.azure.contract.AzureCollectorRequest;
 import org.opennms.horizon.azure.api.AzureScanItem;
 import org.opennms.horizon.inventory.model.AzureCredential;
 import org.opennms.horizon.inventory.model.IpInterface;
+import org.opennms.horizon.inventory.service.SnmpConfigService;
+import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.horizon.snmp.api.SnmpConfiguration;
 import org.opennms.horizon.snmp.api.Version;
@@ -43,12 +46,15 @@ import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
 import org.springframework.stereotype.Component;
 
-import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForAzureTask;
-import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForIpTask;
+import com.google.protobuf.Any;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class CollectorTaskSetService {
+
+    private final SnmpConfigService snmpConfigService;
 
     public TaskDefinition getCollectorTask(MonitorType monitorType, IpInterface ipInterface, long nodeId) {
         String monitorTypeValue = monitorType.getValueDescriptor().getName();
@@ -59,13 +65,14 @@ public class CollectorTaskSetService {
         TaskDefinition taskDefinition = null;
 
         if (monitorType == MonitorType.SNMP) {
+            SnmpAgentConfig agentConfig = snmpConfigService.getSnmpAgentConfig(ipInterface.getIpAddress());
             Any configuration =
                 Any.pack(SnmpCollectorRequest.newBuilder()
                     .setHost(ipAddress)
                     .setAgentConfig(SnmpConfiguration.newBuilder()
-                        .setAddress(ipAddress)
-                        .setVersion(Version.v2)
-                        .setTimeout(30000).build())
+                        .setAddress(InetAddressUtils.toIpAddrString(agentConfig.getAddress()))
+                        .setVersion(Version.forNumber(agentConfig.getVersion()))
+                        .setTimeout(agentConfig.getTimeout()).build())
                     .setNodeId(nodeId)
                     .build());
 

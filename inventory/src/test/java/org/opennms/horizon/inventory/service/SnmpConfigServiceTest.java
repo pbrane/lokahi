@@ -33,6 +33,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -53,10 +57,23 @@ public class SnmpConfigServiceTest {
     private SnmpConfigBean snmpConfigBean;
     private Configuration configuration;
 
+    File tempFile;
+
     @Before
-    public void setUp() throws JsonProcessingException {
+    public void setUp() throws IOException {
         configurationService = mock(ConfigurationService.class);
         service = new SnmpConfigService(configurationService);
+
+        // Create a temporary file with the JSON content
+        String jsonContent = """
+            {
+              "version":"v2c",
+              "read-community":"public",
+              "timeout":1800,
+              "retry":1
+            }""";
+        tempFile = File.createTempFile("mytest", ".json");
+        Files.writeString(tempFile.toPath(), jsonContent);
 
         snmpConfig = new SnmpConfig();
         snmpConfig.setVersion("v2c");
@@ -83,7 +100,7 @@ public class SnmpConfigServiceTest {
     public void persistSnmpConfigTest() throws JsonProcessingException {
         ArgumentCaptor<ConfigurationDTO> captor = ArgumentCaptor.forClass(ConfigurationDTO.class);
         when(configurationService.createSingle(captor.capture())).thenReturn(configuration);
-        Configuration ret = service.persistSnmpConfig(snmpConfig, "tenantId", "location");
+        Configuration ret = service.persistSnmpConfig(tempFile, "tenantId", "location");
         assertThat(captor.getValue().getKey()).isEqualTo(ConfigKey.SNMP);
         assertThat(captor.getValue().getTenantId()).isEqualTo("tenantId");
         assertThat(captor.getValue().getLocation()).isEqualTo("location");

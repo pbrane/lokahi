@@ -87,10 +87,10 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
 
     private static File s_configFile;
 
-    final String VERSION_KEY = "version";
-    final String READ_COMMUNITY_KEY = "read-community";
-    final String TIMEOUT_KEY = "timeout";
-    final String RETRY_KEY = "retry";
+    public static final String VERSION_KEY = "version";
+    public static final String READ_COMMUNITY_KEY = "read-community";
+    public static final String TIMEOUT_KEY = "timeout";
+    public static final String RETRY_KEY = "retry";
 
     /**
      * The singleton instance of this factory
@@ -140,6 +140,8 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
             LOG.error("An error occurred while creating SnmpPeerFactory instance: {}", e.getMessage(), e);
         }
     }
+
+
 
     protected Lock getReadLock() {
         return m_readLock;
@@ -569,5 +571,9 @@ public class SnmpPeerFactory implements SnmpAgentConfigFactory {
         }
         throw new UnsupportedOperationException();
 //        return marshalledConfig;
+    }
+
+    public void setM_config(SnmpConfig m_config) {
+        this.m_config = m_config;
     }
 }
