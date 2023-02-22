@@ -1,4 +1,4 @@
-package org.opennms.horizon.minion.snmp;
+package org.opennms.horizon.shared.snmp.config;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +29,10 @@ public class SnmpPeerFactoryTest extends TestCase {
         SnmpConfig snmpConfig = test.getSnmpConfig();
 
         // Check that the properties are set correctly
-        assertEquals("v2c", snmpConfig.getVersion());
-        assertEquals("public", snmpConfig.getReadCommunity());
-        assertEquals(Integer.valueOf(1800), snmpConfig.getTimeout());
-        assertEquals(Integer.valueOf(1), snmpConfig.getRetry());
+        TestCase.assertEquals("v2c", snmpConfig.getVersion());
+        TestCase.assertEquals("public", snmpConfig.getReadCommunity());
+        TestCase.assertEquals(Integer.valueOf(1800), snmpConfig.getTimeout());
+        TestCase.assertEquals(Integer.valueOf(1), snmpConfig.getRetry());
 
         // Clean up the temporary file
         tempFile.delete();
