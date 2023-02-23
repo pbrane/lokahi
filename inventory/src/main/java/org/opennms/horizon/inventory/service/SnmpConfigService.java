@@ -46,19 +46,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class SnmpConfigService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ConfigurationService configurationService;
-    private final SnmpPeerFactory snmpPeerFactory;
-
-    public SnmpConfigService(ConfigurationService configurationService) {
-        this.configurationService = configurationService;
-        this.snmpPeerFactory = SnmpPeerFactory.getInstance();
-    }
+    private final SnmpPeerFactory snmpPeerFactory = SnmpPeerFactory.getInstance();
 
     public Configuration persistSnmpConfig(File resource, String location, String tenantId) {
         try {

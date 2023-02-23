@@ -61,6 +61,8 @@ public class SnmpConfigServiceTest {
 
     @Before
     public void setUp() throws IOException {
+        String resourcesFolder = SnmpConfigServiceTest.class.getClassLoader().getResource("").getPath();
+        System.setProperty("opennms.home", resourcesFolder);
         configurationService = mock(ConfigurationService.class);
         service = new SnmpConfigService(configurationService);
 
@@ -84,7 +86,7 @@ public class SnmpConfigServiceTest {
         snmpConfigBean = new SnmpConfigBean();
         snmpConfigBean.setVersion("v2c");
         snmpConfigBean.setReadCommunity("public");
-        snmpConfigBean.setTimeout(3000);
+        snmpConfigBean.setTimeout(1800);
         snmpConfigBean.setRetry(1);
 
         configuration = new Configuration();
@@ -100,7 +102,7 @@ public class SnmpConfigServiceTest {
     public void persistSnmpConfigTest() throws JsonProcessingException {
         ArgumentCaptor<ConfigurationDTO> captor = ArgumentCaptor.forClass(ConfigurationDTO.class);
         when(configurationService.createSingle(captor.capture())).thenReturn(configuration);
-        Configuration ret = service.persistSnmpConfig(tempFile, "tenantId", "location");
+        Configuration ret = service.persistSnmpConfig(tempFile, "location", "tenantId");
         assertThat(captor.getValue().getKey()).isEqualTo(ConfigKey.SNMP);
         assertThat(captor.getValue().getTenantId()).isEqualTo("tenantId");
         assertThat(captor.getValue().getLocation()).isEqualTo("location");
