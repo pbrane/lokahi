@@ -28,35 +28,37 @@
 
 package org.opennms.horizon.inventory.model;
 
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.TenantId;
 
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
-
+@Entity
 @Getter
 @Setter
 @RequiredArgsConstructor
-@Entity
-public class IpInterface extends TenantAwareEntity {
+@IdClass(NodeTagId.class)
+public class NodeTag {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
+
+    @TenantId
+    @Id
+    @Column(name = "tenant_id")
+    private String tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
@@ -71,19 +73,17 @@ public class IpInterface extends TenantAwareEntity {
     @Column(name = "node_tenant_id", insertable = false, updatable = false)
     private long nodeTenantId;
 
-    @NotNull
-    @Column(name = "ip_address", columnDefinition = "inet")
-    private InetAddress ipAddress;
 
-    @OneToMany(mappedBy = "ipInterface", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<MonitoredService> monitoredServices = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+        @JoinColumn(name="tag_id", referencedColumnName = "id"),
+        @JoinColumn(name="tag_tenant_id", referencedColumnName = "tenant_id")
+    })
+    private Tag tag;
 
-    @Column(name = "snmp_primary")
-    private Boolean snmpPrimary;
+    @Column(name = "tag_id", insertable = false, updatable = false)
+    private long tagId;
 
-    @Column(name = "ip_hostname")
-    private String hostname;
-
-    @Column(name = "netmask")
-    private String netmask;
+    @Column(name = "tag_tenant_id", insertable = false, updatable = false)
+    private long tagTenantId;
 }

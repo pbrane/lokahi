@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2006-2014 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2014 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -28,21 +28,37 @@
 
 package org.opennms.horizon.inventory.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.TenantId;
 
-/**
- * <p>Abstract Entity class.</p>
- */
+import java.io.Serializable;
+import java.util.Objects;
+
 @Getter
 @Setter
-@MappedSuperclass
-public abstract class TenantAwareEntity {
-
-    @TenantId
-    @Column(name="tenant_id")
+public class NodeTagId implements Serializable {
+    private long id;
     private String tenantId;
+
+    private NodeTagId() {
+    }
+
+    public NodeTagId(long id, String tenantId) {
+        this.id = id;
+        this.tenantId = tenantId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NodeTagId)) return false;
+        NodeTagId that = (NodeTagId) o;
+        return Objects.equals(getId(), that.getId()) &&
+            Objects.equals(getTenantId(), that.getTenantId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getTenantId());
+    }
 }

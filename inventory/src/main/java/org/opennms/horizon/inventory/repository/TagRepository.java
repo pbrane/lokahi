@@ -44,38 +44,30 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
     @Query("SELECT tag " +
         "FROM Tag tag " +
-        "JOIN tag.nodes node " +
-        "WHERE tag.tenantId = :tenantId " +
-        "AND node.id = :nodeId " +
+        "JOIN tag.nodeTags nodeTags " +
+        "WHERE nodeTags.node.id = :nodeId " +
         "AND tag.name = :name")
-    Optional<Tag> findByTenantIdNodeIdAndName(@Param("tenantId") String tenantId,
-                                              @Param("nodeId") Long nodeId,
-                                              @Param("name") String name);
+    Optional<Tag> findByNodeIdAndName(@Param("nodeId") Long nodeId,
+                                      @Param("name") String name);
 
     @Query("SELECT tag " +
         "FROM Tag tag " +
-        "JOIN tag.nodes node " +
-        "WHERE tag.tenantId = :tenantId " +
-        "AND node.id = :nodeId ")
-    List<Tag> findByTenantIdAndNodeId(@Param("tenantId") String tenantId,
-                                      @Param("nodeId") long nodeId);
+        "JOIN tag.nodeTags nodeTags " +
+        "WHERE nodeTags.node.id = :nodeId ")
+    List<Tag> findByNodeId(@Param("nodeId") long nodeId);
 
     @Query("SELECT tag " +
         "FROM Tag tag " +
-        "WHERE tag.tenantId = :tenantId " +
+        "WHERE LOWER(tag.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    List<Tag> findByNameLike(@Param("searchTerm") String searchTerm);
+
+    @Query("SELECT tag " +
+        "FROM Tag tag " +
+        "JOIN tag.nodeTags nodeTags " +
+        "WHERE nodeTags.node.id = :nodeId " +
         "AND LOWER(tag.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
-    List<Tag> findByTenantIdAndNameLike(@Param("tenantId") String tenantId,
-                                        @Param("searchTerm") String searchTerm);
-
-    @Query("SELECT tag " +
-        "FROM Tag tag " +
-        "JOIN tag.nodes node " +
-        "WHERE tag.tenantId = :tenantId " +
-        "AND node.id = :nodeId " +
-        "AND LOWER(tag.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
-    List<Tag> findByTenantIdAndNodeIdAndNameLike(@Param("tenantId") String tenantId,
-                                                 @Param("nodeId") long nodeId,
-                                                 @Param("searchTerm") String searchTerm);
+    List<Tag> findByNodeIdAndNameLike(@Param("nodeId") long nodeId,
+                                      @Param("searchTerm") String searchTerm);
 
     List<Tag> findByTenantId(String tenantId);
 }

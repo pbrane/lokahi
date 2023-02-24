@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="jhutc" id="0.1.0-tag-comp">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tag"/>
+            <tableExists tableName="node_tag"/>
+        </preConditions>
+
+        <addColumn tableName="node_tag">
+            <column name="id" type="BIGINT" autoIncrement="true"/>
+            <column name="tenant_id" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="node_tenant_id" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag_tenant_id" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="snmp_interface">
+            <column name="node_tenant_id" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="ip_interface">
+            <column name="node_tenant_id" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <dropForeignKeyConstraint baseTableName="snmp_interface" constraintName="fk_snmp_interface_node_id"/>
+        <dropForeignKeyConstraint baseTableName="ip_interface" constraintName="fk_ip_interface_node_id"/>
+
+        <dropForeignKeyConstraint baseTableName="node_tag" constraintName="fk_node_tag_node_id"/>
+        <dropForeignKeyConstraint baseTableName="node_tag" constraintName="fk_node_tag_tag_id"/>
+
+        <dropPrimaryKey tableName="tag" constraintName="pk_tag_id"/>
+        <addPrimaryKey tableName="tag" columnNames="id, tenant_id" constraintName="pk_tag_id"/>
+
+        <dropPrimaryKey tableName="node" constraintName="pk_node_id"/>
+        <addPrimaryKey tableName="node" columnNames="id, tenant_id" constraintName="pk_node_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_node_tag_node_id" onDelete="CASCADE"
+                                 baseTableName="node_tag" baseColumnNames="node_id, tenant_id"
+                                 referencedTableName="node" referencedColumnNames="id, tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_node_tag_tag_id" onDelete="CASCADE"
+                                 baseTableName="node_tag" baseColumnNames="tag_id, tenant_id"
+                                 referencedTableName="tag" referencedColumnNames="id, tenant_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_ip_interface_node_id" onDelete="CASCADE"
+                                 baseTableName="ip_interface" baseColumnNames="node_id, tenant_id"
+                                 referencedTableName="node" referencedColumnNames="id, tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_snmp_interface_node_id" onDelete="CASCADE"
+                                 baseTableName="snmp_interface" baseColumnNames="node_id, tenant_id"
+                                 referencedTableName="node" referencedColumnNames="id, tenant_id"/>
+
+    </changeSet>
+</databaseChangeLog>

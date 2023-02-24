@@ -28,11 +28,6 @@
 
 package org.opennms.horizon.inventory.model;
 
-import jakarta.persistence.ManyToMany;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,22 +35,34 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.TenantId;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
 @Entity
-public class Node extends TenantAwareEntity {
+@IdClass(NodeId.class)
+public class Node {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
+
+    @TenantId
+    @Id
+    @Column(name = "tenant_id")
+    private String tenantId;
 
     @NotNull
     @Column(name = "node_label")
@@ -78,8 +85,8 @@ public class Node extends TenantAwareEntity {
     @OneToMany(mappedBy = "node", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<SnmpInterface> snmpInterfaces = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "nodes")
-    private List<Tag> tags = new ArrayList<>();
+    @OneToMany(mappedBy = "node", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<NodeTag> nodeTags = new ArrayList<>();
 
     @Column(name = "system_objectid")
     private String objectId;
@@ -91,4 +98,10 @@ public class Node extends TenantAwareEntity {
     private String systemLocation;
     @Column(name = "system_contact")
     private String systemContact;
+
+    public List<Tag> getTags() {
+        return getNodeTags().stream()
+            .map(NodeTag::getTag)
+            .collect(Collectors.toList());
+    }
 }

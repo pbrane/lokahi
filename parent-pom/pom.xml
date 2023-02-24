@@ -56,10 +56,8 @@
         <gson.version>2.8.9</gson.version>
         <guava.version>31.0.1-jre</guava.version>
         <hamcrest.version>1.3</hamcrest.version>
-        <hibernate.version>6.1.6.Final</hibernate.version>
-<!--        //TODO:MMF Need new hibernate for @TenantId annotation-->
-<!--        <hibernate.version>6.1.5.Final</hibernate.version>-->
-
+        <hibernate.version>6.1.7.Final</hibernate.version>
+        <!-- TODO: Need 6.2.0 for hibernate to generate composite keys correctly -->
         <httpcore.version>4.4.4</httpcore.version>
         <httpclient.version>4.5.13</httpclient.version>
         <ignite.version>2.14.0</ignite.version>

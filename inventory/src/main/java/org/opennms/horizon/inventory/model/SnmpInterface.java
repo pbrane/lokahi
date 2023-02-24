@@ -35,6 +35,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -53,11 +54,17 @@ public class SnmpInterface extends TenantAwareEntity {
     private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "node_id", referencedColumnName = "id")
+    @JoinColumns({
+        @JoinColumn(name="node_id", referencedColumnName = "id"),
+        @JoinColumn(name="node_tenant_id", referencedColumnName = "tenant_id")
+    })
     private Node node;
 
     @Column(name = "node_id", insertable = false, updatable = false)
     private long nodeId;
+
+    @Column(name = "node_tenant_id", insertable = false, updatable = false)
+    private long nodeTenantId;
 
     @Column(name = "ip_address", columnDefinition = "inet")
     private InetAddress ipAddress;

@@ -77,8 +77,6 @@ import org.springframework.test.context.ContextConfiguration;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import jakarta.transaction.Transactional;
-
 
 @SpringBootTest
 @ContextConfiguration(initializers = {SpringContextTestInitializer.class})

@@ -38,6 +38,7 @@ import org.opennms.horizon.inventory.mapper.NodeMapper;
 import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.Node;
+import org.opennms.horizon.inventory.model.NodeTag;
 import org.opennms.horizon.inventory.model.Tag;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
@@ -222,12 +223,19 @@ public class NodeService {
     }
 
     private void removeAssociatedTags(Node node) {
-        for (Tag tag : node.getTags()) {
-            if (tag.getNodes().size() == 1) {
+        Map<Tag, NodeTag> tagsToRemoveNodeFrom = new HashMap();
+        for (NodeTag nodeTag: node.getNodeTags()) {
+            Tag tag = nodeTag.getTag();
+            if (tag.getNodeTags().size() == 1) {
                 tagRepository.delete(tag);
             } else {
-                tag.getNodes().remove(node);
+                tagsToRemoveNodeFrom.put(tag, nodeTag);
             }
+        }
+
+        for (Map.Entry<Tag, NodeTag> entry:tagsToRemoveNodeFrom.entrySet()) {
+            Tag tag = entry.getKey();
+            tag.getNodeTags().remove(entry.getValue());
         }
     }
 }

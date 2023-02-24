@@ -41,6 +41,7 @@ import org.opennms.horizon.inventory.dto.TagRemoveListDTO;
 import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
 import org.opennms.horizon.inventory.mapper.TagMapper;
 import org.opennms.horizon.inventory.model.Node;
+import org.opennms.horizon.inventory.model.NodeTag;
 import org.opennms.horizon.inventory.model.Tag;
 import org.opennms.horizon.inventory.repository.NodeRepository;
 import org.opennms.horizon.inventory.repository.TagRepository;
@@ -50,6 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -85,7 +87,7 @@ public class TagService {
         String tagName = tagCreateDTO.getName();
 
         Optional<Tag> tagOpt = repository
-            .findByTenantIdNodeIdAndName(tenantId, node.getId(), tagName);
+            .findByNodeIdAndName(node.getId(), tagName);
 
         if (tagOpt.isPresent()) {
             return mapper.modelToDTO(tagOpt.get());
@@ -94,18 +96,24 @@ public class TagService {
         tagOpt = repository.findByTenantIdAndName(tenantId, tagName);
         Tag tag = tagOpt.orElseGet(() -> mapCreateTag(tenantId, tagCreateDTO));
 
-        tag.getNodes().add(node);
+        tag.addNode(node);
         tag = repository.save(tag);
 
         return mapper.modelToDTO(tag);
     }
 
     private void removeTagFromNode(Node node, Tag tag) {
-        if (tag.getNodes().isEmpty()) {
+        if (tag.getNodeTags().isEmpty()) {
             repository.delete(tag);
         } else {
-            tag.getNodes().remove(node);
-            if (tag.getNodes().isEmpty()) {
+            List<NodeTag> nodeTagsToRemove = tag.getNodeTags()
+                .stream()
+                .filter(x->x.getNode().equals(node))
+                .collect(Collectors.toList());
+
+            tag.getNodeTags().removeAll(nodeTagsToRemove);
+
+            if (tag.getNodeTags().isEmpty()) {
                 repository.delete(tag);
             } else {
                 repository.save(tag);
@@ -142,11 +150,11 @@ public class TagService {
             String searchTerm = params.getSearchTerm();
 
             if (StringUtils.isNotEmpty(searchTerm)) {
-                return repository.findByTenantIdAndNodeIdAndNameLike(tenantId, nodeId, searchTerm)
+                return repository.findByNodeIdAndNameLike(nodeId, searchTerm)
                     .stream().map(mapper::modelToDTO).toList();
             }
         }
-        return repository.findByTenantIdAndNodeId(tenantId, nodeId)
+        return repository.findByNodeId(nodeId)
             .stream().map(mapper::modelToDTO).toList();
     }
 
@@ -156,7 +164,7 @@ public class TagService {
             String searchTerm = params.getSearchTerm();
 
             if (StringUtils.isNotEmpty(searchTerm)) {
-                return repository.findByTenantIdAndNameLike(tenantId, searchTerm)
+                return repository.findByNameLike(searchTerm)
                     .stream().map(mapper::modelToDTO).toList();
             }
         }
