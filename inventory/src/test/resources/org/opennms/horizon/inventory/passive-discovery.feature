@@ -10,4 +10,6 @@ Feature: Passive Discovery
     Given Passive Discovery fields to persist
     When A GRPC request to create a new passive discovery
     And A GRPC request to get passive discovery
+    And A GRPC request to get tags for passive discovery
     Then The creation and the get of passive discovery should be the same
+    Then the tags for passive discovery match what it was created with

@@ -35,11 +35,14 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.opennms.horizon.inventory.cucumber.InventoryBackgroundHelper;
+import org.opennms.horizon.inventory.dto.ListTagsByEntityIdParamsDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryCreateDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryResponseDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryServiceGrpc;
 import org.opennms.horizon.inventory.dto.TagCreateDTO;
+import org.opennms.horizon.inventory.dto.TagListDTO;
+import org.opennms.horizon.inventory.dto.TagServiceGrpc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -50,6 +53,7 @@ public class PassiveDiscoveryStepDefinitions {
     private PassiveDiscoveryCreateDTO passiveDiscoveryCreateDTO;
     private PassiveDiscoveryDTO createdDiscovery;
     private PassiveDiscoveryResponseDTO fetchedDiscoveryResponse;
+    private TagListDTO tagList;
 
     @BeforeAll
     public static void beforeAll() {
@@ -112,6 +116,13 @@ public class PassiveDiscoveryStepDefinitions {
         fetchedDiscoveryResponse = stub.getDiscovery(Empty.getDefaultInstance());
     }
 
+    @And("A GRPC request to get tags for passive discovery")
+    public void aGRPCRequestToGetTagsForPassiveDiscovery() {
+        TagServiceGrpc.TagServiceBlockingStub stub = backgroundHelper.getTagServiceBlockingStub();
+        tagList = stub.getTagsByEntityId(ListTagsByEntityIdParamsDTO.newBuilder()
+            .setPassiveDiscoveryId(createdDiscovery.getId()).build());
+    }
+
     /*
      * SCENARIO THEN
      * *********************************************************************************
@@ -136,5 +147,11 @@ public class PassiveDiscoveryStepDefinitions {
         assertEquals(passiveDiscoveryCreateDTO.getCommunitiesCount(), fetchedDiscovery.getCommunitiesCount());
         assertEquals(passiveDiscoveryCreateDTO.getCommunities(0), createdDiscovery.getCommunities(0));
         assertEquals(passiveDiscoveryCreateDTO.getCommunities(0), fetchedDiscovery.getCommunities(0));
+    }
+
+    @Then("the tags for passive discovery match what it was created with")
+    public void theTagsForPassiveDiscoveryMatchWhatItWasCreatedWith() {
+        assertEquals(passiveDiscoveryCreateDTO.getTagsCount(), tagList.getTagsCount());
+        assertEquals(passiveDiscoveryCreateDTO.getTags(0).getName(), tagList.getTags(0).getName());
     }
 }
