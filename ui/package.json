@@ -15,6 +15,7 @@
     "cyo:cmp": "yarn cypress open --component --browser chrome",
     "cyo:e2e": "yarn cypress open --e2e --browser chrome",
     "cyr": "yarn cypress run --config video=false",
+    "cyr:e2e": "yarn cypress --e2e run --config video=false",
     "cyr:cmp": "yarn cypress run --component --config video=false",
     "cyr:vid": "yarn cypress run",
     "lint": "eslint --ignore-path ./.gitignore --ext .ts,.vue .",
