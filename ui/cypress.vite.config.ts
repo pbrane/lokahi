@@ -4,12 +4,14 @@ import svgLoader from 'vite-svg-loader'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import featherResolver from './auto-feather-resolver'
+import { loadEnv } from 'vite'
+
+const env = loadEnv('development', process.cwd())
 
 export default defineConfig(() => {
   return {
     server: {
-      // port: parseInt(env.VITE_SERVER_PORT)
-      port: 8123 // TODO: need to set the port from the env variables
+      port: parseInt(env.VITE_SERVER_PORT)
     },
     resolve: {
       alias: {
