@@ -73,7 +73,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
-          start: npm run cyr
+          start: npm run cyr:e2e
           working-directory: ui
           component: true
           install: false
