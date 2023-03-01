@@ -32,6 +32,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
@@ -48,7 +49,6 @@ import org.opennms.horizon.inventory.service.taskset.DetectorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
 import org.opennms.horizon.inventory.taskset.api.TaskSetPublisher;
-import org.opennms.horizon.inventory.repository.TagRepository;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.taskset.contract.MonitorType;
@@ -147,6 +147,7 @@ public class NodeService {
         node.setTenantId(tenantId);
         node.setNodeLabel(request.getLabel());
         node.setScanType(scanType);
+        node.setMonitoredState(MonitoredState.DETECTED);
         node.setCreateTime(LocalDateTime.now());
         node.setMonitoringLocation(monitoringLocation);
         node.setMonitoringLocationId(monitoringLocation.getId());
@@ -182,6 +183,16 @@ public class NodeService {
     @Transactional
     public Map<String, List<NodeDTO>> listNodeByIds(List<Long> ids, String tenantId) {
         List<Node> nodeList = nodeRepository.findByIdInAndTenantId(ids, tenantId);
+        return getLocationToNodeListMap(nodeList);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, List<NodeDTO>> listDetectedNodesForLocations(List<String> locations, String tenantId) {
+        List<Node> nodeList = nodeRepository.findByTenantIdLocationsAndMonitoredStateEquals(tenantId, locations, MonitoredState.DETECTED);
+        return getLocationToNodeListMap(nodeList);
+    }
+
+    private Map<String, List<NodeDTO>> getLocationToNodeListMap(List<Node> nodeList) {
         if(nodeList.isEmpty()) {
             return new HashMap<>();
         }

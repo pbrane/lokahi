@@ -8,7 +8,6 @@
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="passive_discovery"/>
-                <tableExists tableName="snmp_port"/>
                 <tableExists tableName="passive_discovery_monitoring_location"/>
                 <tableExists tableName="passive_discovery_tag"/>
             </not>

@@ -51,6 +51,7 @@ message NodeDTO {
   string system_contact = 11;
   repeated opennms.inventory.SnmpInterfaceDTO snmpInterfaces = 12;
   string scan_type = 13;
+  MonitoredState monitored_state = 14;
 }
 
 message NodeCreateDTO {
@@ -71,6 +72,12 @@ message NodeIdQuery {
 
 message NodeIdList {
   repeated int64 ids = 1;
+}
+
+enum MonitoredState {
+  DETECTED = 0;
+  UNMONITORED = 1;
+  MONITORED = 2;
 }
 
 service NodeService {

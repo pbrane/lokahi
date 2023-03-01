@@ -28,9 +28,12 @@
 
 package org.opennms.horizon.inventory.service.discovery;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.grpc.Context;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryCreateDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryDTO;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
@@ -41,24 +44,40 @@ import org.opennms.horizon.inventory.model.PassiveDiscovery;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.discovery.passive.PassiveDiscoveryRepository;
 import org.opennms.horizon.inventory.service.ConfigUpdateService;
+import org.opennms.horizon.inventory.service.NodeService;
 import org.opennms.horizon.inventory.service.TagService;
+import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
 import org.opennms.horizon.shared.constants.GrpcConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 @Component
 @RequiredArgsConstructor
 public class PassiveDiscoveryService {
+    private static final Logger log = LoggerFactory.getLogger(PassiveDiscoveryService.class);
     private final PassiveDiscoveryMapper mapper;
     private final PassiveDiscoveryRepository repository;
     private final MonitoringLocationRepository locationRepository;
     private final ConfigUpdateService configUpdateService;
     private final TagService tagService;
+    private final NodeService nodeService;
+    private final ScannerTaskSetService scannerService;
+    private final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+        .setNameFormat("send-taskset-for-node-passive-discovery-%d")
+        .build();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10, threadFactory);
 
     @Transactional
     public PassiveDiscoveryDTO createDiscovery(String tenantId, PassiveDiscoveryCreateDTO request) {
@@ -83,6 +102,8 @@ public class PassiveDiscoveryService {
                 .setPassiveDiscoveryId(discovery.getId())
                 .addAllTags(request.getTagsList())
                 .build());
+
+            triggerNodeScan(discovery);
 
             return mapper.modelToDtoCustom(discovery);
         }
@@ -134,6 +155,30 @@ public class PassiveDiscoveryService {
             }
         }
         return monitoringLocations;
+    }
+
+    private void triggerNodeScan(PassiveDiscovery discovery) {
+        if (discovery.isToggle()) {
+            String tenantId = discovery.getTenantId();
+            List<String> locations = discovery.getMonitoringLocations()
+                .stream().map(MonitoringLocation::getLocation).toList();
+            Map<String, List<NodeDTO>> nodes = nodeService.listDetectedNodesForLocations(locations, tenantId);
+            if (!CollectionUtils.isEmpty(nodes)) {
+                executorService.execute(() -> sendTaskSetsToMinion(nodes, tenantId));
+            }
+        } else {
+            log.warn("Passive discovery for tenant {} is toggled off", discovery);
+        }
+    }
+
+    private void sendTaskSetsToMinion(Map<String, List<NodeDTO>> locationNodes, String tenantId) {
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(() -> {
+            for (Map.Entry<String, List<NodeDTO>> entry : locationNodes.entrySet()) {
+                String location = entry.getKey();
+                List<NodeDTO> nodes = entry.getValue();
+                scannerService.sendNodeScannerTask(nodes, location, tenantId);
+            }
+        });
     }
 
     private boolean isLocationInList(String location, List<MonitoringLocation> monitoringLocations) {

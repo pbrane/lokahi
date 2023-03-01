@@ -45,6 +45,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.taskset.contract.ScanType;
 
 import java.time.LocalDateTime;
@@ -68,6 +69,11 @@ public class Node extends TenantAwareEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "scan_type")
     private ScanType scanType;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "monitored_state")
+    private MonitoredState monitoredState;
 
     @NotNull
     @Column(name = "create_time", columnDefinition = "TIMESTAMP")
