@@ -77,9 +77,10 @@ jobs:
           component: true
           install: false
           # start: npx cypress run
-          start: yarn dev
-          wait-on: 'http://localhost:8123'
-          
+          # start: yarn dev
+          # wait-on: 'http://localhost:8123'
+          command: npx cypress run --config baseUrl=${{ env.INGRESS_BASE_URL }}
+
       - name: SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
