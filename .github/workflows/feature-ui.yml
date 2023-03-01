@@ -74,7 +74,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           start: npx cypress run
-          working-directory: ui
+          working-directory: cypress
           component: true
           install: false
     
