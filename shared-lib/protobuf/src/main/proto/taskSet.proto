@@ -51,8 +51,9 @@ enum TaskType {
 
 
 enum ScanType {
-  AZURE = 0;
+  AZURE_SCAN = 0;
   NODE_SCAN = 1;
+  DISCOVERY_SCAN = 2;
 }
 
 enum MonitorType {
@@ -60,6 +61,7 @@ enum MonitorType {
   ICMP = 1;
   SNMP = 2;
   ECHO = 3;
+  AZURE = 4;
 }
 
 message TaskDefinition {
@@ -124,4 +126,13 @@ message CollectorResponse {
   // results varies for each collector.
   google.protobuf.Any result = 4;
   MonitorType monitor_type = 5;
+}
+
+message DiscoveryScanResult {
+  repeated PingResponse ping_response = 1;
+}
+
+message PingResponse {
+  string ip_address = 1;
+  double rtt = 2;
 }

@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2018 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2018 The OpenNMS Group, Inc.
+ * Copyright (C) 2018-2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -33,7 +33,7 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import io.netty.buffer.ByteBuf;
-import org.opennms.horizon.grpc.telemetry.contract.TelemetryMessage;
+import org.opennms.dataplatform.flows.document.FlowDocument;
 import org.opennms.horizon.minion.flows.listeners.UdpParser;
 import org.opennms.horizon.minion.flows.parser.factory.DnsResolver;
 import org.opennms.horizon.minion.flows.parser.ie.RecordProvider;
@@ -62,7 +62,7 @@ public abstract class UdpParserBase extends ParserBase implements UdpParser {
 
     public UdpParserBase(final Protocol protocol,
                          final String name,
-                         final AsyncDispatcher<TelemetryMessage> dispatcher,
+                         final AsyncDispatcher<FlowDocument> dispatcher,
                          final IpcIdentity identity,
                          final DnsResolver dnsResolver,
                          final MetricRegistry metricRegistry) {
@@ -72,6 +72,7 @@ public abstract class UdpParserBase extends ParserBase implements UdpParser {
         this.parserErrors = metricRegistry.counter(MetricRegistry.name("parsers",  name, "parserErrors"));
 
         String sessionCountGauge = MetricRegistry.name("parsers",  name, "sessionCount");
+
         // Register only if it's not already there in the registry.
         if (!metricRegistry.getGauges().containsKey(sessionCountGauge)) {
             metricRegistry.register(sessionCountGauge, (Gauge<Integer>) () -> (this.sessionManager != null) ? this.sessionManager.count() : null);
@@ -111,7 +112,9 @@ public abstract class UdpParserBase extends ParserBase implements UdpParser {
 
     @Override
     public void stop() {
-        this.housekeepingFuture.cancel(false);
+        if (housekeepingFuture != null) {
+            this.housekeepingFuture.cancel(false);
+        }
         super.stop();
     }
 

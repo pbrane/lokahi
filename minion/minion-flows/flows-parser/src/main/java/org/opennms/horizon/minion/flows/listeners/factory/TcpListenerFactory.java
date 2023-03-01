@@ -32,15 +32,19 @@ import static java.util.Objects.nonNull;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.opennms.horizon.minion.flows.listeners.FlowsListener;
 import org.opennms.horizon.minion.flows.listeners.TcpParser;
 
 import com.codahale.metrics.MetricRegistry;
 
-import org.opennms.horizon.minion.flows.listeners.FlowsListener;
+import org.opennms.horizon.minion.flows.listeners.Listener;
 import org.opennms.horizon.minion.flows.listeners.TcpListener;
+import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
 import org.opennms.sink.flows.contract.ListenerConfig;
+import org.opennms.sink.flows.contract.Parameter;
 
 public class TcpListenerFactory implements ListenerFactory {
 
@@ -52,24 +56,36 @@ public class TcpListenerFactory implements ListenerFactory {
     }
 
     @Override
-    public Class<? extends FlowsListener> getBeanClass() {
+    public Class<? extends Listener> getListenerClass() {
         return TcpListener.class;
     }
 
     @Override
-    public FlowsListener createBean(ListenerConfig listenerConfig) {
+    public FlowsListener create(ListenerConfig listenerConfig) {
         // TcpListener only supports one parser at a time
         if (listenerConfig.getParsersCount() != 1) {
             throw new IllegalArgumentException("The simple TCP listener supports exactly one parser");
         }
+
         // Ensure each defined parser is of type TcpParser
         final List<TcpParser> parser = listenerConfig.getParsersList().stream()
-                .map(telemetryRegistry::getParser)
+                .map(telemetryRegistry::createParser)
                 .filter(p -> nonNull(p) && p instanceof TcpParser)
-                .map(p -> (TcpParser) p).collect(Collectors.toList());
+                .map(p -> (TcpParser) p).toList();
         if (parser.size() != listenerConfig.getParsersCount()) {
             throw new IllegalArgumentException("Each parser must be of type TcpParser but was not.");
         }
-        return new TcpListener(listenerConfig.getName(), parser.iterator().next(), new MetricRegistry());
+
+        int port = 0;
+        try {
+            Optional<Parameter> parameter = listenerConfig.getParametersList().stream().filter(p -> "port".equals(p.getKey())).findFirst();
+            if (parameter.isPresent()) {
+                port = Integer.parseUnsignedInt(parameter.get().getValue());
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format("Invalid port for listener: %s, error: %s", listenerConfig.getName(), e.getMessage()));
+        }
+
+        return new TcpListener(listenerConfig.getName(), port, parser.iterator().next(), new MetricRegistry());
     }
 }

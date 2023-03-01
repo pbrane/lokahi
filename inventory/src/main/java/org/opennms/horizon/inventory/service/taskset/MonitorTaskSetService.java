@@ -29,7 +29,6 @@
 package org.opennms.horizon.inventory.service.taskset;
 
 import com.google.protobuf.Any;
-import lombok.RequiredArgsConstructor;
 import org.opennms.azure.contract.AzureMonitorRequest;
 import org.opennms.horizon.azure.api.AzureScanItem;
 import org.opennms.horizon.inventory.model.AzureCredential;
@@ -40,42 +39,19 @@ import org.opennms.snmp.contract.SnmpMonitorRequest;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
 
 import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForAzureTask;
 import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForIpTask;
 
 @Component
-@RequiredArgsConstructor
 public class MonitorTaskSetService {
 
     private static final Logger log = LoggerFactory.getLogger(MonitorTaskSetService.class);
 
-    private final TaskSetPublisher taskSetPublisher;
-
-    public void sendMonitorTask(String location, MonitorType monitorType, IpInterface ipInterface, long nodeId) {
-        String tenantId = ipInterface.getTenantId();
-
-        var task = addMonitorTask(monitorType, ipInterface, nodeId);
-        if (task != null) {
-            taskSetPublisher.publishNewTasks(tenantId, location, Arrays.asList(task));
-        }
-    }
-
-    public void sendAzureMonitorTasks(AzureCredential credential, AzureScanItem item, String ipAddress, long nodeId) {
-        String tenantId = credential.getTenantId();
-        String location = credential.getMonitoringLocation().getLocation();
-
-        TaskDefinition task = addAzureMonitorTask(credential, item, ipAddress, nodeId);
-        taskSetPublisher.publishNewTasks(tenantId, location, Arrays.asList(task));
-    }
-
-    private TaskDefinition addMonitorTask(MonitorType monitorType, IpInterface ipInterface, long nodeId) {
+    public TaskDefinition getMonitorTask(MonitorType monitorType, IpInterface ipInterface, long nodeId) {
 
         String monitorTypeValue = monitorType.getValueDescriptor().getName();
         String ipAddress = InetAddressUtils.toIpAddrString(ipInterface.getIpAddress());
@@ -86,40 +62,27 @@ public class MonitorTaskSetService {
         Any configuration = null;
 
         switch (monitorType) {
-            case ICMP: {
-                configuration =
-                    Any.pack(IcmpMonitorRequest.newBuilder()
-                        .setHost(ipAddress)
-                        .setTimeout(TaskUtils.ICMP_DEFAULT_TIMEOUT_MS)
-                        .setDscp(TaskUtils.ICMP_DEFAULT_DSCP)
-                        .setAllowFragmentation(TaskUtils.ICMP_DEFAULT_ALLOW_FRAGMENTATION)
-                        .setPacketSize(TaskUtils.ICMP_DEFAULT_PACKET_SIZE)
-                        .setRetries(TaskUtils.ICMP_DEFAULT_RETRIES)
-                        .build());
-
-                break;
-            }
-            case SNMP: {
-                configuration =
-                    Any.pack(SnmpMonitorRequest.newBuilder()
-                        .setHost(ipAddress)
-                        .setTimeout(TaskUtils.SNMP_DEFAULT_TIMEOUT_MS)
-                        .setRetries(TaskUtils.SNMP_DEFAULT_RETRIES)
-                        .build());
-                break;
-            }
-            case UNRECOGNIZED: {
-                log.warn("Unrecognized monitor type");
-                break;
-            }
-            case UNKNOWN: {
-                log.warn("Unknown monitor type");
-                break;
-            }
+            case ICMP -> configuration =
+                Any.pack(IcmpMonitorRequest.newBuilder()
+                    .setHost(ipAddress)
+                    .setTimeout(TaskUtils.ICMP_DEFAULT_TIMEOUT_MS)
+                    .setDscp(TaskUtils.ICMP_DEFAULT_DSCP)
+                    .setAllowFragmentation(TaskUtils.ICMP_DEFAULT_ALLOW_FRAGMENTATION)
+                    .setPacketSize(TaskUtils.ICMP_DEFAULT_PACKET_SIZE)
+                    .setRetries(TaskUtils.ICMP_DEFAULT_RETRIES)
+                    .build());
+            case SNMP -> configuration =
+                Any.pack(SnmpMonitorRequest.newBuilder()
+                    .setHost(ipAddress)
+                    .setTimeout(TaskUtils.SNMP_DEFAULT_TIMEOUT_MS)
+                    .setRetries(TaskUtils.SNMP_DEFAULT_RETRIES)
+                    .build());
+            case UNRECOGNIZED -> log.warn("Unrecognized monitor type");
+            case UNKNOWN -> log.warn("Unknown monitor type");
         }
 
         if (configuration != null) {
-            String taskId = identityForIpTask(ipAddress, name);
+            String taskId = identityForIpTask(nodeId, ipAddress, name);
             TaskDefinition.Builder builder =
                 TaskDefinition.newBuilder()
                     .setType(TaskType.MONITOR)
@@ -133,7 +96,7 @@ public class MonitorTaskSetService {
         return taskDefinition;
     }
 
-    private TaskDefinition addAzureMonitorTask(AzureCredential credential, AzureScanItem scanItem, String ipAddress, long nodeId) {
+    public TaskDefinition addAzureMonitorTask(AzureCredential credential, AzureScanItem scanItem, String ipAddress, long nodeId) {
 
         Any configuration =
             Any.pack(AzureMonitorRequest.newBuilder()
@@ -149,7 +112,8 @@ public class MonitorTaskSetService {
                 .build());
 
         String name = String.join("-", "azure", "monitor", scanItem.getId());
-        String taskId = identityForAzureTask(name);
+        String id = String.join("-", String.valueOf(credential.getId()), String.valueOf(nodeId));
+        String taskId = identityForAzureTask(name, id);
         return TaskDefinition.newBuilder()
             .setType(TaskType.MONITOR)
             .setPluginName("AZUREMonitor")
@@ -159,5 +123,6 @@ public class MonitorTaskSetService {
             .setSchedule(TaskUtils.AZURE_MONITOR_SCHEDULE)
             .build();
     }
+
 
 }

@@ -48,7 +48,43 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
 
     if (allNodes?.length) {
       allNodes.forEach(async ({ id, nodeLabel, location, ipInterfaces }) => {
-        const { data, isFetching } = await fetchNodeMetrics(id, ipInterfaces?.[0].ipAddress as string) // currently only 1 interface per node
+        const { ipAddress: snmpPrimaryIpAddress } = ipInterfaces?.filter((ii) => ii.snmpPrimary)[0] || {} // not getting ipAddress from snmpPrimary interface can result in missing metrics for ICMP
+
+        // stop-gap measure to display nodes without IP addresses
+        // may be removed once BE disassociates instance with IP
+        if (!snmpPrimaryIpAddress) {
+          nodes.value.push({
+            id: id,
+            label: nodeLabel,
+            status: '',
+            metrics: [
+              {
+                type: 'latency',
+                label: 'Latency',
+                value: 0,
+                status: ''
+              },
+              {
+                type: 'status',
+                label: 'Status',
+                status: 'NO IP'
+              }
+            ],
+            anchor: {
+              profileValue: '--',
+              profileLink: '',
+              locationValue: location?.location || '--',
+              locationLink: '',
+              managementIpValue: '',
+              managementIpLink: '',
+              tagValue: '--',
+              tagLink: ''
+            }
+          })
+          return
+        }
+
+        const { data, isFetching } = await fetchNodeMetrics(id, snmpPrimaryIpAddress as string)
 
         if (data.value && !isFetching.value) {
           const nodeLatency = data.value.nodeLatency?.data?.result as TsResult[]
@@ -58,7 +94,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
 
           const status = data.value.nodeStatus?.status
           const { location: nodeLocation } = location as Location
-          const [{ ipAddress }] = ipInterfaces as IpInterface[]
+          const { ipAddress: snmpPrimaryIpAddress } = ipInterfaces?.filter((ii) => ii.snmpPrimary)[0] || {} // not getting ipAddress from snmpPrimary interface can result in missing metrics for ICMP
 
           nodes.value.push({
             id: id,
@@ -82,7 +118,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
               profileLink: '',
               locationValue: nodeLocation || '--',
               locationLink: '',
-              managementIpValue: ipAddress || '',
+              managementIpValue: snmpPrimaryIpAddress || '',
               managementIpLink: '',
               tagValue: '--',
               tagLink: ''

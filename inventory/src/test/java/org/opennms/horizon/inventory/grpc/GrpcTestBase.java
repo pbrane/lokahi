@@ -31,24 +31,23 @@ package org.opennms.horizon.inventory.grpc;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.keycloak.common.VerificationException;
+import org.opennms.horizon.inventory.grpc.taskset.TestTaskSetGrpcService;
 import org.opennms.horizon.shared.constants.GrpcConstants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-import io.grpc.BindableService;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
-import io.grpc.Server;
-import io.grpc.inprocess.InProcessServerBuilder;
 
 public abstract class GrpcTestBase {
     @DynamicPropertySource
@@ -57,27 +56,41 @@ public abstract class GrpcTestBase {
     }
 
     protected final String tenantId = "test-tenant";
+    protected final String invalidTenantId = "invalid-tenant";
     protected final String authHeader = "Bearer esgs12345";
     protected final String headerWithoutTenant = "Bearer esgs12345invalid";
     protected final String differentTenantHeader = "Bearer esgs12345different";
     protected ManagedChannel channel;
+    protected TestTaskSetGrpcService testGrpcService;
+    @Autowired
+    private ApplicationContext context;
     @SpyBean
-    protected  InventoryServerInterceptor spyInterceptor;
+    private  InventoryServerInterceptor spyInterceptor;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    protected void prepareTestGrpc() {
+        testGrpcService = context.getBean(TestTaskSetGrpcService.class);
+        testGrpcService.reset();
+    }
 
     protected void prepareServer() throws VerificationException {
         channel = ManagedChannelBuilder.forAddress("localhost", 6767)
                 .usePlaintext().build();
         doReturn(Optional.of(tenantId)).when(spyInterceptor).verifyAccessToken(authHeader);
-        doReturn(Optional.of("invalid-tenant")).when(spyInterceptor).verifyAccessToken(differentTenantHeader);
+        doReturn(Optional.of(invalidTenantId)).when(spyInterceptor).verifyAccessToken(differentTenantHeader);
         doReturn(Optional.empty()).when(spyInterceptor).verifyAccessToken(headerWithoutTenant);
         doThrow(new VerificationException()).when(spyInterceptor).verifyAccessToken(null);
     }
 
     protected void afterTest() throws InterruptedException {
-        channel.shutdownNow();
-        channel.awaitTermination(10, TimeUnit.SECONDS);
-        verifyNoMoreInteractions(spyInterceptor);
+        if(channel != null) {
+            channel.shutdownNow();
+            channel.awaitTermination(10, TimeUnit.SECONDS);
+        }
         reset(spyInterceptor);
+        cleanDataBase();
     }
 
     protected Metadata createAuthHeader(String value) {
@@ -85,17 +98,9 @@ public abstract class GrpcTestBase {
         headers.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, value);
         return headers;
     }
-    protected static Server server;
 
-    protected static Server startMockServer(String name, BindableService... services) throws IOException {
-        InProcessServerBuilder builder = InProcessServerBuilder
-            .forName(name).directExecutor();
-
-        if (services != null) {
-            for (BindableService service : services) {
-                builder.addService(service);
-            }
-        }
-        return builder.build().start();
+    private void cleanDataBase() {
+        jdbcTemplate.execute("truncate table node, azure_credential, tag, configuration, monitored_service, " +
+            "monitoring_system, monitoring_location CASCADE");
     }
 }

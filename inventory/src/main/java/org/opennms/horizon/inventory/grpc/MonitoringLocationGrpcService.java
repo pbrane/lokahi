@@ -105,5 +105,13 @@ public class MonitoringLocationGrpcService extends MonitoringLocationServiceGrpc
         responseObserver.onNext(MonitoringLocationList.newBuilder().addAllLocations(service.findByLocationIds(idList)).build());
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void searchLocations(StringValue request, StreamObserver<MonitoringLocationList> responseObserver) {
+        List<MonitoringLocationDTO> locations = tenantLookup.lookupTenantId(Context.current())
+            .map(tenantId -> service.searchLocations(request.getValue())).orElseThrow();
+        responseObserver.onNext(MonitoringLocationList.newBuilder().addAllLocations(locations).build());
+        responseObserver.onCompleted();
+    }
 }
 

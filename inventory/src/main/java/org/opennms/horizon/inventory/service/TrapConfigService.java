@@ -31,13 +31,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Any;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
+import org.opennms.horizon.inventory.service.taskset.TaskUtils;
 import org.opennms.horizon.inventory.service.trapconfig.TrapConfigBean;
+import org.opennms.horizon.inventory.taskset.api.TaskSetPublisher;
 import org.opennms.sink.traps.contract.ListenerConfig;
 import org.opennms.sink.traps.contract.SnmpV3User;
 import org.opennms.sink.traps.contract.TrapConfig;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
-import org.opennms.taskset.service.api.TaskSetPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -54,6 +55,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TrapConfigService {
     private static final Logger LOG = LoggerFactory.getLogger(TrapConfigService.class);
+    public final static String TRAPS_CONFIG  = "traps-config";
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MonitoringLocationService monitoringLocationService;
     private final TaskSetPublisher taskSetPublisher;
@@ -103,7 +105,7 @@ public class TrapConfigService {
 
     private void publishTrapConfig(String tenantId, String location, TrapConfig trapConfig) {
         TaskDefinition taskDefinition = TaskDefinition.newBuilder()
-            .setId("traps-config")
+            .setId(TaskUtils.identityForConfig(TRAPS_CONFIG, location))
             .setPluginName("trapd.listener.config")
             .setType(TaskType.LISTENER)
             .setConfiguration(Any.pack(trapConfig))

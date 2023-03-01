@@ -29,16 +29,9 @@
 package org.opennms.horizon.inventory.grpc;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
 import java.util.List;
 
-import com.google.protobuf.Empty;
-import com.google.protobuf.StringValue;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +43,7 @@ import org.opennms.horizon.inventory.dto.MonitoringLocationList;
 import org.opennms.horizon.inventory.dto.MonitoringLocationServiceGrpc;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
+import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -57,16 +51,10 @@ import org.springframework.test.context.ContextConfiguration;
 import com.google.protobuf.Empty;
 import com.google.protobuf.StringValue;
 
-import io.grpc.Metadata;
-import io.grpc.ServerCall;
-import io.grpc.ServerCallHandler;
+import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
-
-import java.util.List;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @ContextConfiguration(initializers = {SpringContextTestInitializer.class})
@@ -80,27 +68,27 @@ class LocationGrpcItTest extends GrpcTestBase {
 
     @BeforeEach
     public void prepareData() throws VerificationException {
-        location1 = new MonitoringLocation();
-        location1.setLocation("test-location");
-        location1.setTenantId(tenantId);
-        repo.save(location1);
+        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
+        {
+            location1 = new MonitoringLocation();
+            location1.setLocation("test-location");
+            repo.save(location1);
 
-        location2 = new MonitoringLocation();
-        location2.setLocation("test-location2");
-        location2.setTenantId(tenantId);
-        repo.save(location2);
+            location2 = new MonitoringLocation();
+            location2.setLocation("test-location2");
+            repo.save(location2);
+        });
         prepareServer();
         serviceStub = MonitoringLocationServiceGrpc.newBlockingStub(channel);
     }
 
     @AfterEach
     public void cleanUp() throws InterruptedException {
-        repo.deleteAll();
         afterTest();
     }
 
     @Test
-    void testListLocations () throws VerificationException {
+    void testListLocations () {
         MonitoringLocationList locationList = serviceStub
             .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader)))
             .listLocations(Empty.newBuilder().build());
@@ -113,24 +101,20 @@ class LocationGrpcItTest extends GrpcTestBase {
         assertThat(list.get(1).getTenantId()).isEqualTo(location2.getTenantId());
         assertThat(list.get(0).getId()).isPositive();
         assertThat(list.get(1).getId()).isPositive();
-        verify(spyInterceptor).verifyAccessToken(authHeader);
-        verify(spyInterceptor).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
     }
 
     @Test
-    void testListLocationsWithWrongTenantId () throws VerificationException {
+    void testListLocationsWithWrongTenantId () {
         MonitoringLocationList locationList = serviceStub
             .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(differentTenantHeader)))
             .listLocations(Empty.newBuilder().build());
         assertThat(locationList).isNotNull();
         List<MonitoringLocationDTO> list = locationList.getLocationsList();
         assertThat(list.size()).isZero();
-        verify(spyInterceptor).verifyAccessToken(differentTenantHeader);
-        verify(spyInterceptor).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
     }
 
     @Test
-    void testFindLocationByName() throws VerificationException {
+    void testFindLocationByName() {
         MonitoringLocationDTO locationDTO = serviceStub
             .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader)))
             .getLocationByName(StringValue.of("test-location"));
@@ -138,48 +122,38 @@ class LocationGrpcItTest extends GrpcTestBase {
         assertThat(locationDTO.getId()).isPositive();
         assertThat(locationDTO.getLocation()).isEqualTo(location1.getLocation());
         assertThat(locationDTO.getTenantId()).isEqualTo(location1.getTenantId());
-        verify(spyInterceptor).verifyAccessToken(authHeader);
-        verify(spyInterceptor).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
     }
 
     @Test()
-    void testFindLocationByNameNotFound() throws VerificationException {
+    void testFindLocationByNameNotFound() {
         StatusRuntimeException exception = Assertions.assertThrows(StatusRuntimeException.class, ()->serviceStub
             .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader)))
             .getLocationByName(StringValue.of("test-location3")));
         assertThat(exception.getStatus().getCode()).isEqualTo(Status.Code.NOT_FOUND);
-        verify(spyInterceptor).verifyAccessToken(authHeader);
-        verify(spyInterceptor).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
     }
 
     @Test()
-    void testFindLocationByNameInvalidTenantId() throws VerificationException {
+    void testFindLocationByNameInvalidTenantId() {
         StatusRuntimeException exception = Assertions.assertThrows(StatusRuntimeException.class, ()->serviceStub
             .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(differentTenantHeader)))
             .getLocationByName(StringValue.of("test-location")));
         assertThat(exception.getStatus().getCode()).isEqualTo(Status.Code.NOT_FOUND);
-        verify(spyInterceptor).verifyAccessToken(differentTenantHeader);
-        verify(spyInterceptor).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
     }
 
     @Test()
-    void testFindLocationByNameWithoutTenantId() throws VerificationException {
+    void testFindLocationByNameWithoutTenantId() {
         StatusRuntimeException exception = Assertions.assertThrows(StatusRuntimeException.class, ()->serviceStub
             .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(headerWithoutTenant)))
             .getLocationByName(StringValue.of("test-location")));
         assertThat(exception.getStatus().getCode()).isEqualTo(io.grpc.Status.Code.UNAUTHENTICATED);
         assertThat(exception.getMessage()).contains("Missing tenant id");
-        verify(spyInterceptor).verifyAccessToken(headerWithoutTenant);
-        verify(spyInterceptor).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
     }
 
     @Test()
-    void testFindLocationByNameWithoutHeader() throws VerificationException {
+    void testFindLocationByNameWithoutHeader() {
         StatusRuntimeException exception = Assertions.assertThrows(StatusRuntimeException.class, ()->serviceStub.getLocationByName(StringValue.of("test-location")));
         assertThat(exception.getStatus().getCode()).isEqualTo(io.grpc.Status.Code.UNAUTHENTICATED);
         assertThat(exception.getMessage()).contains("Invalid access token");
-        verify(spyInterceptor).verifyAccessToken(null);
-        verify(spyInterceptor).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
     }
 
 }

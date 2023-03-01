@@ -31,6 +31,7 @@ package org.opennms.horizon.inventory.component;
 import java.util.Map;
 import java.util.Optional;
 
+import io.grpc.Context;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
@@ -39,6 +40,7 @@ import org.opennms.horizon.inventory.service.NodeService;
 import org.opennms.horizon.inventory.service.taskset.DetectorTaskSetService;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.events.EventConstants;
+import org.opennms.taskset.contract.ScanType;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.EventListener;
@@ -71,13 +73,16 @@ public class NodeMonitoringManager {
                 var tenantId = Optional.ofNullable(headers.get(GrpcConstants.TENANT_ID_KEY)).map(obj -> new String((byte[]) obj)).orElseThrow(() ->
                     new InventoryRuntimeException("Missing tenant id"));
                 log.debug("Create new node from event with interface: {}, location: {} and tenant: {}", event.getIpAddress(), event.getLocation(), tenantId);
-                NodeCreateDTO createDTO = NodeCreateDTO.newBuilder()
-                    .setLocation(event.getLocation())
-                    .setManagementIp(event.getIpAddress())
-                    .setLabel("trap-" + event.getIpAddress())
-                    .build();
-                Node newNode = nodeService.createNode(createDTO, tenantId);
-                detectorService.sendDetectorTasks(newNode);
+                Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
+                {
+                    NodeCreateDTO createDTO = NodeCreateDTO.newBuilder()
+                        .setLocation(event.getLocation())
+                        .setManagementIp(event.getIpAddress())
+                        .setLabel("trap-" + event.getIpAddress())
+                        .build();
+                    Node newNode = nodeService.createNode(createDTO, ScanType.NODE_SCAN, tenantId);
+                    detectorService.sendDetectorTasks(newNode);
+                });
             }
         } catch (Exception e) {
             log.error("Error while processing a kafka message for the event: ", e);

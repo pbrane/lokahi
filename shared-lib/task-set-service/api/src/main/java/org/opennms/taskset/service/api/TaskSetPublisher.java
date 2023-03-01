@@ -33,6 +33,10 @@ import org.opennms.taskset.contract.TaskSet;
 
 import java.util.List;
 
+/**
+ * This interface is internal implementation detail, it will be moved.
+ */
+@Deprecated
 public interface TaskSetPublisher {
 
     String TASK_SET_PUBLISH_SERVICE = "task-set.pub-task";

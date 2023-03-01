@@ -1,6 +1,5 @@
 package org.opennms.horizon.minion.taskset.worker.ignite;
 
-import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.ignite.Ignite;
@@ -20,6 +19,9 @@ import org.apache.ignite.spi.metric.MetricExporterSpi;
 import org.opennms.horizon.minion.taskset.worker.ignite.classloader.CompoundClassLoader;
 import org.opennms.horizon.minion.taskset.worker.impl.TaskSetLifecycleManagerImpl;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 @Data
 @AllArgsConstructor
 public class WorkerIgniteConfiguration {
@@ -27,12 +29,17 @@ public class WorkerIgniteConfiguration {
     private final MetricExporterSpi metricExporterSpi;
     private final boolean useKubernetes;
     private final String kubernetesServiceName;
+    private final String kubernetesNamespace;
 
     public IgniteConfiguration prepareIgniteConfiguration() {
         IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
 
         igniteConfiguration.setClientMode(false);
         igniteConfiguration.setMetricsLogFrequency(0);  // DISABLE IGNITE METRICS
+
+        Optional.ofNullable(System.getenv("MINION_ID"))
+            .or(() -> Optional.ofNullable(System.getenv("HOSTNAME")))
+            .ifPresent(igniteConfiguration::setConsistentId);
 
         if (useKubernetes) {
             configureClusterNodeDiscoveryKubernetes(igniteConfiguration);
@@ -80,6 +87,10 @@ public class WorkerIgniteConfiguration {
 
         KubernetesConnectionConfiguration connectionConfiguration = new KubernetesConnectionConfiguration();
         connectionConfiguration.setServiceName(kubernetesServiceName);
+
+        if ((kubernetesNamespace != null) && (! kubernetesNamespace.isEmpty())) {
+            connectionConfiguration.setNamespace(kubernetesNamespace);
+        }
 
         TcpDiscoveryKubernetesIpFinder ipFinder = new TcpDiscoveryKubernetesIpFinder(connectionConfiguration);
         tcpDiscoverySpi.setIpFinder(ipFinder);

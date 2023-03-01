@@ -30,16 +30,18 @@ package org.opennms.horizon.minion.flows.listeners.factory;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import com.codahale.metrics.MetricRegistry;
 
 import org.opennms.horizon.minion.flows.listeners.FlowsListener;
+import org.opennms.horizon.minion.flows.listeners.Listener;
 import org.opennms.horizon.minion.flows.listeners.Parser;
 import org.opennms.horizon.minion.flows.listeners.UdpListener;
 import org.opennms.horizon.minion.flows.listeners.UdpParser;
-import org.opennms.sink.flows.contract.FlowsConfig;
+import org.opennms.horizon.minion.flows.parser.TelemetryRegistry;
 import org.opennms.sink.flows.contract.ListenerConfig;
+import org.opennms.sink.flows.contract.Parameter;
 
 public class UdpListenerFactory implements ListenerFactory {
 
@@ -51,22 +53,34 @@ public class UdpListenerFactory implements ListenerFactory {
     }
 
     @Override
-    public Class<? extends FlowsListener> getBeanClass() {
+    public Class<? extends Listener> getListenerClass() {
         return UdpListener.class;
     }
 
     @Override
-    public FlowsListener createBean(ListenerConfig listenerConfig) {
+    public FlowsListener create(ListenerConfig listenerConfig) {
         // Ensure each defined parser is of type UdpParser
         final List<Parser> parsers = listenerConfig.getParsersList().stream()
-                .map(telemetryRegistry::getParser)
-                .collect(Collectors.toList());
-        final List<Parser> udpParsers = parsers.stream()
+                .map(telemetryRegistry::createParser)
+                .toList();
+
+        final List<UdpParser> udpParsers = parsers.stream()
                 .filter(p -> p instanceof UdpParser)
-                .map(p -> (UdpParser) p).collect(Collectors.toList());
+                .map(p -> (UdpParser) p).toList();
         if (parsers.size() != udpParsers.size()) {
             throw new IllegalArgumentException("Each parser must be of type UdpParser but was not: " + parsers);
         }
-        return new UdpListener(listenerConfig.getName(), udpParsers, new MetricRegistry());
+
+        int port = 0;
+        try {
+            Optional<Parameter> parameter = listenerConfig.getParametersList().stream().filter(p -> "port".equals(p.getKey())).findFirst();
+            if (parameter.isPresent()) {
+                port = Integer.parseUnsignedInt(parameter.get().getValue());
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format("Invalid port for listener: %s, error: %s", listenerConfig.getName(), e.getMessage()));
+        }
+
+        return new UdpListener(listenerConfig.getName(), port, udpParsers, new MetricRegistry());
     }
 }

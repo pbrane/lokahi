@@ -21,13 +21,14 @@ graphql:
 
 logging:
   file.path: /var/log/restServer
-
+  level:
+    root: debug
 tsdb.url: http://localhost:59090/api/v1/query
 
 grpc:
   url:
     inventory: localhost:29065
     events: localhost:30065
-    notification: localhost:31065
+    notification: localhost:15065
   server:
     deadline: 60000

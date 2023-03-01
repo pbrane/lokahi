@@ -37,8 +37,7 @@ import org.opennms.horizon.inventory.model.MonitoredServiceType;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.service.MonitoredServiceService;
 import org.opennms.horizon.inventory.service.MonitoredServiceTypeService;
-import org.opennms.horizon.inventory.service.taskset.CollectorTaskSetService;
-import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
+import org.opennms.horizon.inventory.service.taskset.TaskSetHandler;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.taskset.contract.DetectorResponse;
 import org.opennms.taskset.contract.MonitorType;
@@ -54,8 +53,7 @@ public class DetectorResponseService {
     private final IpInterfaceRepository ipInterfaceRepository;
     private final MonitoredServiceTypeService monitoredServiceTypeService;
     private final MonitoredServiceService monitoredServiceService;
-    private final MonitorTaskSetService monitorTaskSetService;
-    private final CollectorTaskSetService collectorTaskSetService;
+    private final TaskSetHandler taskSetHandler;
 
     public void accept(String tenantId, String location, DetectorResponse response) {
         log.info("Received Detector Response = {} for tenant = {} and location = {}", response, tenantId, location);
@@ -72,8 +70,8 @@ public class DetectorResponseService {
 
                 MonitorType monitorType = response.getMonitorType();
                 long nodeId = response.getNodeId();
-                monitorTaskSetService.sendMonitorTask(location, monitorType, ipInterface, nodeId);
-                collectorTaskSetService.sendCollectorTask(location, monitorType, ipInterface, nodeId);
+                taskSetHandler.sendMonitorTask(location, monitorType, ipInterface, nodeId);
+                taskSetHandler.sendCollectorTask(location, monitorType, ipInterface, nodeId);
 
             } else {
                 log.info("{} not detected on ip address = {}", response.getMonitorType(), ipAddress.getAddress());

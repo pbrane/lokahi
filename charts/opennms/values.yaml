@@ -50,6 +50,9 @@ OpenNMS:
     Port: 8181
     SshPort: 8101
     TrapsListenerPort: 1162
+    Netflow5ListenerPort: 8877
+    Netflow9ListenerPort: 4729
+    NetflowListenerPort: 9999
     Resources:
       Limits:
         Cpu: "1"
@@ -110,6 +113,7 @@ OpenNMS:
       Requests:
         Cpu: 100m
         Memory: 250Mi
+    EncryptionKey: ~
   Alarm:
     ServiceName: opennms-alarm
     Image: opennms/horizon-stream-alarm
@@ -177,6 +181,7 @@ Postgres:
   AlarmPassword: notset
   EventsPassword: notset
   DataChoicesPassword: notset
+  MinionGatewayPassword: notset
   NotificationPassword: notset
   GrafanaPassword: notset
   VolumeSize: 10Gi
@@ -200,6 +205,14 @@ Keycloak:
   AdminUsername: admin
   AdminPassword: notset
   RealmName: opennms
+  DynamicRealmConfig: true
+  PrivateRepoEnabled: false
+  ConfigmapName: keycloak-realm-configmap
+  IngressAnnotations:
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Content-Type-Options "nosniff";
+      add_header X-Frame-Options "sameorigin";
+      add_header server_tokens "off";
 Grafana:
   Enabled: true
   Path: /grafana

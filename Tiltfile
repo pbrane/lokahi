@@ -113,7 +113,7 @@ jib_project(
     'opennms/horizon-stream-notification',
     'notifications',
     'opennms-notifications',
-    port_forwards=['31065:6565', '15050:5005'],
+    port_forwards=['15065:6565', '15050:5005'],
 )
 
 ### Vue.js App ###
@@ -169,6 +169,7 @@ jib_project(
     'opennms/horizon-stream-metrics-processor',
     'metrics-processor',
     'opennms-metrics-processor',
+    submodule='main',
     port_forwards=['28080:9090', '28050:5005'],
 )
 

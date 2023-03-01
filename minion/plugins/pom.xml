@@ -21,6 +21,8 @@
         <module>snmp-plugin</module>
         <module>azure-plugin</module>
         <module>features</module>
+        <module>nodescan-plugin</module>
+        <module>shell-commands</module>
     </modules>
 
 </project>

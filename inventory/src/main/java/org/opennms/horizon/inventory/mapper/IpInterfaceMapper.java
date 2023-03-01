@@ -29,19 +29,37 @@
 package org.opennms.horizon.inventory.mapper;
 
 
-import org.mapstruct.Mapper;
-import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
-import org.opennms.horizon.inventory.model.IpInterface;
-import org.opennms.horizon.shared.utils.InetAddressUtils;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-@Mapper(componentModel = "spring")
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
+import org.mapstruct.NullValueCheckStrategy;
+import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
+import org.opennms.horizon.inventory.model.IpInterface;
+import org.opennms.horizon.shared.utils.InetAddressUtils;
+import org.opennms.node.scan.contract.IpInterfaceResult;
+
+@Mapper(componentModel = "spring", uses = EmptyStringMapper.class)
 public interface IpInterfaceMapper {
+
+    @Mappings({
+        @Mapping(target = "netmask", source = "netmask", qualifiedByName = "emptyString"),
+        @Mapping(target = "tenantId", source = "tenantId", qualifiedByName = "emptyString"),
+        @Mapping(target = "hostname", source = "hostname", qualifiedByName = "emptyString")
+    })
     IpInterface dtoToModel(IpInterfaceDTO dto);
 
+    @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     IpInterfaceDTO modelToDTO(IpInterface model);
+
+    @Mappings({
+        @Mapping(target = "netmask", source = "netmask", qualifiedByName = "emptyString"),
+        @Mapping(target = "hostname", source = "ipHostName", qualifiedByName = "emptyString")
+    })
+    IpInterface fromScanResult(IpInterfaceResult result);
 
     default InetAddress map(String value) throws UnknownHostException {
         return InetAddressUtils.getInetAddress(value);
@@ -51,3 +69,5 @@ public interface IpInterfaceMapper {
         return InetAddressUtils.toIpAddrString(value);
     }
 }
+
+

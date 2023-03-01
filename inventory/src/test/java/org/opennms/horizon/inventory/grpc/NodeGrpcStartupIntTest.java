@@ -28,62 +28,47 @@
 
 package org.opennms.horizon.inventory.grpc;
 
+import static com.jayway.awaitility.Awaitility.await;
+
+import java.util.concurrent.TimeUnit;
+
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.keycloak.common.VerificationException;
 import org.opennms.horizon.inventory.SpringContextTestInitializer;
 import org.opennms.horizon.inventory.grpc.taskset.TestTaskSetGrpcService;
 import org.opennms.taskset.contract.TaskSet;
 import org.opennms.taskset.service.contract.PublishTaskSetRequest;
-import org.opennms.taskset.service.contract.TaskSetServiceGrpc;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-
-import jakarta.transaction.Transactional;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import static com.jayway.awaitility.Awaitility.await;
 
 @SpringBootTest(properties = {"spring.liquibase.change-log=db/changelog/changelog-test.xml"})
 @ContextConfiguration(initializers = {SpringContextTestInitializer.class})
 class NodeGrpcStartupIntTest extends GrpcTestBase {
+    @Autowired
+    private ApplicationContext context;
+    private TestTaskSetGrpcService testGrpcService;
     private static final int EXPECTED_TASK_DEF_COUNT = 1;
 
-    private static TestTaskSetGrpcService testGrpcService;
-
     @BeforeEach
-    @Transactional
-    public void prepare() throws VerificationException {
-        prepareServer();
-    }
-
-    @BeforeAll
-    public static void setup() throws IOException {
-        testGrpcService = new TestTaskSetGrpcService();
-        server = startMockServer(TaskSetServiceGrpc.SERVICE_NAME, testGrpcService);
+    public void prepare() {
+        testGrpcService = context.getBean(TestTaskSetGrpcService.class);
     }
 
     @AfterEach
     public void cleanUp() throws InterruptedException {
+        //this test have to clean after tests.
         testGrpcService.reset();
         afterTest();
-    }
-
-    @AfterAll
-    public static void tearDown() throws InterruptedException {
-        server.shutdownNow();
-        server.awaitTermination();
     }
 
     @Test
     void testStartup() {
         // TrapConfigService & FlowsConfigService listens for ApplicationReadyEvent and sends the trap config for each location.
-        await().atMost(15, TimeUnit.SECONDS).untilAtomic(testGrpcService.getTimesCalled(), Matchers.is(2));
+        await().atMost(15, TimeUnit.SECONDS).until(() -> testGrpcService.getRequests().size(), Matchers.is(2));
 
         org.assertj.core.api.Assertions.assertThat(testGrpcService.getRequests())
             .hasSize(2)

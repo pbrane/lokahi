@@ -18,6 +18,10 @@ spring:
   liquibase:
     change-log: db/changelog/changelog.xml
 
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
 grpc:
   server:
     port: 6565
@@ -25,7 +29,7 @@ grpc:
 horizon:
   kafka:
     alarms:
-      topic: org.opennms.horizon.notifications.alarms
+      topic: alarms
       concurrency: 1
 
   pagerduty:

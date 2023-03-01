@@ -1,4 +1,4 @@
-tsdb.url: http://localhost:59090/api/v1/query
+tsdb.url: http://localhost:12345/api/v1/query
 
 keycloak:
   url: http://onms-keycloak:8080/auth
@@ -9,4 +9,4 @@ grpc:
   url:
     inventory: localhost:29065
     events: localhost:30065
-    notification: localhost:31065
+    notification: localhost:15065
