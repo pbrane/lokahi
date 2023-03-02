@@ -18,6 +18,8 @@
       :results="filteredLocations"
       @search="search"
       @update:modelValue="deboncedFn"
+      :schema="locationV"
+      ref="inputRef"
     ></FeatherAutocomplete>
 
     <!-- Locations selection -->
@@ -46,6 +48,8 @@ import { debounce } from 'lodash'
 import { Location } from '@/types/graphql'
 import { IAutocompleteItemType } from '@featherds/autocomplete'
 import { watchOnce } from '@vueuse/core'
+import { object } from "yup"
+
 const Icons = markRaw({
   Cancel
 })
@@ -57,6 +61,8 @@ const selectedLocations = ref<TLocationAutocomplete[]>([])
 const loading = ref(false)
 const locations = ref() //locations without selected items
 const filteredLocations = ref() //results in autocomplete
+const inputRef = ref() // actual autocomplete input
+const errMsgDisplay = ref('none') // for sub text css display
 const computedLocations = computed(() => discoveryQueries.locations)
 const props = defineProps({
   type: {
@@ -132,6 +138,7 @@ const deboncedFn = debounce(
       locations.value = locations.value.filter((l: Location) => l.id !== selectedLocation.id)
       searchValue.value = undefined
       emit('location-selected', selectedLocations.value)
+      handleErrDisplay()
     }
   },
   200,
@@ -146,7 +153,24 @@ const removeLocation = (location: Location) => {
     selectedLocations.value = selectedLocations.value.filter((l: Location) => l.id !== location.id)
     locations.value.push(location)
     emit('location-selected', selectedLocations.value)
+    handleErrDisplay()
   }
+}
+
+const locationErrMsg = 'Location is required.'
+const locationV = object().test({
+  name: 'has-location',
+  test: () => Boolean(selectedLocations.value.length),
+  message: locationErrMsg
+})
+const handleErrDisplay = () => {
+  inputRef.value.handleInputBlur() // runs yup validate
+
+  nextTick(() => {
+    // add/remove the feather input subtext display
+    errMsgDisplay.value = 
+      (document.getElementById(inputRef.value.subTextId)?.children[0].innerHTML === locationErrMsg) ? 'flex' : 'none'
+  })
 }
 </script>
 
@@ -166,7 +190,7 @@ const removeLocation = (location: Location) => {
   }
 }
 :deep(.feather-input-sub-text) {
-  display: none !important;
+  display: v-bind(errMsgDisplay) !important;
 }
 :deep(.chip-label-button) {
   display: flex;

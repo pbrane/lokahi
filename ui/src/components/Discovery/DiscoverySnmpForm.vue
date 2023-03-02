@@ -33,6 +33,7 @@
         :label="IPs.label"
         ref="contentEditableIPRef"
         class="ip-input"
+        :tooltipText="DiscoverySNMPForm.IPHelpTooltp"
       />
       <DiscoveryContentEditable
         @is-content-invalid="isCommunityStringInvalidListerner"
@@ -53,6 +54,7 @@
         :default-content="''"
         class="udp-port-input"
         ref="contentEditableUDPPortRef"
+        :tooltipText="DiscoverySNMPForm.PortHelpTooltp"
       />
     </div>
 
