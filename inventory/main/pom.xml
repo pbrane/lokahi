@@ -338,11 +338,9 @@
                 <executions>
                     <execution>
                         <id>build-docker-image</id>
-                        <!--   This image is used with CucumberRunnerIT ,
-                        Must be in package phase before docker runs-->
-                        <phase>package</phase>
+                        <phase>install</phase>
                         <goals>
-                            <goal>dockerBuild</goal>
+                            <goal>${application.jib.defaultGoal}</goal>
                         </goals>
                     </execution>
                 </executions>

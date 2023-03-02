@@ -146,7 +146,7 @@
                         <id>build-docker-image</id>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>dockerBuild</goal>
+                            <goal>${application.jib.defaultGoal}</goal>
                         </goals>
                     </execution>
                 </executions>
