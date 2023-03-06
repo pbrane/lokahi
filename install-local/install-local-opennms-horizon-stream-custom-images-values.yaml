@@ -73,7 +73,7 @@ OpenNMS:
         Cpu: "0"
         Memory: "0"
   Alarm:
-    Image: opennms/horizon-stream-alarm:local
+    Image: opennms/horizon-stream-alert:local
     Resources:
       Limits:
         Cpu: "0"

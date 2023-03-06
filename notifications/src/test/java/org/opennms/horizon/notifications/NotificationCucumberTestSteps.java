@@ -1,13 +1,14 @@
 package org.opennms.horizon.notifications;
 
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.spring.CucumberContextConfiguration;
-import io.grpc.Context;
-import io.grpc.Metadata;
-import io.grpc.ServerCall;
-import io.grpc.ServerCallHandler;
-import io.grpc.stub.MetadataUtils;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.net.URI;
+
 import org.keycloak.common.VerificationException;
 import org.opennms.horizon.notifications.api.PagerDutyDao;
 import org.opennms.horizon.notifications.dto.NotificationServiceGrpc;
@@ -16,7 +17,7 @@ import org.opennms.horizon.notifications.exceptions.NotificationConfigUninitiali
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.notifications.service.NotificationService;
 import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
+import org.opennms.horizon.shared.dto.event.AlertDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +30,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.spring.CucumberContextConfiguration;
+import io.grpc.Context;
+import io.grpc.Metadata;
+import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
+import io.grpc.stub.MetadataUtils;
 
 @CucumberContextConfiguration
 @SpringBootTest
@@ -138,7 +139,7 @@ public class NotificationCucumberTestSteps extends GrpcTestBase {
     }
 
     private void postAlarm() throws NotificationException {
-        AlarmDTO alarm = new AlarmDTO();
+        AlertDTO alarm = new AlertDTO();
         alarm.setLogMessage("Hello");
         notificationService.postNotification(alarm);
     }

@@ -29,6 +29,20 @@
 package org.opennms.horizon.events.xml;
 
 
+import static org.opennms.horizon.shared.utils.InetAddressUtils.addr;
+import static org.opennms.horizon.shared.utils.InetAddressUtils.str;
+
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.text.DateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.opennms.horizon.events.util.InetAddressXmlAdapter;
 import org.opennms.horizon.events.util.StringUtils;
 
@@ -43,19 +57,6 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.text.DateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import static org.opennms.horizon.shared.utils.InetAddressUtils.addr;
-import static org.opennms.horizon.shared.utils.InetAddressUtils.str;
 
 @XmlRootElement(name = "event")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -279,9 +280,9 @@ public class Event implements Serializable {
 	/**
 	 * Data used to create an event.
 	 */
-	@XmlElement(name = "alarm-data")
+	@XmlElement(name = "alert-data")
 	@Valid
-	private AlarmData _alarmData;
+	private AlertData _alertData;
 
 	// ----------------/
 	// - Constructors -/
@@ -488,13 +489,13 @@ public class Event implements Serializable {
 	}
 
 	/**
-	 * Returns the value of field 'alarmData'. The field 'alarmData' has the
+	 * Returns the value of field 'alertData'. The field 'alertData' has the
 	 * following description: Data used to create an event.
 	 * 
-	 * @return the value of field 'AlarmData'.
+	 * @return the value of field 'AlertData'.
 	 */
-	public AlarmData getAlarmData() {
-		return _alarmData;
+	public AlertData getAlertData() {
+		return _alertData;
 	}
 
 	/**
@@ -1274,14 +1275,14 @@ public class Event implements Serializable {
 	}
 
 	/**
-	 * Sets the value of field 'alarmData'. The field 'alarmData' has the
+	 * Sets the value of field 'alertData'. The field 'alertData' has the
 	 * following description: Data used to create an event.
 	 * 
-	 * @param alarmData
-	 *            the value of field 'alarmData'.
+	 * @param alertData
+	 *            the value of field 'alertData'.
 	 */
-	public void setAlarmData(final AlarmData alarmData) {
-		_alarmData = alarmData;
+	public void setAlertData(final AlertData alertData) {
+		_alertData = alertData;
 	}
 
 	/**
@@ -1838,7 +1839,7 @@ public class Event implements Serializable {
 				.add("ifIndex=" + _ifIndex)
 				.add("ifAlias='" + _ifAlias + "'")
 				.add("mouseovertext='" + _mouseovertext + "'")
-				.add("alarmData=" + _alarmData)
+				.add("alertData=" + _alertData)
 				.toString();
 	}
 

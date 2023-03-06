@@ -138,7 +138,7 @@ jobs:
     strategy:
       matrix:
         image: [
-          'horizon-stream-alarm',
+          'horizon-stream-alert',
           'horizon-stream-datachoices',
           'horizon-stream-events',
           'horizon-stream-grafana',

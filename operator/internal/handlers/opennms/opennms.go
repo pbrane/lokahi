@@ -31,7 +31,7 @@ func GetOpenNMSHandlers() []handlers.ServiceHandler {
 		&NotificationsHandler{},
 		&MetricsProcessorHandler{},
 		&EventsHandler{},
-		&AlarmHandler{},
+		&AlertHandler{},
 		&DataChoicesHandler{},
 	}
 }

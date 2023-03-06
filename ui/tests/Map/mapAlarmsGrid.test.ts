@@ -36,7 +36,7 @@ it('should have a dropdown selection input', () => {
 
 describe('selectAlarmAck method', () => {
   test.todo('...', () => {
-    // when alarm list data avail, assert the modifyAlarm() has been called correctly
+    // when alert list data avail, assert the modifyAlarm() has been called correctly
     expect(true).toBeTruthy()
   })
 })

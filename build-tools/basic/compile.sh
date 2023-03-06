@@ -26,7 +26,7 @@ set -e
 mvn clean install -P rapid-build -DskipTests=true -f parent-pom
 mvn clean install -P rapid-build -DskipTests=true -f shared-lib
 
-mvn clean install -P rapid-build -DskipTests=true -f alarm
+mvn clean install -P rapid-build -DskipTests=true -f alert
 mvn clean install -P rapid-build -DskipTests=true -f minion-gateway
 mvn clean install -P rapid-build -DskipTests=true -f minion-gateway-grpc-proxy
 mvn clean install -P rapid-build -DskipTests=true -f minion

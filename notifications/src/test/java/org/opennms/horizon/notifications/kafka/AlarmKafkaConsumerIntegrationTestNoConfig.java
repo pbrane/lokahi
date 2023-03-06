@@ -1,5 +1,15 @@
 package org.opennms.horizon.notifications.kafka;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
@@ -16,7 +26,7 @@ import org.opennms.horizon.notifications.NotificationsApplication;
 import org.opennms.horizon.notifications.SpringContextTestInitializer;
 import org.opennms.horizon.notifications.api.PagerDutyAPIImpl;
 import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
+import org.opennms.horizon.shared.dto.event.AlertDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,16 +45,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
-
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -72,7 +72,7 @@ class AlarmKafkaConsumerIntegrationTestNoConfig {
     private AlarmKafkaConsumer alarmKafkaConsumer;
 
     @Captor
-    ArgumentCaptor<AlarmDTO> alarmCaptor;
+    ArgumentCaptor<AlertDTO> alarmCaptor;
 
     @Autowired
     private TestRestTemplate testRestTemplate;
@@ -108,7 +108,7 @@ class AlarmKafkaConsumerIntegrationTestNoConfig {
         verify(alarmKafkaConsumer, timeout(KAFKA_TIMEOUT).times(1))
             .consume(alarmCaptor.capture(),any());
 
-        AlarmDTO capturedAlarm = alarmCaptor.getValue();
+        AlertDTO capturedAlarm = alarmCaptor.getValue();
         assertEquals(id, capturedAlarm.getId());
 
         // This is the call to the PagerDuty API, we won't get this far, as we will get an exception when we try

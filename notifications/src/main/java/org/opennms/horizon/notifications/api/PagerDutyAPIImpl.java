@@ -28,9 +28,14 @@
 
 package org.opennms.horizon.notifications.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.opennms.horizon.notifications.api.dto.AlarmSeverity;
 import org.opennms.horizon.notifications.api.dto.AlarmType;
 import org.opennms.horizon.notifications.api.dto.PagerDutyEventAction;
@@ -43,7 +48,7 @@ import org.opennms.horizon.notifications.exceptions.NotificationBadDataException
 import org.opennms.horizon.notifications.exceptions.NotificationConfigUninitializedException;
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.notifications.exceptions.NotificationInternalException;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
+import org.opennms.horizon.shared.dto.event.AlertDTO;
 import org.opennms.horizon.shared.dto.event.EventDTO;
 import org.opennms.horizon.shared.dto.event.EventParameterDTO;
 import org.slf4j.Logger;
@@ -57,13 +62,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class PagerDutyAPIImpl implements PagerDutyAPI {
@@ -82,7 +83,7 @@ public class PagerDutyAPIImpl implements PagerDutyAPI {
     String clientURL;
 
     @Override
-    public void postNotification(AlarmDTO alarm) throws NotificationException {
+    public void postNotification(AlertDTO alarm) throws NotificationException {
         try {
             String event = getEvent(alarm);
 
@@ -116,7 +117,7 @@ public class PagerDutyAPIImpl implements PagerDutyAPI {
         return config.getIntegrationKey();
     }
 
-    private String getEvent(AlarmDTO alarm) throws NotificationConfigUninitializedException, JsonProcessingException {
+    private String getEvent(AlertDTO alarm) throws NotificationConfigUninitializedException, JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         Instant now = Instant.now();
 

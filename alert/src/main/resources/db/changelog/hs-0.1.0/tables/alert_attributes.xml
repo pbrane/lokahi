@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+	<changeSet author="mfrazier" id="hs-0.1.0-alert">
+<!--		<preConditions onFail="MARK_RAN">-->
+<!--			<not><tableExists tableName="alert_attributes" /></not>-->
+<!--		</preConditions> -->
+
+		<!-- Use this table to add additional custom data about an alert... somewhat
+			useful with automations and will be viewable/editable in the alert details WebUI page. -->
+		<createTable tableName="alert_attributes">
+
+            <!-- the alert's ID -->
+			<column name="alert_id" type="bigint">
+				<constraints nullable="false" />
+			</column>
+
+            <column name="tenant_id" type="bigint"/>
+
+			<!-- The custom attribute name -->
+			<column name="attribute_name" type="varchar(63)" />
+
+			<!-- The custom attribute value -->
+			<column name="attribute_value" type="varchar(255)" />
+		</createTable>
+
+		<addForeignKeyConstraint constraintName="fk_alertid1" onDelete="CASCADE"
+			baseTableName="alert_attributes" baseColumnNames="alert_id"
+			referencedTableName="alert" referencedColumnNames="alert_id" />
+
+		<createIndex tableName="alert_attributes" indexName="alert_attributes_idx">
+			<column name="alert_id" />
+		</createIndex>
+		<createIndex tableName="alert_attributes" indexName="alert_attributes_aan_idx" unique="true">
+			<column name="alert_id" />
+			<column name="attribute_name" />
+		</createIndex>
+
+	</changeSet>
+
+</databaseChangeLog>

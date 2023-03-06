@@ -9,7 +9,7 @@ services:
     # https://hub.docker.com/r/opennms/horizon-stream-minion/tags for recent
     # tags.
     extra_hosts:
-      minion.onmshs: 10.0.0.55
+      minion.onmshs: 192.168.0.19
     environment:
       TZ: 'America/New_York'
       MINION_ID: 'minion-b'

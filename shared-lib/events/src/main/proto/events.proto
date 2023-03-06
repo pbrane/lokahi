@@ -47,7 +47,7 @@ message Event {
   repeated EventParameter event_params = 6;
   optional EventInfo event_info = 7;
   optional EventSeverity event_severity = 8;
-  optional AlarmData alarm_data = 9;
+  optional AlertData alert_data = 9;
 }
 
 message EventInfo {
@@ -82,9 +82,9 @@ enum EventSeverity {
   CRITICAL = 7;
 }
 
-message AlarmData {
+message AlertData {
   string reduction_key = 1;
-  uint32 alarm_type = 2;
+  uint32 alert_type = 2;
   optional string clear_key = 3;
   optional bool auto_clean = 4;
   repeated UpdateField update_field = 5;

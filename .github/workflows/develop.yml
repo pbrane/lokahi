@@ -23,9 +23,9 @@ on:
         type: string
 
 jobs:
-  alarm:
-    name: Alarm Service
-    uses: ./.github/workflows/feature-alarm.yml
+  alert:
+    name: Alert Service
+    uses: ./.github/workflows/feature-alert.yml
     secrets: inherit
     with:
       image-tag: ${{ inputs.image-tag || github.sha }}
@@ -125,7 +125,7 @@ jobs:
   external-it:
     name: End-to-end Tests
     needs: [
-      alarm,
+      alert,
       datachoices,
       events,
       grafana,

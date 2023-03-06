@@ -1,10 +1,12 @@
 package org.opennms.horizon.notifications.kafka;
 
-import io.grpc.Context;
+import java.util.Map;
+import java.util.Optional;
+
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.notifications.service.NotificationService;
 import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
+import org.opennms.horizon.shared.dto.event.AlertDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +15,7 @@ import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.Optional;
+import io.grpc.Context;
 
 @Service
 public class AlarmKafkaConsumer {
@@ -27,7 +28,7 @@ public class AlarmKafkaConsumer {
         topics = "${horizon.kafka.alarms.topic}",
         concurrency = "${horizon.kafka.alarms.concurrency}"
     )
-    public void consume(@Payload AlarmDTO alarm, @Headers Map<String, Object> headers) {
+    public void consume(@Payload AlertDTO alarm, @Headers Map<String, Object> headers) {
 
         LOG.info("Received alarm from kafka {}", alarm);
         Optional<String> tenantOptional = getTenantId(headers);
@@ -44,7 +45,7 @@ public class AlarmKafkaConsumer {
         });
     }
 
-    public void consumeAlarm(AlarmDTO alarm){
+    public void consumeAlarm(AlertDTO alarm){
         try {
             notificationService.postNotification(alarm);
         } catch (NotificationException e) {

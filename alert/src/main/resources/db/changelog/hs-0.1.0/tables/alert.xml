@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+	<changeSet author="mfrazier" id="hs-0.1.0-alert">
+<!--		<validCheckSum>8:2adb443baa6de1ad83bea0954a6cf84b</validCheckSum>-->
+<!--		<preConditions onFail="MARK_RAN">-->
+<!--			<not><tableExists tableName="alert" /></not>-->
+<!--		</preConditions> -->
+
+		<createTable tableName="alert">
+
+			<!-- Unique identifier -->
+			<column name="alert_id" type="bigint">
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_alertid" />
+			</column>
+
+            <column name="tenant_id" type="bigint"/>
+
+			<!-- A reference to the eventUei that created this alert. -->
+			<column name="event_uei" type="varchar(256)">
+				<constraints nullable="false" />
+			</column>
+
+            <!-- Used with nodeID and serviceID to match an event and increment the counter column.
+    Set by configuring the optional alert-data element in the event configuration-->
+            <column name="reduction_key" type="varchar(256)" />
+
+            <!-- Customizable column designed for use in automations and can be set in the event
+    configuration by configuring the optional alert-data element. -->
+            <column name="alert_type" type="integer" />
+
+            <column name="if_index" type="integer" />
+
+            <!-- Incremented by the AlertWriter instead of inserting a new row when matched node,
+                service, and reductionKey -->
+            <column name="counter" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+			<!-- Severity of the Alert... Initially set by the event can be changed with SQL update. -->
+			<column name="severity" type="integer">
+				<constraints nullable="false" />
+			</column>
+
+            <!-- timestamp of the first event matching this alert -->
+            <column name="first_event_time" type="TIMESTAMP WITH TIME ZONE" />
+
+            <!-- timestamp of the last event matching this alert -->
+            <column name="last_event_time" type="TIMESTAMP WITH TIME ZONE" />
+
+			<!-- timestamp of the first automation associated with this alert -->
+			<column name="first_automation_time" type="TIMESTAMP WITH TIME ZONE" />
+
+			<!--  timestamp of the last automation associated with this alert -->
+			<column name="last_automation_time" type="TIMESTAMP WITH TIME ZONE" />
+
+			<!-- description from the event -->
+			<column name="description" type="varchar(4000)" />
+
+			<!-- the logmsg from the event -->
+			<column name="log_msg" type="varchar(256)" />
+
+			<!-- the operator instructions from the event -->
+			<column name="oper_instruct" type="varchar(1024)" />
+
+			<!-- flyOverText for the webUI -->
+			<column name="mouse_over_text" type="varchar(64)" />
+
+			<!-- used to suppress display an alert until timestamp time is reached -->
+			<column name="suppressed_until" type="TIMESTAMP WITH TIME ZONE" />
+
+			<!-- user that suppressed alert -->
+			<column name="suppressed_user" type="varchar(256)" />
+
+			<!-- time the alert was suppressed -->
+			<column name="suppressed_time" type="TIMESTAMP WITH TIME ZONE" />
+
+			<!-- user that acknowledged the alert -->
+			<column name="alert_ack_user" type="varchar(256)" />
+
+			<!-- time user Ack'd the alert -->
+			<column name="alert_ack_time" type="TIMESTAMP WITH TIME ZONE" />
+
+            <!-- A reference to the event table with the ID of the last matching event (typically
+    node, service, reductionkey) -->
+            <column name="last_event_id" type="bigint" />
+
+			<!-- Populated if alert is a resolving alert and can used to clear problem alerts -->
+			<column name="clear_uei" type="varchar(256)" />
+
+            <!-- the key that will match an event to clear the alert -->
+            <column name="clear_key" type="varchar(256)" />
+            
+			<column name="managed_object_instance" type="varchar(512)" />
+
+			<column name="managed_object_type" type="varchar(512)" />
+
+			<column name="application_dn" type="varchar(512)" />
+
+			<column name="oss_primary_key" type="varchar(512)" />
+
+			<column name="x733_alert_type" type="varchar(31)" />
+
+			<column name="qos_alert_state" type="varchar(31)" />
+
+            <column name="last_event_severity" type="integer" />
+
+            <column name="x733_probable_cause" type="integer" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="sticky_memo_id" type="bigint"/>
+
+		</createTable>
+
+		<createIndex tableName="alert" indexName="alert_uei_idx">
+			<column name="event_uei" />
+		</createIndex>
+		<createIndex tableName="alert" indexName="alert_reductionkey_idx" unique="true">
+			<column name="reduction_key" />
+		</createIndex>
+		<createIndex tableName="alert" indexName="alert_clearkey_idx">
+			<column name="clear_key" />
+		</createIndex>
+		<createIndex tableName="alert" indexName="alert_reduction2_idx">
+			<column name="alert_id" />
+			<column name="event_uei" />
+			<column name="reduction_key" />
+		</createIndex>
+		<createIndex tableName="alert" indexName="alert_app_dn">
+			<column name="application_dn" />
+		</createIndex>
+		<createIndex tableName="alert" indexName="alert_oss_primary_key">
+			<column name="oss_primary_key" />
+		</createIndex>
+		<createIndex tableName="alert" indexName="alert_eventid_idx">
+			<column name="last_event_id" />
+		</createIndex>
+
+        <createSequence sequenceName="alert_nxt_id"/>
+
+	</changeSet>
+
+</databaseChangeLog>

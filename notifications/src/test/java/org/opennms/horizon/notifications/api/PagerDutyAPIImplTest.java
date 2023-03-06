@@ -28,6 +28,8 @@
 
 package org.opennms.horizon.notifications.api;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -35,13 +37,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
-import org.opennms.horizon.notifications.repository.PagerDutyConfigRepository;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
+import org.opennms.horizon.shared.dto.event.AlertDTO;
 import org.opennms.horizon.shared.dto.event.EventDTO;
 import org.opennms.horizon.shared.dto.event.EventParameterDTO;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Arrays;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PagerDutyAPIImplTest {
@@ -57,14 +56,14 @@ public class PagerDutyAPIImplTest {
     @Test
     public void postNotifications() throws Exception {
         Mockito.when(pagerDutyDao.getConfig()).thenReturn(getConfigDTO());
-        AlarmDTO alarm = getAlarm(false);
+        AlertDTO alarm = getAlarm(false);
         pagerDutyAPI.postNotification(alarm);
     }
 
     @Test
     public void postNotificationsWithAlarmClash() throws Exception {
         Mockito.when(pagerDutyDao.getConfig()).thenReturn(getConfigDTO());
-        AlarmDTO alarm = getAlarm(true);
+        AlertDTO alarm = getAlarm(true);
         pagerDutyAPI.postNotification(alarm);
     }
 
@@ -77,11 +76,11 @@ public class PagerDutyAPIImplTest {
         return PagerDutyConfigDTO.newBuilder().setIntegrationKey("integration_key").build();
     }
 
-    private AlarmDTO getAlarm(boolean includeParams) {
-        AlarmDTO alarmDTO = new AlarmDTO();
-        alarmDTO.setLogMessage("Exciting message to go here");
-        alarmDTO.setReductionKey("srv01/mysql");
-        alarmDTO.setSeverity("Indeterminate");
+    private AlertDTO getAlarm(boolean includeParams) {
+        AlertDTO alertDTO = new AlertDTO();
+        alertDTO.setLogMessage("Exciting message to go here");
+        alertDTO.setReductionKey("srv01/mysql");
+        alertDTO.setSeverity("Indeterminate");
 
         EventDTO lastEvent = new EventDTO();
         if (includeParams) {
@@ -91,7 +90,7 @@ public class PagerDutyAPIImplTest {
 
             lastEvent.setParameters(Arrays.asList(param));
         }
-        alarmDTO.setLastEvent(lastEvent);
-        return alarmDTO;
+        alertDTO.setLastEvent(lastEvent);
+        return alertDTO;
     }
 }

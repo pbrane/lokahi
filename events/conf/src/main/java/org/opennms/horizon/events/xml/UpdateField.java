@@ -28,14 +28,15 @@
 
 package org.opennms.horizon.events.xml;
 
+import java.io.Serializable;
+
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
 
 /**
- * Object used to identify which alarm fields should be updated during Alarm reduction.
+ * Object used to identify which alert fields should be updated during Alert reduction.
  * 
  * @author <a href="mailto:david@opennms.org">David Hustace</a>
  */

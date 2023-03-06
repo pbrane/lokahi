@@ -1,5 +1,15 @@
 package org.opennms.horizon.notifications.kafka;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
@@ -14,11 +24,11 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.opennms.horizon.notifications.NotificationsApplication;
 import org.opennms.horizon.notifications.SpringContextTestInitializer;
+import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.notifications.service.NotificationService;
 import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
-import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
+import org.opennms.horizon.shared.dto.event.AlertDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,16 +45,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
-
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -75,7 +75,7 @@ class AlarmKafkaConsumerIntegrationTest {
     private NotificationService notificationService;
 
     @Captor
-    ArgumentCaptor<AlarmDTO> alarmCaptor;
+    ArgumentCaptor<AlertDTO> alarmCaptor;
 
     @MockBean
     private RestTemplate restTemplate;
@@ -110,7 +110,7 @@ class AlarmKafkaConsumerIntegrationTest {
         verify(alarmKafkaConsumer, timeout(KAFKA_TIMEOUT).times(1))
             .consume(alarmCaptor.capture(), any());
 
-        AlarmDTO capturedAlarm = alarmCaptor.getValue();
+        AlertDTO capturedAlarm = alarmCaptor.getValue();
         assertEquals(id, capturedAlarm.getId());
 
         // This is the call to the PagerDuty API, it will fail due to an invalid token, but we just need to

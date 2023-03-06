@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="mfrazier" id="hs-0.1.0-alert">
+<!--        <validCheckSum>3:e01c4288c19444d61c6bd149ecf6bde7</validCheckSum>-->
+
+        <createTable tableName="alert_association">
+            <column name="tenant_id" type="bigint"/>
+
+            <column name="alert_association_id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="situation_alert_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="related_alert_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mapped_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_alert_association_situation_id" onDelete="CASCADE"
+            baseTableName="alert_association" baseColumnNames="situation_alert_id"
+            referencedTableName="alert" referencedColumnNames="alert_id"/>
+        <addForeignKeyConstraint constraintName="fk_alert_association_alert_id" onDelete="CASCADE"
+            baseTableName="alert_association" baseColumnNames="related_alert_id"
+            referencedTableName="alert" referencedColumnNames="alert_id"/>
+
+        <createSequence sequenceName="alert_association_nxt_id"/>
+    </changeSet>
+</databaseChangeLog>

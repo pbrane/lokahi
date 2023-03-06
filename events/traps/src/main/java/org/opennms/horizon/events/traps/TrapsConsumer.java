@@ -28,29 +28,33 @@
 
 package org.opennms.horizon.events.traps;
 
-import com.google.common.base.Strings;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.opennms.horizon.events.EventConstants;
 import org.opennms.horizon.events.api.EventConfDao;
 import org.opennms.horizon.events.grpc.client.InventoryClient;
-import org.opennms.horizon.events.proto.AlarmData;
+import org.opennms.horizon.events.proto.AlertData;
+import org.opennms.horizon.events.proto.EventInfo;
+import org.opennms.horizon.events.proto.EventLog;
+import org.opennms.horizon.events.proto.EventParameter;
 import org.opennms.horizon.events.proto.EventSeverity;
 import org.opennms.horizon.events.proto.ManagedObject;
+import org.opennms.horizon.events.proto.SnmpInfo;
 import org.opennms.horizon.events.proto.UpdateField;
 import org.opennms.horizon.events.xml.Event;
 import org.opennms.horizon.events.xml.Events;
 import org.opennms.horizon.events.xml.Log;
 import org.opennms.horizon.events.xml.Parm;
-import org.opennms.horizon.events.proto.EventInfo;
-import org.opennms.horizon.events.proto.EventLog;
-import org.opennms.horizon.events.proto.EventParameter;
-import org.opennms.horizon.events.proto.SnmpInfo;
 import org.opennms.horizon.grpc.traps.contract.TrapDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapLogDTO;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.snmp.SnmpHelper;
-import org.opennms.horizon.shared.snmp.traps.TrapdInstrumentation;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,12 +65,8 @@ import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.google.common.base.Strings;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 
 @Component
@@ -161,7 +161,7 @@ public class TrapsConsumer {
             .setIpAddress(event.getInterface());
 
         mapSeverity(event, eventBuilder);
-        mapAlarmData(event, eventBuilder);
+        mapAlertData(event, eventBuilder);
         mapEventInfo(event, eventBuilder);
 
         List<EventParameter> eventParameters = mapEventParams(event);
@@ -214,23 +214,23 @@ public class TrapsConsumer {
         return Optional.empty();
     }
 
-    static void mapAlarmData(Event event, org.opennms.horizon.events.proto.Event.Builder eventBuilder) {
-        var alarmData = event.getAlarmData();
-        if (alarmData != null) {
-            AlarmData.Builder builder = AlarmData.newBuilder();
-            builder.setReductionKey(alarmData.getReductionKey());
-            builder.setAlarmType(alarmData.getAlarmType());
-            builder.setClearKey(Optional.ofNullable(alarmData.getClearKey()).orElse(AlarmData.getDefaultInstance().getClearKey()));
-            builder.setAutoClean(Optional.ofNullable(alarmData.getAutoClean()).orElse(AlarmData.getDefaultInstance().getAutoClean()));
-            if (alarmData.getManagedObject() != null) {
+    static void mapAlertData(Event event, org.opennms.horizon.events.proto.Event.Builder eventBuilder) {
+        var alertData = event.getAlertData();
+        if (alertData != null) {
+            AlertData.Builder builder = AlertData.newBuilder();
+            builder.setReductionKey(alertData.getReductionKey());
+            builder.setAlertType(alertData.getAlertType());
+            builder.setClearKey(Optional.ofNullable(alertData.getClearKey()).orElse(AlertData.getDefaultInstance().getClearKey()));
+            builder.setAutoClean(Optional.ofNullable(alertData.getAutoClean()).orElse(AlertData.getDefaultInstance().getAutoClean()));
+            if (alertData.getManagedObject() != null) {
                 builder.setManagedObject(ManagedObject.newBuilder()
-                    .setType(alarmData.getManagedObject().getType()).build());
+                    .setType(alertData.getManagedObject().getType()).build());
             }
-            alarmData.getUpdateFieldList().forEach(updateField ->
+            alertData.getUpdateFieldList().forEach(updateField ->
                 builder.addUpdateField(UpdateField.newBuilder()
                     .setFieldName(updateField.getFieldName())
                     .setUpdateOnReduction(updateField.isUpdateOnReduction()).build()));
-            eventBuilder.setAlarmData(builder.build());
+            eventBuilder.setAlertData(builder.build());
         }
     }
 

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.OpenNMS.Alert.ServiceName }}
+  labels:
+    app: {{ .Values.OpenNMS.Alert.ServiceName }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.OpenNMS.Alert.ServiceName }}
+  replicas: {{ .Values.OpenNMS.Alert.Replicas }}
+  template:
+    metadata:
+      labels:
+        appdomain: opennms
+        app: {{ .Values.OpenNMS.Alert.ServiceName }}
+    spec:
+      {{- if .Values.NodeRestrictions.Enabled }}
+      nodeSelector:                                                                                    
+        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}                       
+      tolerations:
+        - effect: "NoSchedule"                                                                         
+          key: "{{ .Values.NodeRestrictions.Key }}"                                                    
+          operator: "Equal"
+          value: {{ .Values.NodeRestrictions.Value }} 
+      affinity: 
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:                                             
+          - weight: 1                                                                                  
+            preference:                                                                                
+              matchExpressions:                                                                        
+              - key: "{{ .Values.NodeRestrictions.Key }}"                                              
+                operator: In
+                values:                                                                                
+                - {{ .Values.NodeRestrictions.Value }}                                                 
+      {{- end }}
+      containers:
+        - name: {{ .Values.OpenNMS.Alert.ServiceName }}
+          image: {{ .Values.OpenNMS.Alert.Image }}
+          imagePullPolicy: {{ .Values.OpenNMS.Alert.ImagePullPolicy }}
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y" # Permanent debug port in `skaffold dev`
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres:5432/alert"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: alertUser
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: alertPwd
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "{{ .Values.Kafka.ServiceName }}:{{ .Values.Kafka.Port }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.OpenNMS.Alert.Port }}
+            - name: grpc
+              containerPort: {{ .Values.OpenNMS.Alert.GrpcPort }}

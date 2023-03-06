@@ -64,12 +64,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link AlarmData }
+     * Create an instance of {@link AlertData }
      * 
      */
-    public AlarmData createAlarmData() {
-    	LOG.debug("createAlarmData");
-        return new AlarmData();
+    public AlertData createAlertData() {
+    	LOG.debug("createAlertData");
+        return new AlertData();
     }
 
     /**

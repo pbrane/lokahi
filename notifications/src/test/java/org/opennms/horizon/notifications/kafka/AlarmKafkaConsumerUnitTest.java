@@ -28,6 +28,12 @@
 
 package org.opennms.horizon.notifications.kafka;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -36,13 +42,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.notifications.exceptions.NotificationInternalException;
 import org.opennms.horizon.notifications.service.NotificationService;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
+import org.opennms.horizon.shared.dto.event.AlertDTO;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AlarmKafkaConsumerUnitTest {
@@ -54,9 +54,9 @@ public class AlarmKafkaConsumerUnitTest {
 
     @Test
     public void testConsume() {
-        AlarmDTO alarmDTO = new AlarmDTO();
+        AlertDTO alertDTO = new AlertDTO();
         Map<String, Object> headers = new HashMap<>();
-        alarmKafkaConsumer.consume(alarmDTO,headers);
+        alarmKafkaConsumer.consume(alertDTO,headers);
     }
 
     @Test
@@ -64,7 +64,7 @@ public class AlarmKafkaConsumerUnitTest {
         doThrow(NotificationInternalException.class)
             .when(notificationService).postNotification(any());
 
-        AlarmDTO alarmDTO = new AlarmDTO();
-        alarmKafkaConsumer.consumeAlarm(alarmDTO);
+        AlertDTO alertDTO = new AlertDTO();
+        alarmKafkaConsumer.consumeAlarm(alertDTO);
     }
 }

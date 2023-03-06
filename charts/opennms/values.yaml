@@ -115,9 +115,9 @@ OpenNMS:
         Cpu: 100m
         Memory: 250Mi
     EncryptionKey: ~
-  Alarm:
-    ServiceName: opennms-alarm
-    Image: opennms/horizon-stream-alarm
+  Alert:
+    ServiceName: opennms-alert
+    Image: opennms/horizon-stream-alert
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8080
@@ -179,7 +179,7 @@ Postgres:
   OpenNMSPassword: notset
   KeycloakPassword: notset
   InventoryPassword: notset
-  AlarmPassword: notset
+  AlertPassword: notset
   EventsPassword: notset
   DataChoicesPassword: notset
   MinionGatewayPassword: notset

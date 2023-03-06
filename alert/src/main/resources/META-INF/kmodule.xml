@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kmodule xmlns="http://www.drools.org/xsd/kmodule">
+
+    <kbase name="alertKBase" packages="org.opennms.horizon.alertservice" default="true">
+        <ksession name="alertKSession" default="true" />
+    </kbase>
+
+</kmodule>

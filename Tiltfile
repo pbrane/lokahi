@@ -227,12 +227,12 @@ jib_project_multi_module(
     port_forwards=['29080:9090', '29050:5005', '29065:6565'],
 )
 
-### Alarm ###
+### Alert ###
 jib_project(
-    'alarm',
-    'opennms/horizon-stream-alarm',
-    'alarm',
-    'opennms-alarm',
+    'alert',
+    'opennms/horizon-stream-alert',
+    'alert',
+    'opennms-alert',
     port_forwards=['32080:9090', '32050:5005', '32065:6565',  '32000:8080'],
 )
 

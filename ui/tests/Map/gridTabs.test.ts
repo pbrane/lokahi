@@ -13,22 +13,22 @@ beforeEach(() => {
   })
 })
 
-it('should redirect to the alarm list', async () => {
+it('should redirect to the alert list', async () => {
   const push = vi.spyOn(router, 'push')
 
-  await wrapper.get('[data-test="alarm-tab"]').trigger('click')
+  await wrapper.get('[data-test="alert-tab"]').trigger('click')
 
   expect(push).toHaveBeenCalledTimes(1)
   expect(push).toHaveBeenCalledWith('/map')
 }),
 
-it('should redirect to the alarm of a node', async () => {
+it('should redirect to the alert of a node', async () => {
   const push = vi.spyOn(router, 'push')
 
   router.push('/map?nodeId=1234')
   expect(push).toHaveBeenCalledTimes(1)
   
-  await wrapper.get('[data-test="alarm-tab"]').trigger('click')
+  await wrapper.get('[data-test="alert-tab"]').trigger('click')
   expect(push).toHaveBeenCalledTimes(2)
   expect(push).toHaveBeenCalledWith('/map?nodeId=1234')
 })

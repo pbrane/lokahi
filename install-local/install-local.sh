@@ -156,7 +156,7 @@ install_helm_chart_custom_images () {
   helm upgrade -i horizon-stream ./../charts/opennms \
   -f ./tmp/install-local-opennms-horizon-stream-custom-images-values.yaml \
   --namespace $NAMESPACE --create-namespace \
-  --set OpenNMS.Alarm.Image=${IMAGE_PREFIX}/horizon-stream-alarm:${IMAGE_TAG} \
+  --set OpenNMS.Alarm.Image=${IMAGE_PREFIX}/horizon-stream-alert:${IMAGE_TAG} \
   --set OpenNMS.DataChoices.Image=${IMAGE_PREFIX}/horizon-stream-datachoices:${IMAGE_TAG} \
   --set OpenNMS.Events.Image=${IMAGE_PREFIX}/horizon-stream-events:${IMAGE_TAG} \
   --set Grafana.Image=${IMAGE_PREFIX}/horizon-stream-grafana:${IMAGE_TAG} \

@@ -28,10 +28,17 @@
 
 package org.opennms.horizon.events.conf.xml;
 
-import com.google.common.base.MoreObjects;
-import org.opennms.horizon.events.util.ValidateUsing;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
 import org.opennms.horizon.events.conf.xml.EventOrdering.EventOrderIndex;
 import org.opennms.horizon.events.util.ConfigUtils;
+import org.opennms.horizon.events.util.ValidateUsing;
+
+import com.google.common.base.MoreObjects;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -40,11 +47,6 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 @XmlRootElement(name="event")
 @XmlAccessorType(XmlAccessType.NONE)
@@ -177,8 +179,8 @@ public class Event implements Serializable, Comparable<Event> {
     /**
      * Data used to create an event.
      */
-    @XmlElement(name="alarm-data", required=false)
-    private AlarmData m_alarmData;
+    @XmlElement(name="alert-data", required=false)
+    private AlertData m_alertData;
 
     @XmlElementWrapper(name="filters", required=false)
     @XmlElement(name="filter", required=true)
@@ -424,12 +426,12 @@ public class Event implements Serializable, Comparable<Event> {
         m_mouseovertext = ConfigUtils.normalizeAndInternString(mouseovertext);
     }
 
-    public AlarmData getAlarmData() {
-        return m_alarmData;
+    public AlertData getAlertData() {
+        return m_alertData;
     }
 
-    public void setAlarmData(final AlarmData alarmData) {
-        m_alarmData = alarmData;
+    public void setAlertData(final AlertData alertData) {
+        m_alertData = alertData;
     }
 
     public List<Filter> getFilters() {
@@ -477,7 +479,7 @@ public class Event implements Serializable, Comparable<Event> {
                             m_forwards,
                             m_scripts,
                             m_mouseovertext,
-                            m_alarmData,
+                            m_alertData,
                             m_filters,
                             m_matcher);
     }
@@ -508,7 +510,7 @@ public class Event implements Serializable, Comparable<Event> {
                     Objects.equals(this.m_forwards, that.m_forwards) &&
                     Objects.equals(this.m_scripts, that.m_scripts) &&
                     Objects.equals(this.m_mouseovertext, that.m_mouseovertext) &&
-                    Objects.equals(this.m_alarmData, that.m_alarmData) &&
+                    Objects.equals(this.m_alertData, that.m_alertData) &&
                     Objects.equals(this.m_filters, that.m_filters) &&
                     Objects.equals(this.m_matcher, that.m_matcher);
         }

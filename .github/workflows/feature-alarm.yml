@@ -1,10 +1,10 @@
-name: Alarm Service
+name: Alert Service
 
 on:
 # Currently triggered by develop workflow, so this trigger is disabled for now until we can fully separate them
 #  pull_request:
 #    paths:
-#      - 'alarm/**'
+#      - 'alert/**'
   workflow_call:
     inputs:
       image:
@@ -21,13 +21,13 @@ on:
         type: string
 
 env:
-  IMAGE: ${{ inputs.image || 'horizon-stream-alarm' }}
+  IMAGE: ${{ inputs.image || 'horizon-stream-alert' }}
   IMAGE_TAG: ${{ inputs.image-tag || github.sha }}
   IMAGE_REGISTRY: ${{ inputs.image-registry || 'ghcr.io' }}
 
 jobs:
   build-and-test:
-    name: Build and test - Alarm
+    name: Build and test - Alert
     runs-on: ubuntu-latest
     steps:
 
@@ -60,7 +60,7 @@ jobs:
       - name: Cache Maven dependencies
         uses: ./.github/actions/maven-cache
         with:
-          cache-key-hash: ${{ hashFiles('alarm/**/pom.xml', 'parent-pom/pom.xml', 'shared-lib/**/pom.xml') }}
+          cache-key-hash: ${{ hashFiles('alert/**/pom.xml', 'parent-pom/pom.xml', 'shared-lib/**/pom.xml') }}
 
       - name: Build and install prerequisites
         uses: ./.github/actions/java-install-prereqs
@@ -68,7 +68,7 @@ jobs:
       - name: Jib Maven build, scan, and push
         uses: ./.github/actions/jib-maven-sonar
         with:
-          working-directory: 'alarm'
+          working-directory: 'alert'
           image: ${{ steps.docker-metadata.outputs.tags }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sonar-token: ${{ secrets.SONAR_TOKEN }}

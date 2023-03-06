@@ -57,11 +57,11 @@ class EventProtoMappingTest {
         EventBuilder eb = new EventBuilder(uei, "JUnit");
         var matchingEvent = defaultEventConfDao.findByEvent(eb.getEvent());
         var event = eb.getEvent();
-        EventFactory.expandEventWithAlarmData(event, matchingEvent);
+        EventFactory.expandEventWithAlertData(event, matchingEvent);
         var builder = org.opennms.horizon.events.proto.Event.newBuilder();
-        TrapsConsumer.mapAlarmData(event, builder);
+        TrapsConsumer.mapAlertData(event, builder);
         var eventProto = builder.build();
-        Assertions.assertNotNull(eventProto.getAlarmData());
+        Assertions.assertNotNull(eventProto.getAlertData());
 
     }
 }
