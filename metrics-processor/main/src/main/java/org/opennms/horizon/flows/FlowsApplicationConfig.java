@@ -108,9 +108,9 @@ public class FlowsApplicationConfig {
     @Bean(name = "ingestorChannel")
     public ManagedChannel createIngestorChannel() throws SSLException {
         return NettyChannelBuilder.forTarget(ingestorGrpcAddress)
-            .sslContext(GrpcSslContexts.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build())
             .keepAliveTime(10, TimeUnit.SECONDS)
             .keepAliveTimeout(15, TimeUnit.SECONDS)
+            .usePlaintext()
             .build();
     }
 
