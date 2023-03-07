@@ -18,22 +18,22 @@ import org.springframework.stereotype.Service;
 import io.grpc.Context;
 
 @Service
-public class AlarmKafkaConsumer {
-    private final Logger LOG = LoggerFactory.getLogger(AlarmKafkaConsumer.class);
+public class AlertKafkaConsumer {
+    private final Logger LOG = LoggerFactory.getLogger(AlertKafkaConsumer.class);
 
     @Autowired
     private NotificationService notificationService;
 
     @KafkaListener(
-        topics = "${horizon.kafka.alarms.topic}",
-        concurrency = "${horizon.kafka.alarms.concurrency}"
+        topics = "${horizon.kafka.alerts.topic}",
+        concurrency = "${horizon.kafka.alerts.concurrency}"
     )
-    public void consume(@Payload AlertDTO alarm, @Headers Map<String, Object> headers) {
+    public void consume(@Payload AlertDTO alert, @Headers Map<String, Object> headers) {
 
-        LOG.info("Received alarm from kafka {}", alarm);
+        LOG.info("Received alert from kafka {}", alert);
         Optional<String> tenantOptional = getTenantId(headers);
         if (tenantOptional.isEmpty()) {
-           LOG.warn("TenantId is empty, dropping alarm {}", alarm);
+           LOG.warn("TenantId is empty, dropping alert {}", alert);
            return;
         }
         String tenantId = tenantOptional.get();
@@ -41,15 +41,15 @@ public class AlarmKafkaConsumer {
 
         Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
         {
-            consumeAlarm(alarm);
+            consumeAlert(alert);
         });
     }
 
-    public void consumeAlarm(AlertDTO alarm){
+    public void consumeAlert(AlertDTO alert){
         try {
-            notificationService.postNotification(alarm);
+            notificationService.postNotification(alert);
         } catch (NotificationException e) {
-            LOG.error("Exception sending alarm to PagerDuty.", e);
+            LOG.error("Exception sending alert to PagerDuty.", e);
         }
     }
 

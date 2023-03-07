@@ -52,8 +52,8 @@ public enum PagerDutySeverity {
         return this.name;
     }
 
-    public static PagerDutySeverity fromAlarmSeverity(AlarmSeverity alarmSeverity) {
-        switch (alarmSeverity) {
+    public static PagerDutySeverity fromAlertSeverity(AlertSeverity alertSeverity) {
+        switch (alertSeverity) {
             case INDETERMINATE:
             case NORMAL:
             case CLEARED:

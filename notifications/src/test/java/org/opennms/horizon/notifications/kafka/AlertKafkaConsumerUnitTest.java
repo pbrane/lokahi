@@ -45,9 +45,9 @@ import org.opennms.horizon.notifications.service.NotificationService;
 import org.opennms.horizon.shared.dto.event.AlertDTO;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AlarmKafkaConsumerUnitTest {
+public class AlertKafkaConsumerUnitTest {
     @InjectMocks
-    AlarmKafkaConsumer alarmKafkaConsumer;
+    AlertKafkaConsumer alertKafkaConsumer;
 
     @Mock
     NotificationService notificationService;
@@ -56,7 +56,7 @@ public class AlarmKafkaConsumerUnitTest {
     public void testConsume() {
         AlertDTO alertDTO = new AlertDTO();
         Map<String, Object> headers = new HashMap<>();
-        alarmKafkaConsumer.consume(alertDTO,headers);
+        alertKafkaConsumer.consume(alertDTO,headers);
     }
 
     @Test
@@ -65,6 +65,6 @@ public class AlarmKafkaConsumerUnitTest {
             .when(notificationService).postNotification(any());
 
         AlertDTO alertDTO = new AlertDTO();
-        alarmKafkaConsumer.consumeAlarm(alertDTO);
+        alertKafkaConsumer.consumeAlert(alertDTO);
     }
 }

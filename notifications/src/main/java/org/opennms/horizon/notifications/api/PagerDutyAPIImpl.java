@@ -36,8 +36,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.opennms.horizon.notifications.api.dto.AlarmSeverity;
-import org.opennms.horizon.notifications.api.dto.AlarmType;
+import org.opennms.horizon.notifications.api.dto.AlertSeverity;
+import org.opennms.horizon.notifications.api.dto.AlertType;
 import org.opennms.horizon.notifications.api.dto.PagerDutyEventAction;
 import org.opennms.horizon.notifications.api.dto.PagerDutyEventDTO;
 import org.opennms.horizon.notifications.api.dto.PagerDutyPayloadDTO;
@@ -83,9 +83,9 @@ public class PagerDutyAPIImpl implements PagerDutyAPI {
     String clientURL;
 
     @Override
-    public void postNotification(AlertDTO alarm) throws NotificationException {
+    public void postNotification(AlertDTO alert) throws NotificationException {
         try {
-            String event = getEvent(alarm);
+            String event = getEvent(alert);
 
             String baseUrl = "https://events.pagerduty.com/v2/enqueue";
             URI uri = new URI(baseUrl);
@@ -96,12 +96,12 @@ public class PagerDutyAPIImpl implements PagerDutyAPI {
 
             HttpEntity<String> requestEntity = new HttpEntity<>(event, headers);
 
-            LOG.info("Posting alarm {} to PagerDuty", alarm.getId());
+            LOG.info("Posting alert {} to PagerDuty", alert.getId());
             restTemplate.exchange(uri, HttpMethod.POST, requestEntity, String.class);
         } catch (URISyntaxException e) {
             throw new NotificationInternalException("Bad PagerDuty url", e);
         } catch (JsonProcessingException e) {
-            throw new NotificationBadDataException("JSON error processing alarmDTO", e);
+            throw new NotificationBadDataException("JSON error processing AlertDTO", e);
         } catch (RestClientException e) {
             throw new NotificationAPIException("PagerDuty API exception", e);
         }
@@ -117,59 +117,59 @@ public class PagerDutyAPIImpl implements PagerDutyAPI {
         return config.getIntegrationKey();
     }
 
-    private String getEvent(AlertDTO alarm) throws NotificationConfigUninitializedException, JsonProcessingException {
+    private String getEvent(AlertDTO alert) throws NotificationConfigUninitializedException, JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         Instant now = Instant.now();
 
         PagerDutyEventDTO event = new PagerDutyEventDTO();
         PagerDutyPayloadDTO payload = new PagerDutyPayloadDTO();
 
-        payload.setSummary(alarm.getLogMessage().trim());
+        payload.setSummary(alert.getLogMessage().trim());
         payload.setTimestamp(now.toString());
-        AlarmSeverity alarmSeverity = AlarmSeverity.get(alarm.getSeverity());
-        payload.setSeverity(PagerDutySeverity.fromAlarmSeverity(alarmSeverity));
+        AlertSeverity alertSeverity = AlertSeverity.get(alert.getSeverity());
+        payload.setSeverity(PagerDutySeverity.fromAlertSeverity(alertSeverity));
 
-        if (alarm.getNodeLabel() != null) {
-            payload.setSource(alarm.getNodeLabel());
+        if (alert.getNodeLabel() != null) {
+            payload.setSource(alert.getNodeLabel());
         } else {
             payload.setSource("unknown");
         }
-        String managedObjectType = alarm.getManagedObjectType();
-        String managedObjectInstance = alarm.getManagedObjectInstance();
+        String managedObjectType = alert.getManagedObjectType();
+        String managedObjectInstance = alert.getManagedObjectInstance();
         if (managedObjectType != null && managedObjectType.length() > 0 && managedObjectInstance != null && managedObjectInstance.length() > 0) {
             // Use the MO type/instance if set
-            payload.setComponent(String.format("%s - %s", alarm.getManagedObjectType(), alarm.getManagedObjectInstance()));
+            payload.setComponent(String.format("%s - %s", alert.getManagedObjectType(), alert.getManagedObjectInstance()));
         }
         payload.setGroup("todo");
         payload.setClazz("class");
 
         event.setRoutingKey(getPagerDutyIntegrationKey());
-        event.setDedupKey(alarm.getReductionKey());
+        event.setDedupKey(alert.getReductionKey());
 
-        if (AlarmSeverity.CLEARED.equals(alarmSeverity) || AlarmType.RESOLUTION.equals(alarm.getType())) {
+        if (AlertSeverity.CLEARED.equals(alertSeverity) || AlertType.RESOLUTION.equals(alert.getType())) {
             event.setEventAction(PagerDutyEventAction.RESOLVE);
-        } else if (alarm.getAckUser() != null && alarm.getAckUser().length() > 0) {
+        } else if (alert.getAckUser() != null && alert.getAckUser().length() > 0) {
             event.setEventAction(PagerDutyEventAction.ACKNOWLEDGE);
         } else {
             event.setEventAction(PagerDutyEventAction.TRIGGER);
         }
 
-        //TODO: Add in alarm id into url
+        //TODO: Add in alert id into url
         event.setClient(client);
         event.setClientUrl(clientURL);
 
         payload.setCustomDetails(new HashMap<>());
 
         // Add all of the event parameters as custom details
-        EventDTO lastEvent = alarm.getLastEvent();
+        EventDTO lastEvent = alert.getLastEvent();
         if (lastEvent != null) {
             Map<String, Object> customDetails = eparmsToMap(lastEvent.getParameters());
             payload.getCustomDetails().putAll(customDetails);
         }
 
-        // If the event parameters contains a field called 'alarm', then the alarm itself overwrites that (by design).
-        JsonNode alarmJson = objectMapper.convertValue(alarm, JsonNode.class);
-        payload.getCustomDetails().put("alarm", alarmJson);
+        // If the event parameters contains a field called 'alert', then the alert itself overwrites that (by design).
+        JsonNode alertJson = objectMapper.convertValue(alert, JsonNode.class);
+        payload.getCustomDetails().put("alert", alertJson);
 
         event.setPayload(payload);
 

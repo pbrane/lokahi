@@ -14,12 +14,12 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: org.opennms.horizon.shared.dto.event
-        spring.json.value.default.type: org.opennms.horizon.shared.dto.event.AlarmDTO
+        spring.json.value.default.type: org.opennms.horizon.shared.dto.event.AlertDTO
 
 horizon:
   kafka:
-    alarms:
-      topic: alarms
+    alerts:
+      topic: alerts
       concurrency: 1
 
   pagerduty:

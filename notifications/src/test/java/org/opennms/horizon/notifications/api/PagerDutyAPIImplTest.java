@@ -56,15 +56,15 @@ public class PagerDutyAPIImplTest {
     @Test
     public void postNotifications() throws Exception {
         Mockito.when(pagerDutyDao.getConfig()).thenReturn(getConfigDTO());
-        AlertDTO alarm = getAlarm(false);
-        pagerDutyAPI.postNotification(alarm);
+        AlertDTO alert = getAlert(false);
+        pagerDutyAPI.postNotification(alert);
     }
 
     @Test
-    public void postNotificationsWithAlarmClash() throws Exception {
+    public void postNotificationsWithAlertClash() throws Exception {
         Mockito.when(pagerDutyDao.getConfig()).thenReturn(getConfigDTO());
-        AlertDTO alarm = getAlarm(true);
-        pagerDutyAPI.postNotification(alarm);
+        AlertDTO alert = getAlert(true);
+        pagerDutyAPI.postNotification(alert);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class PagerDutyAPIImplTest {
         return PagerDutyConfigDTO.newBuilder().setIntegrationKey("integration_key").build();
     }
 
-    private AlertDTO getAlarm(boolean includeParams) {
+    private AlertDTO getAlert(boolean includeParams) {
         AlertDTO alertDTO = new AlertDTO();
         alertDTO.setLogMessage("Exciting message to go here");
         alertDTO.setReductionKey("srv01/mysql");
@@ -85,7 +85,7 @@ public class PagerDutyAPIImplTest {
         EventDTO lastEvent = new EventDTO();
         if (includeParams) {
             EventParameterDTO param = new EventParameterDTO();
-            param.setName("alarm");
+            param.setName("alert");
             param.setValue("value");
 
             lastEvent.setParameters(Arrays.asList(param));

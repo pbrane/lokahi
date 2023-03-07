@@ -133,15 +133,15 @@ public class NotificationCucumberTestSteps extends GrpcTestBase {
         notificationService.postPagerDutyConfig(configDTO);
     }
 
-    @Given("Alarm posted via service")
-    public void postAlarmViaService() throws Exception{
-        postAlarm();
+    @Given("Alert posted via service")
+    public void postAlertViaService() throws Exception{
+        postAlert();
     }
 
-    private void postAlarm() throws NotificationException {
-        AlertDTO alarm = new AlertDTO();
-        alarm.setLogMessage("Hello");
-        notificationService.postNotification(alarm);
+    private void postAlert() throws NotificationException {
+        AlertDTO alert = new AlertDTO();
+        alert.setLogMessage("Hello");
+        notificationService.postNotification(alert);
     }
 
     @Then("verify key is {string}")
@@ -181,10 +181,10 @@ public class NotificationCucumberTestSteps extends GrpcTestBase {
         verify(restTemplate).exchange(any(URI.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
     }
 
-    @Given("Alarm posted via service with no config")
+    @Given("Alert posted via service with no config")
     public void postNotificationWithNoConfig() {
         try {
-            postAlarm();
+            postAlert();
         } catch (Exception ex) {
             caught = ex;
         }

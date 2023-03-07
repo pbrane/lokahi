@@ -14,9 +14,9 @@ Feature: Notification Processing
 
   Scenario: Post notification
     Given Integration key set to "abc"
-    Given Alarm posted via service
+    Given Alert posted via service
     Then verify pager duty rest method is called
 
   Scenario: Try to post notification with no config
-    Given Alarm posted via service with no config
+    Given Alert posted via service with no config
     Then verify exception "NotificationConfigUninitializedException" thrown

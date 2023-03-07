@@ -28,24 +28,24 @@
 
 package org.opennms.horizon.notifications.api.dto;
 
-public enum AlarmType {
+public enum AlertType {
     PROBLEM(1),
     RESOLUTION(2),
     PROBLEM_WITHOUT_RESOLUTION(3);
 
     private final int id;
 
-    private AlarmType(int id) {
+    private AlertType(int id) {
         this.id = id;
     }
 
-    public static AlarmType fromId(Integer id) {
+    public static AlertType fromId(Integer id) {
         if (id != null) {
-            AlarmType[] var1 = values();
+            AlertType[] var1 = values();
             int var2 = var1.length;
 
             for(int var3 = 0; var3 < var2; ++var3) {
-                AlarmType type = var1[var3];
+                AlertType type = var1[var3];
                 if (type.id == id) {
                     return type;
                 }

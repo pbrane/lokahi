@@ -34,7 +34,7 @@ import org.opennms.horizon.shared.dto.event.AlertDTO;
 
 public interface NotificationService {
 
-    void postNotification(AlertDTO alarm) throws NotificationException;
+    void postNotification(AlertDTO alert) throws NotificationException;
 
     void postPagerDutyConfig(PagerDutyConfigDTO config);
 }

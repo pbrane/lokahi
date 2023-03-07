@@ -24,9 +24,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.opennms.horizon.notifications.NotificationsApplication;
 import org.opennms.horizon.notifications.SpringContextTestInitializer;
-import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
-import org.opennms.horizon.notifications.exceptions.NotificationException;
-import org.opennms.horizon.notifications.service.NotificationService;
+import org.opennms.horizon.notifications.api.PagerDutyAPIImpl;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.dto.event.AlertDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +32,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -49,19 +49,19 @@ import org.springframework.web.client.RestTemplate;
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @EmbeddedKafka(topics = {
-    "${horizon.kafka.alarms.topic}",
+    "${horizon.kafka.alerts.topic}",
 })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = NotificationsApplication.class)
 @TestPropertySource(properties = "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}", locations = "classpath:application.yml")
 @ContextConfiguration(initializers = {SpringContextTestInitializer.class})
 @ActiveProfiles("test")
-class AlarmKafkaConsumerIntegrationTest {
-    private static final int KAFKA_TIMEOUT = 5000;
+class AlertKafkaConsumerIntegrationTestNoConfig {
+    private static final int KAFKA_TIMEOUT = 30000;
     private static final int HTTP_TIMEOUT = 5000;
 
-    @Value("${horizon.kafka.alarms.topic}")
-    private String alarmsTopic;
+    @Value("${horizon.kafka.alerts.topic}")
+    private String alertsTopic;
 
     private Producer<String, String> stringProducer;
 
@@ -69,16 +69,22 @@ class AlarmKafkaConsumerIntegrationTest {
     private EmbeddedKafkaBroker embeddedKafkaBroker;
 
     @SpyBean
-    private AlarmKafkaConsumer alarmKafkaConsumer;
-
-    @Autowired
-    private NotificationService notificationService;
+    private AlertKafkaConsumer alertKafkaConsumer;
 
     @Captor
-    ArgumentCaptor<AlertDTO> alarmCaptor;
+    ArgumentCaptor<AlertDTO> alertCaptor;
+
+    @Autowired
+    private TestRestTemplate testRestTemplate;
 
     @MockBean
     private RestTemplate restTemplate;
+
+    @SpyBean
+    private PagerDutyAPIImpl pagerDutyAPI;
+
+    @LocalServerPort
+    private Integer port;
 
     @BeforeAll
     void setUp() {
@@ -89,36 +95,28 @@ class AlarmKafkaConsumerIntegrationTest {
         stringProducer = stringFactory.createProducer();
     }
 
-    private void setupConfig() throws NotificationException {
-        String integrationKey = "not_verified";
-
-        PagerDutyConfigDTO config = PagerDutyConfigDTO.newBuilder().setIntegrationKey(integrationKey).build();
-        notificationService.postPagerDutyConfig(config);
-    }
-
     @Test
-    void testProducingAlarmWithConfigSetup() throws NotificationException {
-        setupConfig();
-
+    void testProducingAlertWithNoConfigSetup() {
         int id = 1234;
         String tenantId = "opennms-prime";
-        ProducerRecord producerRecord = new ProducerRecord<>(alarmsTopic, String.format("{\"id\": %d, \"severity\":\"indeterminate\", \"logMessage\":\"hello\"}", id));
+        ProducerRecord producerRecord = new ProducerRecord<>(alertsTopic, String.format("{\"id\": %d, \"severity\":\"indeterminate\", \"logMessage\":\"hello\"}", id));
         producerRecord.headers().add(new RecordHeader(GrpcConstants.TENANT_ID_KEY, tenantId.getBytes(StandardCharsets.UTF_8)));
+
         stringProducer.send(producerRecord);
         stringProducer.flush();
 
-        verify(alarmKafkaConsumer, timeout(KAFKA_TIMEOUT).times(1))
-            .consume(alarmCaptor.capture(), any());
+        verify(alertKafkaConsumer, timeout(KAFKA_TIMEOUT).times(1))
+            .consume(alertCaptor.capture(),any());
 
-        AlertDTO capturedAlarm = alarmCaptor.getValue();
-        assertEquals(id, capturedAlarm.getId());
+        AlertDTO capturedAlert = alertCaptor.getValue();
+        assertEquals(id, capturedAlert.getId());
 
-        // This is the call to the PagerDuty API, it will fail due to an invalid token, but we just need to
-        // verify that the call has been attempted.
-        verify(restTemplate, timeout(HTTP_TIMEOUT).times(1)).exchange(ArgumentMatchers.any(URI.class),
+        // This is the call to the PagerDuty API, we won't get this far, as we will get an exception when we try
+        // to get the token, as the config table hasn't been setup.
+        verify(restTemplate, timeout(HTTP_TIMEOUT).times(0)).exchange(any(URI.class),
             ArgumentMatchers.eq(HttpMethod.POST),
-            ArgumentMatchers.any(HttpEntity.class),
-            ArgumentMatchers.any(Class.class));
+            any(HttpEntity.class),
+            any(Class.class));
     }
 
     @AfterAll

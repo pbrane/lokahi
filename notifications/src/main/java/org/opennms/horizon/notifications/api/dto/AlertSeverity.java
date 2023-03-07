@@ -39,7 +39,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:dj@opennms.org">DJ Gregor</a>
  */
-public enum AlarmSeverity implements Serializable {
+public enum AlertSeverity implements Serializable {
     // Keep this ordered by ID so we can use the internal enum compareTo
     INDETERMINATE(1, "Indeterminate", "lightblue"),
     CLEARED(2, "Cleared", "white"),
@@ -49,20 +49,20 @@ public enum AlarmSeverity implements Serializable {
     MAJOR(6, "Major", "orange"),
     CRITICAL(7, "Critical", "red");
 
-    private static final Map<Integer, AlarmSeverity> idMap;
+    private static final Map<Integer, AlertSeverity> idMap;
 
     private int id;
     private String label;
     private String color;
 
     static {
-        idMap = new HashMap<Integer, AlarmSeverity>(values().length);
-        for (AlarmSeverity severity : values()) {
+        idMap = new HashMap<Integer, AlertSeverity>(values().length);
+        for (AlertSeverity severity : values()) {
             idMap.put(severity.getId(), severity);
         }
     }
 
-    private AlarmSeverity(int id, String label, String color) {
+    private AlertSeverity(int id, String label, String color) {
         this.id = id;
         this.label = label;
         this.color = color;
@@ -98,40 +98,40 @@ public enum AlarmSeverity implements Serializable {
     /**
      * <p>isLessThan</p>
      *
-     * @param other a {@link AlarmSeverity} object.
+     * @param other a {@link AlertSeverity} object.
      * @return a boolean.
      */
-    public boolean isLessThan(AlarmSeverity other) {
+    public boolean isLessThan(AlertSeverity other) {
         return compareTo(other) < 0;
     }
 
     /**
      * <p>isLessThanOrEqual</p>
      *
-     * @param other a {@link AlarmSeverity} object.
+     * @param other a {@link AlertSeverity} object.
      * @return a boolean.
      */
-    public boolean isLessThanOrEqual(AlarmSeverity other) {
+    public boolean isLessThanOrEqual(AlertSeverity other) {
         return compareTo(other) <= 0;
     }
 
     /**
      * <p>isGreaterThan</p>
      *
-     * @param other a {@link AlarmSeverity} object.
+     * @param other a {@link AlertSeverity} object.
      * @return a boolean.
      */
-    public boolean isGreaterThan(AlarmSeverity other) {
+    public boolean isGreaterThan(AlertSeverity other) {
         return compareTo(other) > 0;
     }
 
     /**
      * <p>isGreaterThanOrEqual</p>
      *
-     * @param other a {@link AlarmSeverity} object.
+     * @param other a {@link AlertSeverity} object.
      * @return a boolean.
      */
-    public boolean isGreaterThanOrEqual(AlarmSeverity other) {
+    public boolean isGreaterThanOrEqual(AlertSeverity other) {
         return compareTo(other) >= 0;
     }
 
@@ -139,9 +139,9 @@ public enum AlarmSeverity implements Serializable {
      * <p>get</p>
      *
      * @param id a int.
-     * @return a {@link AlarmSeverity} object.
+     * @return a {@link AlertSeverity} object.
      */
-    public static AlarmSeverity get(int id) {
+    public static AlertSeverity get(int id) {
         if (idMap.containsKey(id)) {
             return idMap.get(id);
         } else {
@@ -153,34 +153,34 @@ public enum AlarmSeverity implements Serializable {
      * <p>get</p>
      *
      * @param label a {@link String} object.
-     * @return a {@link AlarmSeverity} object.
+     * @return a {@link AlertSeverity} object.
      */
-    public static AlarmSeverity get(String label) {
+    public static AlertSeverity get(String label) {
         for (final Integer key : idMap.keySet()) {
             if (idMap.get(key).getLabel().equalsIgnoreCase(label)) {
                 return idMap.get(key);
             }
         }
-        return AlarmSeverity.INDETERMINATE;
+        return AlertSeverity.INDETERMINATE;
     }
 
     /**
      * <p>escalate</p>
      *
-     * @param sev a {@link AlarmSeverity} object.
-     * @return a {@link AlarmSeverity} object.
+     * @param sev a {@link AlertSeverity} object.
+     * @return a {@link AlertSeverity} object.
      */
-    public static AlarmSeverity escalate(AlarmSeverity sev) {
-        if (sev.isLessThan(AlarmSeverity.CRITICAL)) {
-            return AlarmSeverity.get(sev.getId()+1);
+    public static AlertSeverity escalate(AlertSeverity sev) {
+        if (sev.isLessThan(AlertSeverity.CRITICAL)) {
+            return AlertSeverity.get(sev.getId()+1);
         } else {
-            return AlarmSeverity.get(sev.getId());
+            return AlertSeverity.get(sev.getId());
         }
     }
 
     public static List<String> names() {
         final List<String> names = new ArrayList<>();
-        for (final AlarmSeverity value : values()) {
+        for (final AlertSeverity value : values()) {
             names.add(value.toString());
         }
         return names;

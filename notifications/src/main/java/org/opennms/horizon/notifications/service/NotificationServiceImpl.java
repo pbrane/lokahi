@@ -42,8 +42,8 @@ public class NotificationServiceImpl implements NotificationService {
     private PagerDutyAPI pagerDutyAPI;
 
     @Override
-    public void postNotification(AlertDTO alarm) throws NotificationException {
-        pagerDutyAPI.postNotification(alarm);
+    public void postNotification(AlertDTO alert) throws NotificationException {
+        pagerDutyAPI.postNotification(alert);
     }
 
     @Override
