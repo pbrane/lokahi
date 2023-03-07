@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { useDiscoveryMutations } from '../Mutations/discoveryMutations'
 import { cloneDeep } from 'lodash'
 import { DiscoveryType } from '@/components/Discovery/discovery.constants'
-import { DiscoveryConfig } from '@/types/graphql'
+import { ActiveDiscovery, PassiveDiscovery } from '@/types/graphql'
 
 const defaultAzureForm = {
   name: '',
@@ -62,7 +62,7 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
       this.azure = cloneDeep(defaultAzureForm)
     },
 
-    setSelectedDiscovery(selected: DiscoveryConfig | null) {
+    setSelectedDiscovery(selected: ActiveDiscovery | PassiveDiscovery | null) {
       if (!selected) {
         this.selectedDiscovery = Object.assign({ type: DiscoveryType.None })
         this.clearAzureForm()
@@ -70,8 +70,9 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
         // add check type
         const discovery = cloneDeep(selected)
         if (discovery) {
-          this.ipAddresses = discovery.ipAddresses || []
-          this.udpPorts = discovery.snmpConfig?.ports || []
+          // Todo: add type guards
+          // this.ipAddresses = discovery.ipAddresses || []
+          // this.udpPorts = discovery.snmpConfig?.ports || []
         }
       }
     }

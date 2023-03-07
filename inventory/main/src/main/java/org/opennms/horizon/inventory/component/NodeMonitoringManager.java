@@ -28,28 +28,26 @@
 
 package org.opennms.horizon.inventory.component;
 
-import java.util.Map;
-import java.util.Optional;
-
+import com.google.common.base.Strings;
+import com.google.protobuf.InvalidProtocolBufferException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
 import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.service.NodeService;
 import org.opennms.horizon.inventory.service.taskset.DetectorTaskSetService;
-import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.events.EventConstants;
 import org.opennms.taskset.contract.ScanType;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -65,23 +63,25 @@ public class NodeMonitoringManager {
     }
 
     @KafkaListener(topics = "${kafka.topics.internal-events}", concurrency = "1")
-    public void receiveTrapEvent(@Payload byte[] data, @Headers Map<String, Object> headers) {
+    public void receiveTrapEvent(@Payload byte[] data) {
         try {
             var event = Event.parseFrom(data);
             if(event.getUei().equals(EventConstants.NEW_SUSPECT_INTERFACE_EVENT_UEI)) {
-                var tenantId = Optional.ofNullable(headers.get(GrpcConstants.TENANT_ID_KEY)).map(obj -> new String((byte[]) obj)).orElseThrow(() ->
-                    new InventoryRuntimeException("Missing tenant id"));
+                if (Strings.isNullOrEmpty(event.getTenantId())) {
+                    throw new InventoryRuntimeException("Missing tenant id on event: " + event);
+                }
+                var tenantId = event.getTenantId();
                 log.debug("Create new node from event with interface: {}, location: {} and tenant: {}", event.getIpAddress(), event.getLocation(), tenantId);
+
                 NodeCreateDTO createDTO = NodeCreateDTO.newBuilder()
                     .setLocation(event.getLocation())
                     .setManagementIp(event.getIpAddress())
                     .setLabel("trap-" + event.getIpAddress())
                     .build();
                 Node newNode = nodeService.createNode(createDTO, ScanType.NODE_SCAN, tenantId);
-                detectorService.sendDetectorTasks(newNode);
             }
-        } catch (Exception e) {
-            log.error("Error while processing a kafka message for the event: ", e);
+        } catch (InvalidProtocolBufferException e) {
+            log.error("Error while parsing Event. Payload: {}", Arrays.toString(data), e);
         }
     }
 }

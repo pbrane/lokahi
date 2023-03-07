@@ -28,19 +28,9 @@
 
 package org.opennms.horizon.inventory.service.taskset.response;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
-
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterAll;
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,16 +59,24 @@ import org.opennms.node.scan.contract.NodeScanResult;
 import org.opennms.node.scan.contract.SnmpInterfaceResult;
 import org.opennms.taskset.contract.ScanType;
 import org.opennms.taskset.contract.ScannerResponse;
+import org.opennms.taskset.contract.TaskType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import io.grpc.Context;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static com.jayway.awaitility.Awaitility.await;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 @SpringBootTest
@@ -143,7 +141,10 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
         service.accept(TEST_TENANT_ID, TEST_LOCATION, response);
 
         // monitor and collect tasks
-        assertEquals(2, testGrpcService.getRequests().size());
+        await().atMost(10, TimeUnit.SECONDS).until(() -> testGrpcService.getTaskDefinitions(TEST_LOCATION).stream()
+            .filter(taskDefinition -> taskDefinition.getPluginName().contains("AZURE") &&
+                (taskDefinition.getType().equals(TaskType.MONITOR) || taskDefinition.getType().equals(TaskType.COLLECTOR)))
+            .collect(Collectors.toSet()).size(), Matchers.is(2));
 
         List<Node> allNodes = nodeRepository.findAll();
         assertEquals(1, allNodes.size());

@@ -48,13 +48,13 @@ import org.opennms.horizon.inventory.service.taskset.DetectorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetPublisher;
-import org.opennms.horizon.inventory.repository.TagRepository;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
-import org.opennms.taskset.contract.MonitorType;
-import org.opennms.taskset.contract.TaskDefinition;
+import org.opennms.horizon.snmp.api.SnmpConfiguration;
 import org.opennms.node.scan.contract.NodeInfoResult;
+import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.ScanType;
+import org.opennms.taskset.contract.TaskDefinition;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,6 +90,7 @@ public class NodeService {
     private final TaskSetPublisher taskSetPublisher;
     private final TagService tagService;
     private final NodeMapper mapper;
+    private final ActiveDiscoveryService activeDiscoveryService;
 
     @Transactional(readOnly = true)
     public List<NodeDTO> findByTenantId(String tenantId) {
@@ -182,7 +183,7 @@ public class NodeService {
     @Transactional
     public Map<String, List<NodeDTO>> listNodeByIds(List<Long> ids, String tenantId) {
         List<Node> nodeList = nodeRepository.findByIdInAndTenantId(ids, tenantId);
-        if(nodeList.isEmpty()) {
+        if (nodeList.isEmpty()) {
             return new HashMap<>();
         }
         return nodeList.stream().collect(Collectors.groupingBy(node -> node.getMonitoringLocation().getLocation(),
@@ -234,4 +235,37 @@ public class NodeService {
             tag.getNodes().remove(node);
         }
     }
+
+    public void sendNewNodeTaskSetAsync(Node node, long activeDiscoveryId) {
+        executorService.execute(() -> sendTaskSetsToMinion(node, activeDiscoveryId));
+    }
+
+    private void sendTaskSetsToMinion(Node node, long activeDiscoveryId) {
+
+        List<SnmpConfiguration> snmpConfigs = new ArrayList<>();
+
+        try {
+            var optional = activeDiscoveryService.getDiscoveryConfigById(activeDiscoveryId, node.getTenantId());
+            if (optional.isPresent()) {
+                var activeDiscoveryDTO = optional.get();
+                var snmpConf = activeDiscoveryDTO.getSnmpConf();
+                snmpConf.getReadCommunityList().forEach(readCommunity -> {
+                    var builder = SnmpConfiguration.newBuilder()
+                        .setReadCommunity(readCommunity);
+                    snmpConfigs.add(builder.build());
+                });
+                snmpConf.getPortsList().forEach(port -> {
+                    var builder = SnmpConfiguration.newBuilder()
+                        .setPort(port);
+                    snmpConfigs.add(builder.build());
+                });
+            }
+            detectorTaskSetService.sendDetectorTasks(node);
+            scannerTaskSetService.sendNodeScannerTask(mapper.modelToDTO(node),
+                node.getMonitoringLocation().getLocation(), snmpConfigs);
+        } catch (Exception e) {
+            log.error("Error while sending detector/nodescan task for node with label {}", node.getNodeLabel());
+        }
+    }
+
 }

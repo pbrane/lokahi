@@ -25,53 +25,15 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-syntax = "proto3";
 
-import "google/protobuf/any.proto";
-import "google/protobuf/empty.proto";
-import "google/protobuf/wrappers.proto";
+package org.opennms.horizon.server.model.inventory.discovery.passive;
 
-package opennms.events;
-option java_multiple_files = true;
-option java_package = "org.opennms.horizon.events.proto";
+import lombok.Getter;
+import lombok.Setter;
 
-message EventInfoDTO {
-  optional SnmpInfoDTO snmp = 1;
-  // Any other optional event info.
-}
-
-message SnmpInfoDTO {
-  string id = 1;
-  string version = 2;
-  uint32 specific = 3;
-  uint32 generic = 4;
-  string community = 5;
-  string trap_oid = 6;
-}
-
-message EventParameterDTO {
-  string name = 1;
-  string value = 2;
-  string type = 3;
-  string encoding = 4;
-}
-
-message EventDTO {
-  uint64 id = 1;
-  string tenant_id = 2;
-  string uei = 3;
-  uint64 node_id = 4;
-  string ip_address = 5;
-  uint64 produced_time = 6;
-  repeated EventParameterDTO event_params = 7;
-  optional EventInfoDTO event_info = 8;
-}
-
-message EventList {
-  repeated EventDTO events = 1;
-}
-
-service EventService {
-  rpc listEvents(google.protobuf.Empty) returns (EventList) {};
-  rpc getEventsByNodeId(google.protobuf.Int64Value) returns (EventList) {};
+@Getter
+@Setter
+public class PassiveDiscoveryToggle {
+    private long id;
+    private boolean toggle;
 }

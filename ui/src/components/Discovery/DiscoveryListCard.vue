@@ -11,9 +11,9 @@
         class="discovery-name"
       >
         <div @click="$emit('selectDiscovery', item)" class="pointer">
-          {{ item.configName?.toUpperCase() }}
+          {{ item.configName?.toUpperCase() || item.name?.toUpperCase() }}
         </div>
-        <BasicToggle v-if="passive" @toggle="(isToggled) => $emit('toggleDiscovery', item, isToggled)" />
+        <BasicToggle v-if="passive" :toggle="item.toggle" @toggle="(isToggled) => $emit('toggleDiscovery', item, isToggled)" />
       </div>
     </div>
     <div

@@ -44,6 +44,7 @@
     <DiscoveryLocationsAutocomplete
       @locationSelected="selectLocation"
       class="locations"
+      type="single"
     />
 
     <BasicAutocomplete

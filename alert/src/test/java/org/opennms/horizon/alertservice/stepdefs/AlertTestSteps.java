@@ -33,16 +33,27 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.restassured.RestAssured;
+import io.restassured.config.HttpClientConfig;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
-
 import javax.ws.rs.core.MediaType;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.header.Header;
@@ -55,21 +66,8 @@ import org.opennms.horizon.alertservice.rest.AlertCollectionDTO;
 import org.opennms.horizon.alertservice.rest.support.MultivaluedMapImpl;
 import org.opennms.horizon.events.proto.AlertData;
 import org.opennms.horizon.events.proto.Event;
+import org.opennms.horizon.events.proto.EventLog;
 import org.opennms.horizon.shared.constants.GrpcConstants;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.restassured.RestAssured;
-import io.restassured.config.HttpClientConfig;
-import io.restassured.config.RestAssuredConfig;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AlertTestSteps {
@@ -187,24 +185,25 @@ public class AlertTestSteps {
     }
 
     @Then("Send Event message to Kafka at topic {string} with alert reduction key {string} with tenant {string}")
-    public void sendMessageToKafkaAtTopic(String topic, String alertReductionKey, String tenantId) throws Exception {
-
+    public void sendMessageToKafkaAtTopic(String topic, String alertReductionKey, String tenantId) {
         testAlertReductionKey = alertReductionKey;
 
         AlertData alertData =
             AlertData.newBuilder()
-                .setReductionKey(alertReductionKey)
+                .setReductionKey(testAlertReductionKey)
                 .build()
             ;
 
-        Event event =
-            Event.newBuilder()
+        EventLog eventLog = EventLog.newBuilder()
+            .setTenantId(tenantId)
+            .addEvent(Event.newBuilder()
+                .setTenantId(tenantId)
                 .setNodeId(10L)
                 .setUei("BlahUEI")
-                .setAlertData(alertData)
-                .build();
+                .setAlertData(alertData))
+            .build();
 
-        kafkaTestHelper.sendToTopic(topic, event.toByteArray(), tenantId);
+        kafkaTestHelper.sendToTopic(topic, eventLog.toByteArray());
     }
 
     @Then("send GET request to application at path {string}, with timeout {int}ms, until JSON response matches the following JSON path expressions")

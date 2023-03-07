@@ -30,13 +30,13 @@
         />
         <DiscoveryListCard
           title=" My Active Discoveries"
-          :list="activeDiscoveries"
+          :list="discoveryQueries.activeDiscoveries"
           @select-discovery="showDiscovery"
         />
         <DiscoveryListCard
           passive
           title=" My Passive Discoveries"
-          :list="[]"
+          :list="discoveryQueries.passiveDiscoveries"
           @toggle-discovery="toggleDiscovery"
         />
       </div>
@@ -59,7 +59,7 @@
           <DiscoverySnmpForm
             :successCallback="(name) => successModal.openSuccessModal(name)"
             :cancel="handleCancel"
-            :discovery="selectedDiscovery"
+            :discovery="selectedDiscovery as ActiveDiscovery"
           />
         </div>
         <div v-else-if="discoverySelectedType === DiscoveryType.Azure">
@@ -93,16 +93,12 @@ import { DiscoveryInput } from '@/types/discovery'
 import { DiscoveryType } from '@/components/Discovery/discovery.constants'
 import discoveryText from '@/components/Discovery/discovery.text'
 import { useDiscoveryQueries } from '@/store/Queries/discoveryQueries'
-import { DiscoveryConfig } from '@/types/graphql'
 import { IAutocompleteItemType } from '@featherds/autocomplete'
+import { ActiveDiscovery, PassiveDiscovery } from '@/types/graphql'
 
 const discoveryQueries = useDiscoveryQueries()
-onMounted(() => discoveryQueries.getDiscoveries())
-const activeDiscoveries = computed(() => discoveryQueries.discoveries)
 
 type TDiscoveryAutocomplete = DiscoveryInput & { _text: string }
-//change when location will be added to type
-type TDiscoveryConfig = DiscoveryConfig & { location: string }
 
 const addIcon: IIcon = {
   image: markRaw(AddIcon)
@@ -111,7 +107,7 @@ const addIcon: IIcon = {
 const successModal = ref()
 const isDiscoveryEditingShown = ref(false)
 const showNewDiscovery = ref(false)
-const selectedDiscovery = ref<TDiscoveryConfig | null>(null)
+const selectedDiscovery = ref<PassiveDiscovery | ActiveDiscovery | null>(null)
 const discoverySelectedType = ref(DiscoveryType.None)
 
 const handleNewDiscovery = () => {
@@ -128,7 +124,7 @@ const discoverySearchValue = ref(undefined)
 const search = (q: string) => {
   if (!q) return
   searchLoading.value = true
-  const results = activeDiscoveries.value
+  const results = discoveryQueries.activeDiscoveries
     .filter((x: any) => x.configName?.toLowerCase().indexOf(q) > -1)
     .map((x: any) => ({
       _text: x.configName,
@@ -144,7 +140,7 @@ const showDiscovery = (discovery: IAutocompleteItemType | IAutocompleteItemType[
     showNewDiscovery.value = false
     //type hardocoded for now
     discoverySelectedType.value = DiscoveryType.ICMP
-    selectedDiscovery.value = discovery as TDiscoveryConfig
+    selectedDiscovery.value = discovery as ActiveDiscovery
   } else {
     discoverySearchValue.value = undefined
   }

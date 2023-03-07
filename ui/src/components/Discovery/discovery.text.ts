@@ -26,10 +26,10 @@ export default {
       label: 'Enter IP ranges and/or subnets'
     },
     CommunityString: {
-      label: 'Enter community string (optional)'
+      label: 'Enter community string'
     },
     UDPPort: {
-      label: 'Enter UDP port (optional)'
+      label: 'Enter UDP port'
     }
   }
 }
