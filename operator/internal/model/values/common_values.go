@@ -26,6 +26,7 @@ type ServiceValues struct {
 	VolumeSize         string         `yaml:"VolumeSize"`
 	InitContainerImage string         `yaml:"InitContainerImage"`
 	Resources          ResourceValues `yaml:"Resources"`
+    PrivateRepoEnabled bool           `yaml:"PrivateRepoEnabled"`
 }
 
 type ResourceValues struct {

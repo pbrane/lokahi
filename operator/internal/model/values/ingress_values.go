@@ -21,4 +21,5 @@ type IngressValues struct {
 	ControllerImage      string `yaml:"ControllerImage"`
 	SecretJobImage       string `yaml:"SecretJobImage"`
 	WebhookPatchJobImage string `yaml:"WebhookPatchJobImage"`
+    IngressAnnotations   interface{} `yaml:"IngressAnnotations"`
 }
