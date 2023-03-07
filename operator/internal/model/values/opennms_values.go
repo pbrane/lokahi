@@ -21,7 +21,7 @@ type OpenNMSValues struct {
 	MinionGateway          MinionGatewayValues    `yaml:"MinionGateway"`
 	MinionGatewayGrpcProxy MGGPValues             `yaml:"MinionGatewayGrpcProxy"`
 	Inventory              InventoryValues        `yaml:"Inventory"`
-	Alarm                  AlarmValues            `yaml:"Alarm"`
+	Alert                  AlertValues            `yaml:"Alert"`
 	Notification           ServiceValues          `yaml:"Notification"`
 	MetricsProcessor       MetricsProcessorValues `yaml:"MetricsProcessor"`
 	Events                 EventsValues           `yaml:"Events"`
@@ -55,7 +55,7 @@ type InventoryValues struct {
 	EncryptionKey string `yaml:"EncryptionKey"`
 }
 
-type AlarmValues struct {
+type AlertValues struct {
 	ServiceValues `yaml:",inline"`
 }
 

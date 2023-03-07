@@ -113,7 +113,7 @@ func TestCheckForExistingCoreCreds(t *testing.T) {
 	adminPglPwd := "testpostgresadminpwd"
 	keycloakPwd := "testpostgreskeycloakpwd"
 	inventoryPwd := "testpostgresinventorypwd"
-	alarmPwd := "testpostgresalarmpwd"
+	alertPwd := "testpostgresalertpwd"
 	notificationPwd := "testpostgresnotificationpwd"
 	grafanaPwd := "testpostgresgrafanapwd"
 	eventsPwd := "testpostgreseventspwd"
@@ -126,7 +126,7 @@ func TestCheckForExistingCoreCreds(t *testing.T) {
 			"adminPwd":        []byte(adminPglPwd),
 			"keycloakPwd":     []byte(keycloakPwd),
 			"inventoryPwd":    []byte(inventoryPwd),
-			"alarmPwd":        []byte(alarmPwd),
+			"alertPwd":        []byte(alertPwd),
 			"notificationPwd": []byte(notificationPwd),
 			"grafanaPwd":      []byte(grafanaPwd),
 			"eventsPwd":       []byte(eventsPwd),
@@ -141,7 +141,7 @@ func TestCheckForExistingCoreCreds(t *testing.T) {
 	assert.Equal(t, adminPglPwd, res.Values.Postgres.AdminPassword, "should return the postgres expected values")
 	assert.Equal(t, keycloakPwd, res.Values.Postgres.KeycloakPassword, "should return the postgres expected values")
 	assert.Equal(t, inventoryPwd, res.Values.Postgres.InventoryPassword, "should return the postgres expected values")
-	assert.Equal(t, alarmPwd, res.Values.Postgres.AlarmPassword, "should return the postgres expected values")
+	assert.Equal(t, alertPwd, res.Values.Postgres.AlertPassword, "should return the postgres expected values")
 	assert.Equal(t, notificationPwd, res.Values.Postgres.NotificationPassword, "should return the postgres expected values")
 	assert.Equal(t, grafanaPwd, res.Values.Postgres.GrafanaPassword, "should return the postgres expected values")
 	assert.Equal(t, eventsPwd, res.Values.Postgres.EventsPassword, "should return the postgres expected values")

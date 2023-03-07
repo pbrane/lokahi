@@ -45,8 +45,8 @@ func ConvertCRDToValues(crd v1alpha1.OpenNMS, defaultValues values.TemplateValue
     //ONMS Inventory
     v.OpenNMS = getInventoryValues(spec, v.OpenNMS)
 
-    //ONMS Alarm
-    v.OpenNMS = getAlarmValues(spec, v.OpenNMS)
+    //ONMS Alert
+    v.OpenNMS = getAlertValues(spec, v.OpenNMS)
 
     //ONMS Notification
     v.OpenNMS = getNotificationValues(spec, v.OpenNMS)
@@ -166,21 +166,21 @@ func getInventoryValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) value
     return v
 }
 
-// getAlarmValues - get ONMS Alarm values from the crd
-func getAlarmValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
-    if spec.Alarm.Image != "" {
-        v.Alarm.Image = spec.Alarm.Image
+// getAlertValues - get ONMS Alert values from the crd
+func getAlertValues(spec v1alpha1.OpenNMSSpec, v values.OpenNMSValues) values.OpenNMSValues {
+    if spec.Alert.Image != "" {
+        v.Alert.Image = spec.Alert.Image
     }
-    if spec.Alarm.CPU != "" {
-        v.Alarm.Resources.Requests.Cpu = spec.Alarm.CPU
-        v.Alarm.Resources.Limits.Cpu = spec.Alarm.CPU
+    if spec.Alert.CPU != "" {
+        v.Alert.Resources.Requests.Cpu = spec.Alert.CPU
+        v.Alert.Resources.Limits.Cpu = spec.Alert.CPU
     }
-    if spec.Alarm.MEM != "" {
-        v.Alarm.Resources.Requests.Memory = spec.Alarm.MEM
-        v.Alarm.Resources.Limits.Memory = spec.Alarm.MEM
+    if spec.Alert.MEM != "" {
+        v.Alert.Resources.Requests.Memory = spec.Alert.MEM
+        v.Alert.Resources.Limits.Memory = spec.Alert.MEM
     }
-    if spec.Alarm.Disk != "" {
-        v.Alarm.VolumeSize = spec.Alarm.Disk
+    if spec.Alert.Disk != "" {
+        v.Alert.VolumeSize = spec.Alert.Disk
     }
     return v
 }
