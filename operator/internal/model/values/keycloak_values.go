@@ -23,4 +23,6 @@ type KeycloakValues struct {
 	AdminPassword      string `yaml:"AdminPassword"`
 	RealmName          string `yaml:"RealmName"`
 	DynamicRealmConfig bool   `yaml:"DynamicRealmConfig"`
+    IngressAnnotations interface{} `yaml:"IngressAnnotations"`
+    ConfigmapName      string `yaml:"ConfigmapName"`
 }
