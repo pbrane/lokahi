@@ -67,7 +67,7 @@ def jib_project(resource_name, image_name, base_path, k8s_resource_name, resourc
     # Disable this resource to turn off live reload. Trigger the main Tilt resource for full builds instead.
     local_resource(
         compile_resource_name,
-        'mvn clean compile -f {} -am'.format(base_path),
+        'mvn compile -f {} -am'.format(base_path),
         deps=['{}/src'.format(base_path)],
         ignore=['**/target'],
         labels=labels,

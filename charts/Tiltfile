@@ -1,0 +1,163 @@
+# Tilt config #
+secret_settings(disable_scrub=True)  ## TODO: update secret values so we can reenable scrub
+
+def jib_project(resource_name, k8s_resource_name, resource_deps=[], port_forwards=[], labels=None):
+    if not labels:
+        labels=[resource_name]
+
+    k8s_resource(
+        k8s_resource_name,
+        new_name=resource_name,
+        labels=labels,
+        resource_deps=resource_deps,
+        port_forwards=port_forwards,
+    )
+
+# Deployment #
+k8s_yaml(
+    helm(
+        'opennms',
+        values=['../build-tools/basic/helm-values.yaml'],
+    )
+)
+
+# Builds #
+local_resource(
+    'build-all',
+    cmd='build-tools/basic/compile.sh',
+    dir='..',
+    labels=['compile'],
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    auto_init=False,
+)
+
+local_resource(
+    'push-images',
+    cmd='build-tools/basic/push-images-to-kind.sh',
+    dir='..',
+    labels=['compile'],
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    auto_init=False,
+)
+
+## Microservices ##
+### Notification ###
+jib_project(
+    'notification',
+    'opennms-notifications',
+    port_forwards=['15065:6565', '15050:5005'],
+)
+
+### Vue.js App ###
+#### UI ####
+k8s_resource(
+    'opennms-ui',
+    new_name='vuejs-ui',
+    port_forwards=['17080:80'],
+    labels=['vuejs-app'],
+)
+
+#### BFF ####
+jib_project(
+    'vuejs-bff',
+    'opennms-rest-server',
+    labels=['vuejs-app'],
+    port_forwards=['13080:9090', '13050:5005'],
+)
+
+### Inventory ###
+jib_project(
+    'inventory',
+    'opennms-inventory',
+    port_forwards=['29080:9090', '29050:5005', '29065:6565'],
+)
+
+### Alarm ###
+jib_project(
+    'alarm',
+    'opennms-alarm',
+    port_forwards=['32080:9090', '32050:5005', '32065:6565',  '32000:8080'],
+)
+
+### Metrics Processor ###
+jib_project(
+    'metrics-processor',
+    'opennms-metrics-processor',
+    port_forwards=['28080:9090', '28050:5005'],
+)
+
+### Events ###
+jib_project(
+    'events',
+    'opennms-events',
+    port_forwards=['30050:5005', '30065:6565'],
+)
+
+### Minion Gateway ###
+jib_project(
+    'minion-gateway',
+    'opennms-minion-gateway',
+    port_forwards=['16080:9090', '16050:5005'],
+)
+
+### Minion Gateway gRPC Proxy ###
+jib_project(
+    'minion-gateway-grpc-proxy',
+    'opennms-minion-gateway-grpc-proxy',
+    port_forwards=['31089:8990', '31050:5005'],
+)
+
+### DataChoices ###
+jib_project(
+    'datachoices',
+    'opennms-datachoices',
+    port_forwards=['33080:9090', '33050:5005', '33065:6565'],
+)
+
+### Minion ###
+k8s_resource(
+    'opennms-minion',
+    new_name='minion',
+    port_forwards=['12022:8101', '12080:8181', '12050:5005'],
+    labels=['minion'],
+    trigger_mode=TRIGGER_MODE_MANUAL,
+)
+
+## 3rd Party Resources ##
+### Keycloak ###
+k8s_resource(
+    'onms-keycloak',
+    new_name='keycloak',
+    port_forwards=['26080:8080'],
+)
+
+### Grafana ###
+k8s_resource(
+    'grafana',
+    port_forwards=['18080:3000'],
+)
+
+### Cortex ###
+k8s_resource(
+    'cortex',
+    port_forwards=['19000:9000'],
+)
+
+### Postgres ###
+k8s_resource(
+    'postgres',
+    port_forwards=['25054:5432'],
+)
+
+### Kafka ###
+k8s_resource(
+    'onms-kafka',
+    new_name='kafka',
+    port_forwards=['24092:59092'],
+)
+
+### Others ###
+k8s_resource(
+    'ingress-nginx-controller',
+    port_forwards=['8123:80', '0.0.0.0:8990:8990'],
+)
