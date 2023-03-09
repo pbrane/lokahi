@@ -11,10 +11,7 @@ spring:
       group-id: org.opennms.horizon.notifications
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: org.opennms.horizon.shared.dto.event
-        spring.json.value.default.type: org.opennms.horizon.shared.dto.event.AlarmDTO
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 horizon:
   kafka:

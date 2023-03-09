@@ -28,16 +28,14 @@
 
 package org.opennms.horizon.events.traps;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.opennms.horizon.events.DefaultEventConfDao;
-import org.opennms.horizon.events.api.EventBuilder;
-import org.opennms.horizon.events.proto.EventSeverity;
 import org.opennms.horizon.events.xml.Event;
+import org.opennms.horizon.model.common.proto.Severity;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EventProtoMappingTest {
-
 
     @Test
     void testEventSeverityMapping() {
@@ -45,23 +43,7 @@ class EventProtoMappingTest {
         Mockito.when(event.getSeverity()).thenReturn("Cleared");
         var builder = org.opennms.horizon.events.proto.Event.newBuilder();
         TrapsConsumer.mapSeverity(event, builder);
-        Assertions.assertEquals(EventSeverity.CLEARED, builder.build().getEventSeverity());
+        assertEquals(Severity.CLEARED, builder.build().getSeverity());
     }
 
-    @Test
-    void testAlarmDataMapping() {
-
-        DefaultEventConfDao defaultEventConfDao = new DefaultEventConfDao();
-        defaultEventConfDao.init();
-        String uei = "uei.opennms.org/translator/traps/SNMP_Link_Down";
-        EventBuilder eb = new EventBuilder(uei, "JUnit");
-        var matchingEvent = defaultEventConfDao.findByEvent(eb.getEvent());
-        var event = eb.getEvent();
-        EventFactory.expandEventWithAlarmData(event, matchingEvent);
-        var builder = org.opennms.horizon.events.proto.Event.newBuilder();
-        TrapsConsumer.mapAlarmData(event, builder);
-        var eventProto = builder.build();
-        Assertions.assertNotNull(eventProto.getAlarmData());
-
-    }
 }

@@ -41,16 +41,17 @@
       />
     </div>
 
-    <LocationsAutocomplete
+    <DiscoveryLocationsAutocomplete
       @locationSelected="selectLocation"
       class="locations"
+      type="single"
     />
 
-    <DiscoveryAutocomplete
+    <BasicAutocomplete
       class="tags"
       @items-selected="tagsSelectedListener"
-      :get-items="discoveryQueries.getTagsSearch"
-      :items="discoveryQueries.tagsSearched"
+      :get-items="tagQueries.getTagsSearch"
+      :items="tagQueries.tagsSearched"
       :label="Common.tagsInput"
       ref="tagsAutocompleteRef"
     />
@@ -78,12 +79,14 @@ import { useDiscoveryStore } from '@/store/Views/discoveryStore'
 import { Azure, Common } from './discovery.text'
 import { Location } from '@/types/graphql'
 import { useDiscoveryQueries } from '@/store/Queries/discoveryQueries'
+import { useTagQueries } from '@/store/Queries/tagQueries'
 import { useDiscoveryMutations } from '@/store/Mutations/discoveryMutations'
-import { useForm } from "@featherds/input-helper"
-import { string } from "yup"
+import { useForm } from '@featherds/input-helper'
+import { string } from 'yup'
 
 const store = useDiscoveryStore()
 const discoveryQueries = useDiscoveryQueries()
+const tagQueries = useTagQueries()
 const discoveryMutations = useDiscoveryMutations()
 const form = useForm()
 
@@ -103,7 +106,6 @@ const tagsSelectedListener = (tags: Record<string, string>[]) => {
     delete tag.tenantId
     return tag
   })
-
   store.selectTags(tagsSelected)
 }
 
@@ -118,11 +120,11 @@ const saveAzureDiscovery = async () => {
   }
 }
 
-const nameV = string().required("Name is required.")
-const clientIdV = string().required("Client ID is required.")
-const clientSecretV = string().required("Client secret is required.")
-const subIdV = string().required("Subscription ID is required.")
-const dirIdV = string().required("Directory ID is required.")
+const nameV = string().required('Name is required.')
+const clientIdV = string().required('Client ID is required.')
+const clientSecretV = string().required('Client secret is required.')
+const subIdV = string().required('Subscription ID is required.')
+const dirIdV = string().required('Directory ID is required.')
 </script>
 
 <style scoped lang="scss">
@@ -151,7 +153,7 @@ const dirIdV = string().required("Directory ID is required.")
   }
 
   .locations {
-    margin-bottom: var(variables.$spacing-s);
+    margin-bottom: var(variables.$spacing-l);
   }
 
   @include mediaQueriesMixins.screen-md {

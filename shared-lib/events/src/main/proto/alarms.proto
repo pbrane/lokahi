@@ -1,0 +1,181 @@
+/*******************************************************************************
+ * This file is part of OpenNMS(R).
+ *
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
+ *
+ * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
+ *
+ * OpenNMS(R) is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * OpenNMS(R) is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OpenNMS(R).  If not, see:
+ *      http://www.gnu.org/licenses/
+ *
+ * For more information contact:
+ *     OpenNMS(R) Licensing <license@opennms.org>
+ *     http://www.opennms.org/
+ *     http://www.opennms.com/
+ *******************************************************************************/
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/wrappers.proto";
+import "common.proto";
+
+package opennms.alarms;
+option java_multiple_files = true;
+option java_package = "org.opennms.horizon.alarms.proto";
+
+enum AlarmType {
+  ALARM_TYPE_UNDEFINED = 0;
+  PROBLEM_WITH_CLEAR = 1;
+  CLEAR = 2;
+  PROBLEM_WITHOUT_CLEAR = 3;
+}
+
+message Alarm {
+  string tenant_id = 1;
+  uint64 database_id = 2;
+  string uei = 3;
+  string reduction_key = 4;
+  string clear_key = 5;
+
+  AlarmType type = 6;
+  uint64 counter = 7;
+  opennms.model.Severity severity = 8;
+  // Summary
+  string description = 9;
+  // Details
+  string log_message = 10;
+
+  string location = 11;
+  // What object (physical or virtual) does this relate to?
+  ManagedObject managed_object = 12;
+
+  uint64 first_event_time_ms = 13;
+  uint64 last_event_id = 14;
+  uint64 last_update_time_ms = 15;
+
+  bool is_acknowledged = 16;
+  // Acknowledged by who?
+  string ack_user = 17;
+  // Acknowledged when?
+  uint64 ack_time_ms = 18;
+}
+
+message AlarmList {
+  repeated Alarm alarms = 1;
+}
+
+message EventMatch {
+  string name = 1;
+  string value = 2;
+}
+
+message AlarmDefinition {
+  string uei = 1;
+  repeated EventMatch match = 2;
+  string reduction_key = 3;
+  string clear_key = 4;
+  AlarmType type = 5;
+  ManagedObjectType managed_object_type = 6;
+}
+
+message ManagedObject {
+  ManagedObjectType type = 1;
+  ManagedObjectInstance instance = 2;
+}
+
+enum ManagedObjectType {
+  UNDEFINED = 0;
+  ANY = 1;
+  NODE = 2;
+  SNMP_INTERFACE = 3;
+  SNMP_INTERFACE_LINK = 4;
+}
+
+message NodeRef {
+  uint64 node_id = 1;
+}
+
+message SnmpInterfaceRef {
+  NodeRef node = 1;
+  uint64 if_index = 2;
+}
+
+message SnmpInterfaceLinkRef {
+  SnmpInterfaceRef if_a = 1;
+  SnmpInterfaceRef if_b = 2;
+}
+
+message ManagedObjectInstance {
+  oneof value {
+    NodeRef node_val = 1;
+    SnmpInterfaceRef snmp_interface_val = 2;
+    SnmpInterfaceLinkRef snmp_interface_link_val = 3;
+
+    google.protobuf.Any any_val = 9; // protobuf.Any encoded bytes.
+  }
+}
+
+message ListAlarmsRequest {
+  // Optional. The maximum number of alarms to return in the response.
+  int32 page_size = 1;
+
+  // Optional. A pagination token returned from a previous call to `listAlarms`
+  // that indicates where this listing should continue from.
+  string next_page_token = 3;
+}
+
+message ListAlarmsResponse {
+  // A possibly paginated list of Alarms that are associated with the calling tenant.
+  repeated Alarm alarms = 1;
+
+  // A pagination token returned from a previous call to `ListAlarms`
+  // that indicates from where listing should continue.
+  string next_page_token = 2;
+}
+
+message ListAlarmDefinitionsRequest {
+  // Optional. The maximum number of alarms to return in the response.
+  int32 page_size = 1;
+
+  // Optional. A pagination token returned from a previous call to `listAlarms`
+  // that indicates where this listing should continue from.
+  string page_token = 2;
+}
+
+message ListAlarmDefinitionsResponse {
+  // A possibly paginated list of Alarms that are associated with the calling tenant.
+  repeated AlarmDefinition definitions = 1;
+
+  // Optional. A pagination token returned from a previous call to `ListAlarmDefinitions`
+  // that indicates where this listing should continue from.
+  string page_token = 2;
+}
+
+service AlarmService {
+  rpc listAlarms(ListAlarmsRequest) returns (ListAlarmsResponse) {};
+  rpc acknowledgeAlarm(google.protobuf.UInt64Value) returns (Alarm) {};
+  rpc unacknowledgeAlarm(google.protobuf.UInt64Value) returns (Alarm) {};
+  rpc clearAlarm(google.protobuf.UInt64Value) returns (Alarm) {};
+  rpc escalateAlarm(google.protobuf.UInt64Value) returns (Alarm) {};
+  rpc deleteAlarm(google.protobuf.UInt64Value) returns(google.protobuf.BoolValue) {};
+}
+
+service AlarmConfigurationService {
+  rpc listAlarmDefinitions(ListAlarmDefinitionsRequest) returns (ListAlarmDefinitionsResponse) {};
+  rpc getAlarmDefinition(google.protobuf.UInt64Value) returns (AlarmDefinition) {}
+  rpc insertAlarmDefinition(AlarmDefinition) returns (AlarmDefinition) {}
+  rpc updateAlarmDefinition(AlarmDefinition) returns (AlarmDefinition) {}
+  rpc removeAlarmDefinition(google.protobuf.UInt64Value) returns (google.protobuf.BoolValue) {}
+}

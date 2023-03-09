@@ -34,14 +34,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opennms.horizon.alarms.proto.Alarm;
+import org.opennms.horizon.model.common.proto.Severity;
 import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
-import org.opennms.horizon.notifications.repository.PagerDutyConfigRepository;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
-import org.opennms.horizon.shared.dto.event.EventDTO;
-import org.opennms.horizon.shared.dto.event.EventParameterDTO;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Arrays;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PagerDutyAPIImplTest {
@@ -57,19 +53,12 @@ public class PagerDutyAPIImplTest {
     @Test
     public void postNotifications() throws Exception {
         Mockito.when(pagerDutyDao.getConfig()).thenReturn(getConfigDTO());
-        AlarmDTO alarm = getAlarm(false);
+        Alarm alarm = getAlarm();
         pagerDutyAPI.postNotification(alarm);
     }
 
     @Test
-    public void postNotificationsWithAlarmClash() throws Exception {
-        Mockito.when(pagerDutyDao.getConfig()).thenReturn(getConfigDTO());
-        AlarmDTO alarm = getAlarm(true);
-        pagerDutyAPI.postNotification(alarm);
-    }
-
-    @Test
-    public void saveConfig() throws Exception {
+    public void saveConfig() {
         pagerDutyAPI.saveConfig(getConfigDTO());
     }
 
@@ -77,21 +66,11 @@ public class PagerDutyAPIImplTest {
         return PagerDutyConfigDTO.newBuilder().setIntegrationKey("integration_key").build();
     }
 
-    private AlarmDTO getAlarm(boolean includeParams) {
-        AlarmDTO alarmDTO = new AlarmDTO();
-        alarmDTO.setLogMessage("Exciting message to go here");
-        alarmDTO.setReductionKey("srv01/mysql");
-        alarmDTO.setSeverity("Indeterminate");
-
-        EventDTO lastEvent = new EventDTO();
-        if (includeParams) {
-            EventParameterDTO param = new EventParameterDTO();
-            param.setName("alarm");
-            param.setValue("value");
-
-            lastEvent.setParameters(Arrays.asList(param));
-        }
-        alarmDTO.setLastEvent(lastEvent);
-        return alarmDTO;
+    private Alarm getAlarm() {
+        return Alarm.newBuilder()
+            .setLogMessage("Exciting message to go here")
+            .setReductionKey("srv01/mysql")
+            .setSeverity(Severity.MAJOR)
+            .build();
     }
 }

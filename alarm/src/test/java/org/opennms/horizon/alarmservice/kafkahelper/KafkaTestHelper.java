@@ -28,7 +28,6 @@
 
 package org.opennms.horizon.alarmservice.kafkahelper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -37,18 +36,17 @@ import java.util.Map;
 import java.util.Properties;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.header.internals.RecordHeader;
 import org.opennms.horizon.alarmservice.kafkahelper.internals.KafkaProcessor;
-import org.opennms.horizon.shared.constants.GrpcConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class KafkaTestHelper {
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaTestHelper.class);
 
     private static int unique = 0;
 
@@ -66,45 +64,28 @@ public class KafkaTestHelper {
 // Test Operations
 //----------------------------------------
 
-    public boolean startConsumerAndProducer(String consumerTopic, String producerTopic) {
+    public void startConsumerAndProducer(String consumerTopic, String producerTopic) {
         try {
             KafkaConsumer<String, byte[]> consumer = this.createKafkaConsumer("test-consumer-group"+ ++unique, "test-consumer-for-" + consumerTopic);
             kafkaProducer = this.createKafkaProducer();
             KafkaProcessor<String, byte[]> processor = new KafkaProcessor<>(consumer, kafkaProducer, records -> processRecords(consumerTopic, records));
 
-            log.info("Adding consumer topic {}", consumerTopic);
+            LOG.info("Adding consumer topic {}", consumerTopic);
             kafkaTopicProcessors.putIfAbsent(consumerTopic, processor);
 
-            log.info("Adding producer topic {}", producerTopic);
+            LOG.info("Adding producer topic {}", producerTopic);
             kafkaTopicProcessors.putIfAbsent(producerTopic, processor);
             
             consumer.subscribe(Collections.singletonList(consumerTopic));
 
             startPollingThread(processor);
-
         } catch (Exception exc) {
             throw new RuntimeException(exc);
         }
-
-        return true;
     }
 
-    public void sendToTopic(String topic, byte[] body, String tenantId) {
-        var producerRecord = new ProducerRecord<String, byte[]>(topic, body);
-        producerRecord.headers().add(new RecordHeader(GrpcConstants.TENANT_ID_KEY, tenantId.getBytes(StandardCharsets.UTF_8)));
-        kafkaProducer.send(producerRecord);
-    }
-
-    public void removeConsumer(String topic) {
-        KafkaProcessor<String, byte[]> processor;
-
-        synchronized (lock) {
-            processor = kafkaTopicProcessors.remove(topic);
-        }
-
-        if (processor != null) {
-            processor.shutdown();
-        }
+    public void sendToTopic(String topic, byte[] body) {
+        kafkaProducer.send(new ProducerRecord<>(topic, body));
     }
 
     public List<ConsumerRecord<String, byte[]>> getConsumedMessages(String topic)  {

@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2012-2021 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2021 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -29,13 +29,12 @@
 package org.opennms.horizon.alarmservice.stepdefs;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.MessageOrBuilder;
+import com.google.protobuf.UInt64Value;
+import com.google.protobuf.util.JsonFormat;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.restassured.RestAssured;
@@ -46,27 +45,19 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import javax.ws.rs.core.MediaType;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.header.Header;
-import org.apache.kafka.common.header.Headers;
+import org.opennms.horizon.alarms.proto.Alarm;
+import org.opennms.horizon.alarms.proto.ListAlarmsRequest;
+import org.opennms.horizon.alarms.proto.ListAlarmsResponse;
+import org.opennms.horizon.alarmservice.AlarmGrpcClientUtils;
 import org.opennms.horizon.alarmservice.RetryUtils;
 import org.opennms.horizon.alarmservice.kafkahelper.KafkaTestHelper;
-import org.opennms.horizon.alarmservice.model.AlarmDTO;
-import org.opennms.horizon.alarmservice.model.AlarmSeverity;
-import org.opennms.horizon.alarmservice.rest.AlarmCollectionDTO;
-import org.opennms.horizon.alarmservice.rest.support.MultivaluedMapImpl;
-import org.opennms.horizon.events.proto.AlarmData;
 import org.opennms.horizon.events.proto.Event;
-import org.opennms.horizon.shared.constants.GrpcConstants;
+import org.opennms.horizon.events.proto.EventLog;
+import org.opennms.horizon.model.common.proto.Severity;
 
 @Slf4j
 public class AlarmTestSteps {
@@ -77,134 +68,130 @@ public class AlarmTestSteps {
     // Test Injectables
     //
     private RetryUtils retryUtils;
+    private KafkaTestHelper kafkaTestHelper;
+    private AlarmGrpcClientUtils clientUtils;
 
     //
     // Test Configuration
     //
-    private String applicationBaseUrl;
+    private String applicationBaseHttpUrl;
+    private String applicationBaseGrpcUrl;
     private String kafkaBootstrapUrl;
-    private KafkaTestHelper kafkaTestHelper;
+
 
     //
     // Test Runtime Data
     //
     private Response restAssuredResponse;
     private JsonPath parsedJsonResponse;
+    private List<Alarm> alarmsFromLastResponse;
+    private Alarm firstAlarmFromLastResponse;
     private Long lastAlarmId;
     private String testAlarmReductionKey;
+    private String eventTopic;
+    private String alarmTopic;
 
 //========================================
 // Constructor
 //----------------------------------------
 
-    public AlarmTestSteps(RetryUtils retryUtils, KafkaTestHelper kafkaTestHelper) {
+    public AlarmTestSteps(RetryUtils retryUtils, KafkaTestHelper kafkaTestHelper, AlarmGrpcClientUtils clientUtils) {
         this.retryUtils = retryUtils;
         this.kafkaTestHelper = kafkaTestHelper;
+        this.clientUtils = clientUtils;
     }
-
 
 //========================================
 // Gherkin Rules
 //========================================
 
-    @Given("Kafka topics {string} {string}")
-    public void createKafkaTopic(String consumerTopicEnv, String producerTopicEnv) throws Exception {
-        kafkaTestHelper.startConsumerAndProducer(consumerTopicEnv, producerTopicEnv);
+    @Given("Kafka event topic {string}")
+    public void createKafkaTopicForEvents(String eventTopic) {
+        kafkaTestHelper.startConsumerAndProducer(eventTopic, eventTopic);
+        this.eventTopic = eventTopic;
     }
 
-    @Given("Application Base URL in system property {string}")
-    public void applicationBaseURLInSystemProperty(String systemProperty) throws Exception {
-        this.applicationBaseUrl = System.getProperty(systemProperty);
-
-        log.info("Using BASE URL {}", this.applicationBaseUrl);
+    @Given("Kafka alarm topic {string}")
+    public void createKafkaTopicForAlarms(String alarmTopic) {
+        kafkaTestHelper.startConsumerAndProducer(alarmTopic, alarmTopic);
+        this.alarmTopic = alarmTopic;
     }
 
-    @Given("Kafka Bootstrap URL in system property {string}")
-    public void kafkaRestServerURLInSystemProperty(String systemProperty) throws Exception {
+    @Given("Application base HTTP URL in system property {string}")
+    public void applicationBaseHttpUrlInSystemProperty(String systemProperty) {
+        this.applicationBaseHttpUrl = System.getProperty(systemProperty);
+
+        log.info("Using base HTTP URL {}", this.applicationBaseHttpUrl);
+    }
+
+    @Given("Application base gRPC URL in system property {string}")
+    public void applicationBaseGrpcUrlInSystemProperty(String systemProperty) {
+        this.applicationBaseGrpcUrl = System.getProperty(systemProperty);
+
+        log.info("Using base gRPC URL: {}", this.applicationBaseGrpcUrl);
+    }
+
+    @Given("Kafka bootstrap URL in system property {string}")
+    public void kafkaRestServerURLInSystemProperty(String systemProperty) {
         this.kafkaBootstrapUrl = System.getProperty(systemProperty);
         this.kafkaTestHelper.setKafkaBootstrapUrl(kafkaBootstrapUrl);
 
-        log.info("Using KAFKA BASE URL {}", this.kafkaBootstrapUrl);
+        log.info("Using Kafka base URL: {}", this.kafkaBootstrapUrl);
     }
 
-    @Then("Send POST request to application at path {string}")
-    public void sendPOSTRequestToApplicationAtPath(String path) throws Exception {
-        commonSendPOSTRequestToApplication(path);
-    }
-
-    @Then("Send POST request to clear alarm at path {string}")
-    public void sendPOSTRequestToClearAlarmAtPath(String path) throws Exception {
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        commonSendPOSTRequestToApplication(path+"/"+ alarmDTO.getAlarmId());
-    }
-
-    @Then("Send PUT request to add memo at path {string}")
-    public void sendPUTRequestToAddMemoAtPath(String path) throws Exception {
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        MultivaluedMapImpl multiValuedMap = new MultivaluedMapImpl();
-        multiValuedMap.putSingle("body", "blahNobody");
-        commonSendPUTRequestWithBodyToApplication(path+"/"+ alarmDTO.getAlarmId(), multiValuedMap);
-    }
-
-    @Then("Send POST request to acknowledge alarm at path {string}")
-    public void sendPOSTRequestToAckAlarmAtPath(String path) throws Exception {
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        commonSendPOSTRequestToApplication(path+"/"+ alarmDTO.getAlarmId()+"/blahUserId");
-    }
-
-    @Then("Send POST request to unacknowledge alarm at path {string}")
-    public void sendPOSTRequestToUnAckAlarmAtPath(String path) throws Exception {
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        commonSendPOSTRequestToApplication(path+"/"+ alarmDTO.getAlarmId());
-    }
-
-    @Then("Send POST request to set alarm severity at path {string}")
-    public void sendPOSTRequestToSetAlarmSeverityAtPath(String path) throws Exception {
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        String uri = String.format("%s/%d/%s", path, alarmDTO.getAlarmId(), AlarmSeverity.INDETERMINATE.getLabel());
-        commonSendPOSTRequestToApplication(uri);
-    }
-
-    @Then("Send POST request to escalate alarm severity at path {string}")
-    public void sendPOSTRequestToEscalateAlarmSeverityAtPath(String path) throws Exception {
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        commonSendPOSTRequestToApplication(path+"/"+ alarmDTO.getAlarmId());
-    }
-
-    @Then("Send Event message to Kafka at topic {string} with alarm reduction key {string} with tenant {string}")
-    public void sendMessageToKafkaAtTopic(String topic, String alarmReductionKey, String tenantId) throws Exception {
-
-        testAlarmReductionKey = alarmReductionKey;
-
-        AlarmData alarmData =
-            AlarmData.newBuilder()
-                .setReductionKey(alarmReductionKey)
-                .build()
-            ;
-
-        Event event =
-            Event.newBuilder()
+    @Then("Send event with UEI {string} with tenant {string}")
+    public void sendMessageToKafkaAtTopic(String eventUei, String tenantId) {
+        EventLog eventLog = EventLog.newBuilder()
+            .setTenantId(tenantId)
+            .addEvents(Event.newBuilder()
+                .setTenantId(tenantId)
+                .setSeverity(Severity.MINOR)
+                .setProducedTimeMs(System.currentTimeMillis())
                 .setNodeId(10L)
-                .setUei("BlahUEI")
-                .setAlarmData(alarmData)
-                .build();
+                .setUei(eventUei))
+            .build();
 
-        kafkaTestHelper.sendToTopic(topic, event.toByteArray(), tenantId);
+        kafkaTestHelper.sendToTopic(eventTopic, eventLog.toByteArray());
     }
 
-    @Then("send GET request to application at path {string}, with timeout {int}ms, until JSON response matches the following JSON path expressions")
+    @Then("List alarms for tenant {string}, with timeout {int}ms, until JSON response matches the following JSON path expressions")
+    public void listAlarmsForTenant(String tenantId, int timeout, List<String> jsonPathExpressions) throws Exception {
+        Supplier<MessageOrBuilder> call = () -> {
+            clientUtils.setTenantId(tenantId);
+            ListAlarmsResponse listAlarmsResponse = clientUtils.getAlarmServiceStub()
+                .listAlarms(ListAlarmsRequest.newBuilder().build());
+            alarmsFromLastResponse = listAlarmsResponse.getAlarmsList();
+            return listAlarmsResponse;
+        };
+        boolean success = retryUtils.retry(
+                () -> this.doRequestThenCheckJsonPathMatch(call, jsonPathExpressions),
+                result -> result,
+                100,
+                timeout,
+                false);
+        assertTrue("GET request expected to return JSON response matching JSON path expression(s)", success);
+    }
+
+    @Then("Delete the alarm")
+    public void deleteTheAlarm() {
+        clientUtils.getAlarmServiceStub()
+            .deleteAlarm(UInt64Value.of(firstAlarmFromLastResponse.getDatabaseId()))
+            .getValue();
+    }
+
+    @Then("Acknowledge the alarm")
+    public void acknowledgeTheAlarm() {
+        clientUtils.getAlarmServiceStub()
+            .acknowledgeAlarm(UInt64Value.of(firstAlarmFromLastResponse.getDatabaseId()));
+    }
+
+    @Then("Unacknowledge the alarm")
+    public void unacknowledgeTheAlarm() {
+        clientUtils.getAlarmServiceStub()
+            .unacknowledgeAlarm(UInt64Value.of(firstAlarmFromLastResponse.getDatabaseId()));
+    }
+
+    @Then("Send GET request to application at path {string}, with timeout {int}ms, until JSON response matches the following JSON path expressions")
     public void sendGETRequestToApplicationAtPathUntilJSONResponseMatchesTheFollowingJSONPathExpressions(String path, int timeout, List<String> jsonPathExpressions) throws Exception {
         boolean success =
             retryUtils.retry(
@@ -218,147 +205,42 @@ public class AlarmTestSteps {
         assertTrue("GET request expected to return JSON response matching JSON path expression(s)", success);
     }
 
-    @Then("delay")
-    public void delay() throws InterruptedException{
-        Thread.sleep(10000);
-    }
-
-    @Then("Verify the HTTP response code is {int}")
-    public void verifyTheHTTPResponseCodeIs(int expectedStatusCode) {
-        assertEquals(expectedStatusCode, restAssuredResponse.getStatusCode());
-    }
-
-    @Then("Send GET request to application at path {string}")
-    public void sendGETRequestToApplicationAtPath(String path) throws Exception {
-        commonSendGetRequestToApplication(path);
-    }
-
-    @Then("Send DELETE request to application at path {string}")
-    public void sendDELETERequestToApplicationAtPath(String path) throws Exception {
-        log.info("####### sending POST to clear alarm {}", lastAlarmId);
-        commonSendDELETERequestToApplication(path+"/"+lastAlarmId);
-    }
-
-    @Then("Send DELETE request to remove memo at path {string}")
-    public void sendDELETERequestToRemoveMemoAtPath(String path) throws Exception {
-        log.info("####### sending POST to remove memo {}", lastAlarmId);
-        commonSendDELETERequestToApplication(path+"/"+lastAlarmId);
-    }
-
-    @Then("^parse the JSON response$")
-    public void parseTheJsonResponse() throws Exception {
-        commonParseJsonResponse();
-    }
-
-    @Then("Verify JSON path expressions match$")
-    public void verifyJsonPathExpressionsMatch(List<String> pathExpressions) throws Exception {
-        for (String onePathExpression : pathExpressions) {
-            verifyJsonPathExpressionMatch(parsedJsonResponse, onePathExpression);
-        }
-    }
-
-    @Then("Verify alarm was cleared")
-    public void verifyAlarmWasCleared() {
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-
-        assertEquals(AlarmSeverity.CLEARED, alarmDTO.getSeverity());
-    }
-
-    @Then("Verify alarm was acknowledged")
-    public void verifyAlarmWasAcked() {
-
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        assertNotNull(alarmDTO.getAlarmAckTime());
-        assertNotNull(alarmDTO.getAlarmAckUser());
-    }
-
-    @Then("Verify alarm was unacknowledged")
-    public void verifyAlarmWasUnAcked() {
-
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        assertNull(alarmDTO.getAlarmAckTime());
-        assertNull(alarmDTO.getAlarmAckUser());
-    }
-
-    @Then("Verify alarm severity was escalated")
-    public void verifyAlarmWasEscalated() {
-
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        assertTrue(alarmDTO.getSeverity().isGreaterThan(AlarmSeverity.INDETERMINATE));
-    }
-
-    @Then("Verify alarm was uncleared")
-    public void verifyAlarmWasUncleared() {
-
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        assertEquals(alarmDTO.getLastEventSeverity(), alarmDTO.getSeverity());
-    }
-
-    @Then("Verify topic {string} has {int} messages with tenant {string}")
-    public void verifyTopicContainsTenant(String topic, int expectedMessages, String tenant) {
+    @Then("Verify alarm topic has {int} messages with tenant {string}")
+    public void verifyTopicContainsTenant(int expectedMessages, String tenant) {
         int foundMessages = 0;
 
-        List<ConsumerRecord<String, byte[]>> records = kafkaTestHelper.getConsumedMessages(topic);
-        for (ConsumerRecord record: records) {
-            Headers headers = record.headers();
+        List<ConsumerRecord<String, byte[]>> records = kafkaTestHelper.getConsumedMessages(alarmTopic);
+        for (ConsumerRecord<String, byte[]> record: records) {
+            if (record.value() == null) {
+                continue;
+            }
+            Alarm alarm;
+            try {
+                alarm = Alarm.parseFrom(record.value());
+            } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(e);
+            }
 
-            for (Header header: headers) {
-                if (header.key().equals(GrpcConstants.TENANT_ID_KEY)) {
-                    byte[] headerValue = header.value();
-                    String tenantId = new String(headerValue);
-
-                    if(tenant.equals(tenantId)) {
-                        foundMessages++;
-                    }
-                    break;
-                }
+            if (tenant.equals(alarm.getTenantId())) {
+                foundMessages++;
             }
         }
 
         assertEquals(expectedMessages, foundMessages);
     }
 
-    @Then("Remember alarm id")
-    public void rememberAlarmId() {
-        AlarmCollectionDTO alarmCollectionDTO = restAssuredResponse.getBody().as(AlarmCollectionDTO.class);
-        List<AlarmDTO> alarmDTOList = alarmCollectionDTO.getAlarms();
-        AlarmDTO alarmDTO = findCurrentTestAlarm(alarmDTOList);
-        this.lastAlarmId = alarmDTO.getAlarmId();
-    }
-
-//========================================
-// Utility Rules
-//----------------------------------------
-
-    @Then("^DEBUG dump the response body$")
-    public void debugDumpTheResponseBody() {
-        log.info("RESPONSE BODY = {}", restAssuredResponse.getBody().asString());
+    @Then("Remember the first alarm from the last response")
+    public void rememberFirstAlarmFromLastResponse() {
+        if (alarmsFromLastResponse.size() > 0) {
+            firstAlarmFromLastResponse = alarmsFromLastResponse.get(0);
+        } else {
+            firstAlarmFromLastResponse = null;
+        }
     }
 
 //========================================
 // Internals
 //----------------------------------------
-
-    private AlarmDTO findCurrentTestAlarm(List<AlarmDTO> alarmList) {
-        return
-            alarmList
-                .stream()
-                .filter((alarmDTO) -> Objects.equals(testAlarmReductionKey, alarmDTO.getReductionKey()))
-                .findFirst()
-                .orElse(null)
-            ;
-    }
 
     private void verifyJsonPathExpressionMatch(JsonPath jsonPath, String pathExpression) {
         String[] parts = pathExpression.split(" == ", 2);
@@ -384,7 +266,7 @@ public class AlarmTestSteps {
     }
 
     private void commonSendGetRequestToApplication(String path) throws MalformedURLException {
-        URL requestUrl = new URL(new URL(this.applicationBaseUrl), path);
+        URL requestUrl = new URL(new URL(this.applicationBaseHttpUrl), path);
 
         RestAssuredConfig restAssuredConfig = this.createRestAssuredTestConfig();
 
@@ -393,11 +275,9 @@ public class AlarmTestSteps {
                 .given()
                 .config(restAssuredConfig);
 
-        restAssuredResponse =
-            requestSpecification
+        restAssuredResponse = requestSpecification
                 .get(requestUrl)
-                .thenReturn()
-        ;
+                .thenReturn();
     }
     private RestAssuredConfig createRestAssuredTestConfig() {
         return RestAssuredConfig.config()
@@ -405,56 +285,6 @@ public class AlarmTestSteps {
                 .setParam("http.connection.timeout", DEFAULT_HTTP_SOCKET_TIMEOUT)
                 .setParam("http.socket.timeout", DEFAULT_HTTP_SOCKET_TIMEOUT)
             );
-    }
-
-    private void commonSendPOSTRequestToApplication(String path) throws MalformedURLException {
-        URL requestUrl = new URL(new URL(this.applicationBaseUrl), path);
-
-        RestAssuredConfig restAssuredConfig = this.createRestAssuredTestConfig();
-
-        RequestSpecification requestSpecification =
-            RestAssured
-                .given()
-                .config(restAssuredConfig);
-
-        restAssuredResponse =
-            requestSpecification
-                .post(requestUrl)
-                .thenReturn();
-    }
-
-    private void commonSendPUTRequestWithBodyToApplication(String path, MultivaluedMapImpl body) throws MalformedURLException {
-        URL requestUrl = new URL(new URL(this.applicationBaseUrl), path);
-
-        RestAssuredConfig restAssuredConfig = this.createRestAssuredTestConfig();
-
-        RequestSpecification requestSpecification =
-            RestAssured
-                .given()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new Gson().toJson(body))
-                .config(restAssuredConfig);
-
-        restAssuredResponse =
-            requestSpecification
-                .put(requestUrl)
-                .thenReturn();
-    }
-
-    private void commonSendDELETERequestToApplication(String path) throws MalformedURLException {
-        URL requestUrl = new URL(new URL(this.applicationBaseUrl), path);
-
-        RestAssuredConfig restAssuredConfig = this.createRestAssuredTestConfig();
-
-        RequestSpecification requestSpecification =
-            RestAssured
-                .given()
-                .config(restAssuredConfig);
-
-        restAssuredResponse =
-            requestSpecification
-                .delete(requestUrl)
-                .thenReturn();
     }
 
     private void commonParseJsonResponse() {
@@ -479,69 +309,26 @@ public class AlarmTestSteps {
         }
     }
 
-    private String formatKafkaRestProducerMessageBody(byte[] payload) throws JsonProcessingException {
-        KafkaRestRecord record = new KafkaRestRecord();
+    private boolean doRequestThenCheckJsonPathMatch(Supplier<MessageOrBuilder> supplier, List<String> jsonPathExpressions) {
+        log.debug("Running request with check; json-path-expressions={}", jsonPathExpressions);
+        try {
+            var message = supplier.get();
+            var messageJson = JsonFormat.printer()
+                    .sortingMapKeys().includingDefaultValueFields()
+                    .print(message);
+            parsedJsonResponse = JsonPath.from(messageJson);
+            log.info("Json response: {}", messageJson);
+            //commonParseJsonResponse();
 
-        byte[] encoded = Base64.getEncoder().encode(payload);
-        record.setValue(new String(encoded, StandardCharsets.UTF_8));
+            log.debug("Checking json path expressions");
+            for (String onePathExpression : jsonPathExpressions) {
+                verifyJsonPathExpressionMatch(parsedJsonResponse, onePathExpression);
+            }
 
-        KafkaRestProducerRequest request = new KafkaRestProducerRequest();
-        request.setRecords(new KafkaRestRecord[] { record });
-
-        return new ObjectMapper().writeValueAsString(request);
-    }
-
-    private static class KafkaRestProducerRequest {
-        private KafkaRestRecord[] records;
-
-        public KafkaRestRecord[] getRecords() {
-            return records;
+            log.debug("Finished request with check; json-path-expressions={}", jsonPathExpressions);
+            return true;
+        } catch (Throwable thrown) { // Assertions extend Error
+            throw new RuntimeException(thrown);
         }
-
-        public void setRecords(KafkaRestRecord[] records) {
-            this.records = records;
-        }
-    }
-
-    private static class KafkaRestRecord {
-        private String value;
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-    }
-
-    private <K,V> KafkaProducer<K,V> createKafkaProducer() {
-
-        log.info("####### Kafka Producer");
-        // create instance for properties to access producer configs
-        Properties props = new Properties();
-
-        //Assign localhost id
-        props.put("bootstrap.servers", kafkaBootstrapUrl);
-
-        //Set acknowledgements for producer requests.
-        props.put("acks","all");
-
-        //If the request fails, the producer can automatically retry,
-        props.put("retries", 0);
-
-        //Specify buffer size in config
-        props.put("batch.size", 16384);
-
-        //Reduce the no of requests less than 0
-        props.put("linger.ms", 1);
-
-        //The buffer.memory controls the total amount of memory available to the producer for buffering.
-        props.put("buffer.memory", 33554432);
-
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
-
-        return new KafkaProducer<K, V>(props);
     }
 }

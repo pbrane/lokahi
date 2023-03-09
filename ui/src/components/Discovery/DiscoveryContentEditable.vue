@@ -14,7 +14,22 @@
  -->
 <template>
   <div class="content-editable-wrapper">
-    <label for="contentEditable">{{ props.label }}</label>
+    <div class="label">
+      <label for="contentEditable">{{ props.label }}</label>
+      <FeatherTooltip
+        v-if="props.tooltipText"
+        :title="props.tooltipText"
+        v-slot="{ attrs, on }"
+      >
+        <FeatherButton
+          v-bind="attrs"
+          v-on="on"
+          icon="info"
+          class="icon-help"
+          ><FeatherIcon :icon="Help"> </FeatherIcon
+        ></FeatherButton>
+      </FeatherTooltip>
+    </div>
     <div
       v-html="htmlString"
       @keyup="contentChange"
@@ -38,6 +53,8 @@ import CheckCircleIcon from '@featherds/icon/action/CheckCircle'
 import { IIcon } from '@/types'
 import { ContentEditableType } from '@/components/Discovery/discovery.constants'
 import { PropType } from 'vue'
+import { fncArgVoid } from '@/types'
+import Help from '@featherds/icon/action/Help'
 
 const emit = defineEmits(['is-content-invalid', 'content-formatted'])
 
@@ -57,19 +74,30 @@ const props = defineProps({
   defaultContent: {
     type: [String, Number],
     default: ''
+  },
+  content: {
+    type: [String, Number],
+    default: ''
+  },
+  tooltipText: {
+    type: String
   }
 })
 
 let isContentInvalid = true
 const isContentNotEmpty = ref(false)
 const contentEditableRef = ref()
-const htmlString = ref(props.defaultContent) // to render string as html
+const htmlString = ref(props.content || props.defaultContent) // to render string as html
+
+watch(props, () => {
+  htmlString.value = props.content
+})
 
 const contentChange = () => {
   isContentNotEmpty.value = contentEditableRef.value.textContent.length as boolean
 }
 
-const validateAndFormat = () => {
+const validateAndFormat: fncArgVoid = () => {
   isContentInvalid = validateContent()
 
   const highlightedString = highlightInvalid()
@@ -77,7 +105,19 @@ const validateAndFormat = () => {
 
   emit('is-content-invalid', isContentInvalid)
 
-  if (!isContentInvalid) emit('content-formatted', contentEditableRef.value.textContent)
+  if (!isContentInvalid) emit('content-formatted', splitContent(contentEditableRef.value.textContent))
+}
+
+const splitContent = (str: string): (string | number)[] | null => {
+  if (!str || str.length < 2) return null
+
+  const regexDelim = new RegExp(props.regexDelim)
+  let contentEditableStrings = str.split(regexDelim)
+
+  if (props.contentType === ContentEditableType.UDPPort) {
+    return contentEditableStrings.map((p) => parseInt(p))
+  }
+  return contentEditableStrings
 }
 
 const validateContent = () => {
@@ -95,7 +135,6 @@ const validateContent = () => {
       break
     default:
   }
-
   return isInvalid
 }
 
@@ -125,13 +164,18 @@ const highlightInvalid = () => {
   return highlightInvalidString
 }
 
-const reset = () => {
+const reset: fncArgVoid = () => {
   contentEditableRef.value.textContent = props.defaultContent
 }
 
 const checkCircleIcon: IIcon = {
   image: markRaw(CheckCircleIcon),
   tooltip: 'Validate'
+}
+const iconHelp: IIcon = {
+  image: markRaw(Help),
+  tooltip: props.tooltipText,
+  size: 1.2
 }
 
 defineExpose({
@@ -148,6 +192,22 @@ defineExpose({
 .content-editable-wrapper {
   // TODO: mimic FeatherDS input component; label inside input box and animate it to be on top on the box when focus
   position: relative;
+  > .label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    > .icon-help {
+      height: 20px;
+      color: var(variables.$secondary-variant);
+      width: 20px;
+      min-width: 20px;
+      border: none;
+      padding: 0;
+      > svg {
+        font-size: 1.2rem;
+      }
+    }
+  }
   > .content-editable {
     border: 1px solid var(variables.$secondary-text-on-surface);
     border-radius: vars.$border-radius-xs;
@@ -167,6 +227,7 @@ defineExpose({
       width: 1.5rem;
       height: 1.5rem;
       outline: none;
+      color: var(variables.$success);
       &:hover {
         cursor: pointer;
       }

@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -29,19 +29,18 @@
 package org.opennms.horizon.events.grpc.service;
 
 import com.google.protobuf.Empty;
-import com.google.protobuf.Int64Value;
+import com.google.protobuf.UInt64Value;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.events.grpc.config.TenantLookup;
 import org.opennms.horizon.events.persistence.service.EventService;
-import org.opennms.horizon.events.proto.EventDTO;
-import org.opennms.horizon.events.proto.EventList;
+import org.opennms.horizon.events.proto.Event;
+import org.opennms.horizon.events.proto.EventLog;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -50,11 +49,12 @@ public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
     private final TenantLookup tenantLookup;
 
     @Override
-    public void listEvents(Empty request, StreamObserver<EventList> responseObserver) {
-        Optional<String> tenantId = tenantLookup.lookupTenantId(Context.current());
+    public void listEvents(Empty request, StreamObserver<EventLog> responseObserver) {
+        String tenantId = tenantLookup.lookupTenantId(Context.current()).orElseThrow();
 
-        List<EventDTO> events = eventService.findEvents(tenantId.orElseThrow());
-        EventList eventList = EventList.newBuilder()
+        List<Event> events = eventService.findEvents(tenantId);
+        EventLog eventList = EventLog.newBuilder()
+            .setTenantId(tenantId)
             .addAllEvents(events).build();
 
         responseObserver.onNext(eventList);
@@ -62,12 +62,12 @@ public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
     }
 
     @Override
-    public void getEventsByNodeId(Int64Value nodeId, StreamObserver<EventList> responseObserver) {
-        Optional<String> tenantId = tenantLookup.lookupTenantId(Context.current());
+    public void getEventsByNodeId(UInt64Value nodeId, StreamObserver<EventLog> responseObserver) {
+        String tenantId = tenantLookup.lookupTenantId(Context.current()).orElseThrow();
 
-        List<EventDTO> events = eventService
-            .findEventsByNodeId(tenantId.orElseThrow(), nodeId.getValue());
-        EventList eventList = EventList.newBuilder()
+        List<Event> events = eventService.findEventsByNodeId(tenantId, nodeId.getValue());
+        EventLog eventList = EventLog.newBuilder()
+            .setTenantId(tenantId)
             .addAllEvents(events).build();
 
         responseObserver.onNext(eventList);

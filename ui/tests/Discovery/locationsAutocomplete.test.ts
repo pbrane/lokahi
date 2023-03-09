@@ -1,4 +1,4 @@
-import LocationsAutocomplete from '@/components/Discovery/LocationsAutocomplete.vue'
+import DiscoveryLocationsAutocomplete from '@/components/Discovery/DiscoveryLocationsAutocomplete.vue'
 import mount from 'tests/mountWithPiniaVillus'
 let wrapper: any
 
@@ -24,7 +24,7 @@ const locationsMock = [
 describe('Locations Autocomplete component', () => {
   beforeAll(() => {
     wrapper = mount({
-      component: LocationsAutocomplete,
+      component: DiscoveryLocationsAutocomplete,
       props: {
         type: 'multiple'
       }
@@ -34,7 +34,7 @@ describe('Locations Autocomplete component', () => {
     wrapper.unmount()
   })
 
-  it('The LocationsAutocomplete component mounts correctly', () => {
+  it('The DiscoveryLocationsAutocomplete component mounts correctly', () => {
     expect(wrapper).toBeTruthy()
   })
 
@@ -46,8 +46,8 @@ describe('Locations Autocomplete component', () => {
   })
 
   it('Should remove the location by id', () => {
-    wrapper.vm.selectedLocations = locationsMock
-    wrapper.vm.removeLocation({ id: 2 })
-    expect(wrapper.vm.selectedLocations.length).toEqual(3)
+    wrapper.vm.selectedLocation = locationsMock[0]
+    wrapper.vm.removeLocation()
+    expect(wrapper.vm.selectedLocation).toEqual(null)
   })
 })

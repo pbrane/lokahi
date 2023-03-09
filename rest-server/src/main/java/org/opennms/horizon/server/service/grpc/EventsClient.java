@@ -3,12 +3,12 @@ package org.opennms.horizon.server.service.grpc;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.opennms.horizon.events.proto.EventDTO;
+import com.google.protobuf.UInt64Value;
+import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 
 import com.google.protobuf.Empty;
-import com.google.protobuf.Int64Value;
 
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
@@ -32,15 +32,15 @@ public class EventsClient {
         }
     }
 
-    public List<EventDTO> listEvents(String accessToken) {
+    public List<Event> listEvents(String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         return eventsStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listEvents(Empty.newBuilder().build()).getEventsList();
     }
 
-    public List<EventDTO> getEventsByNodeId(long nodeId, String accessToken) {
+    public List<Event> getEventsByNodeId(long nodeId, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
-        return eventsStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).getEventsByNodeId(Int64Value.of(nodeId)).getEventsList();
+        return eventsStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).getEventsByNodeId(UInt64Value.of(nodeId)).getEventsList();
     }
 }

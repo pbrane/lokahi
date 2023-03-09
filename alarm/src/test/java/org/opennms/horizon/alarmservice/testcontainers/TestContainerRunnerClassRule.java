@@ -28,8 +28,13 @@
 
 package org.opennms.horizon.alarmservice.testcontainers;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+
 import org.junit.rules.ExternalResource;
+import org.keycloak.common.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -59,19 +64,25 @@ public class TestContainerRunnerClassRule extends ExternalResource {
 
     private Network network;
 
+    private KeyPair jwtKeyPair;
+
     public TestContainerRunnerClassRule() {
         kafkaContainer = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag(confluentPlatformVersion));
-        applicationContainer = new GenericContainer(DockerImageName.parse(dockerImage).toString());
-        postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse("postgres").withTag("14.5-alpine").toString());
+        applicationContainer = new GenericContainer(DockerImageName.parse(dockerImage));
+        postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse("citusdata/citus").asCompatibleSubstituteFor("postgres")
+            .withTag("postgres_14"));
     }
 
     @Override
-    protected void before() throws Throwable {
-        network =
-            Network.newNetwork()
-            ;
-
+    protected void before() {
+        network = Network.newNetwork();
         LOG.info("USING TEST DOCKER NETWORK {}", network.getId());
+
+        try {
+            jwtKeyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
 
         startKafkaContainer();
         startPostgresContainer();
@@ -90,24 +101,18 @@ public class TestContainerRunnerClassRule extends ExternalResource {
 //----------------------------------------
 
     private void startPostgresContainer() {
-
-        postgreSQLContainer
-            .withNetwork(network)
+        postgreSQLContainer.withNetwork(network)
             .withNetworkAliases("postgres")
             .withEnv("POSTGRESS_CLIENT_PORT", String.valueOf(PostgreSQLContainer.POSTGRESQL_PORT))
-            .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("POSTGRES"))
-        ;
-
+            .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("POSTGRES"));
     }
 
     private void startKafkaContainer() {
-        kafkaContainer
-            .withEmbeddedZookeeper()
+        kafkaContainer.withEmbeddedZookeeper()
             .withNetwork(network)
             .withNetworkAliases("kafka", "kafka-host")
             .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("KAFKA"))
             .start();
-        ;
 
         String bootstrapServers = kafkaContainer.getBootstrapServers();
         System.setProperty(KAFKA_BOOTSTRAP_SERVER_PROPERTYNAME, bootstrapServers);
@@ -115,34 +120,39 @@ public class TestContainerRunnerClassRule extends ExternalResource {
     }
 
     private void startApplicationContainer() {
-        applicationContainer
-            .withNetwork(network)
+        applicationContainer.withNetwork(network)
             .withNetworkAliases("application", "application-host")
             .dependsOn(kafkaContainer, postgreSQLContainer)
-            .withExposedPorts(8080, 5005)
+            .withExposedPorts(8080, 6565, 5005)
             .withEnv("JAVA_TOOL_OPTIONS", "-Djava.security.egd=file:/dev/./urandom -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
             .withEnv("SPRING_KAFKA_BOOTSTRAP_SERVERS", "kafka-host:9092")
             .withEnv("SPRING_DATASOURCE_URL", "jdbc:postgresql://postgres:5432/" + postgreSQLContainer.getDatabaseName())
             .withEnv("SPRING_DATASOURCE_USERNAME", postgreSQLContainer.getUsername())
             .withEnv("SPRING_DATASOURCE_PASSWORD", postgreSQLContainer.getPassword())
+            .withEnv("KEYCLOAK_PUBLIC_KEY", Base64.encodeBytes(jwtKeyPair.getPublic().getEncoded()))
             .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("APPLICATION"))
             .waitingFor(Wait.forLogMessage(".*Started AlarmServiceMain.*", 1)
             .withStartupTimeout(Duration.ofMinutes(3))
         );
-            ;
 
         // DEBUGGING: uncomment to force local port 5005
-        // applicationContainer.getPortBindings().add("5005:5005");
+        //applicationContainer.getPortBindings().add("5005:5005");
         applicationContainer.start();
 
         var httpPort = applicationContainer.getMappedPort(8080); // application-http-port
+        var grpcPort = applicationContainer.getMappedPort(6565); // application-grpc-port
         var debuggerPort = applicationContainer.getMappedPort(5005);
 
-        LOG.info("APPLICATION MAPPED PORTS: http={}; debugger={}",
-            httpPort,
-            debuggerPort
-            );
+        LOG.info("APPLICATION MAPPED PORTS: http={}, grpc={}; debugger={}", httpPort, grpcPort, debuggerPort);
+        System.setProperty("application.base-http-url", "http://localhost:" + httpPort);
+        System.setProperty("application.base-grpc-url", "http://localhost:" + grpcPort);
+    }
 
-        System.setProperty("application.base-url", "http://localhost:" + httpPort);
+    public KeyPair getJwtKeyPair() {
+        return jwtKeyPair;
+    }
+
+    public int getGrpcPort() {
+        return applicationContainer.getMappedPort(6565);
     }
 }

@@ -30,6 +30,23 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
     bootstrap-servers: localhost:9092
 
+management:
+  endpoints:
+    web:
+      base-path: "/"
+      exposure:
+        include: "*"
+
+keycloak:
+  realm: opennms
+  base-url: http://onms-keycloak:8080/auth
+  public-key: ""
+
+grpc:
+  server:
+    port: 6565
+    deadline: 60000
+
 kafka:
   topics:
     alarm-events: "events"

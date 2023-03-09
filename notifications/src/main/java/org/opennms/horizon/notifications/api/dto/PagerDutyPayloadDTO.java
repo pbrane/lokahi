@@ -40,10 +40,21 @@ public class PagerDutyPayloadDTO {
     String summary;
     String timestamp;
     PagerDutySeverity severity;
+    /**
+     * The unique location of the affected system, preferably a hostname or FQDN.
+     */
     String source;
+    /**
+     * Component of the source machine that is responsible for the event, for example mysql or eth0
+     */
     String component;
+    /**
+     * Logical grouping of components of a service, for example app-stack
+     */
     String group;
-
+    /**
+     * The class/type of the event, for example ping failure or cpu load
+     */
     @JsonProperty("class")
     String clazz;
 

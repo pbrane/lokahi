@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -29,6 +29,7 @@
 package org.opennms.horizon.notifications.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.opennms.horizon.model.common.proto.Severity;
 
 public enum PagerDutySeverity {
     CRITICAL("critical"),
@@ -42,30 +43,17 @@ public enum PagerDutySeverity {
         this.name = name;
     }
 
-    public boolean equalsName(String otherName) {
-        // (otherName == null) check is not needed because name.equals(null) returns false
-        return name.equals(otherName);
-    }
-
-    @JsonValue()
+    @JsonValue
     public String toString() {
         return this.name;
     }
 
-    public static PagerDutySeverity fromAlarmSeverity(AlarmSeverity alarmSeverity) {
-        switch (alarmSeverity) {
-            case INDETERMINATE:
-            case NORMAL:
-            case CLEARED:
-                return INFO;
-            case WARNING:
-                return WARNING;
-            case MINOR:
-            case MAJOR:
-                return ERROR;
-            case CRITICAL:
-                return CRITICAL;
-        }
-        return CRITICAL;
+    public static PagerDutySeverity fromAlarmSeverity(Severity alarmSeverity) {
+        return switch (alarmSeverity) {
+            case INDETERMINATE, NORMAL, CLEARED -> INFO;
+            case WARNING -> WARNING;
+            case MINOR, MAJOR -> ERROR;
+            default -> CRITICAL;
+        };
     }
 }

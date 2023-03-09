@@ -1,5 +1,6 @@
 package org.opennms.horizon.notifications.kafka;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
@@ -12,11 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
+import org.opennms.horizon.alarms.proto.Alarm;
 import org.opennms.horizon.notifications.NotificationsApplication;
 import org.opennms.horizon.notifications.SpringContextTestInitializer;
 import org.opennms.horizon.notifications.api.PagerDutyAPIImpl;
 import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -72,7 +73,7 @@ class AlarmKafkaConsumerIntegrationTestNoConfig {
     private AlarmKafkaConsumer alarmKafkaConsumer;
 
     @Captor
-    ArgumentCaptor<AlarmDTO> alarmCaptor;
+    ArgumentCaptor<byte[]> alarmCaptor;
 
     @Autowired
     private TestRestTemplate testRestTemplate;
@@ -96,7 +97,7 @@ class AlarmKafkaConsumerIntegrationTestNoConfig {
     }
 
     @Test
-    void testProducingAlarmWithNoConfigSetup() {
+    void testProducingAlarmWithNoConfigSetup() throws InvalidProtocolBufferException {
         int id = 1234;
         String tenantId = "opennms-prime";
         ProducerRecord producerRecord = new ProducerRecord<>(alarmsTopic, String.format("{\"id\": %d, \"severity\":\"indeterminate\", \"logMessage\":\"hello\"}", id));
@@ -106,10 +107,10 @@ class AlarmKafkaConsumerIntegrationTestNoConfig {
         stringProducer.flush();
 
         verify(alarmKafkaConsumer, timeout(KAFKA_TIMEOUT).times(1))
-            .consume(alarmCaptor.capture(),any());
+            .consume(alarmCaptor.capture());
 
-        AlarmDTO capturedAlarm = alarmCaptor.getValue();
-        assertEquals(id, capturedAlarm.getId());
+        Alarm capturedAlarm = Alarm.parseFrom(alarmCaptor.getValue());
+        assertEquals(id, capturedAlarm.getDatabaseId());
 
         // This is the call to the PagerDuty API, we won't get this far, as we will get an exception when we try
         // to get the token, as the config table hasn't been setup.

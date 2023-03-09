@@ -28,17 +28,12 @@
 
 package org.opennms.horizon.notifications.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opennms.horizon.notifications.api.PagerDutyAPI;
-import org.opennms.horizon.notifications.api.PagerDutyAPIImpl;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NotificationsServiceImplTest {

@@ -1,0 +1,12 @@
+mutation CreateActiveDiscovery($CreateDiscoveryConfigRequestInput: CreateDiscoveryConfigRequestInput!) {
+  createActiveDiscovery(request: $CreateDiscoveryConfigRequestInput) {
+    configName
+    ipAddresses
+    location
+    snmpConfig {
+      ports
+      readCommunities
+    }
+    # tags // not avail yet
+  }
+}

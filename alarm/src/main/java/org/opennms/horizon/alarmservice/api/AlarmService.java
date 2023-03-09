@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2018 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2018 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -28,53 +28,24 @@
 
 package org.opennms.horizon.alarmservice.api;
 
-import java.util.Date;
-import java.util.List;
-import org.opennms.horizon.alarmservice.db.entity.Alarm;
-import org.opennms.horizon.alarmservice.model.AlarmDTO;
-import org.opennms.horizon.alarmservice.model.AlarmSeverity;
+
+import org.opennms.horizon.alarms.proto.Alarm;
 import org.opennms.horizon.events.proto.Event;
 
-/**
- * This API is intended to provide RHS functionality for Drools Alarmd and
- * Situation rules.
- */
+import java.util.Optional;
+
 public interface AlarmService {
+    Optional<Alarm> reduceEvent(Event e);
 
-    AlarmDTO clearAlarm(Alarm alarm, Date now);
+    void deleteAlarmById(long id);
 
-    AlarmDTO clearAlarm(Long alarmId, Date now);
+    void deleteAlarm(Alarm alarm);
 
-    AlarmDTO deleteAlarm(Long id);
+    Optional<Alarm> acknowledgeAlarmById(long id);
 
-    AlarmDTO deleteAlarm(Alarm alarm);
+    Optional<Alarm> unacknowledgeAlarmById(long id);
 
-    AlarmDTO unclearAlarm(Alarm alarm, Date now);
+    void addListener(AlarmLifecyleListener listener);
 
-    AlarmDTO unclearAlarm(Long alarmId, Date now);
-
-    AlarmDTO escalateAlarm(Alarm alarm, Date now);
-
-    AlarmDTO escalateAlarm(Long alarmId, Date now);
-
-    AlarmDTO acknowledgeAlarm(Alarm alarm, Date now, String userId);
-
-    AlarmDTO acknowledgeAlarm(Long alarmId, Date now, String userId);
-
-    AlarmDTO unAcknowledgeAlarm(Long alarmId, Date now);
-
-    AlarmDTO unAcknowledgeAlarm(Alarm alarm, Date now);
-
-    AlarmDTO setSeverity(Alarm alarm, AlarmSeverity severity, Date now);
-
-    AlarmDTO setSeverity(Long alarmId, AlarmSeverity severity, Date now);
-
-    List<AlarmDTO> getAllAlarms(String tenantId);
-
-    AlarmDTO process(Event e);
-
-    AlarmDTO removeStickyMemo(long alarmId);
-
-    AlarmDTO updateStickyMemo(Long alarmId, String body);
-
+    void removeListener(AlarmLifecyleListener listener);
 }

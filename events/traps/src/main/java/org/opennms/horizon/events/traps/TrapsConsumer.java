@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2022-2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -34,10 +34,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.opennms.horizon.events.EventConstants;
 import org.opennms.horizon.events.api.EventConfDao;
 import org.opennms.horizon.events.grpc.client.InventoryClient;
-import org.opennms.horizon.events.proto.AlarmData;
-import org.opennms.horizon.events.proto.EventSeverity;
-import org.opennms.horizon.events.proto.ManagedObject;
-import org.opennms.horizon.events.proto.UpdateField;
 import org.opennms.horizon.events.xml.Event;
 import org.opennms.horizon.events.xml.Events;
 import org.opennms.horizon.events.xml.Log;
@@ -48,9 +44,9 @@ import org.opennms.horizon.events.proto.EventParameter;
 import org.opennms.horizon.events.proto.SnmpInfo;
 import org.opennms.horizon.grpc.traps.contract.TrapDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapLogDTO;
+import org.opennms.horizon.model.common.proto.Severity;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.snmp.SnmpHelper;
-import org.opennms.horizon.shared.snmp.traps.TrapdInstrumentation;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,11 +115,11 @@ public class TrapsConsumer {
             final Log eventLog = toLog(trapLogDTO, tenantId);
 
             // Convert to events into protobuf format
-            EventLog eventLogProto = convertToProtoEvents(eventLog);
+            EventLog eventLogProto = convertToProtoEvents(eventLog, tenantId);
             // Send them to kafka
-            eventForwarder.sendEvents(eventLogProto, tenantId);
+            eventForwarder.sendEvents(eventLogProto);
 
-            eventLogProto.getEventList().stream()
+            eventLogProto.getEventsList().stream()
                 .filter(e-> e.getNodeId() <= 0)
                 .forEach(e ->{
                     sendNewSuspectEvent(e, tenantId);
@@ -137,35 +133,37 @@ public class TrapsConsumer {
 
     private void sendNewSuspectEvent(org.opennms.horizon.events.proto.Event event, String tenantId) {
         var newEvent = org.opennms.horizon.events.proto.Event.newBuilder()
+            .setTenantId(tenantId)
             .setUei(EventConstants.NEW_SUSPECT_INTERFACE_EVENT_UEI)
             .setIpAddress(event.getIpAddress())
             .setLocation(event.getLocation())
-            .setEventInfo(event.getEventInfo())
-            .addAllEventParams(event.getEventParamsList())
+            .setInfo(event.getInfo())
+            .addAllParameters(event.getParametersList())
             .build();
-        eventForwarder.sendInternalEvents(newEvent, tenantId);
+        eventForwarder.sendInternalEvent(newEvent);
     }
 
-    private EventLog convertToProtoEvents(Log eventLog) {
-        EventLog.Builder builder = EventLog.newBuilder();
-        eventLog.getEvents().getEventCollection().forEach((event -> builder.addEvent(mapToEventProto(event))));
+    private EventLog convertToProtoEvents(Log eventLog, String tenantId) {
+        EventLog.Builder builder = EventLog.newBuilder()
+                .setTenantId(tenantId);
+        eventLog.getEvents().getEventCollection().forEach((event -> builder.addEvents(mapToEventProto(event, tenantId))));
         return builder.build();
     }
 
-    private org.opennms.horizon.events.proto.Event mapToEventProto(Event event) {
+    private org.opennms.horizon.events.proto.Event mapToEventProto(Event event, String tenantId) {
         org.opennms.horizon.events.proto.Event.Builder eventBuilder = org.opennms.horizon.events.proto.Event.newBuilder()
+            .setTenantId(tenantId)
             .setUei(event.getUei())
-            .setProducedTime(event.getCreationTime().getTime())
+            .setProducedTimeMs(event.getCreationTime().getTime())
             .setNodeId(event.getNodeid())
             .setLocation(event.getDistPoller())
             .setIpAddress(event.getInterface());
 
         mapSeverity(event, eventBuilder);
-        mapAlarmData(event, eventBuilder);
         mapEventInfo(event, eventBuilder);
 
         List<EventParameter> eventParameters = mapEventParams(event);
-        eventBuilder.addAllEventParams(eventParameters);
+        eventBuilder.addAllParameters(eventParameters);
         return eventBuilder.build();
     }
 
@@ -173,8 +171,8 @@ public class TrapsConsumer {
         if (!Strings.isNullOrEmpty(event.getSeverity())) {
             String severity = event.getSeverity().toUpperCase(Locale.ROOT);
             try {
-                EventSeverity eventSeverity = EventSeverity.valueOf(severity);
-                eventBuilder.setEventSeverity(eventSeverity);
+                Severity eventSeverity = Severity.valueOf(severity);
+                eventBuilder.setSeverity(eventSeverity);
             } catch (IllegalArgumentException iae) {
                 LOG.warn("No matching event severity for {} in proto", severity);
             }
@@ -191,7 +189,7 @@ public class TrapsConsumer {
                 .setCommunity(snmp.getCommunity())
                 .setSpecific(snmp.getSpecific())
                 .setTrapOid(snmp.getTrapOID()).build()).build();
-            eventBuilder.setEventInfo(eventInfo);
+            eventBuilder.setInfo(eventInfo);
         }
     }
 
@@ -214,26 +212,6 @@ public class TrapsConsumer {
         return Optional.empty();
     }
 
-    static void mapAlarmData(Event event, org.opennms.horizon.events.proto.Event.Builder eventBuilder) {
-        var alarmData = event.getAlarmData();
-        if (alarmData != null) {
-            AlarmData.Builder builder = AlarmData.newBuilder();
-            builder.setReductionKey(alarmData.getReductionKey());
-            builder.setAlarmType(alarmData.getAlarmType());
-            builder.setClearKey(Optional.ofNullable(alarmData.getClearKey()).orElse(AlarmData.getDefaultInstance().getClearKey()));
-            builder.setAutoClean(Optional.ofNullable(alarmData.getAutoClean()).orElse(AlarmData.getDefaultInstance().getAutoClean()));
-            if (alarmData.getManagedObject() != null) {
-                builder.setManagedObject(ManagedObject.newBuilder()
-                    .setType(alarmData.getManagedObject().getType()).build());
-            }
-            alarmData.getUpdateFieldList().forEach(updateField ->
-                builder.addUpdateField(UpdateField.newBuilder()
-                    .setFieldName(updateField.getFieldName())
-                    .setUpdateOnReduction(updateField.isUpdateOnReduction()).build()));
-            eventBuilder.setAlarmData(builder.build());
-        }
-    }
-
     private Optional<String> getTenantId(Map<String, Object> headers) {
         Object tenantId = headers.get(GrpcConstants.TENANT_ID_KEY);
         if (tenantId instanceof byte[]) {
@@ -241,7 +219,6 @@ public class TrapsConsumer {
         }
         return Optional.empty();
     }
-
 
     private Log toLog(TrapLogDTO messageLog, String tenantId) {
         final Log log = new Log();

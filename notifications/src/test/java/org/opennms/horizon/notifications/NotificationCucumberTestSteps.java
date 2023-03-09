@@ -9,6 +9,8 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.stub.MetadataUtils;
 import org.keycloak.common.VerificationException;
+import org.opennms.horizon.alarms.proto.Alarm;
+import org.opennms.horizon.model.common.proto.Severity;
 import org.opennms.horizon.notifications.api.PagerDutyDao;
 import org.opennms.horizon.notifications.dto.NotificationServiceGrpc;
 import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
@@ -16,7 +18,6 @@ import org.opennms.horizon.notifications.exceptions.NotificationConfigUninitiali
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.notifications.service.NotificationService;
 import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.opennms.horizon.shared.dto.event.AlarmDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,8 +139,7 @@ public class NotificationCucumberTestSteps extends GrpcTestBase {
     }
 
     private void postAlarm() throws NotificationException {
-        AlarmDTO alarm = new AlarmDTO();
-        alarm.setLogMessage("Hello");
+        Alarm alarm = Alarm.newBuilder().setLogMessage("Hello").build();
         notificationService.postNotification(alarm);
     }
 

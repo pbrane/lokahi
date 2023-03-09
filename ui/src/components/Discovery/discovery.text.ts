@@ -26,10 +26,10 @@ export default {
       label: 'Enter IP ranges and/or subnets'
     },
     CommunityString: {
-      label: 'Enter community string (optional)'
+      label: 'Enter community string'
     },
     UDPPort: {
-      label: 'Enter UDP port (optional)'
+      label: 'Enter UDP port'
     }
   }
 }
@@ -88,7 +88,12 @@ export const DiscoverySyslogSNMPTrapsForm = {
 }
 
 export const Common = {
-  tagsInput: 'Search/Add tags (optional)'
+  tagsInput: 'Search/Add tags (optional)',
+  tooltip: {
+    IPHelpTooltp: 'IP list or IP ranges separated by:,;. Examples: 127.0.0.1;127.0.0.2,127.0.0.1-127.0.0.12',
+    CommunityStringHelpTooltp: '',
+    PortHelpTooltp: 'It accepts list of ports, separated by space, ",",":" '
+  }
 }
 
 export const Azure = {

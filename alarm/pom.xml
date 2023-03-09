@@ -39,7 +39,6 @@
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>org.opennms.horizon.shared</groupId>
             <artifactId>grpc-common-constants</artifactId>
@@ -51,8 +50,20 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-core</artifactId>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-services</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -61,34 +72,6 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.swrve</groupId>
-            <artifactId>rate-limited-logger</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-compiler</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-mvel</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kie</groupId>
-            <artifactId>kie-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kie.soup</groupId>
-            <artifactId>kie-soup-commons</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kie.soup</groupId>
-            <artifactId>kie-soup-maven-support</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -135,12 +118,10 @@
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
-            <version>${jakarta.annotation.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>${jakarta.xml.version}</version>
         </dependency>
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
@@ -161,24 +142,24 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
-            <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-adapter-core</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring-boot.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-spring</artifactId>
-            <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -204,15 +185,22 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>${testcontainers.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -270,7 +258,7 @@
 <!--                        Must be in package phase before docker runs-->
                         <phase>package</phase>
                         <goals>
-                            <goal>dockerBuild</goal>
+                            <goal>${application.jib.defaultGoal}</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -317,8 +305,6 @@
 <!--                    ##########################-->
                     <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                     <systemPropertyVariables>
-                        <application.base-url>http://localhost:${app-http-port}</application.base-url>
-                        <kafka-rest.url>http://localhost:${kafka-rest.port}</kafka-rest.url>
                         <application.docker.image>${application.docker.image}</application.docker.image>
                     </systemPropertyVariables>
                 </configuration>
