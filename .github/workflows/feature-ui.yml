@@ -71,22 +71,22 @@ jobs:
         working-directory: ui
 
       # TODO: e2e test not working
-      - name: Cypress run
-        uses: cypress-io/github-action@v5
-        with:
-          working-directory: ui
-          component: true
-          install: false
-          # start: npx cypress run
-          start: yarn dev
-          wait-on: 'http://localhost:8123'
-          # command: npx cypress run --config baseUrl=${{ env.INGRESS_BASE_URL }}
-
       # - name: Cypress run
       #   uses: cypress-io/github-action@v5
       #   with:
       #     working-directory: ui
-      #     command: npx cypress run --config baseUrl=${{ env.INGRESS_BASE_URL }}
+      #     component: true
+      #     install: false
+      #     # start: npx cypress run
+      #     start: yarn dev
+      #     wait-on: 'http://localhost:8123'
+      #     # command: npx cypress run --config baseUrl=${{ env.INGRESS_BASE_URL }}
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ui
+          command: npx cypress run --config baseUrl=${{ env.INGRESS_BASE_URL }}
 
       - name: SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
