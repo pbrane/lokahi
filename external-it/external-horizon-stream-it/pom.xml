@@ -110,6 +110,15 @@
             <scope>compile</scope>
         </dependency>
 
+        <!--               -->
+        <!-- TEST CONTAINER -->
+        <!--               -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.17.4</version>
+        </dependency>
+
     </dependencies>
 
     <build>
