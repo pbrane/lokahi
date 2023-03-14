@@ -13,7 +13,6 @@
     </description>
 
     <artifactId>flows</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
 
     <dependencies>
