@@ -161,22 +161,12 @@ k8s_yaml(
 # Builds #
 ## Shared ##
 local_resource(
-    'parent-pom',
-    cmd='mvn clean install -N',
-    dir='parent-pom',
-    deps=['./parent-pom'],
-    ignore=['**/target'],
-    labels=['shared'],
-)
-
-local_resource(
     'shared-lib',
     cmd='mvn clean install -DskipTests=true',
     dir='shared-lib',
     deps=['./shared-lib'],
     ignore=['**/target'],
     labels=['shared'],
-    resource_deps=['parent-pom'],
 )
 
 ## Microservices ##
