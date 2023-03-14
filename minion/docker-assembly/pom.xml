@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.opennms.horizon.minion</groupId>
             <artifactId>assembly</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>tar.gz</type>
             <!--<classifier>tar.gz</classifier>-->
         </dependency>
