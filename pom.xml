@@ -16,6 +16,7 @@
         <module>alert</module>
         <module>datachoices</module>
         <module>events</module>
+        <module>external-it</module>
         <module>inventory</module>
         <module>metrics-processor</module>
         <module>minion</module>
