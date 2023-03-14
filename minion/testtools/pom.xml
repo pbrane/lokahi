@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.opennms.horizon.minion</groupId>
     <artifactId>minion</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>${revision}${sha1}${changelist}</version>
   </parent>
 
   <artifactId>testtools</artifactId>
