@@ -100,10 +100,6 @@ jobs:
     with:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
-  parent-pom:
-    name: Parent POM
-    uses: ./.github/workflows/feature-parent-pom.yml
-    secrets: inherit
   rest-server:
     name: Vue.js BFF
     uses: ./.github/workflows/feature-rest-server.yml

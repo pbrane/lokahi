@@ -71,7 +71,7 @@ jobs:
       - name: Cache Maven dependencies
         uses: ./.github/actions/maven-cache
         with:
-          cache-key-hash: ${{ hashFiles('minion/**/pom.xml', 'parent-pom/pom.xml', 'shared-lib/**/pom.xml') }}
+          cache-key-hash: ${{ hashFiles('minion/**/pom.xml', 'pom.xml', 'shared-lib/**/pom.xml') }}
 
       - name: Cleanup the Maven Cache
         uses: ./.github/actions/maven-cache-cleanup-project-artifacts

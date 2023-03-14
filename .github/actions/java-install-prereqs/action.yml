@@ -4,11 +4,8 @@ description: 'Builds prerequisite Maven projects and installs them into the runn
 runs:
   using: "composite"
   steps:
-    - name: Install parent-pom and shared-lib
+    - name: Install shared-lib
       run: |
-        mvn -B -Dstyle.color=always \
-            install -f parent-pom -DskipTests
-
         mvn -B -Dstyle.color=always \
             install -f shared-lib -DskipTests
       shell: bash
