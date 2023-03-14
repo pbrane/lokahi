@@ -4,7 +4,7 @@ on:
 # Currently triggered by develop workflow, so this trigger is disabled for now until we can fully separate them
 #  pull_request:
 #    paths:
-#      - 'parent-pom/**'
+#      - 'parent-pom/pom.xml'
   workflow_call:
 
 jobs:
@@ -37,4 +37,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sonar-token: ${{ secrets.SONAR_TOKEN }}
           # sonar.projectKey cannot be defined in this project's pom.xml, all child projects would inherit its value
-          project-key: ${{ secrets.SONAR_CLOUD_PROJECT_KEY }} 
+          project-key: ${{ secrets.SONAR_CLOUD_PROJECT_KEY }}

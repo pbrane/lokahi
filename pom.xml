@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>OpenNMS Horizon Stream</name>
+    <description>
+        Aggregator POM for Horizon Stream.
+
+        This POM file is only to enable better IDE support and should not be used to instrument builds. Top-level projects should be built individually.
+
+        `maven-enforcer-plugin` is used to discourage its use.
+    </description>
+
+    <groupId>org.opennms.horizon</groupId>
+    <artifactId>horizon-stream</artifactId>
+    <version>0.0.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>alert</module>
+        <module>datachoices</module>
+        <module>events</module>
+        <module>external-it</module>
+        <module>inventory</module>
+        <module>metrics-processor</module>
+        <module>minion</module>
+        <module>minion-gateway</module>
+        <module>minion-gateway-grpc-proxy</module>
+        <module>notifications</module>
+        <module>parent-pom</module>
+        <module>rest-server</module>
+        <module>shared-lib</module>
+        <module>tooling/ignite-tool</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>ban-aggregator-pom</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <alwaysFail>
+                                    <message>
+                                        This aggregator POM is only for IDE support and should never be part of a build! Top-level projects should be built individually.
+                                    </message>
+                                </alwaysFail>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

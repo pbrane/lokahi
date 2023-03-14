@@ -6,9 +6,11 @@ runs:
   steps:
     - name: Install parent-pom and shared-lib
       run: |
+        # Install parent pom into repository, non recursively
         mvn -B -Dstyle.color=always \
             install -f parent-pom -DskipTests
 
+        # Install shared-lib into repository
         mvn -B -Dstyle.color=always \
             install -f shared-lib -DskipTests
       shell: bash
