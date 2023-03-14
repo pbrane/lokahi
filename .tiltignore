@@ -5,3 +5,4 @@ charts/opennms-operator/tmpcharts
 charts/opennms-operator-dependencies/charts
 charts/opennms-operator-dependencies/tmpcharts
 *.iml
+.flattened-pom.xml
