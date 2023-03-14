@@ -18,7 +18,6 @@
     </description>
 
 	<artifactId>rest-server</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
 
 	<properties>
         <application.docker.image.name>opennms/horizon-stream-rest-server</application.docker.image.name>

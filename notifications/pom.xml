@@ -15,7 +15,6 @@
     <description>A microservice responsible for generating notifications from alerts.</description>
 
 	<artifactId>notifications</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
 
     <properties>
         <application.docker.image.name>opennms/horizon-stream-notification</application.docker.image.name>
