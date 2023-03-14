@@ -12,6 +12,21 @@
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <modules>
+        <module>alert</module>
+        <module>datachoices</module>
+        <module>events</module>
+        <module>inventory</module>
+        <module>metrics-processor</module>
+        <module>minion</module>
+        <module>minion-gateway</module>
+        <module>minion-gateway-grpc-proxy</module>
+        <module>notifications</module>
+        <module>rest-server</module>
+        <module>shared-lib</module>
+        <module>tooling/ignite-tool</module>
+    </modules>
+
     <properties>
         <!-- Configuration properties -->
         <maven.compiler.source>17</maven.compiler.source>
