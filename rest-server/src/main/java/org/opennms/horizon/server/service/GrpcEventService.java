@@ -49,7 +49,7 @@ public class GrpcEventService {
     private final EventMapper mapper;
     private final ServerHeaderUtil headerUtil;
 
-    @GraphQLQuery
+    @GraphQLQuery(name = "findAllEvents")
     public Flux<Event> findAllEvents(@GraphQLEnvironment ResolutionEnvironment env) {
         return Flux.fromIterable(client.listEvents(headerUtil.getAuthHeader(env)).stream().map(mapper::protoToEvent).toList());
     }

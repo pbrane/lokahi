@@ -3,6 +3,7 @@ package org.opennms.horizon.server;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
+import org.opennms.horizon.server.service.GrpcAlertService;
 import org.opennms.horizon.server.service.GrpcAzureCredentialService;
 import org.opennms.horizon.server.service.GrpcEventService;
 import org.opennms.horizon.server.service.GrpcLocationService;
@@ -26,6 +27,8 @@ class RestServerApplicationTests {
     private GrpcLocationService grpcLocationService;
     @Autowired
     private GrpcAzureCredentialService grpcAzureCredentialService;
+    @Autowired
+    private GrpcAlertService grpcAlertService;
 
 	@Test
 	void contextLoads() {
@@ -35,6 +38,7 @@ class RestServerApplicationTests {
         assertNotNull(grpcEventService);
         assertNotNull(grpcNodeService);
         assertNotNull(grpcAzureCredentialService);
+        assertNotNull(grpcAlertService);
 	}
 
 }
