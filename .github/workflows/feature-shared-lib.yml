@@ -28,7 +28,7 @@ jobs:
       - name: Cache Maven dependencies
         uses: ./.github/actions/maven-cache
         with:
-          cache-key-hash: ${{ hashFiles('parent-pom/pom.xml', 'shared-lib/**/pom.xml') }}
+          cache-key-hash: ${{ hashFiles('pom.xml', 'shared-lib/**/pom.xml') }}
 
       - name: Maven Install & Sonar Scan
         uses: ./.github/actions/maven-install-sonar

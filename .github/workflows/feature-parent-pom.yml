@@ -4,16 +4,13 @@ on:
 # Currently triggered by develop workflow, so this trigger is disabled for now until we can fully separate them
 #  pull_request:
 #    paths:
-#      - 'parent-pom/**'
+#      - 'pom.xml'
   workflow_call:
 
 jobs:
   build-and-test:
     name: Build and test - Parent POM
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: 'parent-pom'
     steps:
       - uses: actions/checkout@v3
         with:
@@ -28,12 +25,11 @@ jobs:
       - name: Cache Maven dependencies
         uses: ./.github/actions/maven-cache
         with:
-          cache-key-hash: ${{ hashFiles('parent-pom/pom.xml') }}
+          cache-key-hash: ${{ hashFiles('pom.xml') }}
 
       - name: Maven Install & Sonar Scan
         uses: ./.github/actions/maven-install-sonar
         with:
-          working-directory: 'parent-pom'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sonar-token: ${{ secrets.SONAR_TOKEN }}
           # sonar.projectKey cannot be defined in this project's pom.xml, all child projects would inherit its value
