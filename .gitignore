@@ -27,6 +27,7 @@ target
 bin/
 
 dependency-reduced-pom.xml
+.flattened-pom.xml
 
 # Editors
 .idea
