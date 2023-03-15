@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.opennms.horizon.shared</groupId>
         <artifactId>shared-lib</artifactId>
-        <version>${revision}${sha1}${changelist}</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>notifications</artifactId>

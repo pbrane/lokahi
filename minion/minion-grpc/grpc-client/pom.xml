@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.opennms.horizon.minion</groupId>
         <artifactId>minion-grpc</artifactId>
-        <version>${revision}${sha1}${changelist}</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>grpc-client</artifactId>

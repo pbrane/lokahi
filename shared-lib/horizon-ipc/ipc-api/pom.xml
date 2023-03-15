@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.opennms.horizon.shared</groupId>
         <artifactId>horizon-ipc</artifactId>
-        <version>${revision}${sha1}${changelist}</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>ipc-api</artifactId>

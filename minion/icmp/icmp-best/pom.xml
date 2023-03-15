@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opennms.horizon.minion</groupId>
         <artifactId>icmp</artifactId>
-        <version>${revision}${sha1}${changelist}</version>
+        <version>${revision}</version>
     </parent>
 
   <artifactId>icmp-best</artifactId>

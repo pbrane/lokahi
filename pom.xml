@@ -9,7 +9,7 @@
 
     <groupId>org.opennms.horizon</groupId>
     <artifactId>horizon-parent</artifactId>
-    <version>${revision}${sha1}${changelist}</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -30,9 +30,7 @@
 
     <properties>
         <!-- Project version -->
-        <revision>0.1.0</revision>
-        <changelist>-SNAPSHOT</changelist>
-        <sha1/>
+        <revision>0.1.0-SNAPSHOT</revision>
 
         <!-- Configuration properties -->
         <maven.compiler.source>17</maven.compiler.source>

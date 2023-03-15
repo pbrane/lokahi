@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.opennms.horizon.shared</groupId>
         <artifactId>azure-parent</artifactId>
-        <version>${revision}${sha1}${changelist}</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>azure-http</artifactId>

@@ -6,7 +6,7 @@
 	<parent>
         <groupId>org.opennms.horizon</groupId>
         <artifactId>horizon-parent</artifactId>
-        <version>${revision}${sha1}${changelist}</version>
+        <version>${revision}</version>
 	</parent>
 
     <name>OpenNMS Horizon Stream :: BFF</name>

@@ -20,7 +20,7 @@
 
     <groupId>org.opennms.horizon.exttest</groupId>
     <artifactId>external-horizon-stream-it</artifactId>
-    <version>${revision}${sha1}${changelist}</version>
+    <version>${revision}</version>
 
     <properties>
         <cucumber.version>7.1.0</cucumber.version>

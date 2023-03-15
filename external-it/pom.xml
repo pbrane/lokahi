@@ -7,7 +7,7 @@
     <groupId>org.opennms.horizon.exttest</groupId>
     <artifactId>external-it</artifactId>
     <packaging>pom</packaging>
-    <version>${revision}${sha1}${changelist}</version>
+    <version>${revision}</version>
 
     <name>OpenNMS Horizon Stream :: External IT Parent</name>
 
