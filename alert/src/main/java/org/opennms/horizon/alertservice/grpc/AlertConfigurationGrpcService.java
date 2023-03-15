@@ -28,7 +28,9 @@
 
 package org.opennms.horizon.alertservice.grpc;
 
+import io.grpc.stub.StreamObserver;
 import org.opennms.horizon.alerts.proto.AlertConfigurationServiceGrpc;
+import org.opennms.horizon.alerts.proto.AlertDefinition;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,4 +40,21 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc.AlertConfigurationServiceImplBase {
+
+
+    /*
+  rpc listAlertDefinitions(ListAlertDefinitionsRequest) returns (ListAlertDefinitionsResponse) {};
+  rpc getAlertDefinition(google.protobuf.UInt64Value) returns (AlertDefinition) {}
+
+  rpc insertAlertDefinition(AlertDefinition) returns (AlertDefinition) {}
+  rpc updateAlertDefinition(AlertDefinition) returns (AlertDefinition) {}
+  rpc removeAlertDefinition(google.protobuf.UInt64Value) returns (google.protobuf.BoolValue) {}
+     */
+
+    @Override
+    public void insertAlertDefinition(AlertDefinition request, StreamObserver<AlertDefinition> responseObserver) {
+        System.out.println("insertAlertDefinition "+request);
+        //responseObserver.onNext(alarmDefinitionService.insertAlarmDefinition(request));
+        responseObserver.onCompleted();
+    }
 }
