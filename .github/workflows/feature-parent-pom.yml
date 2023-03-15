@@ -22,15 +22,27 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-${{ runner.arch }}-sonar
+
       - name: Cache Maven dependencies
         uses: ./.github/actions/maven-cache
         with:
           cache-key-hash: ${{ hashFiles('pom.xml') }}
 
-      - name: Maven Install & Sonar Scan
-        uses: ./.github/actions/maven-install-sonar
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          sonar-token: ${{ secrets.SONAR_TOKEN }}
+      - name: Install & Sonar scan
+        run: |
+          mvn -B -Dstyle.color=always \
+              -N \ # parent pom needs to be built non-recursively
+              -Pcicd,coverage install sonar:sonar \
+              -Dsonar.projectKey=$SONAR_PROJECT_KEY
           # sonar.projectKey cannot be defined in this project's pom.xml, all child projects would inherit its value
-          project-key: ${{ secrets.SONAR_CLOUD_PROJECT_KEY }} 
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          GITHUB_TOKEN: ${{ inputs.github-token }}
+          SONAR_TOKEN: ${{ inputs.sonar-token }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_CLOUD_PROJECT_KEY }}
