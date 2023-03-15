@@ -163,9 +163,7 @@ k8s_yaml(
 local_resource(
     'parent-pom',
     cmd='mvn clean install -N',
-    dir='parent-pom',
-    deps=['./parent-pom'],
-    ignore=['**/target'],
+    deps=['pom.xml'],
     labels=['shared'],
 )
 
