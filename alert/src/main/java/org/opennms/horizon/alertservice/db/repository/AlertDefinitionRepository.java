@@ -30,7 +30,9 @@ package org.opennms.horizon.alertservice.db.repository;
 
 import org.opennms.horizon.alerts.proto.AlertDefinition;
 import org.opennms.horizon.alerts.proto.AlertType;
+import org.opennms.horizon.alertservice.db.entity.Alert;
 import org.opennms.horizon.events.proto.Event;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -42,8 +44,12 @@ import java.util.List;
  * Contains a couple fixed definitions to test basic behavior, and will evolve to store entities properly in the DB.
  */
 @Service
-public class AlertDefinitionRepository {
+public interface AlertDefinitionRepository extends JpaRepository<AlertDefinition, Long> {
 
+    public List<AlertDefinition> findAll();
+    public List<AlertDefinition> findById(long id);
+
+    /*
     public List<AlertDefinition> findAll() {
         AlertDefinition ciscoLinkDownAlertDef = AlertDefinition.newBuilder()
             .setUei("uei.opennms.org/vendor/cisco/traps/SNMP_Link_Down")
@@ -57,9 +63,9 @@ public class AlertDefinitionRepository {
             .setType(AlertType.CLEAR)
             .build();
         return Arrays.asList(ciscoLinkDownAlertDef, ciscoLinkUpAlertDef);
-    }
+    }*/
 
-    public AlertDefinition getAlertDefinitionForEvent(Event event) {
+    default AlertDefinition getAlertDefinitionForEvent(Event event) {
         return findAll().stream()
             .filter(def -> event.getUei().equals(def.getUei()))
             .findFirst()

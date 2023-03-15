@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="rellis" id="hs-0.1.0-drop_table">
+        <preConditions onFail="MARK_RAN"><tableExists schemaName="alert" tableName="alert_definition"/></preConditions>
+        <dropTable cascadeConstraints="true"
+                   schemaName="alert"
+                   tableName="alert_definition"/>
+    </changeSet>
+
+    <changeSet author="rellis" id="hs-0.1.0-alert_definition">
+
+        <createTable tableName="alert_definition">
+
+            <column name="tenant_id" type="text" defaultValue="opennms-prime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="alert_definition_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="uei" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="match" type="text"/>
+
+            <column name="reduction_key" type="text"/>
+
+            <column name="clear_key" type="text"/>
+
+            <column name="type" type="text"/>
+
+            <column name="managed_object_type" type="text" />
+
+        </createTable>
+
+        <addPrimaryKey columnNames="tenant_id, alert_definition_id"
+                       constraintName="alert_definition_pk"
+                       tableName="alert_definition"/>
+
+        <createSequence sequenceName="alert_definition_nxt_id"/>
+
+    </changeSet>
+</databaseChangeLog>
