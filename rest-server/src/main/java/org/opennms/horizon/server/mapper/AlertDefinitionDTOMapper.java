@@ -27,6 +27,8 @@
  *******************************************************************************/
 package org.opennms.horizon.server.mapper;
 
+import com.google.protobuf.Int64Value;
+import com.google.protobuf.UInt64Value;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -56,4 +58,9 @@ public interface AlertDefinitionDTOMapper {
     AlertDefinition alertDefinitionDTOToProto(AlertDefinitionDTO alert);
 
     ListAlertDefinitionsRequest listAlertDefinitionsRequestDTOtoProto(ListAlertDefinitionsRequestDTO request);
+
+    default UInt64Value longToUInt64Value(Long value) {
+        return UInt64Value.of(value);
+    }
+
 }

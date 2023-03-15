@@ -28,6 +28,9 @@
 
 package org.opennms.horizon.server.service.grpc;
 
+import com.google.protobuf.BoolValue;
+import com.google.protobuf.Int64Value;
+import com.google.protobuf.UInt64Value;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
@@ -60,16 +63,35 @@ public class AlertsClient {
         }
     }
 
+    public ListAlertDefinitionsResponse listAlertDefinitions(ListAlertDefinitionsRequest requestDTO, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return alertDefinitionStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+            .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listAlertDefinitions(requestDTO.newBuilder().build());
+    }
+
+    public AlertDefinition getAlertDefinition(UInt64Value id, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return alertDefinitionStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+            .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).getAlertDefinition(id);
+    }
+
     public AlertDefinition insertAlertDefinition(AlertDefinition alert, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         return alertDefinitionStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).insertAlertDefinition(alert);
     }
 
-    public ListAlertDefinitionsResponse listAlertDefinitions(ListAlertDefinitionsRequest requestDTO, String accessToken) {
+    public AlertDefinition updateAlertDefinition(AlertDefinition alert, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
-        return alertDefinitionStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
-            .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listAlertDefinitions(requestDTO.newBuilder().build());
+        return alertDefinitionStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).updateAlertDefinition(alert);
+    }
+
+    public BoolValue removeAlertDefinition(UInt64Value id, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return alertDefinitionStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).removeAlertDefinition(id);
     }
 }

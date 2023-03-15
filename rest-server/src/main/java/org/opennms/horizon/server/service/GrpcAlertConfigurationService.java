@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.server.service;
 
+import com.google.protobuf.BoolValue;
 import io.leangen.graphql.annotations.GraphQLEnvironment;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLQuery;
@@ -60,6 +61,16 @@ public class GrpcAlertConfigurationService {
     private final AlertDefinitionDTOMapper mapper;
     private final ServerHeaderUtil headerUtil;
 
+    @GraphQLQuery
+    public Mono<ListAlertDefinitionsResponseDTO> listAlertDefinitions(ListAlertDefinitionsRequestDTO request, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(mapper.protoToListAlertDefinitionsResponseDTO(client.listAlertDefinitions(mapper.listAlertDefinitionsRequestDTOtoProto(request), headerUtil.getAuthHeader(env))));
+    }
+
+    @GraphQLQuery
+    public Mono<AlertDefinitionDTO> getAlertDefinition(long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(mapper.protoToAlertDefinitionDTO(client.getAlertDefinition(mapper.longToUInt64Value(id), headerUtil.getAuthHeader(env))));
+    }
+
     @GraphQLMutation
     public Mono<AlertDefinitionDTO> insertAlertDefinition(AlertDefinitionDTO alert,
                                                          @GraphQLEnvironment ResolutionEnvironment env) {
@@ -69,20 +80,20 @@ public class GrpcAlertConfigurationService {
         return Mono.just(mapper.protoToAlertDefinitionDTO(dto));
     }
 
-    @GraphQLQuery
-    public Mono<ListAlertDefinitionsResponseDTO> listAlertDefinitions(ListAlertDefinitionsRequestDTO request, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Mono.just(mapper.protoToListAlertDefinitionsResponseDTO(client.listAlertDefinitions(mapper.listAlertDefinitionsRequestDTOtoProto(request), headerUtil.getAuthHeader(env))));
+    @GraphQLMutation
+    public Mono<AlertDefinitionDTO> updateAlertDefinition(AlertDefinitionDTO alert,
+                                                          @GraphQLEnvironment ResolutionEnvironment env) {
+        String authHeader = headerUtil.getAuthHeader(env);
+        AlertDefinition updateAlert = mapper.alertDefinitionDTOToProto(alert);
+        AlertDefinition dto = client.updateAlertDefinition(updateAlert, authHeader);
+        return Mono.just(mapper.protoToAlertDefinitionDTO(dto));
     }
 
-    /*
-From alerts.proto file: Implement and delete this comment
-
- service AlertConfigurationService {
-  rpc listAlertDefinitions(ListAlertDefinitionsRequest) returns (ListAlertDefinitionsResponse) {};
-  rpc getAlertDefinition(google.protobuf.UInt64Value) returns (AlertDefinition) {}
-  rpc insertAlertDefinition(AlertDefinition) returns (AlertDefinition) {}
-  rpc updateAlertDefinition(AlertDefinition) returns (AlertDefinition) {}
-  rpc removeAlertDefinition(google.protobuf.UInt64Value) returns (google.protobuf.BoolValue) {}
-}
-     */
+    @GraphQLMutation
+    public Mono<BoolValue> removeAlertDefinition(long id,
+                                                          @GraphQLEnvironment ResolutionEnvironment env) {
+        String authHeader = headerUtil.getAuthHeader(env);
+        BoolValue result = client.removeAlertDefinition(mapper.longToUInt64Value(id), authHeader);
+        return Mono.just(result);
+    }
 }
