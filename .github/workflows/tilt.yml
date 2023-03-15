@@ -1,0 +1,21 @@
+name: Alert Service
+
+on:
+  pull_request:
+    branch: develop
+    paths:
+      - 'Tiltfile'
+      - '.tiltignore'
+      - 'tilt-helm-values.yaml'
+
+jobs:
+  tilt-ci:
+    name: Development Environment Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test Tilt
+        run: |
+          tilt ci
+        shell: bash
