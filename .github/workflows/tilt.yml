@@ -1,12 +1,17 @@
-name: Alert Service
+name: Development Environment
 
 on:
   pull_request:
-    branch: develop
+    branches:
+      - 'develop'
     paths:
       - 'Tiltfile'
       - '.tiltignore'
       - 'tilt-helm-values.yaml'
+      - '**/pom.xml'
+      - '**/package.json'
+      - '**/package.lock'
+      - '**/Dockerfile'
 
 jobs:
   tilt-ci:
