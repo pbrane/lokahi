@@ -1,0 +1,5 @@
+name: 'Test Tilt'
+description: 'Runs tilt ci to verify that Tilt works properly'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
