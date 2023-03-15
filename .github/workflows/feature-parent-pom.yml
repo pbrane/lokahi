@@ -36,10 +36,11 @@ jobs:
       - name: Install & Sonar scan
         run: |
           mvn -B -Dstyle.color=always \
-              -N \ # parent pom needs to be built non-recursively
+              # parent pom needs to be built non-recursively
+              -N \
               -Pcicd,coverage install sonar:sonar \
+              # sonar.projectKey cannot be defined in this project's pom.xml, all child projects would inherit its value
               -Dsonar.projectKey=$SONAR_PROJECT_KEY
-          # sonar.projectKey cannot be defined in this project's pom.xml, all child projects would inherit its value
         shell: bash
         working-directory: ${{ inputs.working-directory }}
         env:
