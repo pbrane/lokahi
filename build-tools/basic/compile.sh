@@ -23,7 +23,7 @@
 
 set -e
 
-mvn clean install -P rapid-build -DskipTests=true -f parent-pom
+mvn clean install -N -P rapid-build -DskipTests=true
 mvn clean install -P rapid-build -DskipTests=true -f shared-lib
 
 mvn clean install -P rapid-build -DskipTests=true -f alert
