@@ -35,6 +35,7 @@ import org.mapstruct.Mappings;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.factory.Mappers;
 import org.opennms.horizon.alertservice.db.entity.Alert;
+import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
 
 import java.util.Date;
 
@@ -53,6 +54,8 @@ public interface AlertMapper {
         @Mapping(target = "ackTimeMs", source = "acknowledgedAt")
     })
     org.opennms.horizon.alerts.proto.Alert toProto(Alert alert);
+
+    org.opennms.horizon.alerts.proto.AlertDefinition toProto(AlertDefinition alert);
 
     default long mapDateToLongMs(Date value) {
         return value == null ? 0L : value.getTime();
