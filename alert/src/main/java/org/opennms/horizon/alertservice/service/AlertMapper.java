@@ -55,7 +55,9 @@ public interface AlertMapper {
     })
     org.opennms.horizon.alerts.proto.Alert toProto(Alert alert);
 
-    org.opennms.horizon.alerts.proto.AlertDefinition toProto(AlertDefinition alert);
+    org.opennms.horizon.alerts.proto.AlertDefinition alertDefinitionToProto(AlertDefinition alert);
+
+    //org.opennms.horizon.alerts.proto.ListAlertDefinitionsResponse toProto(ListAlertDefinitionsResponse alertDefinition);
 
     default long mapDateToLongMs(Date value) {
         return value == null ? 0L : value.getTime();

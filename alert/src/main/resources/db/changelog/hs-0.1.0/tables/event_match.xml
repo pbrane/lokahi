@@ -39,7 +39,11 @@
                        constraintName="event_match_pk"
                        tableName="event_match"/>
 
-        <createSequence sequenceName="event_match_nxt_id"/>
-
+        <addForeignKeyConstraint  baseColumnNames="tenant_id,event_match_id"
+                                  baseTableName="event_match"
+                                  constraintName="fk_alert_definition"
+                                  onDelete="CASCADE"
+                                  referencedColumnNames="tenant_id,alert_definition_id"
+                                  referencedTableName="alert_definition" />
     </changeSet>
 </databaseChangeLog>

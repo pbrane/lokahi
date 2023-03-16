@@ -94,7 +94,7 @@ public class AlertEventProcessor {
 
     protected org.opennms.horizon.alertservice.db.entity.Alert addOrReduceEventAsAlert(Event event) {
         org.opennms.horizon.alertservice.db.entity.AlertDefinition alertDef = alertDefinitionRepository.getAlertDefinitionForEvent(event);
-        AlertDefinition alertDefProto = alertMapper.toProto(alertDef);
+        AlertDefinition alertDefProto = alertMapper.alertDefinitionToProto(alertDef);
         if (alertDef == null) {
             // No alert definition matching, no alert to create
             eventsWithoutAlertDataCounter.increment();

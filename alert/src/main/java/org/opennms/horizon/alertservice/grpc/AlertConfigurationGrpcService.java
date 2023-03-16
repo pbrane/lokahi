@@ -29,9 +29,18 @@
 package org.opennms.horizon.alertservice.grpc;
 
 import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
+import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertConfigurationServiceGrpc;
 import org.opennms.horizon.alerts.proto.AlertDefinition;
+import org.opennms.horizon.alerts.proto.ListAlertDefinitionsResponse;
+import org.opennms.horizon.alerts.proto.ListAlertsResponse;
+import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
+import org.opennms.horizon.alertservice.db.repository.AlertRepository;
+import org.opennms.horizon.alertservice.service.AlertMapper;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * A temporary noop implementation of the service.
@@ -39,7 +48,13 @@ import org.springframework.stereotype.Component;
  * Will evolve with the data model as necessary.
  */
 @Component
+@RequiredArgsConstructor
 public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc.AlertConfigurationServiceImplBase {
+
+
+    private final AlertDefinitionRepository alertDefinitionRepository;
+
+    private final AlertMapper alertMapper;
 
 
     /*
@@ -52,9 +67,16 @@ public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc
      */
 
     @Override
-    public void insertAlertDefinition(AlertDefinition request, StreamObserver<AlertDefinition> responseObserver) {
-        System.out.println("insertAlertDefinition "+request);
-        //responseObserver.onNext(alarmDefinitionService.insertAlarmDefinition(request));
+    public void listAlertDefinitions(org.opennms.horizon.alerts.proto.ListAlertDefinitionsRequest request,
+                                     io.grpc.stub.StreamObserver<org.opennms.horizon.alerts.proto.ListAlertDefinitionsResponse> responseObserver) {
+        List<AlertDefinition> alertDefinition = alertDefinitionRepository.findAll().stream()
+            .map(alertMapper::alertDefinitionToProto)
+            .toList();
+
+        ListAlertDefinitionsResponse response = ListAlertDefinitionsResponse.newBuilder()
+            .addAllDefinitions(alertDefinition)
+            .build();
+        responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 }

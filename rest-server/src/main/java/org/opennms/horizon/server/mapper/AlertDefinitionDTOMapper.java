@@ -27,6 +27,7 @@
  *******************************************************************************/
 package org.opennms.horizon.server.mapper;
 
+import com.google.protobuf.BoolValue;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.UInt64Value;
 import org.mapstruct.CollectionMappingStrategy;
@@ -62,6 +63,5 @@ public interface AlertDefinitionDTOMapper {
     default UInt64Value longToUInt64Value(Long value) {
         return UInt64Value.of(value);
     }
-
 
 }

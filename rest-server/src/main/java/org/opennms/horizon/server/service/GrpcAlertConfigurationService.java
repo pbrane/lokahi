@@ -29,6 +29,7 @@
 package org.opennms.horizon.server.service;
 
 import com.google.protobuf.BoolValue;
+import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLEnvironment;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLQuery;
@@ -57,6 +58,7 @@ import reactor.core.publisher.Mono;
 @GraphQLApi
 @Service
 public class GrpcAlertConfigurationService {
+
     private final AlertsClient client;
     private final AlertDefinitionDTOMapper mapper;
     private final ServerHeaderUtil headerUtil;
@@ -90,10 +92,9 @@ public class GrpcAlertConfigurationService {
     }
 
     @GraphQLMutation
-    public Mono<BoolValue> removeAlertDefinition(long id,
-                                                          @GraphQLEnvironment ResolutionEnvironment env) {
-        String authHeader = headerUtil.getAuthHeader(env);
-        BoolValue result = client.removeAlertDefinition(mapper.longToUInt64Value(id), authHeader);
+    public Mono<Boolean> deleteAlertDefinition(@GraphQLArgument(name = "id") Long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        String auth = headerUtil.getAuthHeader(env);
+        boolean result = client.removeAlertDefinition(mapper.longToUInt64Value(id), auth).getValue();
         return Mono.just(result);
     }
 }

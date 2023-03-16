@@ -70,4 +70,5 @@ public interface AlertDefinitionRepository extends JpaRepository<AlertDefinition
             .findFirst()
             .orElse(null);
     }
+
 }
