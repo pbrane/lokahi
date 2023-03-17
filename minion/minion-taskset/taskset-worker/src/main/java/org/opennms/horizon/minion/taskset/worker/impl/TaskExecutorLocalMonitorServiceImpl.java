@@ -117,14 +117,14 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
         active.set(false);
 
         if (exc == null) {
-            resultProcessor.queueSendResult(taskDefinition.getId(), taskDefinition.getMetadata(), serviceMonitorResponse);
+            resultProcessor.queueSendResult(taskDefinition.getId(), taskDefinition.getContext(), serviceMonitorResponse);
         } else {
             log.warn("error executing task; task-id=" + taskDefinition.getId(), exc);
         }
     }
 
     private MonitoredService configureMonitoredService(TaskDefinition taskDefinition)  {
-        return new GeneralMonitoredService("TBD", "TBD", taskDefinition.getMetadata(), "TBD", "TBD", null);
+        return new GeneralMonitoredService("TBD", "TBD", taskDefinition.getContext(), "TBD", "TBD", null);
     }
 
 

@@ -86,7 +86,7 @@ public class ScannerTaskSetServiceTest {
         verify(mockPublisher).publishNewTasks(eq(tenantId), eq(location), taskListCaptor.capture());
         List<TaskDefinition> tasks = taskListCaptor.getValue();
         assertThat(tasks).hasSize(1)
-            .extracting(f -> f.getMetadata().getNodeId()).containsExactly(node.getId());
+            .extracting(f -> f.getContext().getNodeId()).containsExactly(node.getId());
         NodeScanRequest request = tasks.get(0).getConfiguration().unpack(NodeScanRequest.class);
         assertThat(request).extracting(NodeScanRequest::getNodeId, NodeScanRequest::getPrimaryIp)
             .containsExactly(node.getId(), ipInterface1.getIpAddress());
@@ -99,7 +99,7 @@ public class ScannerTaskSetServiceTest {
         verify(mockPublisher).publishNewTasks(eq(tenantId), eq(location), taskListCaptor.capture());
         List<TaskDefinition> tasks = taskListCaptor.getValue();
         assertThat(tasks).hasSize(1)
-            .extracting(f -> f.getMetadata().getNodeId()).containsExactly(node.getId());
+            .extracting(f -> f.getContext().getNodeId()).containsExactly(node.getId());
         NodeScanRequest request = tasks.get(0).getConfiguration().unpack(NodeScanRequest.class);
         assertThat(request).extracting(NodeScanRequest::getNodeId, NodeScanRequest::getPrimaryIp)
             .containsExactly(node.getId(), ipInterface2.getIpAddress());

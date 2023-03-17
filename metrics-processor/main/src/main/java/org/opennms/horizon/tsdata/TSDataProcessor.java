@@ -35,14 +35,12 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.opennms.horizon.azure.api.AzureResponseMetric;
 import org.opennms.horizon.azure.api.AzureResultMetric;
 import org.opennms.horizon.azure.api.AzureValueType;
-import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.timeseries.cortex.CortexTSS;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.snmp.api.SnmpResponseMetric;
@@ -52,7 +50,7 @@ import org.opennms.taskset.contract.CollectorResponse;
 import org.opennms.taskset.contract.DetectorResponse;
 import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.MonitorType;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 import org.springframework.context.annotation.PropertySource;
@@ -130,7 +128,7 @@ public class TSDataProcessor {
 
         prometheus.PrometheusTypes.TimeSeries.Builder builder = prometheus.PrometheusTypes.TimeSeries.newBuilder();
         Optional<String> nodeId = nodeId(result);
-        addLabels(response, nodeId, labelValues, builder, result.getMetadata());
+        addLabels(response, nodeId, labelValues, builder, result.getContext());
 
         builder.addLabels(PrometheusTypes.Label.newBuilder()
             .setName(METRIC_NAME_LABEL)
@@ -141,15 +139,15 @@ public class TSDataProcessor {
         cortexTSS.store(tenantId, builder);
 
         for (Map.Entry<String, Double> entry : response.getMetricsMap().entrySet()) {
-            processMetricMaps(nodeId, entry, response, labelValues, tenantId, result.getMetadata());
+            processMetricMaps(nodeId, entry, response, labelValues, tenantId, result.getContext());
         }
     }
 
-    private void processMetricMaps(Optional<String> nodeId, Map.Entry<String, Double> entry, MonitorResponse response, String[] labelValues, String tenantId, TaskMetadata metadata) throws IOException {
+    private void processMetricMaps(Optional<String> nodeId, Map.Entry<String, Double> entry, MonitorResponse response, String[] labelValues, String tenantId, TaskContext taskContext) throws IOException {
         prometheus.PrometheusTypes.TimeSeries.Builder builder = prometheus.PrometheusTypes.TimeSeries.newBuilder();
         String k = entry.getKey();
         Double v = entry.getValue();
-        addLabels(response, nodeId, labelValues, builder, metadata);
+        addLabels(response, nodeId, labelValues, builder, taskContext);
         builder.addLabels(PrometheusTypes.Label.newBuilder()
             .setName(METRIC_NAME_LABEL)
             .setValue(CortexTSS.sanitizeMetricName(METRICS_NAME_PREFIX_MONITOR + k)));
@@ -159,7 +157,7 @@ public class TSDataProcessor {
         cortexTSS.store(tenantId, builder);
     }
 
-    private void addLabels(MonitorResponse response, Optional<String> nodeId, String[] labelValues, Builder builder, TaskMetadata metadata) {
+    private void addLabels(MonitorResponse response, Optional<String> nodeId, String[] labelValues, Builder builder, TaskContext taskContext) {
         nodeId.ifPresent(node -> builder.addLabels(PrometheusTypes.Label.newBuilder()
             .setName(CortexTSS.sanitizeLabelName(NODE_ID_KEY))
             .setValue(CortexTSS.sanitizeLabelValue(node)))
@@ -171,7 +169,7 @@ public class TSDataProcessor {
                     .setValue(CortexTSS.sanitizeLabelValue(labelValues[i])));
             }
         }
-        addMetadata(builder, metadata);
+        addContext(builder, taskContext);
     }
 
     private void processCollectorResponse(String tenantId, TaskResult result) throws IOException {
@@ -183,9 +181,9 @@ public class TSDataProcessor {
         if (response.hasResult()) {
             MonitorType monitorType = response.getMonitorType();
             if (monitorType.equals(MonitorType.SNMP)) {
-                processSnmpCollectorResponse(tenantId, response, labelValues, result.getMetadata());
+                processSnmpCollectorResponse(tenantId, response, labelValues, result.getContext());
             } else if (monitorType.equals(MonitorType.AZURE)) {
-                processAzureCollectorResponse(tenantId, response, labelValues, result.getMetadata());
+                processAzureCollectorResponse(tenantId, response, labelValues, result.getContext());
             } else {
                 log.warn("Unrecognized monitor type");
             }
@@ -194,7 +192,7 @@ public class TSDataProcessor {
         }
     }
 
-    private void processSnmpCollectorResponse(String tenantId, CollectorResponse response, String[] labelValues, TaskMetadata metadata)  throws IOException {
+    private void processSnmpCollectorResponse(String tenantId, CollectorResponse response, String[] labelValues, TaskContext taskContext)  throws IOException {
         Any collectorMetric = response.getResult();
         var snmpResponse = collectorMetric.unpack(SnmpResponseMetric.class);
         long now = Instant.now().toEpochMilli();
@@ -209,7 +207,7 @@ public class TSDataProcessor {
                         .setName(CortexTSS.sanitizeLabelName(MONITOR_METRICS_LABEL_NAMES[i]))
                         .setValue(CortexTSS.sanitizeLabelValue(labelValues[i])));
                 }
-                addMetadata(builder, metadata);
+                addContext(builder, taskContext);
                 int type = snmpResult.getValue().getTypeValue();
                 switch (type) {
                     case SnmpValueType.INT32_VALUE:
@@ -239,7 +237,7 @@ public class TSDataProcessor {
         }
     }
 
-    private void processAzureCollectorResponse(String tenantId, CollectorResponse response, String[] labelValues, TaskMetadata metadata) throws InvalidProtocolBufferException {
+    private void processAzureCollectorResponse(String tenantId, CollectorResponse response, String[] labelValues, TaskContext taskContext) throws InvalidProtocolBufferException {
         Any collectorMetric = response.getResult();
         var azureResponse = collectorMetric.unpack(AzureResponseMetric.class);
         long now = Instant.now().toEpochMilli();
@@ -256,7 +254,7 @@ public class TSDataProcessor {
                         .setName(CortexTSS.sanitizeLabelName(MONITOR_METRICS_LABEL_NAMES[i]))
                         .setValue(CortexTSS.sanitizeLabelValue(labelValues[i])));
                 }
-                addMetadata(builder, metadata);
+                addContext(builder, taskContext);
 
                 int type = azureResult.getValue().getTypeValue();
                 switch (type) {
@@ -291,26 +289,26 @@ public class TSDataProcessor {
 
 
     private static Optional<String> nodeId(TaskResult result) {
-        return Optional.of(result.getMetadata())
-            .map(TaskMetadata::getNodeId)
+        return Optional.of(result.getContext())
+            .map(TaskContext::getNodeId)
             .filter(value -> value > 0L)
             .map(val -> Long.toString(val));
     }
 
-    private static void addMetadata(Builder builder, Message metadata) {
-        Descriptor descriptor = metadata.getDescriptorForType();
+    private static void addContext(Builder builder, Message contextData) {
+        Descriptor descriptor = contextData.getDescriptorForType();
         for (FieldDescriptor field : descriptor.getFields()) {
             if (field.getName().equals(NODE_ID_KEY)) {
                 continue;
             }
 
-            Object value = metadata.getField(field);
+            Object value = contextData.getField(field);
             if (value instanceof Number) {
                 builder.addLabels(PrometheusTypes.Label.newBuilder()
                     .setName(CortexTSS.sanitizeLabelName(field.getName()))
                     .setValue(CortexTSS.sanitizeLabelValue("" + value)));
             } else if (value instanceof Message) {
-                addMetadata(builder, (Message) value);
+                addContext(builder, (Message) value);
             }
         }
     }

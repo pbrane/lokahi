@@ -39,7 +39,7 @@ import org.opennms.snmp.contract.SnmpMonitorRequest;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.Resilience;
 import org.opennms.taskset.contract.TaskDefinition;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,7 +96,7 @@ public class MonitorTaskSetService {
                 TaskDefinition.newBuilder()
                     .setType(TaskType.MONITOR)
                     .setPluginName(pluginName)
-                    .setMetadata(TaskMetadata.newBuilder().setNodeId(nodeId).build())
+                    .setContext(TaskContext.newBuilder().setNodeId(nodeId).build())
                     .setId(taskId)
                     .setConfiguration(configuration)
                     .setResilience(resilience)
@@ -127,7 +127,7 @@ public class MonitorTaskSetService {
         return TaskDefinition.newBuilder()
             .setType(TaskType.MONITOR)
             .setPluginName("AZUREMonitor")
-            .setMetadata(TaskMetadata.newBuilder().setNodeId(nodeId).build())
+            .setContext(TaskContext.newBuilder().setNodeId(nodeId).build())
             .setId(taskId)
             .setConfiguration(configuration)
             .setSchedule(TaskUtils.AZURE_MONITOR_SCHEDULE)

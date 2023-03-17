@@ -70,7 +70,7 @@ message TaskDefinition {
   TaskType type = 3;
   string plugin_name = 4;
   string schedule = 5;
-  TaskMetadata metadata = 6;
+  TaskContext context = 6;
   google.protobuf.Any configuration = 7;
   Resilience resilience = 8;
 }
@@ -88,7 +88,7 @@ message TaskResult {
   string id = 1;
   string location = 2;
   string systemId = 3;
-  TaskMetadata metadata = 4;
+  TaskContext context = 4;
 
   oneof result {
     ScannerResponse scanner_response = 5;
@@ -103,9 +103,11 @@ message TaskSetResults {
 }
 
 // a metadata elements which may be attached to task
-message TaskMetadata {
-  int64 node_id = 1;
-  SyntheticTransactionMetadata synthetic_transaction = 2;
+message TaskContext {
+  oneof context {
+    int64 node_id = 1;
+    SyntheticTransactionMetadata synthetic_transaction = 2;
+  }
 }
 
 message SyntheticTransactionMetadata {

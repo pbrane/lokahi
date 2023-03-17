@@ -51,7 +51,7 @@ import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.Resilience;
 import org.opennms.taskset.contract.SyntheticTransactionMetadata;
 import org.opennms.taskset.contract.TaskDefinition;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskType;
 import org.springframework.stereotype.Service;
@@ -174,7 +174,7 @@ public class SyntheticTransactionService  {
         TaskDefinition taskDefinition = TaskDefinition.newBuilder()
             .setType(TaskType.MONITOR)
             .setPluginName(syntheticTest.getPluginName())
-            .setMetadata(TaskMetadata.newBuilder()
+            .setContext(TaskContext.newBuilder()
                 .setSyntheticTransaction(SyntheticTransactionMetadata.newBuilder()
                     .setSyntheticTestId(syntheticTest.getId())
                     .setSyntheticTransactionId(syntheticTest.getSyntheticTransaction().getId())

@@ -54,7 +54,7 @@ import org.opennms.horizon.inventory.dto.NodeList;
 import org.opennms.horizon.inventory.testtool.miniongateway.wiremock.client.MinionGatewayWiremockTestSteps;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.taskset.contract.DetectorResponse;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 import org.slf4j.Logger;
@@ -339,7 +339,7 @@ public class InventoryProcessingStepDefinitions {
                 TaskResult.newBuilder()
                     .setLocation(location)
                     .setSystemId(systemId)
-                    .setMetadata(TaskMetadata.newBuilder()
+                    .setContext(TaskContext.newBuilder()
                         .setNodeId(node.getId())
                     )
                     .setDetectorResponse(detectorResponse)

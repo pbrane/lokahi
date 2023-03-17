@@ -47,7 +47,7 @@ import org.opennms.icmp.contract.IpRange;
 import org.opennms.icmp.contract.PingSweepRequest;
 import org.opennms.node.scan.contract.NodeScanRequest;
 import org.opennms.taskset.contract.TaskDefinition;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,7 +221,7 @@ public class ScannerTaskSetService {
                 .setType(TaskType.SCANNER)
                 .setPluginName("NodeScanner")
                 .setId(taskId)
-                .setMetadata(TaskMetadata.newBuilder().setNodeId(node.getId()))
+                .setContext(TaskContext.newBuilder().setNodeId(node.getId()))
                 .setConfiguration(taskConfig)
                 .setSchedule(DEFAULT_SCHEDULE_FOR_SCAN)
                 .build();
@@ -246,7 +246,7 @@ public class ScannerTaskSetService {
                 .setId(taskId)
                 .setConfiguration(taskConfig)
                 .setSchedule(TaskUtils.DEFAULT_SCHEDULE)
-                .setMetadata(TaskMetadata.newBuilder()
+                .setContext(TaskContext.newBuilder()
                     .setNodeId(node.getId())
                     .build()
                 )

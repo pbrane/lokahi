@@ -14,7 +14,7 @@ import org.opennms.taskset.contract.CollectorResponse;
 import org.opennms.taskset.contract.DetectorResponse;
 import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.ScannerResponse;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 import org.slf4j.Logger;
@@ -43,33 +43,33 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
 //----------------------------------------
 
     @Override
-    public void queueSendResult(String taskId, TaskMetadata metadata, ScanResultsResponse response) {
-        TaskSetResults taskSetResults = formatTaskSetResults(taskId, metadata, response);
+    public void queueSendResult(String taskId, TaskContext taskContext, ScanResultsResponse response) {
+        TaskSetResults taskSetResults = formatTaskSetResults(taskId, taskContext, response);
         log.info("Scan Status: id = {}, results = {} ", taskId, response.getResults());
         taskSetSinkDispatcher.send(taskSetResults);
     }
 
     @Override
-    public void queueSendResult(String taskId, TaskMetadata metadata, ServiceDetectorResponse response) {
+    public void queueSendResult(String taskId, TaskContext taskContext, ServiceDetectorResponse response) {
         log.info("Detect Status: id = {} , detected = {}; ", taskId, response.isServiceDetected());
 
-        TaskSetResults taskSetResults = formatTaskSetResults(taskId, metadata, response);
+        TaskSetResults taskSetResults = formatTaskSetResults(taskId, taskContext, response);
 
         taskSetSinkDispatcher.send(taskSetResults);
     }
 
     @Override
-    public void queueSendResult(String taskId, TaskMetadata metadata, ServiceMonitorResponse response) {
+    public void queueSendResult(String taskId, TaskContext taskContext, ServiceMonitorResponse response) {
         log.info("Poll Status: id = {} , status = {}; ", taskId, response.getStatus());
 
-        TaskSetResults taskSetResults = formatTaskSetResults(taskId, metadata, response);
+        TaskSetResults taskSetResults = formatTaskSetResults(taskId, taskContext, response);
 
         taskSetSinkDispatcher.send(taskSetResults);
     }
 
     @Override
-    public void queueSendResult(String taskId, TaskMetadata metadata, CollectionSet collectionSet) {
-        TaskSetResults taskSetResults = formatTaskSetResults(taskId, metadata, collectionSet);
+    public void queueSendResult(String taskId, TaskContext taskContext, CollectionSet collectionSet) {
+        TaskSetResults taskSetResults = formatTaskSetResults(taskId, taskContext, collectionSet);
         log.info("Collect Status: id = {}, status = {} ", taskId, collectionSet.getStatus());
         taskSetSinkDispatcher.send(taskSetResults);
     }
@@ -78,13 +78,13 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
 // Internals
 //----------------------------------------
 
-    private TaskSetResults formatTaskSetResults(String id, TaskMetadata metadata, ScanResultsResponse result) {
+    private TaskSetResults formatTaskSetResults(String id, TaskContext taskContext, ScanResultsResponse result) {
         ScannerResponse scannerResponse = formatScanResultsResponse(result);
 
         TaskResult taskResult =
             TaskResult.newBuilder()
                 .setId(id)
-                .setMetadata(metadata)
+                .setContext(taskContext)
                 .setScannerResponse(scannerResponse)
                 .setLocation(identity.getLocation())
                 .setSystemId(identity.getId())
@@ -98,13 +98,13 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
         return taskSetResults;
     }
 
-    private TaskSetResults formatTaskSetResults(String id, TaskMetadata metadata, ServiceMonitorResponse result) {
+    private TaskSetResults formatTaskSetResults(String id, TaskContext taskContext, ServiceMonitorResponse result) {
         MonitorResponse monitorResponse = formatMonitorResponse(result);
 
         TaskResult taskResult =
             TaskResult.newBuilder()
                 .setId(id)
-                .setMetadata(metadata)
+                .setContext(taskContext)
                 .setMonitorResponse(monitorResponse)
                 .setLocation(identity.getLocation())
                 .setSystemId(identity.getId())
@@ -118,13 +118,13 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
         return taskSetResults;
     }
 
-    private TaskSetResults formatTaskSetResults(String id, TaskMetadata metadata, ServiceDetectorResponse result) {
+    private TaskSetResults formatTaskSetResults(String id, TaskContext taskContext, ServiceDetectorResponse result) {
         DetectorResponse detectorResponse = formatDetectorResponse(result);
 
         TaskResult taskResult =
             TaskResult.newBuilder()
                 .setId(id)
-                .setMetadata(metadata)
+                .setContext(taskContext)
                 .setDetectorResponse(detectorResponse)
                 .setLocation(identity.getLocation())
                 .setSystemId(identity.getId())
@@ -171,13 +171,13 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
         return result;
     }
 
-    private TaskSetResults formatTaskSetResults(String id, TaskMetadata metadata, CollectionSet collectionSet) {
+    private TaskSetResults formatTaskSetResults(String id, TaskContext taskContext, CollectionSet collectionSet) {
         CollectorResponse collectorResponse = formatCollectorResponse(collectionSet);
 
         TaskResult taskResult =
             TaskResult.newBuilder()
                 .setId(id)
-                .setMetadata(metadata)
+                .setContext(taskContext)
                 .setCollectorResponse(collectorResponse)
                 .setLocation(identity.getLocation())
                 .setSystemId(identity.getId())

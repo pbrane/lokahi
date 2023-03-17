@@ -133,7 +133,7 @@ public class MinionGatewayWiremockTestSteps {
 
     @Then("verify the task set update for location {string} is published with synthetic transaction {int}ms")
     public void verifyTheTaskSetUpdateIsPublishedWithSyntheticTransactionWithinMs(String location, int timeout) {
-        commonVerifyTaskSetUpdate(record -> location.equals(record.getLocation()) && commonIsExpectedDeviceTaskSetUpdate(record, rd -> rd.getAddTask().getTaskDefinition().getMetadata().hasSyntheticTransaction()), timeout);
+        commonVerifyTaskSetUpdate(record -> location.equals(record.getLocation()) && commonIsExpectedDeviceTaskSetUpdate(record, rd -> rd.getAddTask().getTaskDefinition().getContext().hasSyntheticTransaction()), timeout);
     }
 
 

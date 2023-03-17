@@ -17,7 +17,7 @@ import org.opennms.taskset.contract.CollectorResponse;
 import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.SyntheticTransactionMetadata;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 
@@ -88,7 +88,7 @@ class TSDataProcessorTest {
     void testMonitorResultMetadataPropagation() throws Exception {
         List<TaskResult> taskResultList = new ArrayList<>();
 
-        TaskMetadata metadata = TaskMetadata.newBuilder()
+        TaskContext taskContext = TaskContext.newBuilder()
             .setNodeId(10)
             .setSyntheticTransaction(SyntheticTransactionMetadata.newBuilder()
                 .setSyntheticTransactionId(20)
@@ -102,7 +102,7 @@ class TSDataProcessorTest {
             .build();
         taskResultList.add(TaskResult.newBuilder()
             .setMonitorResponse(monitorResponse)
-            .setMetadata(metadata)
+            .setContext(taskContext)
             .build());
 
         TaskSetResults taskSetResults = TaskSetResults.newBuilder()

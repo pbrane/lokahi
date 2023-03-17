@@ -28,7 +28,7 @@ import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.taskset.contract.DetectorResponse;
 import org.opennms.taskset.contract.MonitorType;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskType;
 import org.opennms.taskset.service.contract.TaskSetServiceGrpc;
 import org.opennms.taskset.service.contract.UpdateTasksRequest;
@@ -100,7 +100,7 @@ class DetectorResponseServiceIntTest extends GrpcTestBase {
             .setDetected(true).setIpAddress(TEST_IP_ADDRESS)
             .setMonitorType(MonitorType.SNMP).build();
 
-        service.accept(TEST_TENANT_ID, TEST_LOCATION, response, TaskMetadata.newBuilder().setNodeId(nodeId).build());
+        service.accept(TEST_TENANT_ID, TEST_LOCATION, response, TaskContext.newBuilder().setNodeId(nodeId).build());
 
         List<MonitoredServiceType> monitoredServiceTypes = monitoredServiceTypeRepository.findAll();
         assertEquals(1, monitoredServiceTypes.size());
@@ -136,7 +136,7 @@ class DetectorResponseServiceIntTest extends GrpcTestBase {
         int numberOfCalls = 2;
 
         for (int index = 0; index < numberOfCalls; index++) {
-            service.accept(TEST_TENANT_ID, TEST_LOCATION, response, TaskMetadata.newBuilder().setNodeId(nodeId).build());
+            service.accept(TEST_TENANT_ID, TEST_LOCATION, response, TaskContext.newBuilder().setNodeId(nodeId).build());
         }
 
         List<MonitoredServiceType> monitoredServiceTypes = monitoredServiceTypeRepository.findAll();
@@ -170,7 +170,7 @@ class DetectorResponseServiceIntTest extends GrpcTestBase {
             .setDetected(false).setIpAddress(TEST_IP_ADDRESS)
             .setMonitorType(MonitorType.SNMP).build();
 
-        service.accept(TEST_TENANT_ID, TEST_LOCATION, response, TaskMetadata.newBuilder().setNodeId(nodeId).build());
+        service.accept(TEST_TENANT_ID, TEST_LOCATION, response, TaskContext.newBuilder().setNodeId(nodeId).build());
 
         List<MonitoredServiceType> monitoredServiceTypes = monitoredServiceTypeRepository.findAll();
         assertEquals(0, monitoredServiceTypes.size());
@@ -198,7 +198,7 @@ class DetectorResponseServiceIntTest extends GrpcTestBase {
             DetectorResponse response = builder
                 .setMonitorType(monitorTypes[index]).build();
 
-            service.accept(TEST_TENANT_ID, TEST_LOCATION, response, TaskMetadata.newBuilder().setNodeId(nodeId).build());
+            service.accept(TEST_TENANT_ID, TEST_LOCATION, response, TaskContext.newBuilder().setNodeId(nodeId).build());
         }
 
         List<MonitoredServiceType> monitoredServiceTypes = monitoredServiceTypeRepository.findAll();

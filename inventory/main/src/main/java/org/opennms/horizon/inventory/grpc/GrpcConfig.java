@@ -77,6 +77,17 @@ public class GrpcConfig {
         return keycloak;
     }
 
+    /**
+     * A catch-all configuration block to fire server with all defined grpc services.
+     *
+     * GRPC interfaces which are being generated and end being used on server side share common root interface called {@link BindableService}.
+     * Because Spring is able to enumerate all of these when we declare list/array parameter with such kind we are able
+     * to pass all grpc service implementations at once.
+     *
+     * @param interceptor Service interceptor.
+     * @param services GRPC service implementations.
+     * @return Grpc Server instance.
+     */
     @Bean(destroyMethod = "stopServer")
     public GrpcServerManager startServer(InventoryServerInterceptor interceptor, BindableService ... services) {
         GrpcServerManager manager = new GrpcServerManager(port, interceptor);

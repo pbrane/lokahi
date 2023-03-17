@@ -39,7 +39,7 @@ import org.opennms.horizon.inventory.service.taskset.response.ScannerResponseSer
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.taskset.contract.DetectorResponse;
 import org.opennms.taskset.contract.ScannerResponse;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 
@@ -83,7 +83,7 @@ public class TaskSetResultsConsumerTest {
         consumer.receiveMessage(results.toByteArray(), headers);
 
         Mockito.verify(scannerService, times(1))
-            .accept(TEST_TENANT_ID, TEST_LOCATION, response, taskResult.getMetadata());
+            .accept(TEST_TENANT_ID, TEST_LOCATION, response, taskResult.getContext());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class TaskSetResultsConsumerTest {
         TaskResult taskResult = TaskResult.newBuilder()
             .setLocation(TEST_LOCATION)
             .setDetectorResponse(response)
-            .setMetadata(TaskMetadata.newBuilder()
+            .setContext(TaskContext.newBuilder()
                 .setNodeId(TEST_NODE_ID)
                 .build()
             )
@@ -109,6 +109,6 @@ public class TaskSetResultsConsumerTest {
         consumer.receiveMessage(results.toByteArray(), headers);
 
         Mockito.verify(detectorService, times(1))
-            .accept(TEST_TENANT_ID, TEST_LOCATION, response, taskResult.getMetadata());
+            .accept(TEST_TENANT_ID, TEST_LOCATION, response, taskResult.getContext());
     }
 }

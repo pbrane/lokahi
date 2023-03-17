@@ -22,7 +22,7 @@ import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.protobuf.marshalling.ProtoBufJsonSerializer;
 import org.opennms.icmp.contract.IcmpMonitorRequest;
 import org.opennms.taskset.contract.TaskDefinition;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 import org.opennms.taskset.contract.TaskSet;
 import org.opennms.taskset.contract.TaskSet.Builder;
 import org.opennms.taskset.contract.TaskType;
@@ -143,7 +143,7 @@ public class TaskSetProducer {
                 .setType(TaskType.MONITOR)
                 .setPluginName("ICMPMonitor")
                 .setSchedule("60000")
-                .setMetadata(TaskMetadata.newBuilder().setNodeId(index).build())
+                .setContext(TaskContext.newBuilder().setNodeId(index).build())
                 .setConfiguration(Any.pack(IcmpMonitorRequest.newBuilder()
                     .setHost("8.8.4.4")
                     .build()

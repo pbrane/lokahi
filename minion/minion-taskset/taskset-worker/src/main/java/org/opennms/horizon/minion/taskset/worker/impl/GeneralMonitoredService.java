@@ -4,22 +4,22 @@ import java.util.Map;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 
 import java.net.InetAddress;
-import org.opennms.taskset.contract.TaskMetadata;
+import org.opennms.taskset.contract.TaskContext;
 
 // TODO: why an interface - this seems like a straight-forward model?
 public class GeneralMonitoredService implements MonitoredService {
 
     private final String svcName;
     private final String ipAddr;
-    private final TaskMetadata metadata;
+    private final TaskContext taskContext;
     private final String nodeLabel;
     private final String nodeLocation;
     private final InetAddress address;
 
-    public GeneralMonitoredService(String svcName, String ipAddr, TaskMetadata metadata, String nodeLabel, String nodeLocation, InetAddress address) {
+    public GeneralMonitoredService(String svcName, String ipAddr, TaskContext taskContext, String nodeLabel, String nodeLocation, InetAddress address) {
         this.svcName = svcName;
         this.ipAddr = ipAddr;
-        this.metadata = metadata;
+        this.taskContext = taskContext;
         this.nodeLabel = nodeLabel;
         this.nodeLocation = nodeLocation;
         this.address = address;
@@ -37,7 +37,7 @@ public class GeneralMonitoredService implements MonitoredService {
 
     @Override
     public long getNodeId() {
-        return metadata.getNodeId();
+        return taskContext.getNodeId();
     }
 
     @Override
