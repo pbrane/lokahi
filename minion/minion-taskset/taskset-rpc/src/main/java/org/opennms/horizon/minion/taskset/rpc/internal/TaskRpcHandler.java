@@ -3,25 +3,20 @@ package org.opennms.horizon.minion.taskset.rpc.internal;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.net.InetAddress;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.horizon.grpc.task.contract.TaskRequest;
+import org.opennms.horizon.grpc.task.contract.TaskResponse;
+import org.opennms.horizon.grpc.task.contract.TaskResponse.Builder;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.registries.MonitorRegistry;
 import org.opennms.horizon.shared.ipc.rpc.api.minion.RpcHandler;
 import org.opennms.taskset.contract.MonitorResponse;
-import org.opennms.taskset.contract.TaskDefinition;
-import org.opennms.taskset.contract.TaskResult;
-import org.opennms.taskset.contract.TaskResult.Builder;
-import org.opennms.taskset.contract.TaskType;
 
-public class TaskRpcHandler implements RpcHandler<TaskRequest, MonitorResponse> {
+public class TaskRpcHandler implements RpcHandler<TaskRequest, TaskResponse> {
 
     private final MonitorRegistry monitorRegistry;
 
@@ -30,7 +25,7 @@ public class TaskRpcHandler implements RpcHandler<TaskRequest, MonitorResponse> 
     }
 
     @Override
-    public CompletableFuture<MonitorResponse> execute(TaskRequest request) {
+    public CompletableFuture<TaskResponse> execute(TaskRequest request) {
         ServiceMonitorManager service = monitorRegistry.getService(request.getPluginName());
         if (service == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("Unknown plugin"));
@@ -39,17 +34,17 @@ public class TaskRpcHandler implements RpcHandler<TaskRequest, MonitorResponse> 
             .thenApply(this::createResult);
     }
 
-    private MonitorResponse createResult(ServiceMonitorResponse response) {
-        Builder builder = TaskResult.newBuilder();
+    private TaskResponse createResult(ServiceMonitorResponse response) {
+        Builder builder = TaskResponse.newBuilder();
         // This probably could be unified with org.opennms.horizon.minion.taskset.worker.impl.TaskExecutionResultProcessorImpl.formatMonitorResponse
-        return MonitorResponse.newBuilder()
+        return builder.setMonitorResponse(MonitorResponse.newBuilder()
             .setMonitorType(Optional.of(response).map(ServiceMonitorResponse::getMonitorType).orElse(MonitorResponse.getDefaultInstance().getMonitorType()))
             .setIpAddress(Optional.of(response).map(ServiceMonitorResponse::getIpAddress).orElse(MonitorResponse.getDefaultInstance().getIpAddress()))
             .setResponseTimeMs(response.getResponseTime())
             .setStatus(Optional.of(response).map(ServiceMonitorResponse::getStatus).map(Object::toString).orElse(MonitorResponse.getDefaultInstance().getStatus()))
             .setReason(Optional.of(response).map(ServiceMonitorResponse::getReason).orElse(MonitorResponse.getDefaultInstance().getReason()))
             .putAllMetrics(Optional.of(response).map(ServiceMonitorResponse::getProperties).orElse(Collections.EMPTY_MAP))
-            .build();
+        ).build();
     }
 
     @Override

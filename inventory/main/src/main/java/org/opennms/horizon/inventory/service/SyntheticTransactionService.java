@@ -50,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
 import org.opennms.horizon.grpc.task.contract.TaskRequest;
+import org.opennms.horizon.grpc.task.contract.TaskResponse;
 import org.opennms.horizon.inventory.component.MinionRpcClient;
 import org.opennms.horizon.inventory.dto.SyntheticTestCreateDTO;
 import org.opennms.horizon.inventory.dto.SyntheticTestDTO;
@@ -348,9 +349,10 @@ public class SyntheticTransactionService  {
             .thenApply(payload -> {
                 Builder statusDTO = SyntheticTestStatusDTO.newBuilder();
                 try {
-                    MonitorResponse response = payload.unpack(MonitorResponse.class);
-                    Optional.of(response.getResponseTimeMs()).ifPresent(statusDTO::setResponseTimeMs);
-                    Optional.of(response.getReason()).ifPresent(statusDTO::setReason);
+                    TaskResponse response = payload.unpack(TaskResponse.class);
+                    MonitorResponse monitorResponse = response.getMonitorResponse();
+                    Optional.of(monitorResponse.getResponseTimeMs()).ifPresent(statusDTO::setResponseTimeMs);
+                    Optional.of(monitorResponse.getReason()).ifPresent(statusDTO::setReason);
                 } catch (InvalidProtocolBufferException e) {
                     log.warn("Could not handle rpc request {} for tenant {}", rpcRequest, tenantId, e);
                     statusDTO.setReason("Failure while parsing monitor answer");
