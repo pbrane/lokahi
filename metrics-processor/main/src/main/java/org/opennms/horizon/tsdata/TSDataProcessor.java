@@ -38,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
 import org.opennms.horizon.azure.api.AzureResponseMetric;
 import org.opennms.horizon.azure.api.AzureResultMetric;
 import org.opennms.horizon.azure.api.AzureValueType;
-import org.opennms.horizon.inventory.dto.MonitoredState;
+import org.opennms.horizon.tenantmetrics.TenantMetricsTracker;
 import org.opennms.horizon.timeseries.cortex.CortexTSS;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.snmp.api.SnmpResponseMetric;
@@ -50,6 +50,7 @@ import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Headers;
@@ -77,6 +78,9 @@ public class TSDataProcessor {
         "monitor",
         "node_id"};
     private final CortexTSS cortexTSS;
+
+    @Autowired
+    private TenantMetricsTracker tenantMetricsTracker;
 
     public TSDataProcessor(CortexTSS cortexTSS) {
         this.cortexTSS = cortexTSS;
@@ -131,6 +135,8 @@ public class TSDataProcessor {
         builder.addSamples(PrometheusTypes.Sample.newBuilder()
             .setTimestamp(Instant.now().toEpochMilli())
             .setValue(response.getResponseTimeMs()));
+
+        tenantMetricsTracker.addTenantMetricSampleCount(tenantId, builder.getSamplesCount());
         cortexTSS.store(tenantId, builder);
 
         for (Map.Entry<String, Double> entry : response.getMetricsMap().entrySet()) {
@@ -149,6 +155,8 @@ public class TSDataProcessor {
         builder.addSamples(PrometheusTypes.Sample.newBuilder()
             .setTimestamp(Instant.now().toEpochMilli())
             .setValue(v));
+
+        tenantMetricsTracker.addTenantMetricSampleCount(tenantId, builder.getSamplesCount());
         cortexTSS.store(tenantId, builder);
     }
 
@@ -219,6 +227,8 @@ public class TSDataProcessor {
                             .setValue(metric));
                         break;
                 }
+
+                tenantMetricsTracker.addTenantMetricSampleCount(tenantId, builder.getSamplesCount());
                 cortexTSS.store(tenantId, builder);
             } catch (Exception e) {
                 log.warn("Exception parsing metrics ", e);
@@ -254,6 +264,8 @@ public class TSDataProcessor {
                     default:
                         log.warn("Unrecognized azure value type");
                 }
+
+                tenantMetricsTracker.addTenantMetricSampleCount(tenantId, builder.getSamplesCount());
                 cortexTSS.store(tenantId, builder);
             } catch (Exception e) {
                 log.warn("Exception parsing azure metrics ", e);
