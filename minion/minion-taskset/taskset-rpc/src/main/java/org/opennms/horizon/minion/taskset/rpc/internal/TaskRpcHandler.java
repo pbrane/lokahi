@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
+import org.opennms.horizon.grpc.task.contract.TaskRequest;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
@@ -20,7 +21,7 @@ import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskResult.Builder;
 import org.opennms.taskset.contract.TaskType;
 
-public class TaskRpcHandler implements RpcHandler<TaskDefinition, TaskResult> {
+public class TaskRpcHandler implements RpcHandler<TaskRequest, MonitorResponse> {
 
     private final MonitorRegistry monitorRegistry;
 
@@ -29,27 +30,26 @@ public class TaskRpcHandler implements RpcHandler<TaskDefinition, TaskResult> {
     }
 
     @Override
-    public CompletableFuture<TaskResult> execute(TaskDefinition request) {
+    public CompletableFuture<MonitorResponse> execute(TaskRequest request) {
         ServiceMonitorManager service = monitorRegistry.getService(request.getPluginName());
         if (service == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("Unknown plugin"));
         }
-        return service.create().poll(new StubService(), request.getConfiguration(),request.getResilience())
+        return service.create().poll(new StubService(), request.getConfiguration(), request.getResilience())
             .thenApply(this::createResult);
     }
 
-    private TaskResult createResult(ServiceMonitorResponse response) {
+    private MonitorResponse createResult(ServiceMonitorResponse response) {
         Builder builder = TaskResult.newBuilder();
         // This probably could be unified with org.opennms.horizon.minion.taskset.worker.impl.TaskExecutionResultProcessorImpl.formatMonitorResponse
-        return builder.setMonitorResponse(MonitorResponse.newBuilder()
+        return MonitorResponse.newBuilder()
             .setMonitorType(Optional.of(response).map(ServiceMonitorResponse::getMonitorType).orElse(MonitorResponse.getDefaultInstance().getMonitorType()))
             .setIpAddress(Optional.of(response).map(ServiceMonitorResponse::getIpAddress).orElse(MonitorResponse.getDefaultInstance().getIpAddress()))
             .setResponseTimeMs(response.getResponseTime())
             .setStatus(Optional.of(response).map(ServiceMonitorResponse::getStatus).map(Object::toString).orElse(MonitorResponse.getDefaultInstance().getStatus()))
             .setReason(Optional.of(response).map(ServiceMonitorResponse::getReason).orElse(MonitorResponse.getDefaultInstance().getReason()))
             .putAllMetrics(Optional.of(response).map(ServiceMonitorResponse::getProperties).orElse(Collections.EMPTY_MAP))
-            .build()
-        ).build();
+            .build();
     }
 
     @Override
@@ -58,13 +58,10 @@ public class TaskRpcHandler implements RpcHandler<TaskDefinition, TaskResult> {
     }
 
     @Override
-    public TaskDefinition unmarshal(RpcRequestProto request) {
+    public TaskRequest unmarshal(RpcRequestProto request) {
         try {
-            TaskDefinition definition = request.getPayload().unpack(TaskDefinition.class);
-            if (definition.getType() == TaskType.MONITOR) {
-                return definition;
-            }
-            throw new IllegalArgumentException("Unsupported task type");
+            TaskRequest definition = request.getPayload().unpack(TaskRequest.class);
+            return definition;
         } catch (InvalidProtocolBufferException e) {
             throw new RuntimeException(e);
         }

@@ -41,10 +41,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
+/**
+ * Developer test to verify schema creation and database operations.
+ */
 @SpringBootTest
 @AutoConfigureTestDatabase(replace= AutoConfigureTestDatabase.Replace.NONE)
 @ContextConfiguration(initializers = {SpringContextTestInitializer.class})
-public class SyntheticTestRepositoryTest {
+public class SyntheticTestRepositoryDT {
 
     public static final String TENANT_ID = "foo";
 
@@ -67,11 +70,6 @@ public class SyntheticTestRepositoryTest {
 
         assertThat(transactions).isNotNull()
             .hasSize(1);
-
-//        SyntheticTest test = new SyntheticTest();
-//        test.setTenantId(new TenantId(TENANT_ID));
-//        test.setSyntheticTransaction(transaction1);
-//        syntheticTestRepository.save(test);
     }
 
     @AfterEach
