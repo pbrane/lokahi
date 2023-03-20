@@ -30,31 +30,17 @@ package org.opennms.horizon.alertservice.service;
 
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.factory.Mappers;
-import org.opennms.horizon.alertservice.db.entity.Alert;
-
-import java.util.Date;
+import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
 
 @Mapper(componentModel = "spring",
     collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
     nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-public interface AlertMapper {
+public interface AlertDefinitionMapper {
 
-    AlertMapper INSTANCE = Mappers.getMapper( AlertMapper.class );
+    AlertDefinitionMapper INSTANCE = Mappers.getMapper( AlertDefinitionMapper.class );
 
-    @Mappings({
-        @Mapping(target = "databaseId", source = "alertId"),
-        @Mapping(target = "lastUpdateTimeMs", source = "lastEventTime"),
-        @Mapping(target = "isAcknowledged", expression = "java(alert.getAcknowledgedByUser() != null ? true : false)"),
-        @Mapping(target = "ackUser", source = "acknowledgedByUser"),
-        @Mapping(target = "ackTimeMs", source = "acknowledgedAt")
-    })
-    org.opennms.horizon.alerts.proto.Alert toProto(Alert alert);
+    org.opennms.horizon.alerts.proto.AlertDefinition toProto(AlertDefinition alert);
 
-    default long mapDateToLongMs(Date value) {
-        return value == null ? 0L : value.getTime();
-    }
 }

@@ -28,55 +28,95 @@
 
 package org.opennms.horizon.alertservice.grpc;
 
-import io.grpc.stub.StreamObserver;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import io.grpc.protobuf.StatusProto;
 import lombok.RequiredArgsConstructor;
-import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertConfigurationServiceGrpc;
 import org.opennms.horizon.alerts.proto.AlertDefinition;
+import org.opennms.horizon.alerts.proto.EventMatch;
 import org.opennms.horizon.alerts.proto.ListAlertDefinitionsResponse;
-import org.opennms.horizon.alerts.proto.ListAlertsResponse;
 import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
-import org.opennms.horizon.alertservice.db.repository.AlertRepository;
-import org.opennms.horizon.alertservice.service.AlertMapper;
+import org.opennms.horizon.alertservice.service.AlertDefinitionMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A temporary noop implementation of the service.
- *
- * Will evolve with the data model as necessary.
- */
 @Component
 @RequiredArgsConstructor
 public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc.AlertConfigurationServiceImplBase {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AlertConfigurationGrpcService.class);
 
     private final AlertDefinitionRepository alertDefinitionRepository;
 
-    private final AlertMapper alertMapper;
-
-
-    /*
-  rpc listAlertDefinitions(ListAlertDefinitionsRequest) returns (ListAlertDefinitionsResponse) {};
-  rpc getAlertDefinition(google.protobuf.UInt64Value) returns (AlertDefinition) {}
-
-  rpc insertAlertDefinition(AlertDefinition) returns (AlertDefinition) {}
-  rpc updateAlertDefinition(AlertDefinition) returns (AlertDefinition) {}
-  rpc removeAlertDefinition(google.protobuf.UInt64Value) returns (google.protobuf.BoolValue) {}
-     */
+    private final AlertDefinitionMapper alertMapper;
 
     @Override
     public void listAlertDefinitions(org.opennms.horizon.alerts.proto.ListAlertDefinitionsRequest request,
                                      io.grpc.stub.StreamObserver<org.opennms.horizon.alerts.proto.ListAlertDefinitionsResponse> responseObserver) {
-        List<AlertDefinition> alertDefinition = alertDefinitionRepository.findAll().stream()
-            .map(alertMapper::alertDefinitionToProto)
+        List<AlertDefinition> alertDefinitions = alertDefinitionRepository.findAll().stream()
+            .map(alertMapper::toProto)
             .toList();
 
         ListAlertDefinitionsResponse response = ListAlertDefinitionsResponse.newBuilder()
-            .addAllDefinitions(alertDefinition)
+            .addAllDefinitions(alertDefinitions)
             .build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getAlertDefinition(com.google.protobuf.UInt64Value request,
+                                   io.grpc.stub.StreamObserver<org.opennms.horizon.alerts.proto.AlertDefinition> responseObserver) {
+        if (!alertDefinitionRepository.existsById(request.getValue())){
+            LOG.error("Alert definition null id="+request.getValue());
+            responseObserver.onError(StatusProto.toStatusRuntimeException(Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage("Can't find AlertDefinition for id="+request.getValue())
+                .build()));
+            return;
+        }
+        org.opennms.horizon.alertservice.db.entity.AlertDefinition alertDefinition = alertDefinitionRepository.getReferenceById(request.getValue());
+        org.opennms.horizon.alerts.proto.AlertDefinition response = org.opennms.horizon.alerts.proto.AlertDefinition.newBuilder()
+            .setUei(alertDefinition.getUei())
+            .addAllMatch(getMatchesAsProto(alertDefinition))
+            .setReductionKey(alertDefinition.getReductionKey())
+            .setClearKey(alertDefinition.getClearKey())
+            .setType(alertDefinition.getType())
+            .setManagedObjectType(alertDefinition.getManagedObjectType())
+            .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    public void insertAlertDefinition(org.opennms.horizon.alerts.proto.AlertDefinition request,
+              io.grpc.stub.StreamObserver<org.opennms.horizon.alerts.proto.AlertDefinition> responseObserver){
+
+    }
+
+    public void updateAlertDefinition(org.opennms.horizon.alerts.proto.AlertDefinition request,
+        io.grpc.stub.StreamObserver<org.opennms.horizon.alerts.proto.AlertDefinition> responseObserver){
+
+    }
+    public void removeAlertDefinition(com.google.protobuf.UInt64Value request,
+                                      io.grpc.stub.StreamObserver<com.google.protobuf.BoolValue> responseObserver){
+
+    }
+
+    List<org.opennms.horizon.alerts.proto.EventMatch> getMatchesAsProto(org.opennms.horizon.alertservice.db.entity.AlertDefinition alertDefinition){
+        List<org.opennms.horizon.alerts.proto.EventMatch> matches = new ArrayList<org.opennms.horizon.alerts.proto.EventMatch>(alertDefinition.getMatch().size());
+        for (org.opennms.horizon.alertservice.db.entity.EventMatch a:  alertDefinition.getMatch()) {
+            EventMatch match = org.opennms.horizon.alerts.proto.EventMatch.newBuilder()
+                .setName(a.getName())
+                .setValue(a.getValue())
+                .build();
+            matches.add(match);
+        }
+        return matches;
     }
 }

@@ -58,6 +58,8 @@ public interface AlertDefinitionDTOMapper {
     @Mapping(target = "matchList", source = "match", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     AlertDefinition alertDefinitionDTOToProto(AlertDefinitionDTO alert);
 
+    @Mapping(target = "pageSize", source = "pageSize", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    @Mapping(target = "pageToken", source = "pageToken", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     ListAlertDefinitionsRequest listAlertDefinitionsRequestDTOtoProto(ListAlertDefinitionsRequestDTO request);
 
     default UInt64Value longToUInt64Value(Long value) {
