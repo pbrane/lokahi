@@ -4,9 +4,27 @@ import { defineStore } from 'pinia'
 export const useFlowsStore = defineStore('flowsStore', {
   state: () => ({
     datasets: [{} as any],
-    tableChartData: {} as ChartData,
     tableChartOptions: {},
-    dateFilter: '2023-1-14 to 2023-1-15'
+    filters: {
+      dateFilter: '2023-1-14 to 2023-1-15',
+      traffic: {
+        total: true,
+        inbound: false,
+        outbound: false
+      }
+    },
+    applications: {
+      tableChartData: {} as ChartData,
+      expansionOpen: true,
+      filterDialogOpen: false,
+      dialogFilters: { ...defaultDialogFilters }
+    },
+    exporters: {
+      tableChartData: {} as ChartData,
+      expansionOpen: true,
+      filterDialogOpen: false,
+      dialogFilters: { ...defaultDialogFilters }
+    }
   }),
   actions: {
     getDatasets() {
@@ -22,27 +40,87 @@ export const useFlowsStore = defineStore('flowsStore', {
       this.datasets = returnedDataSets
     },
     createTableChartData() {
-      this.tableChartData = {
+      //Dummy Data until BE is hooked up.
+      this.exporters.tableChartData = {
         labels: this.datasets.map((row) => row.application),
         datasets: [
           {
             label: 'Inbound',
             data: this.datasets.map((row) => row.inbound),
             barThickness: 13,
-            backgroundColor: '#0043A4'
+            backgroundColor: '#0043A4',
+            hidden: this.filters.traffic.outbound
           },
           {
             label: 'Outbound',
             data: this.datasets.map((row) => row.outbound),
             barThickness: 13,
-            backgroundColor: '#EE7D00'
+            backgroundColor: '#EE7D00',
+            hidden: this.filters.traffic.inbound
+          }
+        ]
+      }
+      this.applications.tableChartData = {
+        labels: this.datasets.map((row) => row.application),
+        datasets: [
+          {
+            label: 'Inbound',
+            data: this.datasets.map((row) => row.inbound),
+            barThickness: 13,
+            backgroundColor: '#0043A4',
+            hidden: this.filters.traffic.outbound
+          },
+          {
+            label: 'Outbound',
+            data: this.datasets.map((row) => row.outbound),
+            barThickness: 13,
+            backgroundColor: '#EE7D00',
+            hidden: this.filters.traffic.inbound
           }
         ]
       }
     },
+    filterDialogToggle(event: Event, isAppFilter: boolean) {
+      isAppFilter
+        ? (this.applications.filterDialogOpen = !this.applications.filterDialogOpen)
+        : (this.exporters.filterDialogOpen = !this.exporters.filterDialogOpen)
+    },
     generateTableChart() {
       this.getDatasets()
       this.createTableChartData()
+    },
+    appDialogRefreshClick(e: Event) {
+      const selectedFilters = this.getTrueValuesFromObject(this.applications.dialogFilters)
+      console.log('you have selected ' + selectedFilters)
+      this.filterDialogToggle(e, true)
+    },
+    expDialogRefreshClick(e: Event) {
+      const selectedFilters = this.getTrueValuesFromObject(this.exporters.dialogFilters)
+      console.log('you have selected ' + selectedFilters)
+      this.filterDialogToggle(e, false)
+    },
+    getTrueValuesFromObject(object: object) {
+      const keys = Object.keys(object)
+      const filtered = keys.filter(function (key: string) {
+        return object[key as keyof typeof object]
+      })
+      return filtered
     }
   }
 })
+
+type FlowsDialogFilters = {
+  http: boolean
+  https: boolean
+  pandoPub: boolean
+  snmp: boolean
+  imaps: boolean
+}
+
+const defaultDialogFilters: FlowsDialogFilters = {
+  http: false,
+  https: false,
+  pandoPub: false,
+  snmp: false,
+  imaps: false
+}

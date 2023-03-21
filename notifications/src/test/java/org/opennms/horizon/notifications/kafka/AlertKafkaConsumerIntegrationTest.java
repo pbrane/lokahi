@@ -19,12 +19,19 @@ import org.opennms.horizon.notifications.NotificationsApplication;
 import org.opennms.horizon.notifications.SpringContextTestInitializer;
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.notifications.service.NotificationService;
+import org.opennms.horizon.notifications.tenant.TenantContext;
+import org.opennms.horizon.notifications.tenant.WithTenant;
+import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
+import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -67,11 +74,11 @@ class AlertKafkaConsumerIntegrationTest {
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
 
+    @Autowired
+    private AlertKafkaConsumerTestHelper alertKafkaConsumerTestHelper;
+
     @SpyBean
     private AlertKafkaConsumer alertKafkaConsumer;
-
-    @Autowired
-    private NotificationService notificationService;
 
     @Captor
     ArgumentCaptor<byte[]> alertCaptor;
@@ -88,16 +95,10 @@ class AlertKafkaConsumerIntegrationTest {
         kafkaProducer = kafkaProducerFactory.createProducer();
     }
 
-    private void setupConfig() {
-        String integrationKey = "not_verified";
-
-        PagerDutyConfigDTO config = PagerDutyConfigDTO.newBuilder().setIntegrationKey(integrationKey).build();
-        notificationService.postPagerDutyConfig(config);
-    }
-
     @Test
     void testProducingAlertWithConfigSetup() throws NotificationException, InvalidProtocolBufferException {
-        setupConfig();
+        String tenantId = "opennms-prime";
+        alertKafkaConsumerTestHelper.setupConfig(tenantId);
 
         int id = 1234;
         Alert alert = Alert.newBuilder()

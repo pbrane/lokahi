@@ -39,7 +39,7 @@ import org.opennms.horizon.notifications.api.PagerDutyAPI;
 public class NotificationsServiceImplTest {
 
     @InjectMocks
-    NotificationServiceImpl notificationService;
+    NotificationService notificationService;
 
     @Mock
     PagerDutyAPI pagerDutyAPI;

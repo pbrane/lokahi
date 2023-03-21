@@ -10,9 +10,12 @@ Generic chart using ChartJS.
     - Allow user to render the chart when they want on the parent component/store.
  -->
 <template>
-  <canvas class="canvas" :id="id"></canvas>
+  <canvas
+    class="canvas"
+    :id="id"
+  ></canvas>
 </template>
-  
+
 <script setup lang="ts">
 import { ChartOptions, ChartData, ChartType } from 'chart.js'
 import Chart from 'chart.js/auto'
@@ -47,7 +50,7 @@ const render = async (update?: boolean) => {
       chart.data = props.chartData
       chart.update()
     } else {
-      if(props.chartData.datasets.length) {
+      if (props.chartData.datasets.length) {
         const ctx: any = document.getElementById(props.id)
         chart = new Chart(ctx, {
           type: props.chartType as ChartType,
@@ -61,6 +64,10 @@ const render = async (update?: boolean) => {
     console.log('Could not render chart for ', props.id)
   }
 }
+
+watch(props.chartData, () => {
+  render(true)
+})
 
 onMounted(async () => {
   render()

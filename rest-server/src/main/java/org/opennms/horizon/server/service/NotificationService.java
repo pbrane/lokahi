@@ -24,7 +24,12 @@ public class NotificationService {
     @GraphQLMutation
     public Mono<Void> savePagerDutyConfig(PagerDutyConfig config, @GraphQLEnvironment ResolutionEnvironment env) {
         PagerDutyConfigDTO protoConfigDTO = mapper.pagerDutyConfigToProto(config);
-        client.postPagerDutyConfig(protoConfigDTO, headerUtil.getAuthHeader(env));
+
+        String tenantId = headerUtil.extractTenant(env);
+        PagerDutyConfigDTO.Builder dtoBuilder = PagerDutyConfigDTO.newBuilder(protoConfigDTO);
+        dtoBuilder.setTenantId(tenantId);
+
+        client.postPagerDutyConfig(dtoBuilder.build(), headerUtil.getAuthHeader(env));
         return Mono.empty();
     }
 }

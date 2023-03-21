@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -26,28 +26,15 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.notifications.service;
+package org.opennms.horizon.notifications.tenant;
 
-import org.opennms.horizon.alerts.proto.Alert;
-import org.opennms.horizon.notifications.api.PagerDutyAPI;
-import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
-import org.opennms.horizon.notifications.exceptions.NotificationException;
-import org.opennms.horizon.notifications.tenant.WithTenant;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@Service
-public class NotificationService {
-
-    @Autowired
-    private PagerDutyAPI pagerDutyAPI;
-
-    @WithTenant(tenantIdArg = 0, tenantIdArgInternalMethod = "getTenantId", tenantIdArgInternalClass = "org.opennms.horizon.alerts.proto.Alert")
-    public void postNotification(Alert alert) throws NotificationException {
-        pagerDutyAPI.postNotification(alert);
-    }
-
-    public void postPagerDutyConfig(PagerDutyConfigDTO config) {
-        pagerDutyAPI.saveConfig(config);
+@Configuration
+public class TenantConfig {
+    @Bean
+    public TenantLookup createTenantLookup(){
+        return new TenantContextLookupImpl();
     }
 }

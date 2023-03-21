@@ -3,21 +3,19 @@ package org.opennms.horizon.notifications;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.spring.CucumberContextConfiguration;
-import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.stub.MetadataUtils;
 import org.keycloak.common.VerificationException;
 import org.opennms.horizon.alerts.proto.Alert;
-import org.opennms.horizon.model.common.proto.Severity;
 import org.opennms.horizon.notifications.api.PagerDutyDao;
 import org.opennms.horizon.notifications.dto.NotificationServiceGrpc;
 import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.exceptions.NotificationConfigUninitializedException;
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.notifications.service.NotificationService;
-import org.opennms.horizon.shared.constants.GrpcConstants;
+import org.opennms.horizon.notifications.tenant.WithTenant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +87,16 @@ public class NotificationCucumberTestSteps extends GrpcTestBase {
         verify(spyInterceptor).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
     }
 
+    @Given("Integration {string} key set to {string} via grpc with token tenant {string}")
+    public void setIntegrationKeyGrpcDifferentTenant(String tenantId, String key, String differentTenantId) throws VerificationException {
+        caught = null;
+        try {
+            saveConfigWithDifferentTokenTenant(tenantId, key, differentTenantId);
+        } catch (Exception ex) {
+            caught = ex;
+        }
+    }
+
     @Given("Integration {string} key set to {string} then {string} via grpc")
     public void setIntegrationKeyGrpcTwice(String tenantId, String key, String secondKey) throws VerificationException {
         saveConfig(tenantId, key);
@@ -98,8 +106,8 @@ public class NotificationCucumberTestSteps extends GrpcTestBase {
         verify(spyInterceptor, times(2)).interceptCall(any(ServerCall.class), any(Metadata.class), any(ServerCallHandler.class));
     }
 
-    @Given("Integration {string} then {string} key set to {string} then {string} via grpc")
-    public void setIntegrationKeyGrpcTwiceWithDifferentTenants(String tenantId, String otherTenantId, String key, String secondKey) throws VerificationException {
+    @Given("Integration {string} key set to {string}, then Integration {string} key set to {string} via grpc")
+    public void setIntegrationKeyGrpcTwiceWithDifferentTenants(String tenantId, String key, String otherTenantId, String secondKey) throws VerificationException {
         saveConfig(tenantId, key);
         saveConfig(otherTenantId, secondKey);
 
@@ -110,7 +118,16 @@ public class NotificationCucumberTestSteps extends GrpcTestBase {
 
     private void saveConfig(String tenantId, String key) {
         String header = getAuthHeader(tenantId);
-        PagerDutyConfigDTO config = PagerDutyConfigDTO.newBuilder().setIntegrationKey(key).build();
+        PagerDutyConfigDTO config = PagerDutyConfigDTO.newBuilder().setIntegrationKey(key).setTenantId(tenantId).build();
+
+        serviceStub.withInterceptors(MetadataUtils
+                .newAttachHeadersInterceptor(createAuthHeader(header)))
+            .postPagerDutyConfig(config);
+    }
+
+    private void saveConfigWithDifferentTokenTenant(String tenantId, String key, String tokenTenantId) {
+        String header = getAuthHeader(tokenTenantId);
+        PagerDutyConfigDTO config = PagerDutyConfigDTO.newBuilder().setIntegrationKey(key).setTenantId(tenantId).build();
 
         serviceStub.withInterceptors(MetadataUtils
                 .newAttachHeadersInterceptor(createAuthHeader(header)))
@@ -127,52 +144,47 @@ public class NotificationCucumberTestSteps extends GrpcTestBase {
         }
     }
 
-    @Given("Integration key set to {string}")
+    @Given("Integration key set to {string} without tenantId")
     public void setIntegrationKey(String key){
-        PagerDutyConfigDTO configDTO = PagerDutyConfigDTO.newBuilder().setIntegrationKey(key).build();
-        notificationService.postPagerDutyConfig(configDTO);
+        caught = null;
+        try {
+            PagerDutyConfigDTO configDTO = PagerDutyConfigDTO.newBuilder().setIntegrationKey(key).build();
+            notificationService.postPagerDutyConfig(configDTO);
+        } catch (Exception e) {
+            caught = e;
+        }
     }
 
-    @Given("Alert posted via service")
-    public void postAlertViaService() throws Exception{
-        postAlert();
+    @Given("Alert posted via service with tenant {string}")
+    public void postAlertViaService(String tenantId) throws Exception{
+        postAlert(tenantId);
     }
 
-    private void postAlert() throws NotificationException {
-        Alert alert = Alert.newBuilder().setLogMessage("Hello").build();
+    private void postAlert(String tenantId) throws NotificationException {
+        Alert alert = Alert.newBuilder().setLogMessage("Hello").setTenantId(tenantId).build();
         notificationService.postNotification(alert);
     }
 
-    @Then("verify key is {string}")
-    public void verifyKey(String key) throws Exception {
-        PagerDutyConfigDTO configDTO = pagerDutyDao.getConfig();
-        assertEquals(key, configDTO.getIntegrationKey());
-    }
-
     @Then("verify {string} key is {string}")
+    @WithTenant(tenantIdArg = 0)
     public void verifyKey(String tenantId, String key) {
-        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
-        {
-            try {
-                PagerDutyConfigDTO configDTO = pagerDutyDao.getConfig();
-                assertEquals(key, configDTO.getIntegrationKey());
-            } catch (NotificationConfigUninitializedException e) {
-                fail("Config is not initialised as expected");
-            }
-        });
+        try {
+            PagerDutyConfigDTO configDTO = pagerDutyDao.getConfig(tenantId);
+            assertEquals(key, configDTO.getIntegrationKey());
+        } catch (NotificationConfigUninitializedException e) {
+            fail("Config is not initialised as expected");
+        }
     }
 
     @Then("verify {string} key is not set")
+    @WithTenant(tenantIdArg = 0)
     public void verifyKeyIsNotSet(String tenantId) {
-        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(()->
-        {
-            try {
-                pagerDutyDao.getConfig();
-                fail("Config should not be initialised");
-            } catch (NotificationConfigUninitializedException e) {
-                assertEquals("PagerDuty config not initialized. Row count=0", e.getMessage());
-            }
-        });
+        try {
+            pagerDutyDao.getConfig(tenantId);
+            fail("Config should not be initialised");
+        } catch (NotificationConfigUninitializedException e) {
+            assertEquals("PagerDuty config not initialized. Row count=0", e.getMessage());
+        }
     }
 
     @Then("verify pager duty rest method is called")
@@ -180,21 +192,23 @@ public class NotificationCucumberTestSteps extends GrpcTestBase {
         verify(restTemplate).exchange(any(URI.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
     }
 
-    @Given("Alert posted via service with no config")
-    public void postNotificationWithNoConfig() {
+    @Given("Alert posted via service with no config with tenant {string}")
+    public void postNotificationWithNoConfig(String tenantId) {
+        caught = null;
         try {
-            postAlert();
+            postAlert(tenantId);
         } catch (Exception ex) {
             caught = ex;
         }
     }
 
-    @Then("verify exception {string} thrown")
-    public void verifyException(String exceptionName) {
+    @Then("verify exception {string} thrown with message {string}")
+    public void verifyException(String exceptionName, String message) {
         if (caught == null) {
             fail("No exception caught");
         } else {
             assertEquals(exceptionName, caught.getClass().getSimpleName(), "Exception mismatch");
+            assertEquals(message, caught.getMessage());
         }
     }
 }

@@ -2,14 +2,13 @@ package org.opennms.horizon.notifications.grpc.service;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.notifications.dto.NotificationServiceGrpc;
 import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
-import org.opennms.horizon.notifications.grpc.config.TenantLookup;
+import org.opennms.horizon.notifications.tenant.TenantLookup;
 import org.opennms.horizon.notifications.service.NotificationService;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +23,7 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
 
     @Override
     public void postPagerDutyConfig(PagerDutyConfigDTO request, StreamObserver<PagerDutyConfigDTO> responseObserver) {
-        Optional<String> tenantIdOptional = tenantLookup.lookupTenantId(Context.current());
+        Optional<String> tenantIdOptional = tenantLookup.lookupTenantId();
 
         tenantIdOptional.ifPresentOrElse(tenantId -> {
             notificationService.postPagerDutyConfig(request);

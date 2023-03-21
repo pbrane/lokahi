@@ -28,12 +28,135 @@
 
 package org.opennms.horizon.notifications.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import org.opennms.horizon.alerts.proto.Alert;
+import org.opennms.horizon.alerts.proto.AlertType;
+import org.opennms.horizon.model.common.proto.Severity;
+import org.opennms.horizon.notifications.api.dto.PagerDutyEventAction;
+import org.opennms.horizon.notifications.api.dto.PagerDutyEventDTO;
+import org.opennms.horizon.notifications.api.dto.PagerDutyPayloadDTO;
+import org.opennms.horizon.notifications.api.dto.PagerDutySeverity;
 import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
+import org.opennms.horizon.notifications.exceptions.NotificationAPIException;
+import org.opennms.horizon.notifications.exceptions.NotificationBadDataException;
+import org.opennms.horizon.notifications.exceptions.NotificationConfigUninitializedException;
 import org.opennms.horizon.notifications.exceptions.NotificationException;
+import org.opennms.horizon.notifications.exceptions.NotificationInternalException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
-public interface PagerDutyAPI {
-    void postNotification(Alert alert) throws NotificationException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.HashMap;
 
-    void saveConfig(PagerDutyConfigDTO config);
+@Service
+public class PagerDutyAPI {
+    private static final Logger LOG = LoggerFactory.getLogger(PagerDutyAPI.class);
+
+    @Autowired
+    PagerDutyDao pagerDutyDao;
+
+    @Autowired
+    RestTemplate restTemplate;
+
+    @Value("${horizon.pagerduty.client}")
+    String client;
+
+    @Value("${horizon.pagerduty.clientURL}")
+    String clientURL;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public void postNotification(Alert alert) throws NotificationException {
+        try {
+            PagerDutyEventDTO event = getEvent(alert);
+
+            String baseUrl = "https://events.pagerduty.com/v2/enqueue";
+            URI uri = new URI(baseUrl);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept", "application/vnd.pagerduty+json;version=2");
+            headers.set("Content-Type", "application/json");
+
+            String eventJson = objectMapper.writeValueAsString(event);
+            HttpEntity<String> requestEntity = new HttpEntity<>(eventJson, headers);
+
+            LOG.info("Posting alert with id={} for tenant={} to PagerDuty", alert.getDatabaseId(), alert.getTenantId());
+            restTemplate.exchange(uri, HttpMethod.POST, requestEntity, String.class);
+        } catch (URISyntaxException e) {
+            throw new NotificationInternalException("Bad PagerDuty url", e);
+        } catch (JsonProcessingException e) {
+            throw new NotificationBadDataException("JSON error processing alertDTO", e);
+        } catch (RestClientException e) {
+            throw new NotificationAPIException("PagerDuty API exception", e);
+        } catch (InvalidProtocolBufferException e) {
+            throw new NotificationInternalException("Failed to encode/decode alert: " + alert, e);
+        }
+    }
+
+    public void saveConfig(PagerDutyConfigDTO config) {
+        pagerDutyDao.saveConfig(config);
+    }
+
+    private String getPagerDutyIntegrationKey(String tenantId) throws NotificationConfigUninitializedException {
+        PagerDutyConfigDTO config = pagerDutyDao.getConfig(tenantId);
+        return config.getIntegrationKey();
+    }
+
+    private PagerDutyEventDTO getEvent(Alert alert) throws NotificationConfigUninitializedException, JsonProcessingException, InvalidProtocolBufferException {
+        Instant now = Instant.now();
+
+        PagerDutyEventDTO event = new PagerDutyEventDTO();
+        PagerDutyPayloadDTO payload = new PagerDutyPayloadDTO();
+
+        payload.setSummary(alert.getLogMessage().trim());
+        payload.setTimestamp(now.toString());
+        payload.setSeverity(PagerDutySeverity.fromAlertSeverity(alert.getSeverity()));
+
+        // Source: unique location of affected system
+        payload.setSource(JsonFormat.printer()
+            .omittingInsignificantWhitespace()
+            .sortingMapKeys()
+            .print(alert.getManagedObject()));
+        // Component: component responsible for the event
+        payload.setComponent(alert.getManagedObject().getType().name());
+        // Group: logical grouping
+        payload.setGroup(alert.getLocation());
+        // Class: type of event
+        payload.setClazz(alert.getUei());
+
+        event.setRoutingKey(getPagerDutyIntegrationKey(alert.getTenantId()));
+        event.setDedupKey(alert.getReductionKey());
+
+        if (Severity.CLEARED.equals(alert.getSeverity()) || AlertType.CLEAR.equals(alert.getType())) {
+            event.setEventAction(PagerDutyEventAction.RESOLVE);
+        } else if (alert.getIsAcknowledged()) {
+            event.setEventAction(PagerDutyEventAction.ACKNOWLEDGE);
+        } else {
+            event.setEventAction(PagerDutyEventAction.TRIGGER);
+        }
+
+        // TODO: We need to determine what the external facing URL is for the client
+        event.setClient(client);
+        event.setClientUrl(clientURL);
+
+        payload.setCustomDetails(new HashMap<>());
+        // Put the whole alert in the payload
+        payload.getCustomDetails().put("alert", JsonFormat.printer().includingDefaultValueFields().print(alert));
+
+        event.setPayload(payload);
+        return event;
+    }
 }

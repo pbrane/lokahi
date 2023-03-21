@@ -26,28 +26,13 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.notifications.service;
+package org.opennms.horizon.notifications.tenant;
 
-import org.opennms.horizon.alerts.proto.Alert;
-import org.opennms.horizon.notifications.api.PagerDutyAPI;
-import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
-import org.opennms.horizon.notifications.exceptions.NotificationException;
-import org.opennms.horizon.notifications.tenant.WithTenant;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.Optional;
 
-@Service
-public class NotificationService {
-
-    @Autowired
-    private PagerDutyAPI pagerDutyAPI;
-
-    @WithTenant(tenantIdArg = 0, tenantIdArgInternalMethod = "getTenantId", tenantIdArgInternalClass = "org.opennms.horizon.alerts.proto.Alert")
-    public void postNotification(Alert alert) throws NotificationException {
-        pagerDutyAPI.postNotification(alert);
-    }
-
-    public void postPagerDutyConfig(PagerDutyConfigDTO config) {
-        pagerDutyAPI.saveConfig(config);
+public class TenantContextLookupImpl implements TenantLookup {
+    @Override
+    public Optional<String> lookupTenantId() {
+        return Optional.ofNullable(TenantContext.getTenantId());
     }
 }

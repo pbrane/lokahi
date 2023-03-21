@@ -2,11 +2,9 @@ package org.opennms.horizon.notifications.kafka;
 
 import com.google.common.base.Strings;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.grpc.Context;
 import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.notifications.exceptions.NotificationException;
 import org.opennms.horizon.notifications.service.NotificationService;
-import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +32,7 @@ public class AlertKafkaConsumer {
                 LOG.warn("TenantId is empty, dropping alert {}", alert);
                 return;
             }
-            Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, alert.getTenantId()).run(()-> {
-                consumeAlert(alert);
-            });
+            consumeAlert(alert);
         } catch (InvalidProtocolBufferException e) {
             LOG.error("Error while parsing Alert. Payload: {}", Arrays.toString(data), e);
         }

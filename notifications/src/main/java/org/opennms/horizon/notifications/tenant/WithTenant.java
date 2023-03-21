@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -26,16 +26,18 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.notifications.grpc.config;
+package org.opennms.horizon.notifications.tenant;
 
-import io.grpc.Context;
-import org.opennms.horizon.shared.constants.GrpcConstants;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.Optional;
-
-public class GrpcTenantLookupImpl implements TenantLookup {
-    @Override
-    public Optional<String> lookupTenantId(Context context) {
-        return Optional.ofNullable(GrpcConstants.TENANT_ID_CONTEXT_KEY.get());
-    }
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface WithTenant {
+    String tenantId() default "";
+    int tenantIdArg() default -1;
+    String tenantIdArgInternalMethod() default "";
+    String tenantIdArgInternalClass() default "";
 }

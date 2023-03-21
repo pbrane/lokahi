@@ -36,6 +36,7 @@ option java_package = "org.opennms.horizon.notifications.dto";
 
 message PagerDutyConfigDTO {
   string integration_key = 1;
+  string tenant_id = 2;
 }
 
 service NotificationService {

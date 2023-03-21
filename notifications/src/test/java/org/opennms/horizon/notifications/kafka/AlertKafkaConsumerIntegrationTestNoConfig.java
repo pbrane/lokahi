@@ -3,7 +3,7 @@ package org.opennms.horizon.notifications.kafka;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.header.internals.RecordHeader;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,10 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
+import org.opennms.horizon.model.common.proto.Severity;
 import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.notifications.NotificationsApplication;
 import org.opennms.horizon.notifications.SpringContextTestInitializer;
-import org.opennms.horizon.notifications.api.PagerDutyAPIImpl;
+import org.opennms.horizon.notifications.api.PagerDutyAPI;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +39,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,7 +64,7 @@ class AlertKafkaConsumerIntegrationTestNoConfig {
     @Value("${horizon.kafka.alerts.topic}")
     private String alertsTopic;
 
-    private Producer<String, String> stringProducer;
+    private Producer<String, byte[]> kafkaProducer;
 
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
@@ -82,7 +82,7 @@ class AlertKafkaConsumerIntegrationTestNoConfig {
     private RestTemplate restTemplate;
 
     @SpyBean
-    private PagerDutyAPIImpl pagerDutyAPI;
+    private PagerDutyAPI pagerDutyAPI;
 
     @LocalServerPort
     private Integer port;
@@ -91,20 +91,25 @@ class AlertKafkaConsumerIntegrationTestNoConfig {
     void setUp() {
         Map<String, Object> producerConfig = new HashMap<>(KafkaTestUtils.producerProps(embeddedKafkaBroker));
 
-        DefaultKafkaProducerFactory<String, String> stringFactory
-            = new DefaultKafkaProducerFactory<>(producerConfig, new StringSerializer(), new StringSerializer());
-        stringProducer = stringFactory.createProducer();
+        DefaultKafkaProducerFactory<String, byte[]> kafkaProducerFactory
+            = new DefaultKafkaProducerFactory<>(producerConfig, new StringSerializer(), new ByteArraySerializer());
+        kafkaProducer = kafkaProducerFactory.createProducer();
     }
 
     @Test
     void testProducingAlertWithNoConfigSetup() throws InvalidProtocolBufferException {
         int id = 1234;
         String tenantId = "opennms-prime";
-        ProducerRecord producerRecord = new ProducerRecord<>(alertsTopic, String.format("{\"id\": %d, \"severity\":\"indeterminate\", \"logMessage\":\"hello\"}", id));
-        producerRecord.headers().add(new RecordHeader(GrpcConstants.TENANT_ID_KEY, tenantId.getBytes(StandardCharsets.UTF_8)));
+        Alert alert = Alert.newBuilder()
+            .setSeverity(Severity.MINOR)
+            .setLogMessage("hello")
+            .setDatabaseId(1234)
+            .setTenantId("opennms-prime")
+            .build();
+        var producerRecord = new ProducerRecord<String,byte[]>(alertsTopic, alert.toByteArray());
 
-        stringProducer.send(producerRecord);
-        stringProducer.flush();
+        kafkaProducer.send(producerRecord);
+        kafkaProducer.flush();
 
         verify(alertKafkaConsumer, timeout(KAFKA_TIMEOUT).times(1))
             .consume(alertCaptor.capture());
@@ -122,6 +127,6 @@ class AlertKafkaConsumerIntegrationTestNoConfig {
 
     @AfterAll
     void shutdown() {
-        stringProducer.close();
+        kafkaProducer.close();
     }
 }
