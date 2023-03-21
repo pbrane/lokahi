@@ -71,9 +71,7 @@ public class GrpcAlertConfigurationService {
     @GraphQLQuery
     public Mono<ListAlertDefinitionsResponseDTO> listAlertDefinitions(ListAlertDefinitionsRequestDTO request, @GraphQLEnvironment ResolutionEnvironment env) {
         LOG.info("listAlertDefinitions");
-        String auth = headerUtil.getAuthHeader(env);
-        LOG.info("auth header="+auth);
-        return Mono.just(mapper.protoToListAlertDefinitionsResponseDTO(client.listAlertDefinitions(mapper.listAlertDefinitionsRequestDTOtoProto(request), auth)));
+        return Mono.just(mapper.protoToListAlertDefinitionsResponseDTO(client.listAlertDefinitions(mapper.listAlertDefinitionsRequestDTOtoProto(request), headerUtil.getAuthHeader(env))));
     }
 
     @GraphQLQuery

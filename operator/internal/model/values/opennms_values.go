@@ -57,6 +57,7 @@ type InventoryValues struct {
 
 type AlertValues struct {
 	ServiceValues `yaml:",inline"`
+	GrpcPort      int `yaml:"GrpcPort"`
 }
 
 type EventsValues struct {
