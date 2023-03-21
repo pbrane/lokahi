@@ -29,3 +29,14 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.1" with timeout 120000ms
     Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.2" with timeout 120000ms
     Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.3" with timeout 120000ms
+    Then Delete the first node from inventory
+    Then Delete the first node from inventory
+    Then Delete the first node from inventory
+
+  Scenario: Create a Node and check it status
+    Then Add a device with label "NodeUp" IP address "127.1.0.4" and location "Default"
+    Then Check the status of the Node with expected status "UP"
+    Then Delete the first node from inventory
+    Then Add a device with label "NodeDown" IP address "192.168.0.4" and location "Default"
+    Then Check the status of the Node with expected status "DOWN"
+    Then Delete the first node from inventory

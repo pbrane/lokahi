@@ -47,6 +47,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
+import static io.cucumber.core.options.Constants.FILTER_TAGS_PROPERTY_NAME;
 import static io.cucumber.core.options.Constants.GLUE_PROPERTY_NAME;
 import static io.cucumber.core.options.Constants.PLUGIN_PROPERTY_NAME;
 
@@ -55,6 +56,7 @@ import static io.cucumber.core.options.Constants.PLUGIN_PROPERTY_NAME;
 @SelectClasspathResource("org/opennms/horizon/inventory")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "json:target/cucumber-report.json, html:target/cucumber.html, pretty")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "org.opennms.horizon.inventory,org.opennms.horizon.testtool.miniongateway.wiremock.client")
+@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @ignore")
 public class CucumberRunnerIT {
 
     public static final String MOCK_MINION_GATEWAY_DOCKER_IMAGE = "opennms-inventory/mock-minion-gateway:local";
@@ -132,7 +134,6 @@ public class CucumberRunnerIT {
             .withNetwork(network)
             .withNetworkAliases("application", "application-host")
             .dependsOn(kafkaContainer, azureWireMockContainer, postgreSQLContainer)
-            .withExposedPorts(6565, 5005)
             .dependsOn(kafkaContainer, postgreSQLContainer, mockMinionGatewayContainer)
             .withStartupTimeout(Duration.ofMinutes(5))
             .withEnv("JAVA_TOOL_OPTIONS", "-Djava.security.egd=file:/dev/./urandom -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
@@ -149,9 +150,9 @@ public class CucumberRunnerIT {
             .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("APPLICATION"));
 
         if (! enableDebuggingPort5005) {
-            applicationContainer.withExposedPorts(6565, 5005);
+            applicationContainer.withExposedPorts(6565, 8080, 5005);
         } else {
-            applicationContainer.withExposedPorts(6565);
+            applicationContainer.withExposedPorts(6565, 8080);
 
             // DEBUGGING: uncomment to force local port 5005 (also comment-out the 5005 in withExposedPorts() above
             applicationContainer.getPortBindings().add("5005:5005");
@@ -160,9 +161,12 @@ public class CucumberRunnerIT {
         applicationContainer.start();
 
         var externalGrpcPort = applicationContainer.getMappedPort(6565); // application-external-grpc-port
+        var externalHttpPort = applicationContainer.getMappedPort(8080);
         var debuggerPort = applicationContainer.getMappedPort(5005);
-        LOG.info("APPLICATION MAPPED PORTS:  external-grpc={};  debugger={}", externalGrpcPort, debuggerPort);
+        LOG.info("APPLICATION MAPPED PORTS:  external-grpc={};  external-http={}; debugger={}", externalGrpcPort, externalHttpPort, debuggerPort);
         System.setProperty("application-external-grpc-port", String.valueOf(externalGrpcPort));
+        System.setProperty("application-external-http-port", String.valueOf(externalHttpPort));
+        System.setProperty("application-external-http-base-url", "http://localhost:" + externalHttpPort);
     }
 
     @SuppressWarnings({"unchecked"})

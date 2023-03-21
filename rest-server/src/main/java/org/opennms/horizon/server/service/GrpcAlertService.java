@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -28,6 +28,58 @@
 
 package org.opennms.horizon.server.service;
 
-//TODO: implement GraphQL with gRPC client to the alarm service
+import org.opennms.horizon.server.mapper.AlertMapper;
+import org.opennms.horizon.server.model.alerts.Alert;
+import org.opennms.horizon.server.service.grpc.AlertsClient;
+import org.opennms.horizon.server.utils.ServerHeaderUtil;
+import org.springframework.stereotype.Service;
+
+import io.leangen.graphql.annotations.GraphQLArgument;
+import io.leangen.graphql.annotations.GraphQLEnvironment;
+import io.leangen.graphql.annotations.GraphQLMutation;
+import io.leangen.graphql.annotations.GraphQLQuery;
+import io.leangen.graphql.execution.ResolutionEnvironment;
+import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
+import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+@RequiredArgsConstructor
+@GraphQLApi
+@Service
 public class GrpcAlertService {
+
+    private final AlertsClient alertsClient;
+    private final ServerHeaderUtil headerUtil;
+    private final AlertMapper mapper;
+
+    @GraphQLQuery
+    public Flux<Alert> findAllAlerts(@GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(alertsClient.listAlerts(headerUtil.getAuthHeader(env)).stream().map(mapper::protoToAlert).toList());
+    }
+
+    @GraphQLMutation
+    public Mono<Alert> acknowledgeAlert(@GraphQLArgument(name = "id") long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(mapper.protoToAlert(alertsClient.acknowledgeAlert(id, headerUtil.getAuthHeader(env))));
+    }
+
+    @GraphQLMutation
+    public Mono<Alert> unacknowledgeAlert(@GraphQLArgument(name = "id") long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(mapper.protoToAlert(alertsClient.unacknowledgeAlert(id, headerUtil.getAuthHeader(env))));
+    }
+
+    @GraphQLMutation
+    public Mono<Alert> escalateAlert(@GraphQLArgument(name = "id") long id, @GraphQLArgument(name = "newNodeCriteria") String newNodeCriteria, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(mapper.protoToAlert(alertsClient.escalateAlert(id, headerUtil.getAuthHeader(env))));
+    }
+
+    @GraphQLMutation
+    public Mono<Alert> clearAlert(@GraphQLArgument(name = "id") long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(mapper.protoToAlert(alertsClient.clearAlert(id, headerUtil.getAuthHeader(env))));
+    }
+
+    @GraphQLMutation
+    public Mono<Boolean> deleteAlert(@GraphQLArgument(name = "id") long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(alertsClient.deleteAlert(id, headerUtil.getAuthHeader(env)));
+    }
 }

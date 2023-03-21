@@ -148,7 +148,7 @@ const validateContent = () => {
   const regexPorts = new RegExp(REGEX_PORT.listPorts)
   switch (props.contentType) {
     case ContentEditableType.IP:
-      isInvalid = contentEditableStrings.some((str: string) => !ipRegex({ exact: true }).test(str))
+      //isInvalid = contentEditableStrings.some((str: string) => !ipRegex({ exact: true }).test(str))
       break
     case ContentEditableType.CommunityString:
       break

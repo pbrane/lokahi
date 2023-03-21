@@ -47,6 +47,8 @@ import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryServiceGrpc;
 import org.opennms.horizon.inventory.dto.IdList;
 import org.opennms.horizon.inventory.dto.ListAllTagsParamsDTO;
 import org.opennms.horizon.inventory.dto.ListTagsByEntityIdParamsDTO;
+import org.opennms.horizon.inventory.dto.MonitoredState;
+import org.opennms.horizon.inventory.dto.MonitoredStateQuery;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationServiceGrpc;
 import org.opennms.horizon.inventory.dto.MonitoringSystemDTO;
@@ -61,6 +63,7 @@ import org.opennms.horizon.inventory.dto.PassiveDiscoveryServiceGrpc;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryToggleDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryUpsertDTO;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
+import org.opennms.horizon.inventory.dto.TagEntityIdDTO;
 import org.opennms.horizon.inventory.dto.TagListDTO;
 import org.opennms.horizon.inventory.dto.TagListParamsDTO;
 import org.opennms.horizon.inventory.dto.TagRemoveListDTO;
@@ -141,6 +144,13 @@ public class InventoryClient {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listNodes(Empty.newBuilder().build()).getNodesList();
+    }
+
+    public List<NodeDTO> listNodesByMonitoredState(String monitoredState, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        MonitoredStateQuery query = MonitoredStateQuery.newBuilder().setMonitoredState(MonitoredState.valueOf(monitoredState)).build();
+        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listNodesByMonitoredState(query).getNodesList();
     }
 
     public NodeDTO getNodeById(long id, String accessToken) {
@@ -241,7 +251,7 @@ public class InventoryClient {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         ListTagsByEntityIdParamsDTO params = ListTagsByEntityIdParamsDTO.newBuilder()
-            .setNodeId(nodeId)
+            .setEntityId(TagEntityIdDTO.newBuilder().setNodeId(nodeId))
             .setParams(buildTagListParams(searchTerm))
             .build();
         return tagStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
@@ -252,7 +262,18 @@ public class InventoryClient {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         ListTagsByEntityIdParamsDTO params = ListTagsByEntityIdParamsDTO.newBuilder()
-            .setActiveDiscoveryId(activeDiscoveryId)
+            .setEntityId(TagEntityIdDTO.newBuilder().setActiveDiscoveryId(activeDiscoveryId))
+            .setParams(buildTagListParams(searchTerm))
+            .build();
+        return tagStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+            .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).getTagsByEntityId(params);
+    }
+
+    public TagListDTO getTagsByPassiveDiscoveryId(long passiveDiscoveryId, String searchTerm, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        ListTagsByEntityIdParamsDTO params = ListTagsByEntityIdParamsDTO.newBuilder()
+            .setEntityId(TagEntityIdDTO.newBuilder().setPassiveDiscoveryId(passiveDiscoveryId))
             .setParams(buildTagListParams(searchTerm))
             .build();
         return tagStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
@@ -282,4 +303,6 @@ public class InventoryClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         return passiveDiscoveryServiceBlockingStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).toggleDiscovery(request);
     }
+
+
 }

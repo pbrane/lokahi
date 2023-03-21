@@ -38,6 +38,7 @@ import org.opennms.horizon.inventory.model.SnmpConfig;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -45,6 +46,8 @@ import org.springframework.test.context.ContextConfiguration;
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ContextConfiguration(initializers = {SpringContextTestInitializer.class})
+@AutoConfigureObservability
+// Make sure to include Metrics (for some reason they are disabled by default in the integration grey-box test)
 public class SnmpConfigRepositoryTest {
 
     private static final String tenantId = "tenant-1";
@@ -54,29 +57,29 @@ public class SnmpConfigRepositoryTest {
 
     @Test
     public void testSnmpConfigPersistence() {
-        Context.current().withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, tenantId).run(() ->
-        {
-            var snmpAgentConfig = new SnmpAgentConfig();
-            snmpAgentConfig.setPort(1161);
-            snmpAgentConfig.setReadCommunity("OpenNMS");
-            snmpAgentConfig.setWriteCommunity("private");
-            var snmpConfig = new SnmpConfig();
-            snmpConfig.setLocation("MINION");
-            snmpConfig.setIpAddress(InetAddressUtils.getInetAddress("192.168.1.1"));
-            snmpConfig.setTenantId(tenantId);
-            snmpConfig.setSnmpAgentConfig(snmpAgentConfig);
-            var persisted = snmpConfigRepository.save(snmpConfig);
-            Assertions.assertNotNull(persisted);
-            Assertions.assertEquals("v1", snmpConfig.getSnmpAgentConfig().getVersion());
-            Assertions.assertEquals("OpenNMS", snmpConfig.getSnmpAgentConfig().getReadCommunity());
-            Assertions.assertEquals("private", snmpConfig.getSnmpAgentConfig().getWriteCommunity());
-            Assertions.assertEquals(1161, snmpConfig.getSnmpAgentConfig().getPort());
 
-            var optional = snmpConfigRepository
-                .findByIpAddressAndLocation(InetAddressUtils.getInetAddress("192.168.1.1"), "MINION");
+        var snmpAgentConfig = new SnmpAgentConfig();
+        snmpAgentConfig.setPort(1161);
+        snmpAgentConfig.setReadCommunity("OpenNMS");
+        snmpAgentConfig.setWriteCommunity("private");
+        var snmpConfig = new SnmpConfig();
+        snmpConfig.setTenantId(tenantId);
+        snmpConfig.setLocation("MINION");
+        snmpConfig.setIpAddress(InetAddressUtils.getInetAddress("192.168.1.1"));
+        snmpConfig.setTenantId(tenantId);
+        snmpConfig.setSnmpAgentConfig(snmpAgentConfig);
+        var persisted = snmpConfigRepository.save(snmpConfig);
+        Assertions.assertNotNull(persisted);
+        Assertions.assertEquals("v1", snmpConfig.getSnmpAgentConfig().getVersion());
+        Assertions.assertEquals("OpenNMS", snmpConfig.getSnmpAgentConfig().getReadCommunity());
+        Assertions.assertEquals("private", snmpConfig.getSnmpAgentConfig().getWriteCommunity());
+        Assertions.assertEquals(1161, snmpConfig.getSnmpAgentConfig().getPort());
 
-            Assertions.assertTrue(optional.isPresent());
-        });
+        var optional = snmpConfigRepository
+            .findByTenantIdAndLocationAndIpAddress(tenantId, "MINION", InetAddressUtils.getInetAddress("192.168.1.1"));
+
+        Assertions.assertTrue(optional.isPresent());
+
 
     }
 

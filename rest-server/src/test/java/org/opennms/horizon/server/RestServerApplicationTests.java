@@ -3,12 +3,13 @@ package org.opennms.horizon.server;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
-import org.opennms.horizon.server.service.discovery.GrpcAzureActiveDiscoveryService;
+import org.opennms.horizon.server.service.GrpcAlertService;
 import org.opennms.horizon.server.service.GrpcEventService;
 import org.opennms.horizon.server.service.GrpcLocationService;
 import org.opennms.horizon.server.service.GrpcMinionService;
 import org.opennms.horizon.server.service.GrpcNodeService;
 import org.opennms.horizon.server.service.NotificationService;
+import org.opennms.horizon.server.service.discovery.GrpcAzureActiveDiscoveryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -25,6 +26,8 @@ class RestServerApplicationTests {
     @Autowired
     private GrpcLocationService grpcLocationService;
     @Autowired
+    private GrpcAlertService grpcAlertService;
+    @Autowired
     private GrpcAzureActiveDiscoveryService grpcAzureActiveDiscoveryService;
 
 	@Test
@@ -34,6 +37,7 @@ class RestServerApplicationTests {
         assertNotNull(grpcLocationService);
         assertNotNull(grpcEventService);
         assertNotNull(grpcNodeService);
+        assertNotNull(grpcAlertService);
         assertNotNull(grpcAzureActiveDiscoveryService);
 	}
 

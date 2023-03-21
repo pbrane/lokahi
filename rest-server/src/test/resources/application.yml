@@ -10,3 +10,4 @@ grpc:
     inventory: localhost:29065
     events: localhost:30065
     notification: localhost:15065
+    alerts: localhost:32065

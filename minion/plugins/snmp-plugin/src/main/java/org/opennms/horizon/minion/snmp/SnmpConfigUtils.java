@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -26,19 +26,25 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.server.model.inventory.tag;
+package org.opennms.horizon.minion.snmp;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
+import org.opennms.horizon.shared.utils.InetAddressUtils;
+import org.opennms.horizon.snmp.api.SnmpConfiguration;
 
-import java.util.ArrayList;
-import java.util.List;
+public class SnmpConfigUtils {
 
-@Getter
-@Setter
-public class TagListNodeRemove {
-
-    private long nodeId;
-
-    private List<Long> tagIds = new ArrayList<>();
+    static SnmpAgentConfig mapAgentConfig(String host, SnmpConfiguration snmpConfiguration) {
+        var agentConfig = new SnmpAgentConfig(InetAddressUtils.getInetAddress(host), SnmpAgentConfig.DEFAULTS);
+        if(snmpConfiguration != null) {
+            if (snmpConfiguration.hasReadCommunity()) {
+                agentConfig.setReadCommunity(snmpConfiguration.getReadCommunity());
+            }
+            if (snmpConfiguration.hasPort()) {
+                agentConfig.setPort(snmpConfiguration.getPort());
+            }
+            //TODO: Expand config further.
+        }
+        return agentConfig;
+    }
 }
