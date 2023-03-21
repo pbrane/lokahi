@@ -51,13 +51,18 @@ import org.opennms.horizon.server.model.inventory.discovery.passive.PassiveDisco
 import org.opennms.horizon.server.service.grpc.AlertsClient;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @GraphQLApi
 @Service
+
 public class GrpcAlertConfigurationService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GrpcAlertConfigurationService.class);
 
     private final AlertsClient client;
     private final AlertDefinitionDTOMapper mapper;
@@ -65,8 +70,10 @@ public class GrpcAlertConfigurationService {
 
     @GraphQLQuery
     public Mono<ListAlertDefinitionsResponseDTO> listAlertDefinitions(ListAlertDefinitionsRequestDTO request, @GraphQLEnvironment ResolutionEnvironment env) {
-        System.out.println("listAlertDefinitions");
-        return Mono.just(mapper.protoToListAlertDefinitionsResponseDTO(client.listAlertDefinitions(mapper.listAlertDefinitionsRequestDTOtoProto(request), headerUtil.getAuthHeader(env))));
+        LOG.info("listAlertDefinitions");
+        String auth = headerUtil.getAuthHeader(env);
+        LOG.info("auth header="+auth);
+        return Mono.just(mapper.protoToListAlertDefinitionsResponseDTO(client.listAlertDefinitions(mapper.listAlertDefinitionsRequestDTOtoProto(request), auth)));
     }
 
     @GraphQLQuery
