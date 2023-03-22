@@ -15,11 +15,7 @@
 
         <createTable tableName="alert_definition">
 
-            <column name="tenant_id" type="text" defaultValue="opennms-prime">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="alert_definition_id" type="bigint">
+            <column name="tenant_id" type="text">
                 <constraints nullable="false"/>
             </column>
 
@@ -27,23 +23,27 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="match" type="text"/>
+            <column name="reduction_key" type="text">
+                <constraints nullable="false"/>
+            </column>
 
-            <column name="reduction_key" type="text"/>
+            <column name="clear_key" type="text">
+                <constraints nullable="false"/>
+            </column>
 
-            <column name="clear_key" type="text"/>
+            <column name="type" type="text">
+                <constraints nullable="false"/>
+            </column>
 
-            <column name="type" type="text"/>
-
-            <column name="managed_object_type" type="text" />
+            <column name="managed_object_type" type="text">
+                <constraints nullable="false"/>
+            </column>
 
         </createTable>
 
-        <addPrimaryKey columnNames="tenant_id, alert_definition_id"
+        <addPrimaryKey columnNames="tenant_id, uei"
                        constraintName="alert_definition_pk"
                        tableName="alert_definition"/>
-
-        <createSequence sequenceName="alert_definition_nxt_id"/>
 
     </changeSet>
 </databaseChangeLog>

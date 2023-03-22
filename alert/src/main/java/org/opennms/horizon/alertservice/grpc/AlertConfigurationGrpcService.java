@@ -30,6 +30,7 @@ package org.opennms.horizon.alertservice.grpc;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alerts.proto.AlertConfigurationServiceGrpc;
@@ -37,6 +38,7 @@ import org.opennms.horizon.alerts.proto.AlertDefinition;
 import org.opennms.horizon.alerts.proto.EventMatch;
 import org.opennms.horizon.alerts.proto.ListAlertDefinitionsResponse;
 import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
+import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
 import org.opennms.horizon.alertservice.service.AlertDefinitionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,13 +55,18 @@ public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc
 
     private final AlertDefinitionRepository alertDefinitionRepository;
 
-    private final AlertDefinitionMapper alertMapper;
+    private final AlertDefinitionMapper alertDefinitionMapper;
+
+    private final TenantLookup tenantLookup;
 
     @Override
     public void listAlertDefinitions(org.opennms.horizon.alerts.proto.ListAlertDefinitionsRequest request,
                                      io.grpc.stub.StreamObserver<org.opennms.horizon.alerts.proto.ListAlertDefinitionsResponse> responseObserver) {
+
+        LOG.info("listAlertDefinitions");
+
         List<AlertDefinition> alertDefinitions = alertDefinitionRepository.findAll().stream()
-            .map(alertMapper::toProto)
+            .map(alertDefinitionMapper::toProto)
             .toList();
 
         ListAlertDefinitionsResponse response = ListAlertDefinitionsResponse.newBuilder()
@@ -83,7 +90,7 @@ public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc
         org.opennms.horizon.alertservice.db.entity.AlertDefinition alertDefinition = alertDefinitionRepository.getReferenceById(request.getValue());
         org.opennms.horizon.alerts.proto.AlertDefinition response = org.opennms.horizon.alerts.proto.AlertDefinition.newBuilder()
             .setUei(alertDefinition.getUei())
-            .addAllMatch(getMatchesAsProto(alertDefinition))
+            .addAllMatch(getMatchesAsProto(alertDefinition)) // TODO: Use Mapper
             .setReductionKey(alertDefinition.getReductionKey())
             .setClearKey(alertDefinition.getClearKey())
             .setType(alertDefinition.getType())
@@ -96,7 +103,25 @@ public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc
 
     public void insertAlertDefinition(org.opennms.horizon.alerts.proto.AlertDefinition request,
               io.grpc.stub.StreamObserver<org.opennms.horizon.alerts.proto.AlertDefinition> responseObserver){
+        LOG.info("insertAlertDefinition request="+request);
 
+        tenantLookup.lookupTenantId(Context.current())
+            .ifPresentOrElse(tenantId -> {
+                try {
+                    org.opennms.horizon.alertservice.db.entity.AlertDefinition alertDefinition = alertDefinitionMapper.toEntity(request);
+                    alertDefinition.setTenantId(tenantId);
+                    alertDefinitionRepository.save(alertDefinition);
+
+                    responseObserver.onNext(request);
+                    responseObserver.onCompleted();
+                } catch (Exception e) {
+                    LOG.error("Alert definition null request="+request);
+                    e.printStackTrace();
+                    responseObserver.onError(StatusProto.toStatusRuntimeException(Status.newBuilder()
+                        .setCode(Code.INVALID_ARGUMENT_VALUE)
+                        .setMessage("Can't find AlertDefinition for request="+request)
+                        .build()));                }
+            }, () -> responseObserver.onError(StatusProto.toStatusRuntimeException(createMissingTenant())));
     }
 
     public void updateAlertDefinition(org.opennms.horizon.alerts.proto.AlertDefinition request,
@@ -118,5 +143,9 @@ public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc
             matches.add(match);
         }
         return matches;
+    }
+
+    private Status createMissingTenant() {
+        return Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage("Missing tenantId").build();
     }
 }

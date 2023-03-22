@@ -43,4 +43,5 @@ public interface AlertDefinitionMapper {
 
     org.opennms.horizon.alerts.proto.AlertDefinition toProto(AlertDefinition alert);
 
+    AlertDefinition toEntity(org.opennms.horizon.alerts.proto.AlertDefinition request);
 }

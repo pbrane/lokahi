@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,21 +20,26 @@ import java.io.Serializable;
 @Setter
 @RequiredArgsConstructor
 @Entity
+@Table(name="event_match")
 public class EventMatch extends TenantAwareEntity implements Serializable  {
 
     @Serial
     private static final long serialVersionUID = 5352121937366809116L;
+
+    @NotNull
+    @Column(name = "tenant_id")
+    private String tenantId;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "event_match_id")
     private long id;
 
-
-    @ManyToOne
-    @JoinColumn(name="alert_definition_id")
-    private AlertDefinition alertDefinition;
-
+    @NotNull
+    @Column(name = "name")
     private String name;
+
+    @NotNull
+    @Column(name = "value")
     private String value;
 }

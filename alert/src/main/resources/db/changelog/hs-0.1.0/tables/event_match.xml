@@ -14,15 +14,15 @@
     <changeSet author="rellis" id="hs-0.1.0-event_match">
         <createTable tableName="event_match">
 
-            <column name="tenant_id" type="text" defaultValue="opennms-prime">
-                <constraints nullable="false"/>
-            </column>
-
             <column name="event_match_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="alert_definition_id" type="bigint">
+            <column name="tenant_id" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="uei" type="text">
                 <constraints nullable="false"/>
             </column>
 
@@ -35,15 +35,15 @@
             </column>
         </createTable>
 
-        <addPrimaryKey columnNames="tenant_id, event_match_id"
+        <addPrimaryKey columnNames="tenant_id,event_match_id"
                        constraintName="event_match_pk"
                        tableName="event_match"/>
 
-        <addForeignKeyConstraint  baseColumnNames="tenant_id,event_match_id"
+        <addForeignKeyConstraint  baseColumnNames="tenant_id,uei"
                                   baseTableName="event_match"
                                   constraintName="fk_alert_definition"
                                   onDelete="CASCADE"
-                                  referencedColumnNames="tenant_id,alert_definition_id"
+                                  referencedColumnNames="tenant_id,uei"
                                   referencedTableName="alert_definition" />
     </changeSet>
 </databaseChangeLog>
