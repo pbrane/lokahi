@@ -51,7 +51,9 @@ func (h *MinionHandler) UpdateConfig(values values.TemplateValues) error {
 	h.AddToTemplates(handlers.Filepath("opennms/minion/minion-gateway-ignite-configmap.yaml"), values, &minionGatewayIgniteConfigMap)
 	h.AddToTemplates(handlers.Filepath("opennms/minion/minion-deployment.yaml"), values, &minionDeploy)
 	h.AddToTemplates(handlers.Filepath("opennms/minion/minion-gateway-deployment.yaml"), values, &minionGatewayDeploy)
-	h.AddToTemplates(handlers.Filepath("opennms/minion/minion-gateway-ingress.yaml"), values, &minionGatewayIngress)
+	if !values.Values.OpenShift { //ingress handled separately in OpenShift
+		h.AddToTemplates(handlers.Filepath("opennms/minion/minion-gateway-ingress.yaml"), values, &minionGatewayIngress)
+	}
 	h.AddToTemplates(handlers.Filepath("opennms/minion-gateway-grpc-proxy/minion-gateway-grpc-proxy-serviceaccount.yaml"), values, &minionGGPSA)
 	h.AddToTemplates(handlers.Filepath("opennms/minion-gateway-grpc-proxy/minion-gateway-grpc-proxy-service.yaml"), values, &minionGGPSVC)
 	h.AddToTemplates(handlers.Filepath("opennms/minion-gateway-grpc-proxy/minion-gateway-grpc-proxy-deployment.yaml"), values, &minionGGPDeploy)
