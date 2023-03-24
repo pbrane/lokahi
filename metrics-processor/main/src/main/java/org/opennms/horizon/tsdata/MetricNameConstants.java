@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -26,13 +26,19 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.minion.flows.listeners;
+package org.opennms.horizon.tsdata;
 
-import java.util.concurrent.Future;
+public interface MetricNameConstants {
+    String METRICS_NAME_PREFIX_MONITOR = "monitor_";
+    String METRICS_NAME_RESPONSE = "response_time_msec";
+    String METRIC_NAME_LABEL = "__name__";
 
-/**
- * It extends standard listener with extra future for monitor shutdown status. In order to prevent deadlock of shutdown process.
- */
-public interface GracefulShutdownListener extends Listener {
-    Future getShutdownFuture();
+    String[] MONITOR_METRICS_LABEL_NAMES = {
+        "instance",
+        "location",
+        "system_id",
+        "monitor",
+        "node_id"
+    };
+
 }

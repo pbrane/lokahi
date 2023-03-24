@@ -26,36 +26,9 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.minion.flows.parser;
+package org.opennms.horizon.events.consumer.metrics;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.opennms.horizon.minion.flows.listeners.FlowsListener;
+public interface TenantMetricsTracker {
+    void addTenantEventSampleCount(String tenant, int count);
 
-public class ListenerHolderTest {
-
-    @Test
-    public void testAdd() {
-        FlowsListener listener = Mockito.mock(FlowsListener.class);
-        Mockito.when(listener.getName()).thenReturn("test");
-        ListenerHolder holder = new ListenerHolder();
-        holder.put(listener);
-        Assert.assertEquals(1, holder.size());
-        FlowsListener fromGet = holder.get("test");
-        Assert.assertEquals(listener, fromGet);
-        holder.remove("test");
-        Assert.assertEquals(0, holder.size());
-    }
-
-    @Test
-    public void testStartAndStop() throws Exception {
-        FlowsListener listener = Mockito.mock(FlowsListener.class);
-        ListenerHolder holder = new ListenerHolder();
-        holder.put(listener);
-        holder.stop();
-        Mockito.verify(listener, Mockito.times(1)).stop();
-        holder.start();
-        Mockito.verify(listener, Mockito.times(1)).start();
-    }
 }

@@ -56,6 +56,7 @@ import org.opennms.horizon.inventory.dto.MonitoringSystemServiceGrpc;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.NodeIdList;
+import org.opennms.horizon.inventory.dto.NodeLabelSearchQuery;
 import org.opennms.horizon.inventory.dto.NodeServiceGrpc;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryListDTO;
@@ -151,6 +152,13 @@ public class InventoryClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         MonitoredStateQuery query = MonitoredStateQuery.newBuilder().setMonitoredState(MonitoredState.valueOf(monitoredState)).build();
         return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listNodesByMonitoredState(query).getNodesList();
+    }
+
+    public List<NodeDTO> listNodesByNodeLabelSearch(String labelSearchTerm, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        NodeLabelSearchQuery query = NodeLabelSearchQuery.newBuilder().setSearchTerm(labelSearchTerm).build();
+        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listNodesByNodeLabel(query).getNodesList();
     }
 
     public NodeDTO getNodeById(long id, String accessToken) {
@@ -253,6 +261,16 @@ public class InventoryClient {
         ListTagsByEntityIdParamsDTO params = ListTagsByEntityIdParamsDTO.newBuilder()
             .setEntityId(TagEntityIdDTO.newBuilder().setNodeId(nodeId))
             .setParams(buildTagListParams(searchTerm))
+            .build();
+        return tagStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+            .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).getTagsByEntityId(params);
+    }
+
+    public TagListDTO getTagsByNodeId(long nodeId, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        ListTagsByEntityIdParamsDTO params = ListTagsByEntityIdParamsDTO.newBuilder()
+            .setEntityId(TagEntityIdDTO.newBuilder().setNodeId(nodeId))
             .build();
         return tagStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
             .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).getTagsByEntityId(params);
