@@ -50,11 +50,14 @@ import org.springframework.context.ApplicationContext;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import javax.ws.rs.core.HttpHeaders;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -217,6 +220,9 @@ public class DiscoveryTest {
         .withEnv("MINION_GATEWAY_HOST", "host.testcontainers.internal")
         .withEnv("MINION_GATEWAY_PORT", "8990")
         .withEnv("MINION_GATEWAY_TLS", "false")
+        .withEnv("USE_KUBERNETES", "false")
+        .waitingFor(Wait.forLogMessage(".*Ignite node started OK.*", 1).withStartupTimeout(Duration.ofMinutes(3)))
+        .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("MINION"))
         .withNetwork(Network.SHARED)
         .withNetworkAliases("minion");
 
@@ -224,7 +230,7 @@ public class DiscoveryTest {
     public void testContainerRun() {
         Testcontainers.exposeHostPorts(8990);
 
-        TARGET_CONTAINER.start();
+        //TARGET_CONTAINER.start();
         MINION_CONTAINER.start();
 
         String[] args = new String[0];
