@@ -4,6 +4,7 @@ metadata:
   name: opennms-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
+    route.openshift.io/termination: "passthrough"
     {{- range $Annotation, $Value := .Values.Keycloak.IngressAnnotations }}
     {{ $Annotation | quote }}: {{ $Value | quote }}
     {{- end }}
