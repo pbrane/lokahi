@@ -45,6 +45,7 @@ import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryCreateDTO;
 import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryDTO;
 import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryServiceGrpc;
 import org.opennms.horizon.inventory.dto.IdList;
+import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.ListAllTagsParamsDTO;
 import org.opennms.horizon.inventory.dto.ListTagsByEntityIdParamsDTO;
 import org.opennms.horizon.inventory.dto.MonitoredState;
@@ -67,6 +68,7 @@ import org.opennms.horizon.inventory.dto.TagCreateListDTO;
 import org.opennms.horizon.inventory.dto.TagEntityIdDTO;
 import org.opennms.horizon.inventory.dto.TagListDTO;
 import org.opennms.horizon.inventory.dto.TagListParamsDTO;
+import org.opennms.horizon.inventory.dto.TagNameQuery;
 import org.opennms.horizon.inventory.dto.TagRemoveListDTO;
 import org.opennms.horizon.inventory.dto.TagServiceGrpc;
 import org.opennms.horizon.server.config.DataLoaderFactory;
@@ -159,6 +161,13 @@ public class InventoryClient {
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         NodeLabelSearchQuery query = NodeLabelSearchQuery.newBuilder().setSearchTerm(labelSearchTerm).build();
         return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listNodesByNodeLabel(query).getNodesList();
+    }
+
+    public List<NodeDTO> listNodesByTags(List<String> tags, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        TagNameQuery query = TagNameQuery.newBuilder().addAllTags(tags).build();
+        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listNodesByTags(query).getNodesList();
     }
 
     public NodeDTO getNodeById(long id, String accessToken) {
@@ -322,5 +331,9 @@ public class InventoryClient {
         return passiveDiscoveryServiceBlockingStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).toggleDiscovery(request);
     }
 
-
+    public IpInterfaceDTO getIpInterfaceById(long id, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).getIpInterfaceById(Int64Value.of(id));
+    }
 }

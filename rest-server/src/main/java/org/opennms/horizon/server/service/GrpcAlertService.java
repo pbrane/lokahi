@@ -28,8 +28,12 @@
 
 package org.opennms.horizon.server.service;
 
+import java.util.List;
+
 import org.opennms.horizon.server.mapper.AlertMapper;
 import org.opennms.horizon.server.model.alerts.Alert;
+import org.opennms.horizon.server.model.alerts.AlertResponse;
+import org.opennms.horizon.server.model.alerts.MonitorPolicy;
 import org.opennms.horizon.server.service.grpc.AlertsClient;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.stereotype.Service;
@@ -54,10 +58,32 @@ public class GrpcAlertService {
     private final AlertMapper mapper;
 
     @GraphQLQuery
-    public Flux<Alert> findAllAlerts(@GraphQLArgument(name = "pageSize") Integer pageSize,
-                                     @GraphQLArgument(name = "page") String page,
-                                     @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(alertsClient.listAlerts(pageSize, page, headerUtil.getAuthHeader(env)).stream().map(mapper::protoToAlert).toList());
+    public Mono<AlertResponse> findAllAlerts(@GraphQLArgument(name = "pageSize") Integer pageSize,
+                                             @GraphQLArgument(name = "page") String page,
+                                             @GraphQLArgument(name = "hours") long hours,
+                                             @GraphQLArgument(name = "severities") List<String> severities,
+                                             @GraphQLArgument(name = "sortBy") String sortBy,
+                                             @GraphQLArgument(name = "sortAscending") boolean sortAscending,
+                                             @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(mapper.protoToAlertResponse(alertsClient.listAlerts(pageSize, page, severities, hours, sortBy, sortAscending, headerUtil.getAuthHeader(env))));
+    }
+
+    @GraphQLQuery(
+        name = "countAlerts",
+        description = "Returns the total count of alerts filtered by severity and time."
+    )
+    public Mono<Long> countAlerts(@GraphQLArgument(name = "hours") long hours,
+                                  @GraphQLArgument(name = "severityFilters") List<String> severityFilters,
+                                  @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(alertsClient.countAlerts(severityFilters, hours, headerUtil.getAuthHeader(env)));
+    }
+
+    @GraphQLQuery(
+        name = "countAlerts",
+        description = "Returns the total count of alerts for the last 24h."
+    )
+    public Mono<Long> countAlerts(@GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(alertsClient.countAlerts(null, 0L, headerUtil.getAuthHeader(env)));
     }
 
     @GraphQLMutation
@@ -83,5 +109,20 @@ public class GrpcAlertService {
     @GraphQLMutation
     public Mono<Boolean> deleteAlert(@GraphQLArgument(name = "id") long id, @GraphQLEnvironment ResolutionEnvironment env) {
         return Mono.just(alertsClient.deleteAlert(id, headerUtil.getAuthHeader(env)));
+    }
+
+    @GraphQLMutation
+    public Mono<MonitorPolicy> createMonitorPolicy(MonitorPolicy policy, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(alertsClient.createMonitorPolicy(policy, headerUtil.getAuthHeader(env)));
+    }
+
+    @GraphQLQuery
+    public Flux<MonitorPolicy> listMonitoryPolicies(@GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(alertsClient.listMonitorPolicies(headerUtil.getAuthHeader(env)));
+    }
+
+    @GraphQLQuery
+    public Mono<MonitorPolicy> findMonitorPolicyById(Long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(alertsClient.getMonitorPolicyById(id, headerUtil.getAuthHeader(env)));
     }
 }

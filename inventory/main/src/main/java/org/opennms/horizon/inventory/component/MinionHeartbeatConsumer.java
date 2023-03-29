@@ -155,6 +155,7 @@ public class MinionHeartbeatConsumer {
             .setResponseTimeMs(responseTime)
             .setMonitorType(MonitorType.ECHO)
             .setIpAddress(systemId) //for minion only
+            .setTimestamp(System.currentTimeMillis())
             .build();
         TaskResult result = TaskResult.newBuilder()
             .setId("monitor-"+systemId)

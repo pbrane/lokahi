@@ -246,6 +246,11 @@ public class NodeService {
 
     public void updateNodeInfo(Node node, NodeInfoResult nodeInfo) {
         mapper.updateFromNodeInfo(nodeInfo, node);
+
+        if (StringUtils.isNotEmpty(nodeInfo.getSystemName())) {
+            node.setNodeLabel(nodeInfo.getSystemName());
+        }
+
         nodeRepository.save(node);
     }
 
@@ -284,6 +289,12 @@ public class NodeService {
     @Transactional(readOnly = true)
     public List<NodeDTO> listNodesByNodeLabelSearch(String tenantId, String nodeLabelSearchTerm) {
         return nodeRepository.findByTenantIdAndNodeLabelLike(tenantId, nodeLabelSearchTerm).stream()
+            .map(mapper::modelToDTO).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<NodeDTO> listNodesByTags(String tenantId, List<String> tags) {
+        return nodeRepository.findByTenantIdAndTagNamesIn(tenantId, tags).stream()
             .map(mapper::modelToDTO).toList();
     }
 

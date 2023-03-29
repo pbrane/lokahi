@@ -156,12 +156,13 @@ public class InventoryTestSteps {
         try {
             Awaitility
                 .await()
-                .atMost(120000, TimeUnit.MILLISECONDS)
+                .ignoreExceptions()
+                .atMost(30, TimeUnit.SECONDS)
                 .until(() -> checkTheStatusOfTheFirstNode(status) )
             ;
             assertTrue(true);
         } catch (Exception e) {
-            LOG.info("Test check the status failed with the error: ", e.getMessage());
+            LOG.info("Test check the status failed with the error: {}", e.getMessage());
             assertTrue(false);
         }
     }

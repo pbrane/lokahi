@@ -37,17 +37,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collections;
 
 import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertServiceGrpc;
 import org.opennms.horizon.alerts.proto.ListAlertsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
+import org.opennms.horizon.server.mapper.alert.MonitorPolicyMapper;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 
 import com.google.protobuf.BoolValue;
@@ -67,6 +69,7 @@ public class AlertsClientTest {
     @Rule
     public static final GrpcCleanupRule grpcCleanUp = new GrpcCleanupRule();
 
+    private static MonitorPolicyMapper policyMapper;
     private static AlertsClient client;
     private static MockServerInterceptor mockInterceptor;
     private static AlertServiceGrpc.AlertServiceImplBase mockAlertService;
@@ -118,7 +121,8 @@ public class AlertsClientTest {
         grpcCleanUp.register(InProcessServerBuilder.forName("AlertsClientTest").intercept(mockInterceptor)
             .addService(mockAlertService).directExecutor().build().start());
         ManagedChannel channel = grpcCleanUp.register(InProcessChannelBuilder.forName("AlertsClientTest").directExecutor().build());
-        client = new AlertsClient(channel, 5000);
+        policyMapper = Mappers.getMapper(MonitorPolicyMapper.class);
+        client = new AlertsClient(channel, 5000, policyMapper);
         client.initialStubs();
     }
 
@@ -134,8 +138,8 @@ public class AlertsClientTest {
         String methodName = new Object() {
         }.getClass().getEnclosingMethod().getName();
         ArgumentCaptor<ListAlertsRequest> captor = ArgumentCaptor.forClass(ListAlertsRequest.class);
-        List<Alert> result = client.listAlerts(5, "0", accessToken + methodName);
-        assertThat(result.isEmpty()).isTrue();
+        ListAlertsResponse result = client.listAlerts(5, "0", Collections.emptyList(), 0L, "tenantId", true, accessToken + methodName);
+        assertThat(result.getAlertsList().isEmpty()).isTrue();
         verify(mockAlertService).listAlerts(captor.capture(), any());
         assertThat(captor.getValue()).isNotNull();
         assertThat(mockInterceptor.getAuthHeader()).isEqualTo(accessToken + methodName);

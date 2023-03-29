@@ -142,6 +142,7 @@ const dirIdV = string().required('Directory ID is required.')
 
 watchEffect(() => {
   if (props.discovery) {
+    form.clearErrors()
     store.azure = { ...store.azure, ...props.discovery }
   }
 })

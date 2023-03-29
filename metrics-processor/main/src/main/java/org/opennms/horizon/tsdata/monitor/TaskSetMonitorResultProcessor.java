@@ -28,6 +28,8 @@
 
 package org.opennms.horizon.tsdata.monitor;
 
+import com.google.protobuf.Timestamp;
+import java.util.Optional;
 import org.opennms.horizon.tenantmetrics.TenantMetricsTracker;
 import org.opennms.horizon.timeseries.cortex.CortexTSS;
 import org.opennms.horizon.tsdata.MetricNameConstants;
@@ -78,22 +80,25 @@ public class TaskSetMonitorResultProcessor {
             .setName(MetricNameConstants.METRIC_NAME_LABEL)
             .setValue(CortexTSS.sanitizeMetricName(MetricNameConstants.METRICS_NAME_RESPONSE)));
 
+        long timestamp = Optional.of(monitorResponse.getTimestamp())
+            .filter(ts -> ts > 0)
+            .orElse(Instant.now().toEpochMilli());
         builder.addSamples(PrometheusTypes.Sample.newBuilder()
-            .setTimestamp(Instant.now().toEpochMilli())
+            .setTimestamp(timestamp)
             .setValue(monitorResponse.getResponseTimeMs()));
 
         cortexTSS.store(tenantId, builder);
         tenantMetricsTracker.addTenantMetricSampleCount(tenantId, builder.getSamplesCount());
 
         for (Map.Entry<String, Double> entry : monitorResponse.getMetricsMap().entrySet()) {
-            processMetricMaps(entry, monitorResponse, labelValues, tenantId);
+            processMetricMaps(entry, monitorResponse, timestamp, labelValues, tenantId);
         }
     }
 
 //========================================
 // Internals
 //----------------------------------------
-    private void processMetricMaps(Map.Entry<String, Double> entry, MonitorResponse response, String[] labelValues, String tenantId) throws IOException {
+    private void processMetricMaps(Map.Entry<String, Double> entry, MonitorResponse response, long timestamp, String[] labelValues, String tenantId) throws IOException {
         prometheus.PrometheusTypes.TimeSeries.Builder builder = prometheus.PrometheusTypes.TimeSeries.newBuilder();
         String key = entry.getKey();
         Double value = entry.getValue();
@@ -105,7 +110,7 @@ public class TaskSetMonitorResultProcessor {
             .setValue(CortexTSS.sanitizeMetricName(MetricNameConstants.METRICS_NAME_PREFIX_MONITOR + key)));
 
         builder.addSamples(PrometheusTypes.Sample.newBuilder()
-            .setTimestamp(Instant.now().toEpochMilli())
+            .setTimestamp(timestamp)
             .setValue(value));
 
         cortexTSS.store(tenantId, builder);
