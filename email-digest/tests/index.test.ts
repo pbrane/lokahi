@@ -1,5 +1,5 @@
 import supertest from "supertest";
-import { server } from "./index";
+import { server } from "../src/index";
 
 describe("Server", function () {
   const request = supertest.agent(server);
