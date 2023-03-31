@@ -8,6 +8,7 @@ export default class Page {
     * @param path path of the sub page (e.g. /path/to/page.html)
     */
     public open (path: string) {
-        return browser.url("http://localhost:8123");
+        // return browser.url("http://localhost:8123");
+        return browser.url("https://7162ec9a-baa7-4a6c-81ca-505a9aee32ef.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com");
     }
 }

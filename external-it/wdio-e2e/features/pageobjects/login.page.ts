@@ -10,15 +10,22 @@ class LoginPage extends Page {
      * define selectors using getter methods
      */
     public get inputUsername () {
-        return $('#username');
+        //return $('#username');
+        return $('#idp-discovery-username');
     }
 
     public get inputPassword () {
-        return $('#password');
+        //return $('#password');
+        return $('#okta-signin-password');
+    }
+
+    public get btnNext () {
+        return $('#idp-discovery-submit');
     }
 
     public get btnSubmit () {
-        return $('button[type="submit"]');
+        //return $('button[type="submit"]');
+        return $('#okta-signin-submit');
     }
 
     /**
@@ -28,6 +35,15 @@ class LoginPage extends Page {
     public async login (username: string, password: string) {
         await this.inputUsername.setValue(username);
         await this.inputPassword.setValue(password);
+        await this.btnSubmit.click();
+    }
+
+    public async loginCloud (username: string, password: string) {
+        await this.inputUsername.setValue(username);
+        await this.btnNext.click();
+
+        await this.inputPassword.setValue(password);
+        await this.btnSubmit.isClickable;
         await this.btnSubmit.click();
     }
 
