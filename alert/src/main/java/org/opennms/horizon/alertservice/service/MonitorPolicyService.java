@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
 import org.opennms.horizon.alertservice.db.repository.MonitorPolicyRepository;
+import org.opennms.horizon.alertservice.grpc.client.InventoryClient;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
 import org.opennms.horizon.shared.alert.policy.ComponentType;
 import org.opennms.horizon.shared.alert.policy.EventType;
@@ -58,6 +59,7 @@ public class MonitorPolicyService {
     private static final String DEFAULT_TAG = "default";
     private final MonitorPolicyMapper policyMapper;
     private final MonitorPolicyRepository repository;
+    private final InventoryClient inventoryClient;
 
     @EventListener(ApplicationReadyEvent.class)
     public void defaultPolicies() {
@@ -119,6 +121,13 @@ public class MonitorPolicyService {
     public Optional<MonitorPolicyProto> getDefaultPolicy() {
         return repository.findByName(DEFAULT_POLICY)
             .map(policyMapper::entityToProto);
+    }
+
+    public List<MonitorPolicy> findByNode(Long nodeId, String tenantId) {
+        // 1. Retrieve the tags for this specific node
+        List<String> nodeTags = inventoryClient.getTagsByNodeId(tenantId, nodeId);
+        // 2. Retrieve monitoring policy for this tag set (if specified)
+        return repository.findByTenantIdAndTagsEquals(tenantId, policyMapper.map(nodeTags));
     }
 
     private void updateData(MonitorPolicy policy, String tenantId) {
