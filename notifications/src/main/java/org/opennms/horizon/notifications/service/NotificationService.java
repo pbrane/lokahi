@@ -30,6 +30,7 @@ package org.opennms.horizon.notifications.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.alerts.proto.Alert;
+import org.opennms.horizon.notifications.api.EmailAPI;
 import org.opennms.horizon.notifications.api.PagerDutyAPI;
 import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.exceptions.NotificationException;
@@ -49,6 +50,9 @@ public class NotificationService {
     private PagerDutyAPI pagerDutyAPI;
 
     @Autowired
+    private EmailAPI emailAPI;
+
+    @Autowired
     private MonitoringPolicyRepository monitoringPolicyRepository;
 
     @WithTenant(tenantIdArg = 0, tenantIdArgInternalMethod = "getTenantId", tenantIdArgInternalClass = "org.opennms.horizon.alerts.proto.Alert")
@@ -66,6 +70,13 @@ public class NotificationService {
                     pagerDutyAPI.postNotification(alert);
                 } catch (NotificationException e) {
                     log.warn("Unable to send alert to PagerDuty: {}", alert, e);
+                }
+            }
+            if (policy.isNotifyByEmail()) {
+                try {
+                    emailAPI.postNotification(alert);
+                } catch (NotificationException e) {
+                    log.warn("Unable to send email alert: {}", alert, e);
                 }
             }
         }, () -> log.debug("No monitoring policy found, dropping alert: {}", alert));

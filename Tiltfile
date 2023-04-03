@@ -353,3 +353,8 @@ k8s_resource(
     'ingress-nginx-controller',
     port_forwards=['8123:80', '0.0.0.0:8990:8990'],
 )
+
+k8s_resource(
+    'mail-server',
+    port_forwards=['22025:1025', '22080:8025'],
+)

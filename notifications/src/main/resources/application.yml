@@ -19,6 +19,10 @@ spring:
     hibernate:
       ddl-auto: validate
 
+  mail:
+    host: mail-server
+    port: 1025
+
 grpc:
   server:
     port: 6565
