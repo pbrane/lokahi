@@ -8,6 +8,7 @@ interface Anchor {
   locationLink?: string
   managementIpValue?: string
   managementIpLink?: string
+  nodeType?: string
   tagValue: Tag[]
 }
 

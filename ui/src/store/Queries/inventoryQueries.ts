@@ -4,8 +4,8 @@ import {
   NodesListDocument,
   NodeLatencyMetricDocument,
   TsResult,
-  Location,
   TimeRangeUnit,
+  DefaultNode,
   ListTagsByNodeIdsDocument,
   FindAllNodesByNodeLabelSearchDocument,
   Node,
@@ -102,10 +102,11 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
 
     if (data?.length) {
       // get the tags for all nodeIds
-      variables.nodeIds = data.map((node) => node.id)
+      variables.nodeIds = data.map((node) => node.details.id)
       await getTags()
 
-      data.forEach(async ({ id, nodeLabel, location, ipInterfaces }) => {
+      data.forEach(async ({ details, nodeType }) => {
+        const { id, nodeLabel, monitoringLocation, ipInterfaces } = details as DefaultNode
         const { ipAddress: snmpPrimaryIpAddress } = ipInterfaces?.filter((ii) => ii.snmpPrimary)[0] || {} // not getting ipAddress from snmpPrimary interface can result in missing metrics for ICMP
         const tagsObj = tagData.value?.tagsByNodeIds?.filter((item) => item.nodeId === id)[0]
 
@@ -132,10 +133,11 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
             anchor: {
               profileValue: '--',
               profileLink: '',
-              locationValue: location?.location || '--',
+              locationValue: monitoringLocation || '--',
               locationLink: '',
               managementIpValue: '',
               managementIpLink: '',
+              nodeType: nodeType!,
               tagValue: tagsObj?.tags || []
             },
             isNodeOverlayChecked: false
@@ -154,7 +156,6 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
           const latencyValue = latenciesValues?.length ? latenciesValues[latenciesValues.length - 1][1] : undefined
 
           const status = metricData.value.nodeStatus?.status
-          const { location: nodeLocation } = location as Location
           const { ipAddress: snmpPrimaryIpAddress } = ipInterfaces?.filter((ii) => ii.snmpPrimary)[0] || {} // not getting ipAddress from snmpPrimary interface can result in missing metrics for ICMP
 
           nodes.value.push({
@@ -177,10 +178,11 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
             anchor: {
               profileValue: '--',
               profileLink: '',
-              locationValue: nodeLocation || '--',
+              locationValue: monitoringLocation || '--',
               locationLink: '',
               managementIpValue: snmpPrimaryIpAddress || '',
               managementIpLink: '',
+              nodeType: nodeType!,
               tagValue: tagsObj?.tags || []
             },
             isNodeOverlayChecked: false // to control the checkmark in the overlay of a node (tagging mode)

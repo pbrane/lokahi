@@ -41,6 +41,7 @@ import org.opennms.dataplatform.flows.querier.v1.FlowingPoint;
 import org.opennms.dataplatform.flows.querier.v1.Series;
 import org.opennms.dataplatform.flows.querier.v1.Summaries;
 import org.opennms.dataplatform.flows.querier.v1.TrafficSummary;
+import org.opennms.horizon.inventory.dto.DefaultNodeDTO;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.server.RestServerApplication;
@@ -81,7 +82,7 @@ class GrpcFlowServiceTest {
     private ServerHeaderUtil mockHeaderUtil;
     private IpInterfaceDTO ipInterfaceDTO = IpInterfaceDTO.newBuilder()
         .setId(1L).setNodeId(1L).setIpAddress("127.0.0.1").setHostname("localhost").setSnmpPrimary(true).build();
-    private NodeDTO nodeDTO = NodeDTO.newBuilder().setId(1L).setNodeLabel("label").build();
+    private NodeDTO nodeDTO = NodeDTO.newBuilder().setDefault(DefaultNodeDTO.newBuilder().setId(1L).setNodeLabel("label").build()).build();
 
     @BeforeEach
     public void setUp() {
@@ -123,7 +124,7 @@ class GrpcFlowServiceTest {
         webClient.post().uri(GRAPHQL_PATH).accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON)
             .bodyValue(createPayload(request)).exchange().expectStatus().isOk().expectBody()
             .jsonPath("$.data.findExporters.size()").isEqualTo(1)
-            .jsonPath("$.data.findExporters[0].node.nodeLabel").isEqualTo(nodeDTO.getNodeLabel())
+            .jsonPath("$.data.findExporters[0].node.nodeLabel").isEqualTo(nodeDTO.getDefault().getNodeLabel())
             .jsonPath("$.data.findExporters[0].ipInterface.ipAddress").isEqualTo(ipInterfaceDTO.getIpAddress());
         assertEquals(tenantId, tenantIdArg.getValue());
         assertEquals(accessToken, accessTokenArg.getValue());

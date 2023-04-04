@@ -28,199 +28,117 @@
 
 package org.opennms.horizon.inventory.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import org.assertj.core.api.InstanceOfAssertFactories;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.opennms.horizon.inventory.dto.DefaultNodeDTO;
+import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.mapper.node.NodeMapper;
+import org.opennms.horizon.inventory.model.MonitoringLocation;
+import org.opennms.horizon.inventory.model.node.DefaultNode;
+import org.opennms.horizon.inventory.model.node.Node;
+import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
+import org.opennms.horizon.inventory.repository.node.NodeRepository;
+import org.opennms.horizon.inventory.service.node.NodeService;
+import org.opennms.horizon.inventory.service.taskset.CollectorTaskSetService;
+import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
+import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
+import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetPublisher;
 
-import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
-import org.mockito.ArgumentCaptor;
-import org.opennms.horizon.inventory.dto.NodeCreateDTO;
-import org.opennms.horizon.inventory.dto.NodeDTO;
-import org.opennms.horizon.inventory.dto.TagCreateDTO;
-import org.opennms.horizon.inventory.dto.TagCreateListDTO;
-import org.opennms.horizon.inventory.exception.EntityExistException;
-import org.opennms.horizon.inventory.mapper.NodeMapper;
-import org.opennms.horizon.inventory.model.IpInterface;
-import org.opennms.horizon.inventory.model.MonitoringLocation;
-import org.opennms.horizon.inventory.model.Node;
-import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
-import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
-import org.opennms.horizon.inventory.repository.NodeRepository;
-import org.opennms.horizon.inventory.service.taskset.CollectorTaskSetService;
-import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
-import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
-import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetPublisher;
-import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.opennms.taskset.contract.ScanType;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
-public class NodeServiceTest {
+class NodeServiceTest {
+
     private NodeService nodeService;
     private NodeRepository mockNodeRepository;
-    private MonitoringLocationRepository mockMonitoringLocationRepository;
     private IpInterfaceRepository mockIpInterfaceRepository;
-    private ConfigUpdateService mockConfigUpdateService;
-    private TagService tagService;
+    private NodeMapper mockNodeMapper;
     private final String tenantID = "test-tenant";
 
     @BeforeEach
     void prepareTest() {
-        NodeMapper nodeMapper = Mappers.getMapper(NodeMapper.class);
         mockNodeRepository = mock(NodeRepository.class);
-        mockMonitoringLocationRepository = mock(MonitoringLocationRepository.class);
         mockIpInterfaceRepository = mock(IpInterfaceRepository.class);
-        mockConfigUpdateService = mock(ConfigUpdateService.class);
-        tagService = mock(TagService.class);
-
+        mockNodeMapper = mock(NodeMapper.class);
 
         nodeService = new NodeService(mockNodeRepository,
-            mockMonitoringLocationRepository,
-            mockIpInterfaceRepository,
-            mockConfigUpdateService,
             mock(CollectorTaskSetService.class),
             mock(MonitorTaskSetService.class),
             mock(ScannerTaskSetService.class),
             mock(TaskSetPublisher.class),
-            tagService,
-            nodeMapper);
-
-        Node node = new Node();
-        doReturn(node).when(mockNodeRepository).save(any(node.getClass()));
+            mockNodeMapper);
     }
 
     @AfterEach
-    public void afterTest(){
+    public void afterTest() {
         verifyNoMoreInteractions(mockNodeRepository);
-        verifyNoMoreInteractions(mockMonitoringLocationRepository);
         verifyNoMoreInteractions(mockIpInterfaceRepository);
     }
 
     @Test
-    public void createNode() throws EntityExistException {
-        String tenant = "ANY";
-        String location = "loc";
-        MonitoringLocation ml = new MonitoringLocation();
-        ml.setTenantId(tenant);
-        ml.setLocation(location);
+    void testFindByTenantId() {
+        MonitoringLocation location1 = new MonitoringLocation();
+        location1.setLocation("location-1");
 
-        when(mockMonitoringLocationRepository.save(any())).thenReturn(ml);
+        Node node1 = new DefaultNode();
+        node1.setId(1L);
+        node1.setNodeLabel("node-1");
+        node1.setMonitoringLocation(location1);
+        node1.setCreateTime(LocalDateTime.now());
 
-        NodeCreateDTO nodeCreateDTO = NodeCreateDTO.newBuilder()
-            .setLabel("Label")
-            .setLocation("loc")
-            .setManagementIp("127.0.0.1")
-            .addTags(TagCreateDTO.newBuilder().setName("tag-name").build())
-            .build();
-        doReturn(Optional.empty()).when(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreateDTO.getLocation()), eq(tenant));
+        List<Node> nodes = List.of(node1);
 
-        nodeService.createNode(nodeCreateDTO, ScanType.NODE_SCAN, tenant);
-        verify(mockNodeRepository).save(any(Node.class));
-        verify(mockIpInterfaceRepository).save(any(IpInterface.class));
-        verify(mockMonitoringLocationRepository).save(any(MonitoringLocation.class));
-        verify(mockMonitoringLocationRepository).findByLocationAndTenantId(location, tenant);
-        verify(tagService).addTags(eq(tenant), any(TagCreateListDTO.class));
-        verify(mockConfigUpdateService, timeout(5000)).sendConfigUpdate(tenant, location);
-        verify(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreateDTO.getLocation()), eq(tenant));
+        when(mockNodeRepository.findByTenantId(tenantID)).thenReturn(nodes);
+        when(mockNodeMapper.modelToDto(nodes)).thenReturn(List.of(NodeDTO.newBuilder()
+            .setDefault(DefaultNodeDTO.newBuilder().setId(node1.getId()).build()).build()));
+
+        List<NodeDTO> list = nodeService.findByTenantId(tenantID);
+        assertEquals(1, list.size());
+
+        verify(mockNodeRepository, times(1)).findByTenantId(tenantID);
     }
 
     @Test
-    public void createNodeExistingLocation() throws EntityExistException {
-        String location = "loc";
-        String tenantId = "ANY";
+    void testGetByIdAndTenantId() {
+        MonitoringLocation location1 = new MonitoringLocation();
+        location1.setLocation("location-1");
 
-        NodeCreateDTO nodeCreateDTO = NodeCreateDTO.newBuilder()
-            .setLabel("Label")
-            .setLocation(location)
-            .setManagementIp("127.0.0.1")
-            .build();
+        Node node1 = new DefaultNode();
+        node1.setId(1L);
+        node1.setNodeLabel("node-1");
+        node1.setMonitoringLocation(location1);
+        node1.setCreateTime(LocalDateTime.now());
 
-        doReturn(Optional.of(new MonitoringLocation())).when(mockMonitoringLocationRepository).findByLocationAndTenantId(location, tenantId);
+        Optional<Node> node = Optional.of(node1);
 
-        doReturn(Optional.empty()).when(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreateDTO.getLocation()), eq(tenantId));
+        when(mockNodeRepository.findByIdAndTenantId(1L, tenantID)).thenReturn(node);
+        when(mockNodeMapper.modelToDto(node.get())).thenReturn(NodeDTO.newBuilder()
+            .setDefault(DefaultNodeDTO.newBuilder().setId(node1.getId()).build()).build());
 
-        nodeService.createNode(nodeCreateDTO, ScanType.NODE_SCAN, tenantId);
-        verify(mockNodeRepository).save(any(Node.class));
-        verify(mockIpInterfaceRepository).save(any(IpInterface.class));
-        verify(mockMonitoringLocationRepository).findByLocationAndTenantId(location, tenantId);
-        verify(mockConfigUpdateService, timeout(5000).times(0)).sendConfigUpdate(eq(tenantId), any());
-        verify(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreateDTO.getLocation()), eq(tenantId));
+        Optional<NodeDTO> opt = nodeService.getByIdAndTenantId(1L, tenantID);
+        assertTrue(opt.isPresent());
+        assertTrue(opt.get().hasDefault());
+
+        verify(mockNodeRepository, times(1)).findByIdAndTenantId(1L, tenantID);
     }
 
     @Test
-    public void createNodeNoIp() throws EntityExistException {
-        String tenant = "TENANT";
-        String location = "LOCATION";
-        MonitoringLocation ml = new MonitoringLocation();
-        ml.setTenantId(tenant);
-        ml.setLocation(location);
-
-        when(mockMonitoringLocationRepository.save(any(MonitoringLocation.class))).thenReturn(ml);
-
-        NodeCreateDTO nodeCreateDTO = NodeCreateDTO.newBuilder()
-            .setLabel("Label")
-            .setLocation(location)
-            .build();
-
-        nodeService.createNode(nodeCreateDTO, ScanType.NODE_SCAN, tenant);
-        verify(mockNodeRepository).save(any(Node.class));
-        verify(mockMonitoringLocationRepository).findByLocationAndTenantId(location, tenant);
-        verify(mockMonitoringLocationRepository).save(any(MonitoringLocation.class));
-        verifyNoInteractions(mockIpInterfaceRepository);
-    }
-
-    @Test
-    public void createNodeWithLocationDefaultLocationExist() throws EntityExistException {
-        NodeCreateDTO nodeCreate = NodeCreateDTO.newBuilder()
-            .setLabel("test-node")
-            .setManagementIp("127.0.0.1").build();
-        MonitoringLocation location = new MonitoringLocation();
-        doReturn(Optional.of(location)).when(mockMonitoringLocationRepository).findByLocationAndTenantId(GrpcConstants.DEFAULT_LOCATION, tenantID);
-        doReturn(Optional.empty()).when(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreate.getLocation()), eq(tenantID));
-        nodeService.createNode(nodeCreate, ScanType.NODE_SCAN, tenantID);
-        verify(mockMonitoringLocationRepository).findByLocationAndTenantId(GrpcConstants.DEFAULT_LOCATION, tenantID);
-        verify(mockNodeRepository).save(any(Node.class));
-        verify(mockIpInterfaceRepository).save(any(IpInterface.class));
-        verify(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreate.getLocation()), eq(tenantID));
-    }
-
-    @Test
-    public void createNodeWithLocationDefaultLocationNotExist() throws EntityExistException {
-        NodeCreateDTO nodeCreate = NodeCreateDTO.newBuilder()
-            .setLabel("test-node")
-            .setManagementIp("127.0.0.1").build();
-        doReturn(Optional.empty()).when(mockMonitoringLocationRepository).findByLocationAndTenantId(GrpcConstants.DEFAULT_LOCATION, tenantID);
-        doReturn(new MonitoringLocation()).when(mockMonitoringLocationRepository).save(any(MonitoringLocation.class));
-        doReturn(Optional.empty()).when(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreate.getLocation()), eq(tenantID));
-        ArgumentCaptor<MonitoringLocation> captor = ArgumentCaptor.forClass(MonitoringLocation.class);
-        nodeService.createNode(nodeCreate, ScanType.NODE_SCAN, tenantID);
-        verify(mockMonitoringLocationRepository).findByLocationAndTenantId(GrpcConstants.DEFAULT_LOCATION, tenantID);
-        verify(mockMonitoringLocationRepository).save(captor.capture());
-        assertThat(captor.getValue().getLocation()).isEqualTo(GrpcConstants.DEFAULT_LOCATION);
-        verify(mockNodeRepository).save(any(Node.class));
-        verify(mockIpInterfaceRepository).save(any(IpInterface.class));
-        verify(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreate.getLocation()), eq(tenantID));
-    }
-
-    @Test
-    public void testListNodesByIds() {
+    void testListNodesByIds() {
         MonitoringLocation location1 = new MonitoringLocation();
         location1.setLocation("location-1");
 
@@ -249,35 +167,16 @@ public class NodeServiceTest {
         assertThat(result).asInstanceOf(InstanceOfAssertFactories.MAP).hasSize(2)
             .containsKeys(location1.getLocation(), location2.getLocation())
             .extractingByKey(location1.getLocation())
-            .asList().hasSize(2).extracting("nodeLabel_").containsExactly(node1.getNodeLabel(), node2.getNodeLabel());
-        assertThat(result.get(location2.getLocation())).asList().hasSize(1).extracting("nodeLabel_").containsExactly(node3.getNodeLabel());
+            .asList().hasSize(2);
+        assertThat(result.get(location2.getLocation())).asList().hasSize(1);
         verify(mockNodeRepository).findByIdInAndTenantId(List.of(1L, 2L, 3L), tenantID);
     }
 
     @Test
-    public void testListNodesByIdsEmpty() {
+    void testListNodesByIdsEmpty() {
         doReturn(Collections.emptyList()).when(mockNodeRepository).findByIdInAndTenantId(List.of(1L, 2L, 3L), tenantID);
         Map<String, List<NodeDTO>> result = nodeService.listNodeByIds(List.of(1L, 2L, 3L), tenantID);
         assertThat(result.isEmpty()).isTrue();
         verify(mockNodeRepository).findByIdInAndTenantId(List.of(1L, 2L, 3L), tenantID);
-    }
-
-    @Test
-    public void testCreateNodeIPExists() {
-        Node node = new Node();
-        IpInterface ipInterface = new IpInterface();
-        ipInterface.setNode(node);
-        NodeCreateDTO nodeCreate = NodeCreateDTO.newBuilder()
-            .setLabel("test-node")
-            .setManagementIp("127.0.0.1").build();
-        doReturn(Optional.of(ipInterface)).when(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreate.getLocation()), eq(tenantID));
-        assertThatThrownBy(() -> nodeService.createNode(nodeCreate, ScanType.NODE_SCAN, tenantID))
-            .isInstanceOf(EntityExistException.class)
-            .hasMessageContaining("already exists in the system ");
-        verify(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreate.getLocation()), eq(tenantID));
-        verifyNoInteractions(mockNodeRepository);
-        verifyNoInteractions(mockMonitoringLocationRepository);
-        verifyNoInteractions(tagService);
-        verifyNoInteractions(mockConfigUpdateService);
     }
 }

@@ -49,6 +49,7 @@ import org.opennms.dataplatform.flows.querier.v1.ListRequest;
 import org.opennms.dataplatform.flows.querier.v1.Series;
 import org.opennms.dataplatform.flows.querier.v1.Summaries;
 import org.opennms.dataplatform.flows.querier.v1.TrafficSummary;
+import org.opennms.horizon.inventory.dto.DefaultNodeDTO;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.server.model.flows.ExporterFilter;
@@ -92,10 +93,13 @@ public class FLowClientTest {
     @Before
     public void setup() throws IOException {
         var inventoryClient = mock(InventoryClient.class);
-        when(inventoryClient.getNodeById(anyLong(), anyString())).thenReturn(
-            NodeDTO.newBuilder()
-                .addIpInterfaces(IpInterfaceDTO.newBuilder().setId(1))
-                .addIpInterfaces(IpInterfaceDTO.newBuilder().setId(2)).build());
+
+        DefaultNodeDTO defaultNodeDTO = DefaultNodeDTO.newBuilder()
+            .addIpInterfaces(IpInterfaceDTO.newBuilder().setId(1))
+            .addIpInterfaces(IpInterfaceDTO.newBuilder().setId(2)).build();;
+
+        when(inventoryClient.getNodeById(anyLong(), anyString()))
+            .thenReturn(NodeDTO.newBuilder().setDefault(defaultNodeDTO).build());
         var applicationsServiceBlockingStub = mock(ApplicationsServiceGrpc.ApplicationsServiceImplBase.class, delegatesTo(
             new ApplicationsServiceGrpc.ApplicationsServiceImplBase() {
                 @Override

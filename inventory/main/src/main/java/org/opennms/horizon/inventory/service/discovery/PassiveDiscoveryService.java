@@ -38,10 +38,11 @@ import org.opennms.horizon.inventory.dto.TagEntityIdDTO;
 import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
 import org.opennms.horizon.inventory.mapper.discovery.PassiveDiscoveryMapper;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
-import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.model.discovery.PassiveDiscovery;
-import org.opennms.horizon.inventory.repository.NodeRepository;
+import org.opennms.horizon.inventory.model.node.DefaultNode;
+import org.opennms.horizon.inventory.model.node.Node;
 import org.opennms.horizon.inventory.repository.discovery.PassiveDiscoveryRepository;
+import org.opennms.horizon.inventory.repository.node.DefaultNodeRepository;
 import org.opennms.horizon.inventory.service.Constants;
 import org.opennms.horizon.inventory.service.TagService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
@@ -64,7 +65,7 @@ public class PassiveDiscoveryService {
     private final PassiveDiscoveryMapper mapper;
     private final PassiveDiscoveryRepository repository;
     private final TagService tagService;
-    private final NodeRepository nodeRepository;
+    private final DefaultNodeRepository defaultNodeRepository;
     private final ScannerTaskSetService scannerTaskSetService;
 
     @Transactional
@@ -165,11 +166,11 @@ public class PassiveDiscoveryService {
             String tenantId = discovery.getTenantId();
             String location = discovery.getLocation();
 
-            List<Node> detectedNodes = nodeRepository
+            List<DefaultNode> detectedNodes = defaultNodeRepository
                 .findByTenantIdLocationsAndMonitoredStateEquals(tenantId, location, MonitoredState.DETECTED);
 
             if (!CollectionUtils.isEmpty(detectedNodes)) {
-                for (Node node : detectedNodes) {
+                for (DefaultNode node : detectedNodes) {
                     sendTaskSetsToMinion(node, discovery);
                 }
             }

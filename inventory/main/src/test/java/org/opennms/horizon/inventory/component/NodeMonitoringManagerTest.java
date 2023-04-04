@@ -28,6 +28,25 @@
 
 package org.opennms.horizon.inventory.component;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.opennms.horizon.events.proto.Event;
+import org.opennms.horizon.inventory.dto.DefaultNodeCreateDTO;
+import org.opennms.horizon.inventory.exception.EntityExistException;
+import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
+import org.opennms.horizon.inventory.model.node.DefaultNode;
+import org.opennms.horizon.inventory.service.discovery.PassiveDiscoveryService;
+import org.opennms.horizon.inventory.service.node.DefaultNodeService;
+import org.opennms.horizon.shared.events.EventConstants;
+import org.opennms.taskset.contract.ScanType;
+
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,29 +57,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.opennms.horizon.events.proto.Event;
-import org.opennms.horizon.inventory.dto.NodeCreateDTO;
-import org.opennms.horizon.inventory.exception.EntityExistException;
-import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
-import org.opennms.horizon.inventory.model.Node;
-import org.opennms.horizon.inventory.service.NodeService;
-import org.opennms.horizon.inventory.service.discovery.PassiveDiscoveryService;
-import org.opennms.horizon.shared.events.EventConstants;
-import org.opennms.taskset.contract.ScanType;
-
 @ExtendWith(MockitoExtension.class)
 class NodeMonitoringManagerTest {
 
     @Mock
-    private NodeService nodeService;
+    private DefaultNodeService defaultNodeService;
     @Mock
     private PassiveDiscoveryService passiveDiscoveryService;
     @InjectMocks
@@ -68,7 +69,7 @@ class NodeMonitoringManagerTest {
 
     private final String tenantId = "test-tenant";
     private Event event;
-    private Node node;
+    private DefaultNode node;
 
     @BeforeEach
     public void prepare() {
@@ -78,23 +79,23 @@ class NodeMonitoringManagerTest {
             .setLocation("test-location")
             .setIpAddress("127.0.0.1")
             .build();
-        node = new Node();
+        node = new DefaultNode();
     }
 
     @AfterEach
     public void afterTest() {
-        verifyNoMoreInteractions(nodeService);
+        verifyNoMoreInteractions(defaultNodeService);
         verifyNoMoreInteractions(passiveDiscoveryService);
     }
 
     @Test
     void testReceiveEventAndCreateNewNode() throws EntityExistException {
-        doReturn(node).when(nodeService).createNode(any(NodeCreateDTO.class), eq(ScanType.NODE_SCAN), eq(tenantId));
-        ArgumentCaptor<NodeCreateDTO> argumentCaptor = ArgumentCaptor.forClass(NodeCreateDTO.class);
+        doReturn(node).when(defaultNodeService).createNode(any(DefaultNodeCreateDTO.class), eq(ScanType.NODE_SCAN), eq(tenantId));
+        ArgumentCaptor<DefaultNodeCreateDTO> argumentCaptor = ArgumentCaptor.forClass(DefaultNodeCreateDTO.class);
         consumer.receiveTrapEvent(event.toByteArray());
-        verify(nodeService).createNode(argumentCaptor.capture(), eq(ScanType.NODE_SCAN), eq(tenantId));
+        verify(defaultNodeService).createNode(argumentCaptor.capture(), eq(ScanType.NODE_SCAN), eq(tenantId));
         verify(passiveDiscoveryService).sendNodeScan(node);
-        NodeCreateDTO createDTO = argumentCaptor.getValue();
+        DefaultNodeCreateDTO createDTO = argumentCaptor.getValue();
         assertThat(createDTO.getLocation()).isEqualTo(event.getLocation());
         assertThat(createDTO.getManagementIp()).isEqualTo(event.getIpAddress());
         assertThat(createDTO.getLabel()).endsWith(event.getIpAddress());
@@ -106,7 +107,7 @@ class NodeMonitoringManagerTest {
             .setUei("something else").build();
         consumer.receiveTrapEvent(anotherEvent.toByteArray());
         verifyNoInteractions(passiveDiscoveryService);
-        verifyNoInteractions(nodeService);
+        verifyNoInteractions(defaultNodeService);
     }
 
     @Test
@@ -117,11 +118,11 @@ class NodeMonitoringManagerTest {
 
     @Test
     void testEntityExistException() throws EntityExistException {
-        doThrow(new EntityExistException("bad request")).when(nodeService).createNode(any(NodeCreateDTO.class), eq(ScanType.NODE_SCAN), eq(tenantId));
-        ArgumentCaptor<NodeCreateDTO> argumentCaptor = ArgumentCaptor.forClass(NodeCreateDTO.class);
+        doThrow(new EntityExistException("bad request")).when(defaultNodeService).createNode(any(DefaultNodeCreateDTO.class), eq(ScanType.NODE_SCAN), eq(tenantId));
+        ArgumentCaptor<DefaultNodeCreateDTO> argumentCaptor = ArgumentCaptor.forClass(DefaultNodeCreateDTO.class);
         consumer.receiveTrapEvent(event.toByteArray());
-        verify(nodeService).createNode(argumentCaptor.capture(), eq(ScanType.NODE_SCAN), eq(tenantId));
-        NodeCreateDTO createDTO = argumentCaptor.getValue();
+        verify(defaultNodeService).createNode(argumentCaptor.capture(), eq(ScanType.NODE_SCAN), eq(tenantId));
+        DefaultNodeCreateDTO createDTO = argumentCaptor.getValue();
         assertThat(createDTO.getLocation()).isEqualTo(event.getLocation());
         assertThat(createDTO.getManagementIp()).isEqualTo(event.getIpAddress());
         assertThat(createDTO.getLabel()).endsWith(event.getIpAddress());

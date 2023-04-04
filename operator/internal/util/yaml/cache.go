@@ -18,9 +18,6 @@ import (
 	"sync"
 )
 
-var (
-	yamlcache *cache
-)
 
 // cache - an in memory cache
 type cache struct {
@@ -42,6 +39,10 @@ func (c *cache) Get(key string) (value string, ok bool) {
 	item, ok := c.yamlmap[key]
 	return item, ok
 }
+
+var (
+	yamlcache *cache
+)
 
 // Cache - init a new cache or return the existing one
 func Cache() *cache {

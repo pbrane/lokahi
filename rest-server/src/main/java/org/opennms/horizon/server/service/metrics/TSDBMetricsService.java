@@ -163,8 +163,7 @@ public class TSDBMetricsService {
     }
 
     private void setMonitorTypeByScanType(NodeDTO node, Map<String, String> metricLabels) {
-        String scanType = node.getScanType();
-        if (AZURE_SCAN_TYPE.equals(scanType)) {
+        if (node.hasAzure()) {
             metricLabels.put(MetricLabelUtils.MONITOR_KEY, AZURE_MONITOR_TYPE);
         }
     }

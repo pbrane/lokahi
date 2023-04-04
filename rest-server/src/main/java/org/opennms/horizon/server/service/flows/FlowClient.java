@@ -42,6 +42,7 @@ import org.opennms.dataplatform.flows.querier.v1.ListRequest;
 import org.opennms.dataplatform.flows.querier.v1.Series;
 import org.opennms.dataplatform.flows.querier.v1.Summaries;
 import org.opennms.dataplatform.flows.querier.v1.TimeRangeFilter;
+import org.opennms.horizon.inventory.dto.DefaultNodeDTO;
 import org.opennms.horizon.server.model.flows.RequestCriteria;
 import org.opennms.horizon.server.model.flows.TimeRange;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
@@ -168,8 +169,9 @@ public class FlowClient {
             exporterList.add(getExporterFilter(exporter.getIpInterfaceId()));
         } else if (exporter.getNodeId() != null) {
             var nodeDTO = inventoryClient.getNodeById(exporter.getNodeId(), authHeader);
-            if (nodeDTO != null) {
-                nodeDTO.getIpInterfacesList().forEach(i -> exporterList.add(getExporterFilter(i.getId())));
+            if (nodeDTO != null && nodeDTO.hasDefault()) {
+                DefaultNodeDTO defaultNodeDTO = nodeDTO.getDefault();
+                defaultNodeDTO.getIpInterfacesList().forEach(i -> exporterList.add(getExporterFilter(i.getId())));
             }
         }
 

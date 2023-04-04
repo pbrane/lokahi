@@ -29,6 +29,7 @@
 package org.opennms.horizon.server.service.metrics.normalization;
 
 import lombok.RequiredArgsConstructor;
+import org.opennms.horizon.inventory.dto.DefaultNodeDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.server.model.TSData;
 import org.opennms.horizon.server.model.TSResult;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+
 import static org.opennms.horizon.server.service.metrics.normalization.Constants.DISCOVERY_SCAN;
 import static org.opennms.horizon.server.service.metrics.normalization.Constants.NODE_SCAN;
 import static org.opennms.horizon.server.service.metrics.normalization.Constants.SNMP_MONITOR_TYPE;
@@ -52,18 +54,22 @@ public class NormalizationService {
     private final SnmpNormalizationService snmpNormalizationService;
 
     public String getQueryMetricRegex(NodeDTO node, String metricName, Map<String, String> metricLabels) {
+        if (node.hasDefault()) {
+            DefaultNodeDTO defaultNodeDto = node.getDefault();
 
-        if (DISCOVERY_SCAN.equals(node.getScanType()) || NODE_SCAN.equals(node.getScanType())) {
-            String monitor = metricLabelUtils.getMonitorType(metricLabels);
+            if (DISCOVERY_SCAN.equals(defaultNodeDto.getScanType()) || NODE_SCAN.equals(defaultNodeDto.getScanType())) {
+                String monitor = metricLabelUtils.getMonitorType(metricLabels);
 
-            if (SNMP_MONITOR_TYPE.equals(monitor)) {
-                Optional<String> metricRegexOpt =
-                    snmpNormalizationService.getQueryMetricRegex(metricName);
+                if (SNMP_MONITOR_TYPE.equals(monitor)) {
+                    Optional<String> metricRegexOpt =
+                        snmpNormalizationService.getQueryMetricRegex(metricName);
 
-                if (metricRegexOpt.isPresent()) {
-                    return metricRegexOpt.get();
+                    if (metricRegexOpt.isPresent()) {
+                        return metricRegexOpt.get();
+                    }
                 }
             }
+
         }
         return metricName;
     }

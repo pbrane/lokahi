@@ -14,7 +14,6 @@ limitations under the License.
 
 package maps
 
-// ConvertByteToStringMap - map[string][]byte -> map[string]string
 func ConvertByteToStringMap(m map[string][]byte) map[string]string {
 	returnMap := map[string]string{}
 	for k, v := range m {
