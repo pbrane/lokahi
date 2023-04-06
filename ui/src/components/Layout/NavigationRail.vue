@@ -109,8 +109,6 @@ const Icons = markRaw({
   Location
 })
 
-console.log(Icons.Location)
-
 const labels = {
   skip: 'Skip to main content'
 }

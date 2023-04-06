@@ -1,0 +1,41 @@
+@use '@featherds/styles/themes/variables';
+@use '@/styles/mediaQueriesMixins.scss';
+@use '@/styles/vars.scss';
+
+.wrapper {
+  min-width: vars.$min-width-smallest-screen;
+  margin-left: var(variables.$spacing-l);
+  margin-right: var(variables.$spacing-l);
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: green;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(variables.$spacing-l);
+  @include mediaQueriesMixins.screen-md {
+    flex-direction: row;
+  }
+}
+
+.content-left {
+  flex-grow: 1;
+  background-color: red;
+}
+
+.content-right {
+  flex-grow: 2;
+  background-color: blue;
+}
+
+.footer {
+  margin-top: var(variables.$spacing-xl);
+  background-color: yellow;
+}
