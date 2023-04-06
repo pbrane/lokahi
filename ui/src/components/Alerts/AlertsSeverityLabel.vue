@@ -15,15 +15,16 @@ defineProps<{
 </script>
 
 <style lang="scss" scoped>
+@use '@featherds/styles/mixins/typography';
 @use '@/styles/vars.scss';
 @use '@/styles/_severities';
 
 .severity-status {
+  @include typography.title();
   display: inline-block;
-  letter-spacing: normal;
-  font-size: 0.65rem;
-  line-height: 1.3rem;
-  padding: 0 8px;
+  font-size: 1rem;
+  line-height: normal;
+  padding: 2px 8px;
   border-radius: vars.$border-radius-sm;
 }
 </style>

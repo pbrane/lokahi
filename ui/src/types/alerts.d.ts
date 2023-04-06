@@ -9,12 +9,12 @@ interface IAlert extends Alert {
 
 interface Pagination {
   page: number
-  pageSize?: number
+  pageSize: number
+  total: number
 }
 
 interface AlertsFilters {
-  timeRange: TimeRange //number
-  pagination: Pagination
+  timeRange: TimeRange
   search?: string
   severities?: string[]
   sortAscending: boolean

@@ -11,31 +11,10 @@ fragment AlertsParts on Query {
     nextPage
     totalAlerts
     alerts {
-      ackTimeMs
-      ackUser
       acknowledged
-      clearKey
-      counter
-      databaseId
       description
-      firstEventTimeMs
-      lastEventId
       lastUpdateTimeMs
-      location
-      logMessage
-      managedObject {
-        instance {
-          nodeVal {
-            nodeID
-          }
-        }
-        type
-      }
-      reductionKey
       severity
-      tenantId
-      type
-      uei
     }
   }
 }

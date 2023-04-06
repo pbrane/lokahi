@@ -2,14 +2,11 @@ import { defineStore } from 'pinia'
 import { TimeRange } from '@/types/graphql'
 import { useAlertsQueries } from '../Queries/alertsQueries'
 import { useAlertsMutations } from '../Mutations/alertsMutations'
+import { Alert } from '@/types/graphql'
 import { AlertsFilters } from '@/types/alerts'
 
 const alertsFilterDefault: AlertsFilters = {
   timeRange: TimeRange.All,
-  pagination: {
-    page: 0, // api has base of 0 (first page)
-    pageSize: 10
-  },
   // search: '', // not avail for EAR
   severities: [],
   sortAscending: true,
@@ -28,12 +25,13 @@ export const useAlertsStore = defineStore('alertsStore', () => {
   const alertsPagination = ref(alertsPaginationDefault)
   const alertsSelected = ref([] as number[] | undefined)
   const alertsListSearched = ref([]) // TODO: not avail for EAR
+  const gotoFirstPage = ref(false)
 
   const alertsQueries = useAlertsQueries()
   const alertsMutations = useAlertsMutations()
 
   const fetchAlerts = async () => {
-    await alertsQueries.fetchAlerts(alertsFilter.value)
+    await alertsQueries.fetchAlerts(alertsFilter.value, alertsPagination.value)
 
     alertsList.value = alertsQueries.fetchAlertsData
 
@@ -45,9 +43,12 @@ export const useAlertsStore = defineStore('alertsStore', () => {
 
   watch(
     alertsFilter,
-    () => {
+    (newFilter, oldFilter) => {
+      if (newFilter.severities !== oldFilter.severities || newFilter.timeRange !== oldFilter.timeRange) {
+        gotoFirstPage.value = true
+      }
+
       fetchAlerts()
-      // setPage(1) // TODO go to 1st page on filters change
     },
     { deep: true }
   )
@@ -61,12 +62,21 @@ export const useAlertsStore = defineStore('alertsStore', () => {
         severities: alertsFilter.value.severities?.filter((s) => s !== selected)
       }
 
-      if (!alertsFilter.value.severities?.length) alertsFilter.value = { ...alertsFilter.value, severities: [] }
+      if (!alertsFilter.value.severities?.length)
+        alertsFilter.value = {
+          ...alertsFilter.value,
+          severities: []
+        }
     } else {
       alertsFilter.value = {
         ...alertsFilter.value,
         severities: [...(alertsFilter.value.severities as string[]), selected]
       }
+    }
+
+    alertsPagination.value = {
+      ...alertsPagination.value,
+      page: 1
     }
   }
 
@@ -80,46 +90,42 @@ export const useAlertsStore = defineStore('alertsStore', () => {
   const setPage = (page: number): void => {
     const apiPage = page - 1 // pagination component has base of 1; hence first page is 1 - 1 = 0 as api payload
 
-    if (apiPage !== Number(alertsFilter.value.pagination.page)) {
-      alertsFilter.value = {
-        ...alertsFilter.value,
-        pagination: {
-          ...alertsFilter.value.pagination,
-          page: apiPage
-        }
+    if (apiPage !== Number(alertsPagination.value.page)) {
+      alertsPagination.value = {
+        ...alertsPagination.value,
+        page: apiPage
       }
     }
+    fetchAlerts()
   }
 
   const setPageSize = (pageSize: number): void => {
-    if (pageSize !== alertsFilter.value.pagination.pageSize) {
-      alertsFilter.value = {
-        ...alertsFilter.value,
-        pagination: {
-          page: 0,
-          pageSize
-        }
-      }
-
+    if (pageSize !== alertsPagination.value.pageSize) {
       alertsPagination.value = {
         ...alertsPagination.value,
-        page: 1,
+        page: 0,
         pageSize
       }
     }
+
+    fetchAlerts()
   }
 
   const clearAllFilters = (): void => {
     alertsFilter.value = alertsFilterDefault
-
     alertsPagination.value = alertsPaginationDefault
   }
 
-  const setAlertsSelected = (selectedAlert: number | undefined) => {
-    if (!selectedAlert) alertsSelected.value = undefined
-    else {
-      const exists = alertsSelected.value?.indexOf(selectedAlert)
-      exists ? alertsSelected.value?.splice(exists) : alertsSelected.value?.push(selectedAlert)
+  // all toggle (select/deselect): true/false / individual toggle: number (alert id)
+  const setAlertsSelected = (selectedAlert: number | boolean) => {
+    if (Number.isInteger(selectedAlert)) {
+      const found = alertsSelected.value?.indexOf(selectedAlert as number) as number
+      found === -1 ? alertsSelected.value?.push(selectedAlert as number) : alertsSelected.value?.splice(found, 1)
+    } else {
+      if (!selectedAlert) alertsSelected.value = []
+      else {
+        alertsSelected.value = alertsList.value.alerts.map((al: Alert) => al.databaseId)
+      }
     }
   }
 
@@ -147,6 +153,7 @@ export const useAlertsStore = defineStore('alertsStore', () => {
     clearAllFilters,
     setAlertsSelected,
     clearSelectedAlerts,
-    acknowledgeSelectedAlerts
+    acknowledgeSelectedAlerts,
+    gotoFirstPage
   }
 })
