@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: horizon-stream-email
+  mail:
+    from: noreply@opennms.com
+    host: mail-server
+    port: 1025
+
+grpc:
+  server:
+    port: 6565
+
+horizon:
+  keycloak:
+    realm: opennms
+    use-static-pubkey: false
+    keycloakRequireSsl: false
+    static-pubkey-path: etc/keycloak-pubkey.pem
+    admin-realm: master
+    base-url: http://onms-keycloak:8080/auth
+    admin-username: admin
+    admin-password: admin
+    client-id: admin-cli

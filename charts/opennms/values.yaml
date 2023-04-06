@@ -180,6 +180,20 @@ OpenNMS:
         Cpu: 100m
         Memory: 250Mi
     PrivateRepoEnabled: false
+  Email:
+    ServiceName: opennms-email
+    Image: opennms/horizon-stream-email
+    ImagePullPolicy: IfNotPresent
+    Replicas: 1
+    GrpcPort: 6565
+    Resources:
+      Limits:
+        Cpu: "1"
+        Memory: 500Mi
+      Requests:
+        Cpu: 100m
+        Memory: 250Mi
+    PrivateRepoEnabled: false
 Postgres:
   ServiceName: postgres
   Image: postgres:14.5-alpine

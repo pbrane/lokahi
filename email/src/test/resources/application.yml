@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: integration-test
+  mail:
+    from: noreply@opennms.com
+
+horizon:
+  keycloak:
+    realm: opennms
+    use-static-pubkey: false
+    keycloakRequireSsl: false
+    static-pubkey-path: etc/keycloak-pubkey.pem
+    admin-realm: master
+    base-url: http://onms-keycloak:8080/auth
+    admin-username: admin
+    admin-password: admin
+    client-id: admin-cli

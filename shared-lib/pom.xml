@@ -41,6 +41,7 @@
         <module>flows</module>
         <module>alert</module>
         <module>shaded-grpc-core</module>
+        <module>email</module>
     </modules>
 
     <build>

@@ -140,6 +140,7 @@ jobs:
         image: [
           'horizon-stream-alert',
           'horizon-stream-datachoices',
+          'horizon-stream-email',
           'horizon-stream-events',
           'horizon-stream-grafana',
           'horizon-stream-inventory',

@@ -297,6 +297,19 @@ k8s_resource(
     trigger_mode=TRIGGER_MODE_MANUAL,
 )
 
+### Email ###
+jib_project(
+    'email',
+    'opennms/horizon-stream-email',
+    'email',
+    'opennms-email',
+)
+
+k8s_resource(
+    'mail-server',
+    port_forwards=['22080:8025'],
+)
+
 ## 3rd Party Resources ##
 ### Keycloak ###
 docker_build(

@@ -43,6 +43,13 @@ jobs:
     with:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  email:
+    name: Email Service
+    uses: ./.github/workflows/feature-email.yml
+    secrets: inherit
+    with:
+      image-tag: ${{ inputs.image-tag || github.sha }}
+      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   events:
     name: Event Service
     uses: ./.github/workflows/feature-events.yml
