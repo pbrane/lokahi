@@ -68,6 +68,11 @@ const router = createRouter({
       component: () => import('@/containers/Alerts.vue')
     },
     {
+      path: '/locations',
+      name: 'Locations',
+      component: () => import('@/containers/Locations.vue')
+    },
+    {
       path: '/node/:id',
       name: 'Node',
       component: NodeStatus

@@ -67,6 +67,12 @@
         :class="{ selected: isSelected('/alerts') }"
       />
       <FeatherAppRailNavItem
+        href="/locations"
+        :icon="Icons.Location"
+        title="Locations"
+        :class="{ selected: isSelected('/locations') }"
+      />
+      <FeatherAppRailNavItem
         v-if="false"
         href="/synthetic-transactions"
         :icon="Icons.Cycle"
@@ -81,7 +87,7 @@
 import { IconTextAnimate, FeatherAppRailNavItem } from '@featherds/app-rail'
 import Appliances from '@featherds/icon/hardware/Appliances'
 import Home from '@featherds/icon/action/Home'
-import Location from '@featherds/icon/action/Location'
+// import Map from '@material-design-icons/svg/outlined/map.svg'
 import Business from '@featherds/icon/action/Business'
 import LogoIcon from '@/assets/OpenNMS-logo-icon.svg'
 import LogoText from '@/assets/OpenNMS-logo-text.svg'
@@ -89,17 +95,21 @@ import Discovery from '@featherds/icon/action/Search'
 import Monitoring from '@featherds/icon/hardware/MinionProfiles'
 import Cycle from '@featherds/icon/action/Cycle'
 import Warning from '@featherds/icon/notification/Warning'
+import Location from '@featherds/icon/action/Location'
 
 const Icons = markRaw({
   Appliances,
   Home,
-  Location,
+  // Map,
   Business,
   Discovery,
   Monitoring,
   Cycle,
-  Warning
+  Warning,
+  Location
 })
+
+console.log(Icons.Location)
 
 const labels = {
   skip: 'Skip to main content'
