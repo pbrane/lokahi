@@ -27,15 +27,15 @@
 
 .content-left {
   flex-grow: 1;
-  background-color: red;
+  // background-color: red;
 }
 
 .content-right {
   flex-grow: 2;
-  background-color: blue;
+  // background-color: blue;
 }
 
 .footer {
   margin-top: var(variables.$spacing-xl);
-  background-color: yellow;
+  // background-color: yellow;
 }
