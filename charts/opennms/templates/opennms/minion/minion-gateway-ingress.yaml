@@ -4,7 +4,6 @@ metadata:
   name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
   namespace: {{ .Release.Namespace }}
   annotations:
-    route.openshift.io/termination: "passthrough"
     nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.TLS.Enabled }}"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
     {{- range $Annotation, $Value := .Values.OpenNMS.MinionGateway.IngressAnnotations }}
