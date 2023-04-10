@@ -17,6 +17,7 @@ package reconciler
 import (
 	"context"
 	"fmt"
+	"github.com/go-kit/kit/transport/http"
 	"log"
 	"reflect"
 	"time"
@@ -39,6 +40,7 @@ import (
 // OpenNMSReconciler - reconciles a OpenNMS object
 type OpenNMSReconciler struct {
 	client.Client
+	HttpClient       http.HTTPClient
 	Log              logr.Logger
 	Scheme           *runtime.Scheme
 	CodecFactory     serializer.CodecFactory
@@ -48,6 +50,7 @@ type OpenNMSReconciler struct {
 	Instances        map[string]*Instance
 }
 
+// TODO add high level unit tests for this method
 func (r *OpenNMSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (reconcile.Result, error) {
 	instance, err := r.getInstance(ctx, req)
 	if err != nil { //any error here is fatal
@@ -112,9 +115,20 @@ func (r *OpenNMSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (re
 		handler.SetDeployed(true)
 	}
 
-	// all clear, instance is ready
-	r.updateStatus(ctx, &instance.CRD, true, "instance ready")
-	instance.Deployed = true
+	ready, err := r.instanceReady(instance)
+	if err != nil {
+		r.updateStatus(ctx, &instance.CRD, false, fmt.Sprintf("Error: instance isn't ready: %s", err.Error()))
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
+	} else if !ready {
+		r.updateStatus(ctx, &instance.CRD, false, "instance isn't ready")
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
+	} else if ready {
+		// all clear, instance is ready
+
+		r.updateStatus(ctx, &instance.CRD, true, "instance ready")
+		instance.Deployed = true
+	}
+
 	return reconcile.Result{RequeueAfter: 30 * time.Second}, nil
 }
 

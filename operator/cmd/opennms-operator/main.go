@@ -24,6 +24,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"net/http"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -72,6 +73,7 @@ func main() {
 	}
 
 	if err = (&reconciler.OpenNMSReconciler{
+		HttpClient:    &http.Client{},
 		Client:        mgr.GetClient(),
 		Log:           logger,
 		Scheme:        mgr.GetScheme(),
