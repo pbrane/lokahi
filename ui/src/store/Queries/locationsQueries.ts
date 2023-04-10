@@ -1,22 +1,27 @@
 import { useQuery } from 'villus'
 import { defineStore } from 'pinia'
-import { LocationsListDocument, Location } from '@/types/graphql'
+import { LocationsListDocument, SearchLocationDocument } from '@/types/graphql'
 
 export const useLocationsQueries = defineStore('locationsQueries', () => {
-  const locations = ref<Location[]>([])
+  const fetchLocations = () =>
+    useQuery({
+      query: LocationsListDocument,
+      fetchOnMount: false,
+      cachePolicy: 'network-only'
+    })
 
-  const { data, execute } = useQuery({
-    query: LocationsListDocument,
-    fetchOnMount: false,
-    cachePolicy: 'network-only'
-  })
-
-  watchEffect(() => {
-    locations.value = data.value?.findAllLocations || []
-  })
+  const searchLocation = (searchTerm = '') =>
+    useQuery({
+      query: SearchLocationDocument,
+      variables: {
+        searchTerm
+      },
+      fetchOnMount: false,
+      cachePolicy: 'network-only'
+    })
 
   return {
-    fetchLocations: execute,
-    locations: computed(() => locations.value)
+    fetchLocations,
+    searchLocation
   }
 })

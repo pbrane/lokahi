@@ -159,14 +159,14 @@ export const useAppliancesQueries = defineStore('appliancesQueries', {
       }
     })
 
-    const locations = computed(() => minionsAndNodes.value?.findAllLocations || [])
+    const locationsList = computed(() => minionsAndNodes.value?.findAllLocations || [])
 
     return {
       tableMinions,
       fetchMinionsForTable,
       tableNodes,
       fetchNodesForTable,
-      locations,
+      locationsList,
       fetch: execute
     }
   }

@@ -25,13 +25,13 @@
         v-model="node.label"
       />
       <FeatherSelect
-        data-test="location-name-input"
-        name="locationOptions"
         v-model="locationOption"
-        :options="locations"
-        text-prop="location"
+        :options="locationsList"
         @update:modelValue="selectLocation"
+        name="locationOptions"
         label="Location"
+        text-prop="location"
+        data-test="location-name-input"
       />
       <FeatherInput
         data-test="ip-input"
@@ -113,9 +113,12 @@ const defaultDevice: NodeCreateInput = {
 
 const node = reactive({ ...defaultDevice })
 
-const locations = computed(() => locationsQueries.locations)
+const locationsList = ref()
 const addNode = async () => {
-  await locationsQueries.fetchLocations()
+  const { data, isFetching } = await locationsQueries.fetchLocations()
+
+  if (!isFetching.value) locationsList.value = data.value?.findAllLocations || []
+
   openModal()
 }
 
@@ -157,7 +160,7 @@ const selectLocation = () => {
 // sets default location when locations available
 watchEffect(() => {
   if (!node.location) {
-    locationOption.value = applianceQueries.locations[0]
+    locationOption.value = applianceQueries.locationsList[0]
     selectLocation()
   }
 })
