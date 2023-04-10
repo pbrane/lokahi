@@ -90,12 +90,12 @@ const router = createRouter({
     {
       path: '/templates',
       name: 'Templates',
-      component: () => import('@/templates/index.vue')
+      component: () => import('../../templates/index.vue')
     },
     {
       path: '/templates/layout/headlineTwoColumns',
       name: 'HeadlineTwoColumns',
-      component: () => import('@/templates/layout/headlineTwoColumns.vue')
+      component: () => import('../../templates/layout/headlineTwoColumns.vue')
     }
   ]
 })
