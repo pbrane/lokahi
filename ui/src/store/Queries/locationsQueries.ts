@@ -1,12 +1,12 @@
 import { useQuery } from 'villus'
 import { defineStore } from 'pinia'
-import { ListLocationsDocument, Location } from '@/types/graphql'
+import { LocationsListDocument, Location } from '@/types/graphql'
 
 export const useLocationsQueries = defineStore('locationsQueries', () => {
   const locations = ref<Location[]>([])
 
   const { data, execute } = useQuery({
-    query: ListLocationsDocument,
+    query: LocationsListDocument,
     fetchOnMount: false,
     cachePolicy: 'network-only'
   })

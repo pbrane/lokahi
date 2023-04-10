@@ -89,7 +89,7 @@
 import Add from '@featherds/icon/action/Add'
 import { useNodeMutations } from '@/store/Mutations/nodeMutations'
 import { useAppliancesQueries } from '@/store/Queries/appliancesQueries'
-import { useLocationsQueries } from '@/store/Common/locationsQueries'
+import { useLocationsQueries } from '@/store/Queries/locationsQueries'
 import useModal from '@/composables/useModal'
 import useSnackbar from '@/composables/useSnackbar'
 import { NodeCreateInput } from '@/types/graphql'

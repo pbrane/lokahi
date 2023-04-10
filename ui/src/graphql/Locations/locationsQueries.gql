@@ -5,6 +5,6 @@ fragment LocationsParts on Query {
   }
 }
 
-query ListLocations {
+query LocationsList {
   ...LocationsParts
 }
