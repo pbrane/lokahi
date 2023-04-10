@@ -19,7 +19,7 @@ fragment AlertsParts on Query {
   }
 }
 
-query Alerts(
+query AlertsList(
   $page: Int!
   $pageSize: Int
   $severities: [String]

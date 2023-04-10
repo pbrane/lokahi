@@ -1,34 +1,47 @@
 import mount from 'tests/mountWithPiniaVillus'
 import AlertsCardList from '@/components/Alerts/AlertsCardList.vue'
-import { useAlertsStore } from '@/store/Views/alertsStore'
-// import { getAlertsList } from '../../mock-graphql/src/fixture/alerts.fixture'
+import { getAlertsList } from '../fixture/alerts'
 
 let wrapper: any
 
-describe.skip('Alerts list', () => {
-  beforeEach(() => {
-    wrapper = mount({
-      component: AlertsCardList
-    })
-  })
-  afterEach(() => {
+describe('Alerts list', () => {
+  afterAll(() => {
     wrapper.unmount()
   })
 
   test('Mount', () => {
+    wrapper = mount({
+      component: AlertsCardList,
+      props: {
+        alerts: []
+      }
+    })
+
     expect(wrapper).toBeTruthy()
   })
 
   test('Should have alerts list if list not empty', async () => {
-    const alertsStore = useAlertsStore()
-    // alertsStore.alertsList = getAlertsList()
-    await wrapper.vm.$nextTick()
+    wrapper = mount({
+      component: AlertsCardList,
+      props: {
+        alerts: getAlertsList()
+      }
+    })
 
     const elem = wrapper.find('[data-test="alerts-list"]')
     expect(elem.exists()).toBeTruthy()
   })
 
   describe('Alerts list empty', () => {
+    beforeAll(() => {
+      wrapper = mount({
+        component: AlertsCardList,
+        props: {
+          alerts: []
+        }
+      })
+    })
+
     test('Should not have alerts list if list empty', () => {
       const elem = wrapper.find('[data-test="empty-list"]')
       expect(elem.exists()).toBeTruthy()
