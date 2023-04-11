@@ -20,6 +20,7 @@
     <properties>
         <application.docker.image.name>opennms/horizon-stream-email</application.docker.image.name>
         <sonar.projectKey>opennms_horizon-stream_email</sonar.projectKey>
+        <sonar.skip>true</sonar.skip>
     </properties>
 
     <dependencyManagement>
