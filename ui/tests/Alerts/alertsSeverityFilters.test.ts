@@ -3,7 +3,7 @@ import AlertsSeverityFilters from '@/components/Alerts/AlertsSeverityFilters.vue
 
 let wrapper: any
 
-describe.skip('AlertsSeverityFilters', () => {
+describe('AlertsSeverityFilters', () => {
   beforeEach(() => {
     wrapper = mount({
       component: AlertsSeverityFilters

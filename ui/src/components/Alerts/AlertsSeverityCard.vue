@@ -66,10 +66,14 @@ const props = defineProps<{
   isFilter?: boolean
 }>()
 
-const count = ref(0)
+const count = ref()
 onMounted(async () => {
-  const { data } = await alertsQueries.fetchCountAlerts([props.severity], TimeRange.All)
-  count.value = data.value?.countAlerts?.count || 0
+  try {
+    const { data } = await alertsQueries.fetchCountAlerts([props.severity], TimeRange.All)
+    count.value = data.value?.countAlerts?.count || 0
+  } catch (err) {
+    count.value = 0
+  }
 })
 
 const isTypeAdded = computed(() => alertsStore.alertsFilter.severities?.includes(props.severity))

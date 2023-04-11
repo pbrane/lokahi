@@ -60,7 +60,7 @@
             <FeatherCheckbox
               v-model="isAllAlertsSelected"
               @update:model-value="allAlertsCheckboxHandler"
-              :disabled="!alerts.length"
+              :disabled="isAlertsListEmpty"
               data-test="select-all-checkbox"
               >Select All</FeatherCheckbox
             >
@@ -80,7 +80,7 @@
             >
           </div>
           <FeatherPagination
-            v-if="alerts.length"
+            v-if="!isAlertsListEmpty"
             v-model="page"
             :pageSize="pageSize"
             :total="total"
@@ -94,7 +94,7 @@
         />
         <div
           class="card-list-bottom"
-          v-if="alerts.length"
+          v-if="!isAlertsListEmpty"
         >
           <FeatherPagination
             v-model="page"
@@ -129,6 +129,7 @@ watchEffect(() => {
   alerts.value = alertsStore.alertsList?.alerts?.map((a: IAlert) => ({ ...a, isSelected: false })) || []
 })
 
+const isAlertsListEmpty = computed(() => alertsStore.isAlertsListEmpty)
 watchEffect(() => {
   if (alertsStore.gotoFirstPage && refPagination.value) {
     refPagination.value.first() // goto first page on 'severity' and/or 'time' filter change
@@ -270,7 +271,7 @@ const searchAlertsListener = (v: any) => {
   :deep(.layout-container) {
     margin-bottom: 0;
   }
-  :deep(> .feather-pagination) {
+  :deep(.feather-pagination) {
     border: 0;
     min-height: auto;
     padding-left: 0;
