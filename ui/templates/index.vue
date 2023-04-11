@@ -19,7 +19,6 @@
 
 .container {
   display: flex;
-  flex-direction: row;
   gap: 2rem;
 }
 </style>
