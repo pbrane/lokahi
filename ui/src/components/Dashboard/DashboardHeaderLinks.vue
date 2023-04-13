@@ -1,17 +1,17 @@
 <template>
   <div class="links">
     <FeatherButton
-      @click="redirect('/appliances')"
+      @click="redirect('Appliances')"
       secondary
       >Add Device</FeatherButton
     >
     <FeatherButton
-      @click="redirect('/discovery')"
+      @click="redirect('Discovery')"
       secondary
       >New Discovery</FeatherButton
     >
     <FeatherButton
-      @click="redirect('/monitoring-policies')"
+      @click="redirect('Monitoring-policies')"
       secondary
       >Add Monitory Policy</FeatherButton
     >

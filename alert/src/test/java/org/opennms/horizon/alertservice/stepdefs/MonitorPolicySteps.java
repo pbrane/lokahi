@@ -30,16 +30,14 @@ package org.opennms.horizon.alertservice.stepdefs;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import io.cucumber.java.BeforeAll;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.groups.Tuple;
+import org.junit.platform.commons.util.StringUtils;
 import org.opennms.horizon.alertservice.AlertGrpcClientUtils;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
 import org.opennms.horizon.shared.alert.policy.ComponentType;
@@ -50,16 +48,17 @@ import org.opennms.horizon.shared.alert.policy.OverTimeUnit;
 import org.opennms.horizon.shared.alert.policy.PolicyRuleProto;
 import org.opennms.horizon.shared.alert.policy.Severity;
 import org.opennms.horizon.shared.alert.policy.TriggerEventProto;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import com.google.protobuf.Empty;
 import com.google.protobuf.Int64Value;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -69,10 +68,12 @@ public class MonitorPolicySteps {
     private final AlertGrpcClientUtils grpcClient;
     private MonitorPolicyProto.Builder policyBuilder = MonitorPolicyProto.newBuilder();
     private PolicyRuleProto.Builder ruleBuilder = PolicyRuleProto.newBuilder();
-    private TriggerEventProto.Builder triggerBuilder = TriggerEventProto.newBuilder();
+    private List<TriggerEventProto.Builder> triggerBuilders = new ArrayList<>();
     private Long policyId;
 
     private MonitorPolicyProto policy;
+
+    private EventType eventType;
 
     @Given("Monitoring policy kafka consumer")
     public void setupMonitoringPolicyTopic() {
@@ -94,7 +95,7 @@ public class MonitorPolicySteps {
     }
 
     @Given("Policy tags")
-    public void policyTags(io.cucumber.datatable.DataTable dataTable) {
+    public void policyTags(DataTable dataTable) {
         List<String> tags = dataTable.asList();
         policyBuilder.addAllTags(tags);
     }
@@ -111,20 +112,28 @@ public class MonitorPolicySteps {
             .setComponentType(ComponentType.valueOf(type.toUpperCase()));
     }
 
-    @Given("Trigger event {string}, count {int} overtime {int} {string}, severity {string}")
-    public void triggerEventCountOvertimeSeverity(String event, Integer count, Integer overTime, String timeUnit, String severity) {
-        triggerBuilder.setTriggerEvent(EventType.valueOf(event.toUpperCase()))
-            .setCount(count)
-            .setOvertime(overTime)
-            .setOvertimeUnit(OverTimeUnit.valueOf(timeUnit.toUpperCase()))
-            .setSeverity(Severity.valueOf(severity.toUpperCase()));
+    @Given("Trigger events data")
+    public void triggerEventsData(DataTable data) {
+        List<Map<String, String>> mapList = data.asMaps();
+        mapList.forEach(map -> {
+            TriggerEventProto.Builder eventBuilder = TriggerEventProto.newBuilder().setTriggerEvent(EventType.valueOf(map.get("trigger_event")))
+                .setCount(Integer.parseInt(map.get("count")))
+                .setOvertime(Integer.parseInt(map.get("overtime")))
+                .setOvertimeUnit(OverTimeUnit.valueOf(map.get("overtime_unit").toUpperCase()))
+                .setSeverity(Severity.valueOf(map.get("severity").toUpperCase()));
+            String clearEvent = map.get("clear_event");
+            if(StringUtils.isNotBlank(clearEvent)) {
+                eventBuilder.setClearEvent(EventType.valueOf(clearEvent));
+            }
+            eventType = eventBuilder.getTriggerEvent();
+            triggerBuilders.add(eventBuilder);
+        });
     }
 
     @Then("Create a new policy with give parameters")
     public void createANewPolicyWithGiveParameters() {
-        MonitorPolicyProto policy = policyBuilder.addRules(
-                ruleBuilder.addSnmpEvents(triggerBuilder.build()).build()
-        ).build();
+        triggerBuilders.forEach(b -> ruleBuilder.addSnmpEvents(b.build()));
+        MonitorPolicyProto policy = policyBuilder.addRules(ruleBuilder.build()).build();
         MonitorPolicyProto dbPolicy = grpcClient.getPolicyStub().createPolicy(policy);
         policyId = dbPolicy.getId();
         log.info("Creating policy {}", policy);
@@ -133,6 +142,7 @@ public class MonitorPolicySteps {
 
     @Then("Verify the new policy has been created")
     public void verifyTheNewPolicyHasBeenCreated() {
+        TriggerEventProto.Builder triggerBuilder = triggerBuilders.stream().filter(b -> b.getTriggerEvent().equals(eventType)).findFirst().get();
         MonitorPolicyProto policy = grpcClient.getPolicyStub().getPolicyById(Int64Value.of(policyId));
         assertThat(policy).isNotNull()
             .extracting("name", "memo", "tagsList")

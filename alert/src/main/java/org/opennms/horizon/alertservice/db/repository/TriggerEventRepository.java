@@ -28,13 +28,11 @@
 
 package org.opennms.horizon.alertservice.db.repository;
 
-import java.util.List;
-
 import org.opennms.horizon.alertservice.db.entity.TriggerEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TriggerEventRepository extends JpaRepository<TriggerEvent, Long> {
-    List<TriggerEvent> findAllByTenantId(String tenantId);
+
 }

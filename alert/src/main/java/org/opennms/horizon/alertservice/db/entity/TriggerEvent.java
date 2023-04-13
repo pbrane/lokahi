@@ -79,9 +79,4 @@ public class TriggerEvent {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id", referencedColumnName = "trigger_event_id")
     private AlertDefinition alertDefinition;
-    private String uei;
-    @Column(name = "reduction_key")
-    private String reductionKey;
-    @Column(name = "clear_key")
-    private String clearKey;
 }

@@ -73,17 +73,17 @@ public class AlertDefinition implements Serializable {
         cascade = CascadeType.ALL)
     private List<EventMatch> match = new ArrayList<>();
 
-    @Column(nullable=false)
+    @Column(name = "reduction_key", nullable = false)
     private String reductionKey;
 
-    @Column
+    @Column(name = "clear_key")
     private String clearKey;
 
     @Column
     @Enumerated(EnumType.STRING)
     private AlertType type;
 
-    @Column
+    @Column(name = "managed_object_type")
     @Enumerated(EnumType.STRING)
     private ManagedObjectType managedObjectType;
 

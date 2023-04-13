@@ -11,5 +11,6 @@
         <addForeignKeyConstraint baseTableName="alert_definition" baseColumnNames="trigger_event_id"
                                  referencedTableName="trigger_event" referencedColumnNames="id"
                                  constraintName="fk_alert_definition_trigger_event_id" />
+        <addUniqueConstraint tableName="alert_definition" columnNames="trigger_event_id" constraintName="uk_alert_def_trigger_id"/>
     </changeSet>
 </databaseChangeLog>

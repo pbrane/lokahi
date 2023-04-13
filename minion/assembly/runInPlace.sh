@@ -6,35 +6,126 @@ MINION_ID='minion-standalone'
 MINION_LOCATION='minion-standalone-loc'
 IGNITE_SERVER_ADDRESSES=localhost
 MINION_GATEWAY_HOST=localhost
+# TODO - port 9443 for TLS?
 MINION_GATEWAY_PORT=8990
-MINION_GATEWAY_TLS=false
+MINION_GATEWAY_TLS="false"
 
-USAGE() { echo -e "Usage: bash $0 [-i <MINION_ID>] [-l <MINION_LOCATION>] [-h <MINION_GATEWAY_HOST>] [-p <MINION_GATEWAY_PORT>] [-a <IGNITE_SERVER_ADDRESSES>] [-d] [-t]\n\t-d: enable jvm debug\n\t-t: MINION_GATEWAY_TLS" 1>&2; exit 1; }
-CHECK_GETOPTS() {
-  if [ $? != 0 ]; then
-    USAGE
-  fi
+CERT_ROOTDIR="$(cd ../../tools/SSL; pwd)"
+CA_CERT_FILE="${CERT_ROOTDIR}/CA.cert"
+CLIENT_KEY_FILE="${CERT_ROOTDIR}/client.key"
+CLIENT_CERT_FILE="${CERT_ROOTDIR}/client.signed.cert"
+CLIENT_KEY_IS_PKCS12="false"
+
+
+
+###
+### WARNING: certificate passwords currently do not work with PEM files; it only works with PKCS12 files.
+###
+### The following error is logged when this fails:
+###
+###	Caused by: java.security.NoSuchAlgorithmException: PBES2 SecretKeyFactory not available
+###
+CLIENT_PRIVATE_KEY_PASSWORD=""
+
+# Prevent hostname verification failures by setting the expected cert "hostname"
+OVERRIDE_AUTHORITY="opennms-minion-ssl-gateway"
+
+USAGE()
+{
+	cat <<-!
+		Usage: bash $0 [-f <FLA>] [-h <HOST>] [-i <ID>] [-k <PATH>] [-l <LOC>] [-P <PASS>] [-p <PORT>] [-a <ADDRESS>] [-d] [-t]
+
+		    -a[ADDRESS]	use ADDRESS (IGNITE_SERVER_ADDRESSES) configure the Ignite cluster addresses? (warning - this currently may not have any effect)
+		    -f[FLAG]	use client private key PKCS12 FLAG (true => PKCS12; false => other)
+		    -h[HOST]	use HOST (MINION_GATEWAY_HOST) as the hostname when connecting to the cloud
+		    -i[ID]	use ID (MINION_ID) as the system identifier for this minion instance
+		    -k[PATH]	use PATH to the client private key file
+		    -l[LOC]	use LOC (MINION_LOCATION) as the name of the location for this minion instance
+		    -P[PASS]	use PASS (CLIENT_PRIVATE_KEY_PASSWORD) as the password for the client private key
+		    -p[PORT]	use GATEWAY (MINION_GATEWAY_HOST) as the hostname when connecting to the cloud
+		    -d		enable jvm debug
+		    -t		enable TLS
+!
 }
 
-while getopts i:l:h:p:a:dt FLAG 
+while getopts a:f:h:i:k:l:P:p:Ddtx FLAG 
 do
     case "${FLAG}" in
-        i) CHECK_GETOPTS ; MINION_ID=${OPTARG} ;;
-        l) CHECK_GETOPTS ; MINION_LOCATION=${OPTARG} ;;
-        h) CHECK_GETOPTS ; MINION_GATEWAY_HOST=${OPTARG} ;;
-        p) CHECK_GETOPTS ; MINION_GATEWAY_PORT=${OPTARG} ;;
-        a) CHECK_GETOPTS ; IGNITE_SERVER_ADDRESSES=${OPTARG} ;;
-        t) MINION_GATEWAY_TLS=true;;
-        d) DEBUG=debug;;
-        ?) USAGE ;;
+        a) IGNITE_SERVER_ADDRESSES="${OPTARG}" ;;
+        f) CLIENT_KEY_IS_PKCS12="${OPTARG}" ;;
+        h) MINION_GATEWAY_HOST="${OPTARG}" ;;
+        i) MINION_ID="${OPTARG}" ;;
+        k) CLIENT_KEY_FILE="${OPTARG}" ;;
+        l) MINION_LOCATION="${OPTARG}" ;;
+        P) CLIENT_PRIVATE_KEY_PASSWORD="${OPTARG}" ;;
+        p) MINION_GATEWAY_PORT="${OPTARG}" ;;
+
+        D) DEBUG=debugs ;;
+        d) DEBUG=debug ;;
+        t) MINION_GATEWAY_TLS="true" ;;
+        x) MINION_GATEWAY_TLS="false" ;;
+        ?) USAGE >&2 ; exit 1 ;;
     esac
 done
 
-CURRENT_PATH=$(pwd)
-SCRIPT_DIR=$( dirname -- "$0" )
-cd $SCRIPT_DIR/target/assembly/bin
-env MINION_ID="${MINION_ID}" MINION_LOCATION="${MINION_LOCATION}" USE_KUBERNETES=false \
-  IGNITE_SERVER_ADDRESSES=${IGNITE_SERVER_ADDRESSES} MINION_GATEWAY_HOST=${MINION_GATEWAY_HOST} \
-  MINION_GATEWAY_PORT=${MINION_GATEWAY_PORT} MINION_GATEWAY_TLS="${MINION_GATEWAY_TLS}" \
-  ./karaf $DEBUG
-cd $CURRENT_PATH
+
+
+###
+###
+###
+
+SCRIPT_DIR="$( dirname -- "$0" )"
+cd "$SCRIPT_DIR"/target/assembly
+
+
+
+###
+### PREPARE CERTIFICATE CONFIGURATION
+###
+
+# Update the config file, if TLS is enabled
+
+GRPC_CLIENT_CONFIG_FILE="etc/org.opennms.core.ipc.grpc.client.cfg"
+
+if [ "${MINION_GATEWAY_TLS}" = "true" ]
+then
+	(
+		cat "${GRPC_CLIENT_CONFIG_FILE}" |
+			grep -v '^grpc.trust\.cert\.filepath=' |
+			grep -v '^grpc.client\.cert\.filepath=' |
+			grep -v '^grpc.client\.private\.key\.filepath=' |
+			grep -v '^grpc.client\.private\.key\.password=' |
+			grep -v '^grpc.client.private.key.is-pkcs12=' |
+			grep -v '^grpc.override\.authority='
+
+		echo "grpc.trust.cert.filepath=${CA_CERT_FILE}"
+		echo "grpc.client.cert.filepath=${CLIENT_CERT_FILE}"
+		echo "grpc.client.private.key.filepath=${CLIENT_KEY_FILE}"
+		echo "grpc.client.private.key.is-pkcs12=${CLIENT_KEY_IS_PKCS12}"
+		if [ -n "${CLIENT_PRIVATE_KEY_PASSWORD}" ]
+		then
+			echo "grpc.client.private.key.password=${CLIENT_PRIVATE_KEY_PASSWORD}"
+		fi
+		echo "grpc.override.authority=${OVERRIDE_AUTHORITY}"
+	) >>"${GRPC_CLIENT_CONFIG_FILE}.upd"
+
+	mv "${GRPC_CLIENT_CONFIG_FILE}.upd" "${GRPC_CLIENT_CONFIG_FILE}"
+fi
+
+
+
+###
+### EXECUTE THE MINION
+###
+
+cd bin
+
+export MINION_ID
+export MINION_LOCATION
+export USE_KUBERNETES="false"
+export IGNITE_SERVER_ADDRESSES
+export MINION_GATEWAY_HOST
+export MINION_GATEWAY_PORT
+export MINION_GATEWAY_TLS
+
+exec ./karaf $DEBUG

@@ -22,7 +22,7 @@ defineProps<{
 .severity-status {
   @include typography.title();
   display: inline-block;
-  font-size: 1rem;
+  font-size: 0.8rem;
   line-height: normal;
   padding: 2px 8px;
   border-radius: vars.$border-radius-sm;

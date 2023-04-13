@@ -34,7 +34,9 @@ Feature: Monitor policy gRPC Functionality
       | Default location |
     Given Notify by email "true"
     Given Policy Rule name "snmp rule" and componentType "NODE"
-    Given Trigger event "COLD_REBOOT", count 3 overtime 5 "MINUTE", severity "MAJOR"
+    Given Trigger events data
+      | trigger_event | count | overtime | overtime_unit | severity | clear_event |
+      | COLD_REBOOT   | 1     | 3        | MINUTE        | MAJOR    |             |
     Then Create a new policy with give parameters
     Then Verify the new policy has been created
     Then List policy should contain 1

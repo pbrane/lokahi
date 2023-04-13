@@ -105,6 +105,22 @@ OpenNMS:
         Cpu: 100m
         Memory: 250Mi
 
+  MinionSslGateway:
+    Enabled: true
+    ServiceName: opennms-minion-ssl-gateway
+    # TODO: use the project maven property to populate this value?
+    Image: nginx:1.21.6-alpine
+    ImagePullPolicy: IfNotPresent
+    Port: 443
+    Replicas: 1
+    Resources:
+      Limits:
+        Cpu: "1"
+        Memory: 500Mi
+      Requests:
+        Cpu: 100m
+        Memory: 250Mi
+
   Inventory:
     ServiceName: opennms-inventory
     Image: opennms/horizon-stream-inventory
@@ -246,7 +262,12 @@ Grafana:
       Cpu: 100m
       Memory: 100Mi
 Cortex:
+  Enabled: true
   ServiceName: cortex
+  Host: cortex
+  PathRead: /prometheus/api/v1/query
+  PathWrite: /api/v1/push
+  Protocol: http
   Port: 9000
   Image: cortexproject/cortex:v1.14.0
   Resources:
