@@ -55,21 +55,19 @@ export const useAppliancesQueries = defineStore('appliancesQueries', {
 
     const addMetricsToMinions = (allMinions: Minion[]) => {
       allMinions.forEach(async (minion) => {
-        const { data, isFetching } = await fetchMinionMetrics(minion.systemId as string)
+        const { data } = await fetchMinionMetrics(minion.systemId as string)
         const result = data.value?.minionLatency?.data?.result?.[0]?.values?.[0]
 
-        if (!isFetching.value) {
-          if (result) {
-            const [, val] = result as number[]
+        if (result) {
+          const [, val] = result as number[]
 
-            tableMinions.value.push({
-              ...minion,
-              latency: {
-                value: val
-              }
-            })
-          } else tableMinions.value.push(minion)
-        }
+          tableMinions.value.push({
+            ...minion,
+            latency: {
+              value: val
+            }
+          })
+        } else tableMinions.value.push(minion)
       })
     }
 
@@ -110,6 +108,7 @@ export const useAppliancesQueries = defineStore('appliancesQueries', {
         const { data, isFetching } = await fetchNodeMetrics(node.id as number, snmpPrimaryIpAddress as string)
         const latencyResult = data.value?.nodeLatency?.data?.result?.[0]?.values?.[0]
         const status = data.value?.nodeStatus?.status
+        console.log('appliancesQueries', isFetching.value)
 
         if (!isFetching.value) {
           let tableNode: ExtendedNode = {
