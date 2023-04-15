@@ -38,7 +38,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.NullValueCheckStrategy;
 import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -32,7 +32,7 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
 import org.opennms.horizon.alertservice.db.entity.TriggerEvent;
-import org.opennms.horizon.shared.alert.policy.TriggerEventProto;
+import org.opennms.horizon.alerts.proto.TriggerEventProto;
 
 @Mapper(componentModel = "spring")
 public interface TriggerEventMapper {

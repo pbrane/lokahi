@@ -26,27 +26,31 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.server.model.alerts;
 
-public enum Severity {
-    SEVERITY_UNDEFINED(0),
-    INDETERMINATE(1),
-    CLEARED(2),
-    NORMAL(3),
-    WARNING(4),
-    MINOR(5),
-    MAJOR(6),
-    CRITICAL(7),
-    UNRECOGNIZED(-1);
+package org.opennms.horizon.systemtests.pages.portal;
 
-    private final int value;
+import com.codeborne.selenide.SelenideElement;
 
-    Severity(int value) {
-        this.value = value;
+import java.time.Duration;
+
+import static com.codeborne.selenide.Condition.cssClass;
+import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Selenide.$;
+
+public class PortalSnackBar {
+
+    private static final SelenideElement snackBar = $("[data-ref-id='feather-snackbar']");
+
+    public static void verifySuccessSnackBarMessage(String message) {
+        snackBar
+            .shouldNot(cssClass("error"))
+            .shouldHave(text(message), Duration.ofSeconds(20));
     }
 
-    public int getValue() {
-        return value;
+    public static void verifyErrorSnackBarMessage(String message) {
+        snackBar
+            .shouldBe(visible, Duration.ofSeconds(20))
+            .shouldHave(cssClass("error"), text(message));
     }
 }
-

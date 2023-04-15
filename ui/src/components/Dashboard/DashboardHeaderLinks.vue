@@ -1,28 +1,39 @@
 <template>
   <div class="links">
-    <FeatherButton
-      @click="redirect('Appliances')"
-      secondary
-      >Add Device</FeatherButton
-    >
-    <FeatherButton
-      @click="redirect('Discovery')"
-      secondary
-      >New Discovery</FeatherButton
-    >
-    <FeatherButton
-      @click="redirect('Monitoring-policies')"
-      secondary
-      >Add Monitory Policy</FeatherButton
-    >
+    <FeatherDropdown>
+      <template v-slot:trigger="{ attrs, on }">
+        <FeatherButton
+          link
+          href="#"
+          v-bind="attrs"
+          v-on="on"
+          primary
+          menu-trigger
+        >
+          <div class="dropdown-title">{{ dashboardText.MenuLabel }}</div>
+          <FeatherIcon
+            :icon="Menu"
+            class="icon-menu"
+          />
+        </FeatherButton>
+      </template>
+      <FeatherDropdownItem
+        :key="action.link"
+        v-for="action in dashboardText.MenuLinks"
+        @click="redirect(action.link)"
+        >{{ action.name }}</FeatherDropdownItem
+      >
+    </FeatherDropdown>
   </div>
 </template>
 
 <script setup lang="ts">
-const router = useRouter()
+import Menu from '@featherds/icon/navigation/Menu'
+import dashboardText from '@/components/Dashboard/dashboard.text'
 
+const router = useRouter()
 const redirect = (route: string) => {
-  router.push(route)
+  router.push({ name: route })
 }
 </script>
 
@@ -30,19 +41,20 @@ const redirect = (route: string) => {
 @use '@featherds/styles/mixins/typography';
 @use '@featherds/styles/themes/variables';
 @use '@/styles/mediaQueriesMixins.scss';
+
 .links {
-  .btn,
-  .btn-secondary {
-    margin-left: 0;
-    margin-bottom: var(variables.$spacing-s);
-    margin-right: var(variables.$spacing-s);
+  .dropdown-title {
+    display: none;
+
+    @include mediaQueriesMixins.screen-md {
+      display: block;
+    }
   }
-  @include mediaQueriesMixins.screen-md {
-    .btn,
-    .btn-secondary {
-      margin-left: 0;
-      margin-bottom: var(variables.$spacing-s);
-      margin-right: var(variables.$spacing-s);
+  .icon-menu {
+    font-size: 26px;
+    display: flex;
+    @include mediaQueriesMixins.screen-md {
+      display: none;
     }
   }
 }

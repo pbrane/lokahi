@@ -34,7 +34,7 @@ import java.util.Date;
 
 import org.opennms.horizon.alerts.proto.AlertType;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
-import org.opennms.horizon.model.common.proto.Severity;
+import org.opennms.horizon.alerts.proto.Severity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

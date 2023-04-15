@@ -38,16 +38,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.groups.Tuple;
 import org.junit.platform.commons.util.StringUtils;
+import org.opennms.horizon.alerts.proto.EventType;
+import org.opennms.horizon.alerts.proto.ManagedObjectType;
+import org.opennms.horizon.alerts.proto.MonitorPolicyList;
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
+import org.opennms.horizon.alerts.proto.OverTimeUnit;
+import org.opennms.horizon.alerts.proto.PolicyRuleProto;
+import org.opennms.horizon.alerts.proto.Severity;
+import org.opennms.horizon.alerts.proto.TriggerEventProto;
 import org.opennms.horizon.alertservice.AlertGrpcClientUtils;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
-import org.opennms.horizon.shared.alert.policy.ComponentType;
-import org.opennms.horizon.shared.alert.policy.EventType;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyList;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
-import org.opennms.horizon.shared.alert.policy.OverTimeUnit;
-import org.opennms.horizon.shared.alert.policy.PolicyRuleProto;
-import org.opennms.horizon.shared.alert.policy.Severity;
-import org.opennms.horizon.shared.alert.policy.TriggerEventProto;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import com.google.protobuf.Empty;
@@ -109,7 +109,7 @@ public class MonitorPolicySteps {
     public void policyRuleNameAndComponentType(String name, String type) {
         ruleBuilder
             .setName(name)
-            .setComponentType(ComponentType.valueOf(type.toUpperCase()));
+            .setComponentType(ManagedObjectType.valueOf(type.toUpperCase()));
     }
 
     @Given("Trigger events data")
@@ -188,7 +188,7 @@ public class MonitorPolicySteps {
         assertThat(policy.getRulesList()).asList().hasSize(1);
         PolicyRuleProto rule = policy.getRulesList().get(0);
         assertThat(rule)
-            .extracting(r -> r.getName(), r->r.getComponentType().name())
+            .extracting(PolicyRuleProto::getName, r->r.getComponentType().name())
             .containsExactly(name, type);
 
     }

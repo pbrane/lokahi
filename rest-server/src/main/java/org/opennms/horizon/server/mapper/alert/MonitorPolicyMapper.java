@@ -34,7 +34,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.NullValueCheckStrategy;
 import org.opennms.horizon.server.model.alerts.MonitorPolicy;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 
 @Mapper(componentModel = "spring", uses = {PolicyRuleMapper.class}, nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
     collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)

@@ -41,18 +41,17 @@ import org.opennms.horizon.alerts.proto.DeleteAlertResponse;
 import org.opennms.horizon.alerts.proto.Filter;
 import org.opennms.horizon.alerts.proto.ListAlertsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
+import org.opennms.horizon.alerts.proto.MonitorPolicyServiceGrpc;
+import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alerts.proto.TimeRangeFilter;
-import org.opennms.horizon.model.common.proto.Severity;
 import org.opennms.horizon.server.mapper.alert.MonitorPolicyMapper;
 import org.opennms.horizon.server.model.alerts.MonitorPolicy;
 import org.opennms.horizon.server.model.alerts.TimeRange;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyServiceGrpc;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 
 import com.google.protobuf.Empty;
 import com.google.protobuf.Int64Value;
-import com.google.protobuf.Timestamp;
 import com.google.protobuf.Timestamp;
 
 import io.grpc.ManagedChannel;

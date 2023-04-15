@@ -32,11 +32,11 @@ import java.util.Date;
 import java.util.Optional;
 
 import org.opennms.horizon.alerts.proto.Alert;
+import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alertservice.api.AlertLifecyleListener;
 import org.opennms.horizon.alertservice.api.AlertService;
 import org.opennms.horizon.alertservice.db.repository.AlertRepository;
 import org.opennms.horizon.events.proto.Event;
-import org.opennms.horizon.model.common.proto.Severity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,9 +54,7 @@ public class AlertServiceImpl implements AlertService {
     @Override
     public Optional<Alert> reduceEvent(Event e) {
         Optional<Alert> alert = alertEventProcessor.process(e);
-        if (alert.isPresent()) {
-            alertListenerRegistry.forEachListener((l) -> l.handleNewOrUpdatedAlert(alert.get()));
-        }
+        alert.ifPresent(value -> alertListenerRegistry.forEachListener((l) -> l.handleNewOrUpdatedAlert(value)));
         return alert;
     }
 

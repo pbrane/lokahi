@@ -36,12 +36,13 @@ import javax.annotation.PostConstruct;
 import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertType;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
+import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
 import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
 import org.opennms.horizon.alertservice.db.repository.AlertRepository;
+import org.opennms.horizon.alertservice.db.repository.TriggerEventRepository;
 import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
 import org.opennms.horizon.events.proto.Event;
-import org.opennms.horizon.model.common.proto.Severity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -67,6 +68,7 @@ public class AlertEventProcessor {
     private final AlertMapper alertMapper;
 
     private final AlertDefinitionRepository alertDefinitionRepository;
+    private final TriggerEventRepository triggerRepo;
 
     private final MeterRegistry registry;
 
@@ -96,7 +98,8 @@ public class AlertEventProcessor {
         if (!Strings.isNullOrEmpty(alertDefinition.getClearKey())) {
             clearKey = String.format(alertDefinition.getClearKey(), event.getTenantId(), event.getNodeId());
         }
-        return new AlertData(reductionKey, clearKey, alertDefinition.getType());
+        Severity severity = triggerRepo.findById(alertDefinition.getTriggerEventId()).get().getSeverity();
+        return new AlertData(reductionKey, clearKey, alertDefinition.getType(), severity);
     }
 
     protected org.opennms.horizon.alertservice.db.entity.Alert addOrReduceEventAsAlert(Event event) {
@@ -140,7 +143,7 @@ public class AlertEventProcessor {
                 // Set the severity to CLEARED when reducing alerts
                 alert.setSeverity(Severity.CLEARED);
             } else {
-                alert.setSeverity(event.getSeverity());
+                alert.setSeverity(alertData.severity());
             }
         }
 
@@ -164,9 +167,9 @@ public class AlertEventProcessor {
         }
         // FIXME: We should be using the source time of the event and not the time at which it was produced
         alert.setLastEventTime(new Date(event.getProducedTimeMs()));
-        alert.setSeverity(event.getSeverity());
+        alert.setSeverity(alertData.severity());
         alert.setEventUei(event.getUei() );
         return alert;
     }
-    private record AlertData(String reductionKey, String clearKey, AlertType type) { }
+    private record AlertData(String reductionKey, String clearKey, AlertType type, Severity severity) { }
 }

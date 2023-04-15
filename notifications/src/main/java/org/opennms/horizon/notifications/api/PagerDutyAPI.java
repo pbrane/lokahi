@@ -34,7 +34,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertType;
-import org.opennms.horizon.model.common.proto.Severity;
+import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.notifications.api.dto.PagerDutyEventAction;
 import org.opennms.horizon.notifications.api.dto.PagerDutyEventDTO;
 import org.opennms.horizon.notifications.api.dto.PagerDutyPayloadDTO;

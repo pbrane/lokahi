@@ -1,15 +1,5 @@
 <template>
   <div class="flows">
-    <div class="header">
-      <div class="section-title">{{ dashboardText.TopApplications.title }}</div>
-      <div
-        class="link"
-        @click="router.push('Flows')"
-      >
-        {{ dashboardText.TopApplications.linkFlows }}
-      </div>
-    </div>
-    <div class="section-subtitle">{{ dashboardText.TopApplications.timePeriod }}</div>
     <div
       v-if="hasData"
       class="chart-box"
@@ -20,12 +10,15 @@
         :id="'pieChartApplications'"
       />
     </div>
-    <div
-      v-else
-      class="empty"
-    >
-      <!--will be replaced with the component-->
-      No data
+    <div v-else>
+      <DashboardEmptyState :texts="dashboardText.TopApplications">
+        <template v-slot:icon>
+          <FeatherIcon
+            :icon="isDark ? PolarChartDark : PolarChart"
+            class="empty-chart-icon"
+          />
+        </template>
+      </DashboardEmptyState>
     </div>
   </div>
 </template>
@@ -37,11 +30,12 @@ import useTheme from '@/composables/useTheme'
 import { useMediaQuery } from '@vueuse/core'
 import { PolarArea } from 'vue-chartjs'
 import dashboardText from '@/components/Dashboard/dashboard.text'
+import PolarChart from '@/assets/PolarChart.svg'
+import PolarChartDark from '@/assets/PolarChart-dark.svg'
 
 const isLargeScreen = useMediaQuery('(min-width: 1024px)')
 const { onThemeChange, isDark } = useTheme()
 const flowsStore = useFlowsStore()
-const router = useRouter()
 const constGraph = ref()
 const dataGraph = ref()
 const hasData = ref(false)
@@ -103,48 +97,3 @@ onThemeChange(() => {
   constGraph.value = { ...config }
 })
 </script>
-
-<style scoped lang="scss">
-@use '@featherds/styles/mixins/typography';
-@use '@featherds/styles/themes/variables';
-@use '@/styles/mediaQueriesMixins.scss';
-
-.flows {
-  width: 100%;
-  background-color: var(variables.$surface);
-  padding: var(variables.$spacing-l);
-  border: 1px solid var(variables.$border-on-surface);
-  @include mediaQueriesMixins.screen-md {
-    width: 48%;
-  }
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    .link {
-      @include typography.subtitle2();
-      text-decoration: underline;
-      cursor: pointer;
-      color: var(variables.$primary);
-    }
-    .section-title {
-      @include typography.headline3();
-    }
-  }
-  .chart-box {
-    border: 1px solid var(variables.$border-on-surface);
-    padding: 0 var(variables.$spacing-l);
-    margin-top: var(variables.$spacing-l);
-  }
-
-  .empty {
-    height: 630px;
-    text-align: center;
-    padding-top: 50px;
-  }
-}
-
-.section-subtitle {
-  @include typography.caption();
-}
-</style>

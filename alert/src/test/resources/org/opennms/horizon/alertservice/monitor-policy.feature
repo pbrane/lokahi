@@ -16,12 +16,12 @@ Feature: Monitor policy gRPC Functionality
     Then Verify the default policy rule has name "default_rule" and component type "NODE"
     Then Verify the default monitoring policy has the following data
       | triggerEvent       | severity |
-      | COLD_REBOOT        | CRITICAL |
-      | WARM_REBOOT        | MAJOR    |
+      | SNMP_Cold_Start    | CRITICAL |
+      | SNMP_Warm_Start    | MAJOR    |
       | DEVICE_UNREACHABLE | MAJOR    |
 
   Scenario: Verify alert can be created based on the default policy
-    Then Send event with UEI "uei.opennms.org/generic/traps/SNMP_Cold_Start" with tenant "new-tenant" with node 10 with severity "MAJOR"
+    Then Send event with UEI "uei.opennms.org/generic/traps/SNMP_Cold_Start" with tenant "new-tenant" with node 10
     Then List alerts for tenant "new-tenant", with timeout 5000ms, until JSON response matches the following JSON path expressions
       | alerts.size() == 1 |
       | alerts[0].counter == 1 |
@@ -35,8 +35,8 @@ Feature: Monitor policy gRPC Functionality
     Given Notify by email "true"
     Given Policy Rule name "snmp rule" and componentType "NODE"
     Given Trigger events data
-      | trigger_event | count | overtime | overtime_unit | severity | clear_event |
-      | COLD_REBOOT   | 1     | 3        | MINUTE        | MAJOR    |             |
+      | trigger_event   | count | overtime | overtime_unit | severity | clear_event |
+      | SNMP_Cold_Start | 1     | 3        | MINUTE        | MAJOR    |             |
     Then Create a new policy with give parameters
     Then Verify the new policy has been created
     Then List policy should contain 1

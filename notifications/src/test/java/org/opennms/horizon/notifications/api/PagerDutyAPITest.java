@@ -36,7 +36,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opennms.horizon.alerts.proto.Alert;
-import org.opennms.horizon.model.common.proto.Severity;
+import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.notifications.dto.PagerDutyConfigDTO;
 import org.opennms.horizon.notifications.exceptions.NotificationAPIException;
 import org.opennms.horizon.notifications.exceptions.NotificationAPIRetryableException;

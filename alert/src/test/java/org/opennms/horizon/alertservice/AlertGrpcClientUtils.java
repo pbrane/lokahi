@@ -3,7 +3,7 @@ package org.opennms.horizon.alertservice;
 import java.util.concurrent.TimeUnit;
 
 import org.opennms.horizon.alerts.proto.AlertServiceGrpc;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyServiceGrpc;
+import org.opennms.horizon.alerts.proto.MonitorPolicyServiceGrpc;
 
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;

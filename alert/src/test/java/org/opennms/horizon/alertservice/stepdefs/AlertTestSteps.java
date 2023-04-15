@@ -52,7 +52,7 @@ import org.opennms.horizon.alertservice.RetryUtils;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventLog;
-import org.opennms.horizon.model.common.proto.Severity;
+import org.opennms.horizon.alerts.proto.Severity;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
@@ -124,13 +124,12 @@ public class AlertTestSteps {
 //========================================
 // Gherkin Rules
 //========================================
-@Then("Send event with UEI {string} with tenant {string} with node {int} with severity {string}")
-public void sendMessageToKafkaAtTopicWithSeverity(String eventUei, String tenantId, int nodeId, String severity) {
+@Then("Send event with UEI {string} with tenant {string} with node {int}")
+public void sendMessageToKafkaAtTopicWithSeverity(String eventUei, String tenantId, int nodeId) {
         EventLog eventLog = EventLog.newBuilder()
             .setTenantId(tenantId)
             .addEvents(Event.newBuilder()
                 .setTenantId(tenantId)
-                .setSeverity(Severity.valueOf(severity))
                 .setProducedTimeMs(System.currentTimeMillis())
                 .setNodeId(nodeId)
                 .setUei(eventUei))
@@ -139,13 +138,12 @@ public void sendMessageToKafkaAtTopicWithSeverity(String eventUei, String tenant
         kafkaTestHelper.sendToTopic(background.getEventTopic(), eventLog.toByteArray(), tenantId);
     }
 
-    @Then("Send event with UEI {string} with tenant {string} with node {int} with severity {string} with produced time 23h ago")
-    public void sendMessageToKafkaAtTopicYesterday(String eventUei, String tenantId, int nodeId, String severity) {
+    @Then("Send event with UEI {string} with tenant {string} with node {int} with produced time 23h ago")
+    public void sendMessageToKafkaAtTopicYesterday(String eventUei, String tenantId, int nodeId) {
         EventLog eventLog = EventLog.newBuilder()
             .setTenantId(tenantId)
             .addEvents(Event.newBuilder()
                 .setTenantId(tenantId)
-                .setSeverity(Severity.valueOf(severity))
                 .setProducedTimeMs(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(23))
                 .setNodeId(nodeId)
                 .setUei(eventUei))
@@ -154,13 +152,12 @@ public void sendMessageToKafkaAtTopicWithSeverity(String eventUei, String tenant
         kafkaTestHelper.sendToTopic(background.getEventTopic(), eventLog.toByteArray(), tenantId);
     }
 
-    @Then("Send event with UEI {string} with tenant {string} with node {int} with severity {string} with produced time 1h ago")
-    public void sendMessageToKafkaAtTopic1hAgo(String eventUei, String tenantId, int nodeId, String severity) {
+    @Then("Send event with UEI {string} with tenant {string} with node {int} with with produced time 1h ago")
+    public void sendMessageToKafkaAtTopic1hAgo(String eventUei, String tenantId, int nodeId) {
         EventLog eventLog = EventLog.newBuilder()
             .setTenantId(tenantId)
             .addEvents(Event.newBuilder()
                 .setTenantId(tenantId)
-                .setSeverity(Severity.valueOf(severity))
                 .setProducedTimeMs(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(1))
                 .setNodeId(nodeId)
                 .setUei(eventUei))
@@ -169,13 +166,12 @@ public void sendMessageToKafkaAtTopicWithSeverity(String eventUei, String tenant
         kafkaTestHelper.sendToTopic(background.getEventTopic(), eventLog.toByteArray(), tenantId);
     }
 
-    @Then("Send event with UEI {string} with tenant {string} with node {int} with severity {string} with produced time 8 days ago")
-    public void sendMessageToKafkaAtTopicLastWeek(String eventUei, String tenantId, int nodeId, String severity) {
+    @Then("Send event with UEI {string} with tenant {string} with node {int} with produced time 8 days ago")
+    public void sendMessageToKafkaAtTopicLastWeek(String eventUei, String tenantId, int nodeId) {
         EventLog eventLog = EventLog.newBuilder()
             .setTenantId(tenantId)
             .addEvents(Event.newBuilder()
                 .setTenantId(tenantId)
-                .setSeverity(Severity.valueOf(severity))
                 .setProducedTimeMs(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(8))
                 .setNodeId(nodeId)
                 .setUei(eventUei))
@@ -184,13 +180,12 @@ public void sendMessageToKafkaAtTopicWithSeverity(String eventUei, String tenant
         kafkaTestHelper.sendToTopic(background.getEventTopic(), eventLog.toByteArray(), tenantId);
     }
 
-    @Then("Send event with UEI {string} with tenant {string} with node {int} with severity {string} with produced time last month")
-    public void sendMessageToKafkaAtTopicLastMonth(String eventUei, String tenantId, int nodeId, String severity) {
+    @Then("Send event with UEI {string} with tenant {string} with node {int} with produced time last month")
+    public void sendMessageToKafkaAtTopicLastMonth(String eventUei, String tenantId, int nodeId) {
         EventLog eventLog = EventLog.newBuilder()
             .setTenantId(tenantId)
             .addEvents(Event.newBuilder()
                 .setTenantId(tenantId)
-                .setSeverity(Severity.valueOf(severity))
                 .setProducedTimeMs(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000)
                 .setNodeId(nodeId)
                 .setUei(eventUei))

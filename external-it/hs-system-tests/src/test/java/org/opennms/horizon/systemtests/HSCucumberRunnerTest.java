@@ -28,18 +28,43 @@
 
 package org.opennms.horizon.systemtests;
 
+import com.codeborne.selenide.Selenide;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import org.junit.runner.RunWith;
+import org.opennms.horizon.systemtests.pages.portal.PortalCloudPage;
+import org.opennms.horizon.systemtests.pages.portal.PortalLoginPage;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
     features = "src/test/resources/features",
-    plugin = {"pretty" ,
-        "json:cucumber.reports/cucumber-report.json" ,
+    plugin = {"pretty",
+        "json:cucumber.reports/cucumber-report.json",
         "html:cucumber.reports/cucumber-report.html"},
     tags = "@cloud"
 )
 public class HSCucumberRunnerTest {
+
+    @Before("@portal")
+    public static void loginToPortal() {
+        if (Selenide.webdriver().driver().hasWebDriverStarted()) {
+            return;
+        }
+        Selenide.open("https://dev.cloud.opennms.com");
+        PortalLoginPage.closeCookieHeader();
+        PortalLoginPage.setUsername(System.getProperty("portal_user.email"));
+        PortalLoginPage.clickNext();
+        PortalLoginPage.setPassword(System.getProperty("portal_user.password"));
+        PortalLoginPage.clickSignIn();
+
+        PortalCloudPage.verifyThatUserLoggedIn();
+    }
+
+    @After("@portal")
+    public static void returnToPortalMainPage() {
+        Selenide.open("https://dev.cloud.opennms.com/cloud");
+    }
 
 }

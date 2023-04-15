@@ -28,8 +28,9 @@
 
 package org.opennms.horizon.notifications.api.dto;
 
+import org.opennms.horizon.alerts.proto.Severity;
+
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.opennms.horizon.model.common.proto.Severity;
 
 public enum PagerDutySeverity {
     CRITICAL("critical"),
@@ -39,7 +40,7 @@ public enum PagerDutySeverity {
 
     private final String name;
 
-    private PagerDutySeverity(String name) {
+    PagerDutySeverity(String name) {
         this.name = name;
     }
 

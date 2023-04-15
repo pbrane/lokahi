@@ -30,11 +30,11 @@ package org.opennms.horizon.alertservice.grpc;
 
 import java.util.List;
 
+import org.opennms.horizon.alerts.proto.MonitorPolicyList;
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
 import org.opennms.horizon.alertservice.service.MonitorPolicyService;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyList;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyServiceGrpc;
+import org.opennms.horizon.alerts.proto.MonitorPolicyServiceGrpc;
 import org.springframework.stereotype.Component;
 
 import com.google.protobuf.Empty;

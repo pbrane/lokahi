@@ -28,13 +28,13 @@
 
 package org.opennms.horizon.notifications.service;
 
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.notifications.mapper.MonitoringPolicyMapper;
 import org.opennms.horizon.notifications.model.MonitoringPolicy;
 import org.opennms.horizon.notifications.repository.MonitoringPolicyRepository;
 import org.opennms.horizon.notifications.tenant.WithTenant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
 
 @Service
 public class MonitoringPolicyService {
@@ -45,7 +45,7 @@ public class MonitoringPolicyService {
     @Autowired
     private MonitoringPolicyRepository monitoringPolicyRepository;
 
-    @WithTenant(tenantIdArg = 0, tenantIdArgInternalMethod = "getTenantId", tenantIdArgInternalClass = "org.opennms.horizon.shared.alert.policy.MonitorPolicyProto")
+    @WithTenant(tenantIdArg = 0, tenantIdArgInternalMethod = "getTenantId", tenantIdArgInternalClass = "org.opennms.horizon.alerts.proto.MonitorPolicyProto")
     public void saveMonitoringPolicy(MonitorPolicyProto monitoringPolicyProto ) {
         // Assuming updates always arrive in order on Kafka...
         MonitoringPolicy policy = monitoringPolicyMapper.dtoToModel(monitoringPolicyProto);

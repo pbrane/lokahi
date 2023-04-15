@@ -1,34 +1,31 @@
 package org.opennms.horizon.alertservice.service.routing;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.protobuf.InvalidProtocolBufferException;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mapstruct.factory.Mappers;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
-import org.opennms.horizon.alertservice.db.entity.PolicyRule;
-import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.ArgumentMatchers.any;
+
+import java.util.List;
+
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
+import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
+import org.opennms.horizon.alertservice.db.entity.PolicyRule;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MonitoringPolicyKafkaProducerTest {

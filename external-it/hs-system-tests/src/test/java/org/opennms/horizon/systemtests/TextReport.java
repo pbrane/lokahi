@@ -34,17 +34,18 @@ import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 
 public class TextReport {
-  private final SimpleReport report = new SimpleReport();
 
-  @Before
-  public void beforeTest(Scenario scenario) {
-    scenario.log("Starting " + scenario.getName());
-    report.start();
-  }
+    private final SimpleReport report = new SimpleReport();
 
-  @After
-  public void afterTest(Scenario scenario) {
-    scenario.log("Finished " + scenario.getName());
-    report.finish(scenario.getName());
-  }
+    @Before
+    public void beforeTest(Scenario scenario) {
+        scenario.log("Starting " + scenario.getName());
+        report.start();
+    }
+
+    @After
+    public void afterTest(Scenario scenario) {
+        scenario.log("Finished " + scenario.getName());
+        report.finish(scenario.getName());
+    }
 }

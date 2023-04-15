@@ -27,6 +27,8 @@
  *******************************************************************************/
 package org.opennms.horizon.server.model.alerts;
 
+import org.opennms.horizon.alerts.proto.Severity;
+
 import lombok.Getter;
 import lombok.Setter;
 

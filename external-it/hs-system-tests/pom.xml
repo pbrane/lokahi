@@ -30,11 +30,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <selenide.downloadsFolder>target/downloads</selenide.downloadsFolder>
-                    </systemPropertyVariables>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -61,7 +56,7 @@
         <dependency>
             <groupId>com.codeborne</groupId>
             <artifactId>selenide</artifactId>
-            <version>6.12.4</version>
+            <version>6.13.0</version>
             <scope>test</scope>
         </dependency>
 

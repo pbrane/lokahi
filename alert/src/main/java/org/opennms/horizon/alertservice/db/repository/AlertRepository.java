@@ -32,8 +32,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alertservice.db.entity.Alert;
-import org.opennms.horizon.model.common.proto.Severity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

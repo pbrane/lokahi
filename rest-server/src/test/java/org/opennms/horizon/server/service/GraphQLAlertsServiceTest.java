@@ -49,7 +49,7 @@ import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertResponse;
 import org.opennms.horizon.alerts.proto.DeleteAlertResponse;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
-import org.opennms.horizon.model.common.proto.Severity;
+import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.server.RestServerApplication;
 import org.opennms.horizon.server.config.DataLoaderFactory;
 import org.opennms.horizon.server.model.alerts.TimeRange;

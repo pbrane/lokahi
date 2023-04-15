@@ -40,27 +40,27 @@ import java.util.Optional;
 
 import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertError;
+import org.opennms.horizon.alerts.proto.AlertRequest;
+import org.opennms.horizon.alerts.proto.AlertResponse;
 import org.opennms.horizon.alerts.proto.AlertServiceGrpc;
 import org.opennms.horizon.alerts.proto.CountAlertResponse;
+import org.opennms.horizon.alerts.proto.DeleteAlertResponse;
 import org.opennms.horizon.alerts.proto.ListAlertsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.UInt64Value;
-import io.grpc.Context;
-import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import org.opennms.horizon.alerts.proto.*;
+import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alertservice.api.AlertService;
 import org.opennms.horizon.alertservice.db.repository.AlertRepository;
 import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
 import org.opennms.horizon.alertservice.service.AlertMapper;
-import org.opennms.horizon.model.common.proto.Severity;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.util.*;
+import com.google.protobuf.Timestamp;
+
+import io.grpc.Context;
+import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor

@@ -12,7 +12,7 @@ OpenNMS maintains different systems that need to communicate with each other. Ho
 
 We need a way to share the API contracts between different systems and ease cross-team coordination when changes to them occur. These contracts are defined as gRPC proto files. In order to make use of them, we need to generate code for both the server and client. This code can be generated ahead of time and provided as a library, or at build-time when using the proto files directly.
 
-No team/system should be considered the "owner" of a contract. They would be able to make changes to it without considering the needs of other systems, so the risk of introducing breaking changes is high. Any changes waould need to be manually communicated and coordinated with other teams. This would be an error-prone and time-consuming process, and the number of necessary communication paths would be significantly higher.
+No team/system should be considered the "owner" of a contract. They would be able to make changes to it without considering the needs of other systems, so the risk of introducing breaking changes is high. Any changes would need to be manually communicated and coordinated with other teams. This would be an error-prone and time-consuming process, and the number of necessary communication paths would be significantly higher.
 
 Contracts should be versioned. This would allow for well-controlled releases, without needing to update dependent components in lock-step with the latest changes. Any changes to the API contracts should be reviewed and approved by the owners of the components that depend on them, e.g. team members for each of the clients and servers of a given contract. A git repository for these contracts would function well as a common ground for different teams to coordinate these changes.
 
@@ -22,21 +22,17 @@ We need to publish libraries for Java to a publicly accessible Maven repository.
 
 We should automate this process, and a CI system like GitHub Actions would be a good fit. It can validate the proto files, generate the code, package it into an artifact, and publish it to the repository without any human intervention.
 
-
-
 ## Decision
 
 We will store cross-project API contracts in a new git repository. Changes to these API contracts will be done with pull requests. All proto files that are shared between projects will be moved to this new repository.
 
 In order for a PR to be merged, a team member from each of its dependent projects will be required to approve it. A GitHub CODEOWNERS file can be used to enforce this by specifying each of the teams as an owner of the proto file.
 
-API contracts will be published as versioned libraries that contain generated code. These libraries will be generated for each of the proto files in each of programming languages we support, and published to a publicly accessible artifact registry. 
+API contracts will be published as versioned libraries that contain generated code. These libraries will be generated for each of the proto files in each of programming languages we support, and published to a publicly accessible artifact registry.
 
-Anything that uses a contract will depend on a specific version of its published library. We will not depend on them with dynamic versions like Maven's `x.x.x-SNAPSHOT` feature.
+We will use a CI system to compile and publish the libraries. They will be versioned using an automated release process.
 
-We will publish libraries as JAR files in Java, and ensure we can add support for other languages when we need to. These JAR files will be published to OpenNMS's Cloudsmith Maven repository. Maven or Gradle can be used to depend on these libraries.
-
-We will use GitHub Actions as the CI system to compile and publish the libraries. This will use a release process that follows semantic versioning.
+Downstream projects will depend on a specific version of these libraries using the appropriate dependency management tooling for the project. They will not depend on them with dynamic versions like Maven's `x.x.x-SNAPSHOT` feature.
 
 ## Consequences
 

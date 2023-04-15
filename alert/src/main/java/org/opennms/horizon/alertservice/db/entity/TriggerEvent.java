@@ -28,10 +28,9 @@
 
 package org.opennms.horizon.alertservice.db.entity;
 
-import org.opennms.horizon.shared.alert.policy.EventType;
-import org.opennms.horizon.shared.alert.policy.OverTimeUnit;
-import org.opennms.horizon.shared.alert.policy.Severity;
-
+import org.opennms.horizon.alerts.proto.EventType;
+import org.opennms.horizon.alerts.proto.OverTimeUnit;
+import org.opennms.horizon.alerts.proto.Severity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

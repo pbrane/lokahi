@@ -31,7 +31,7 @@ package org.opennms.horizon.alertservice.db.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opennms.horizon.shared.alert.policy.ComponentType;
+import org.opennms.horizon.alerts.proto.ManagedObjectType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -63,7 +63,7 @@ public class PolicyRule {
     private String name;
     @Enumerated(EnumType.STRING)
     @Column(name = "component_type")
-    private ComponentType componentType;
+    private ManagedObjectType componentType;
     @OneToMany(mappedBy = "rule", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<TriggerEvent> triggerEvents = new ArrayList<>();
 

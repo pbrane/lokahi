@@ -6,8 +6,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.notifications.service.MonitoringPolicyService;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;

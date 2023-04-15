@@ -8,9 +8,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.notifications.mapper.MonitoringPolicyMapper;
 import org.opennms.horizon.notifications.repository.MonitoringPolicyRepository;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

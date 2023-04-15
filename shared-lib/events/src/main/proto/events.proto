@@ -30,8 +30,6 @@ syntax = "proto3";
 import "google/protobuf/any.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
-import "common.proto";
-
 
 package opennms.events;
 option java_multiple_files = true;
@@ -52,7 +50,6 @@ message Event {
   uint64 produced_time_ms = 7;
   repeated EventParameter parameters = 8;
   optional EventInfo info = 9;
-  optional opennms.model.Severity severity = 10;
 }
 
 message EventInfo {

@@ -14,7 +14,7 @@ const alertsFilterDefault: AlertsFilters = {
 }
 
 const alertsPaginationDefault = {
-  page: 1, // pagination component has base of 1 (first page)
+  page: 0, // pagination component has base of 1 (first page)
   pageSize: 10,
   total: 0
 }

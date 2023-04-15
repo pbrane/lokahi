@@ -29,8 +29,8 @@
 package org.opennms.horizon.notifications.mapper;
 
 import org.mapstruct.Mapper;
+import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.notifications.model.MonitoringPolicy;
-import org.opennms.horizon.shared.alert.policy.MonitorPolicyProto;
 
 @Mapper(componentModel = "spring")
 public interface MonitoringPolicyMapper {

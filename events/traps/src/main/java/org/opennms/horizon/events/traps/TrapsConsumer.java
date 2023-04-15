@@ -28,23 +28,26 @@
 
 package org.opennms.horizon.events.traps;
 
-import com.google.common.base.Strings;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.opennms.horizon.events.EventConstants;
 import org.opennms.horizon.events.api.EventConfDao;
 import org.opennms.horizon.events.grpc.client.InventoryClient;
-import org.opennms.horizon.events.xml.Event;
-import org.opennms.horizon.events.xml.Events;
-import org.opennms.horizon.events.xml.Log;
-import org.opennms.horizon.events.xml.Parm;
 import org.opennms.horizon.events.proto.EventInfo;
 import org.opennms.horizon.events.proto.EventLog;
 import org.opennms.horizon.events.proto.EventParameter;
 import org.opennms.horizon.events.proto.SnmpInfo;
+import org.opennms.horizon.events.xml.Event;
+import org.opennms.horizon.events.xml.Events;
+import org.opennms.horizon.events.xml.Log;
+import org.opennms.horizon.events.xml.Parm;
 import org.opennms.horizon.grpc.traps.contract.TrapDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapLogDTO;
-import org.opennms.horizon.model.common.proto.Severity;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.horizon.shared.snmp.SnmpHelper;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
@@ -57,12 +60,7 @@ import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 
 @Component
@@ -158,25 +156,11 @@ public class TrapsConsumer {
             .setNodeId(event.getNodeid())
             .setLocation(event.getDistPoller())
             .setIpAddress(event.getInterface());
-
-        mapSeverity(event, eventBuilder);
         mapEventInfo(event, eventBuilder);
 
         List<EventParameter> eventParameters = mapEventParams(event);
         eventBuilder.addAllParameters(eventParameters);
         return eventBuilder.build();
-    }
-
-    static void mapSeverity(Event event, org.opennms.horizon.events.proto.Event.Builder eventBuilder) {
-        if (!Strings.isNullOrEmpty(event.getSeverity())) {
-            String severity = event.getSeverity().toUpperCase(Locale.ROOT);
-            try {
-                Severity eventSeverity = Severity.valueOf(severity);
-                eventBuilder.setSeverity(eventSeverity);
-            } catch (IllegalArgumentException iae) {
-                LOG.warn("No matching event severity for {} in proto", severity);
-            }
-        }
     }
 
     static void mapEventInfo(Event event, org.opennms.horizon.events.proto.Event.Builder eventBuilder) {

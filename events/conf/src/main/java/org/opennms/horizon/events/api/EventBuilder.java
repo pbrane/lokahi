@@ -235,17 +235,6 @@ public class EventBuilder {
         return this;
         
     }
-    
-    /**
-     * <p>setSeverity</p>
-     *
-     * @param severity a {@link String} object.
-     * @return a {@link EventBuilder} object.
-     */
-    public EventBuilder setSeverity(final String severity) {
-    	m_event.setSeverity(Severity.get(severity).getLabel());
-    	return this;
-    }
 
     /**
      * <p>setNodeid</p>

@@ -26,24 +26,10 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.events.traps;
+package org.opennms.horizon.notifications.api.keycloak;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.opennms.horizon.events.xml.Event;
-import org.opennms.horizon.model.common.proto.Severity;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-class EventProtoMappingTest {
-
-    @Test
-    void testEventSeverityMapping() {
-        Event event = Mockito.mock(Event.class);
-        Mockito.when(event.getSeverity()).thenReturn("Cleared");
-        var builder = org.opennms.horizon.events.proto.Event.newBuilder();
-        TrapsConsumer.mapSeverity(event, builder);
-        assertEquals(Severity.CLEARED, builder.build().getSeverity());
-    }
-
+public interface KeyCloakAPI {
+    List<String> getTenantEmailAddresses(String tenant);
 }

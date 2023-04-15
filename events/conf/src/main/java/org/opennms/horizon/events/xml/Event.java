@@ -185,12 +185,6 @@ public class Event implements Serializable {
 	private Logmsg _logmsg;
 
 	/**
-	 * The event severity
-	 */
-	@XmlElement(name = "severity")
-	private String _severity;
-
-	/**
 	 * The path outage information
 	 */
 	@XmlElement(name = "pathoutage")
@@ -986,16 +980,6 @@ public class Event implements Serializable {
 	}
 
 	/**
-	 * Returns the value of field 'severity'. The field 'severity' has the
-	 * following description: The event severity
-	 * 
-	 * @return the value of field 'Severity'.
-	 */
-	public String getSeverity() {
-		return _severity;
-	}
-
-	/**
 	 * Returns the value of field 'snmp'. The field 'snmp' has the following
 	 * description: The snmp information from the trap
 	 * 
@@ -1714,17 +1698,6 @@ public class Event implements Serializable {
 	}
 
 	/**
-	 * Sets the value of field 'severity'. The field 'severity' has the
-	 * following description: The event severity
-	 * 
-	 * @param severity
-	 *            the value of field 'severity'.
-	 */
-	public void setSeverity(final String severity) {
-		_severity = severity;
-	}
-
-	/**
 	 * Sets the value of field 'snmp'. The field 'snmp' has the following
 	 * description: The snmp information from the trap
 	 * 
@@ -1824,7 +1797,6 @@ public class Event implements Serializable {
 				.add("parms=" + _parms)
 				.add("descr='" + _descr + "'")
 				.add("logmsg=" + _logmsg)
-				.add("severity='" + _severity + "'")
 				.add("pathoutage='" + _pathoutage + "'")
 				.add("correlation=" + _correlation)
 				.add("operinstruct='" + _operinstruct + "'")
