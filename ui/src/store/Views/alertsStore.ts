@@ -14,7 +14,7 @@ const alertsFilterDefault: AlertsFilters = {
 }
 
 const alertsPaginationDefault = {
-  page: 0, // pagination component has base of 1 (first page)
+  page: 1, // FE pagination component has base 1 (first page)
   pageSize: 10,
   total: 0
 }
@@ -32,6 +32,11 @@ export const useAlertsStore = defineStore('alertsStore', () => {
   const alertsMutations = useAlertsMutations()
 
   const fetchAlerts = async () => {
+    alertsPagination.value = {
+      ...alertsPagination.value,
+      page: alertsPagination.value.page - 1 // AlertsList api has base 0 and FE pagination component has base 1; hence we always subtract 1 before sending request.
+    }
+
     await alertsQueries.fetchAlerts(alertsFilter.value, alertsPagination.value)
 
     alertsList.value = alertsQueries.fetchAlertsData
@@ -79,7 +84,7 @@ export const useAlertsStore = defineStore('alertsStore', () => {
 
     alertsPagination.value = {
       ...alertsPagination.value,
-      page: 1
+      page: 1 // always request first page on change
     }
   }
 
@@ -91,14 +96,13 @@ export const useAlertsStore = defineStore('alertsStore', () => {
   }
 
   const setPage = (page: number): void => {
-    const apiPage = page - 1 // pagination component has base of 1; hence first page is 1 - 1 = 0 as api payload
-
-    if (apiPage !== Number(alertsPagination.value.page)) {
+    if (page !== Number(alertsPagination.value.page)) {
       alertsPagination.value = {
         ...alertsPagination.value,
-        page: apiPage
+        page
       }
     }
+
     fetchAlerts()
   }
 
@@ -106,7 +110,7 @@ export const useAlertsStore = defineStore('alertsStore', () => {
     if (pageSize !== alertsPagination.value.pageSize) {
       alertsPagination.value = {
         ...alertsPagination.value,
-        page: 0,
+        page: 1, // always request first page on change
         pageSize
       }
     }
