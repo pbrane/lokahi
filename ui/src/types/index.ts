@@ -64,3 +64,8 @@ export interface TagSelectItem {
   _text?: string
   tenantId?: string
 }
+
+export interface ContextMenuItem {
+  label: string
+  handler: fncVoid
+}
