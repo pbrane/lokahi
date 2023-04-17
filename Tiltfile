@@ -338,6 +338,7 @@ k8s_resource(
 ### Postgres ###
 k8s_resource(
     'postgres',
+    objects=['postgres-pvc:persistentvolumeclaim', 'postgres:secret', 'postgres-initial-sql:secret'],
     port_forwards=['25054:5432'],
 )
 
