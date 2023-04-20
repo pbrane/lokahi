@@ -310,6 +310,7 @@ docker_build(
 k8s_resource(
     'onms-keycloak',
     new_name='keycloak',
+    objects=['keycloak-realm-configmap:configmap', 'onms-keycloak-initial-admin:secret'],
     port_forwards=['26080:8080'],
 )
 
@@ -326,6 +327,7 @@ docker_build(
 )
 k8s_resource(
     'grafana',
+    objects=['grafana:secret'],
     port_forwards=['18080:3000'],
 )
 
