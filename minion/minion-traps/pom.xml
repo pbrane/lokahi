@@ -8,9 +8,11 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>minion-traps</artifactId>
     <packaging>pom</packaging>
+
+    <name>OpenNMS Horizon Stream :: Minion :: Traps</name>
+
     <modules>
         <module>listener</module>
         <module>features</module>
