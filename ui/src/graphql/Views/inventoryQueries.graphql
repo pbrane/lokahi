@@ -1,39 +1,28 @@
 query NodesList {
-    ...NodeParts
+  ...NodeParts
 }
 
 query NodeLatencyMetric(
-    $id: Long!
-    $monitor: String!
-    $instance: String!
-    $timeRange: Int!
-    $timeRangeUnit: TimeRangeUnit!
+  $id: Long!
+  $monitor: String!
+  $instance: String!
+  $timeRange: Int!
+  $timeRangeUnit: TimeRangeUnit!
 ) {
-    ...NodeLatencyParts
-    ...NodeStatusParts
+  ...NodeLatencyParts
+  ...NodeStatusParts
 }
 
 query FindAllNodesByNodeLabelSearch($labelSearchTerm: String!) {
-    findAllNodesByNodeLabelSearch(labelSearchTerm: $labelSearchTerm) {
-        details
-        nodeType
-    }
+  findAllNodesByNodeLabelSearch(labelSearchTerm: $labelSearchTerm) {
+    details
+    nodeType
+  }
 }
 
 query FindAllNodesByTags($tags: [String]) {
   findAllNodesByTags(tags: $tags) {
-    id
-    ipInterfaces {
-      id
-      ipAddress
-      nodeId
-      snmpPrimary
-    }
-    location {
-      id
-      location
-    }
-    monitoringLocationId
-    nodeLabel
+    details
+    nodeType
   }
 }
