@@ -27,6 +27,7 @@ type OpenNMSValues struct {
 	MetricsProcessor       MetricsProcessorValues `yaml:"MetricsProcessor"`
 	Events                 EventsValues           `yaml:"Events"`
 	DataChoices            DataChoicesValues      `yaml:"DataChoices"`
+	MinionCertificateManager            MinionCertificateManager      `yaml:"MinionCertificateManager"`
 }
 
 type MinionValues struct {
@@ -89,4 +90,8 @@ type TimeseriesValues struct {
 	Host   string `yaml:"Host"`
 	Port   string `yaml:"Port"`
 	ApiKey string `yaml:"ApiKey"`
+}
+
+type MinionCertificateManager struct {
+	ServiceValues `yaml:",inline"`
 }

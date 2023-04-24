@@ -28,66 +28,68 @@
 
 package org.opennms.horizon.inventory.service;
 
-import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opennms.horizon.inventory.dto.DefaultNodeDTO;
+import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.mapper.node.NodeMapper;
+import org.opennms.horizon.inventory.model.IpInterface;
+import org.opennms.horizon.inventory.model.MonitoredService;
+import org.opennms.horizon.inventory.model.MonitoredServiceType;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
+import org.opennms.horizon.inventory.model.Tag;
 import org.opennms.horizon.inventory.model.node.DefaultNode;
 import org.opennms.horizon.inventory.model.node.Node;
-import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.node.NodeRepository;
 import org.opennms.horizon.inventory.service.node.NodeService;
 import org.opennms.horizon.inventory.service.taskset.CollectorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetPublisher;
+import org.opennms.horizon.shared.utils.InetAddressUtils;
+import org.opennms.taskset.contract.MonitorType;
+import org.opennms.taskset.contract.TaskDefinition;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class NodeServiceTest {
 
     private NodeService nodeService;
     private NodeRepository mockNodeRepository;
-    private IpInterfaceRepository mockIpInterfaceRepository;
     private NodeMapper mockNodeMapper;
     private final String tenantID = "test-tenant";
+    private CollectorTaskSetService mockCollectorTaskSetService;
+    private MonitorTaskSetService mockMonitorTaskSetService;
 
     @BeforeEach
     void prepareTest() {
         mockNodeRepository = mock(NodeRepository.class);
-        mockIpInterfaceRepository = mock(IpInterfaceRepository.class);
         mockNodeMapper = mock(NodeMapper.class);
+        mockCollectorTaskSetService = mock(CollectorTaskSetService.class);
+        mockMonitorTaskSetService = mock(MonitorTaskSetService.class);
+
 
         nodeService = new NodeService(mockNodeRepository,
             mock(CollectorTaskSetService.class),
-            mock(MonitorTaskSetService.class),
+            mockMonitorTaskSetService,
             mock(ScannerTaskSetService.class),
             mock(TaskSetPublisher.class),
             mockNodeMapper);
-    }
-
-    @AfterEach
-    public void afterTest() {
-        verifyNoMoreInteractions(mockNodeRepository);
-        verifyNoMoreInteractions(mockIpInterfaceRepository);
     }
 
     @Test
@@ -138,7 +140,7 @@ class NodeServiceTest {
     }
 
     @Test
-    void testListNodesByIds() {
+    void testFindByMonitoredState() {
         MonitoringLocation location1 = new MonitoringLocation();
         location1.setLocation("location-1");
 
@@ -150,33 +152,98 @@ class NodeServiceTest {
         node1.setNodeLabel("node-1");
         node1.setMonitoringLocation(location1);
         node1.setCreateTime(LocalDateTime.now());
+        node1.setMonitoredState(MonitoredState.DETECTED);
         Node node2 = new Node();
         node2.setId(2L);
         node2.setNodeLabel("node-2");
         node2.setMonitoringLocation(location1);
         node2.setCreateTime(LocalDateTime.now());
+        node2.setMonitoredState(MonitoredState.DETECTED);
         Node node3 = new Node();
         node3.setId(3L);
         node3.setNodeLabel("node-3");
         node3.setMonitoringLocation(location2);
         node3.setCreateTime(LocalDateTime.now());
+        node3.setMonitoredState(MonitoredState.DETECTED);
 
-        doReturn(List.of(node1, node2, node3)).when(mockNodeRepository).findByIdInAndTenantId(List.of(1L, 2L, 3L), tenantID);
+        NodeDTO nodeDto1 = NodeDTO.newBuilder().build();
+        NodeDTO nodeDto2 = NodeDTO.newBuilder().build();
+        NodeDTO nodeDto3 = NodeDTO.newBuilder().build();
 
-        Map<String, List<NodeDTO>> result = nodeService.listNodeByIds(List.of(1L, 2L, 3L), tenantID);
-        assertThat(result).asInstanceOf(InstanceOfAssertFactories.MAP).hasSize(2)
-            .containsKeys(location1.getLocation(), location2.getLocation())
-            .extractingByKey(location1.getLocation())
-            .asList().hasSize(2);
-        assertThat(result.get(location2.getLocation())).asList().hasSize(1);
-        verify(mockNodeRepository).findByIdInAndTenantId(List.of(1L, 2L, 3L), tenantID);
+        List<Node> nodes = List.of(node1, node2, node3);
+        List<NodeDTO> nodeDtoList = List.of(nodeDto1, nodeDto2, nodeDto3);
+
+        when(mockNodeRepository.findByTenantIdAndMonitoredStateEquals(tenantID, MonitoredState.DETECTED)).thenReturn(nodes);
+        when(mockNodeMapper.modelToDto(nodes)).thenReturn(nodeDtoList);
+
+        List<NodeDTO> list = nodeService.findByMonitoredState(tenantID, MonitoredState.DETECTED);
+        assertEquals(3, list.size());
+
+        verify(mockNodeRepository, times(1)).findByTenantIdAndMonitoredStateEquals(tenantID, MonitoredState.DETECTED);
+        verify(mockNodeMapper, times(1)).modelToDto(nodes);
     }
 
     @Test
-    void testListNodesByIdsEmpty() {
-        doReturn(Collections.emptyList()).when(mockNodeRepository).findByIdInAndTenantId(List.of(1L, 2L, 3L), tenantID);
-        Map<String, List<NodeDTO>> result = nodeService.listNodeByIds(List.of(1L, 2L, 3L), tenantID);
-        assertThat(result.isEmpty()).isTrue();
-        verify(mockNodeRepository).findByIdInAndTenantId(List.of(1L, 2L, 3L), tenantID);
+    void testDeleteNode() {
+        MonitoringLocation location1 = new MonitoringLocation();
+        location1.setLocation("location-1");
+
+        Node node1 = new Node();
+        node1.setId(1L);
+        node1.setNodeLabel("node-1");
+        node1.setMonitoringLocation(location1);
+        node1.setCreateTime(LocalDateTime.now());
+        node1.setMonitoredState(MonitoredState.DETECTED);
+
+        Tag tag = new Tag();
+        tag.setId(1L);
+        tag.setName("tag");
+        List<Tag> tagList = new ArrayList<>();
+        tagList.add(tag);
+        List<Node> nodeList = new ArrayList<>();
+        nodeList.add(node1);
+
+        node1.setTags(tagList);
+        tag.setNodes(nodeList);
+
+        Optional<Node> nodeOpt = Optional.of(node1);
+        when(mockNodeRepository.findById(node1.getId())).thenReturn(nodeOpt);
+
+        nodeService.deleteNode(node1.getId());
+        verify(mockNodeRepository, times(1)).deleteById(node1.getId());
+    }
+
+    @Test
+    void testGetTasksForNode() {
+        MonitoringLocation location1 = new MonitoringLocation();
+        location1.setLocation("location-1");
+
+        MonitoredServiceType monitoredServiceType = new MonitoredServiceType();
+        monitoredServiceType.setId(1L);
+        monitoredServiceType.setServiceName("ICMP");
+
+        MonitoredService monitoredService = new MonitoredService();
+        monitoredService.setId(1L);
+        monitoredService.setMonitoredServiceType(monitoredServiceType);
+
+        IpInterface ipInterface = new IpInterface();
+        ipInterface.setId(1L);
+        ipInterface.setIpAddress(InetAddressUtils.getInetAddress("127.0.0.1"));
+        ipInterface.setMonitoredServices(List.of(monitoredService));
+
+        Node node1 = new Node();
+        node1.setId(1L);
+        node1.setNodeLabel("node-1");
+        node1.setMonitoringLocation(location1);
+        node1.setCreateTime(LocalDateTime.now());
+        node1.setMonitoredState(MonitoredState.DETECTED);
+        node1.setIpInterfaces(List.of(ipInterface));
+
+        TaskDefinition taskDefinition = TaskDefinition.newBuilder().build();
+        when(mockMonitorTaskSetService.getMonitorTask(any(MonitorType.class), eq(ipInterface), anyLong(), any())).thenReturn(taskDefinition);
+        when(mockCollectorTaskSetService.getCollectorTask(any(MonitorType.class), eq(ipInterface), anyLong(), any())).thenReturn(taskDefinition);
+
+        List<TaskDefinition> tasksForNode = nodeService.getTasksForNode(node1);
+        assertEquals(1, tasksForNode.size());
     }
 }

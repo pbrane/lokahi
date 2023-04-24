@@ -48,14 +48,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -88,16 +85,6 @@ public class NodeService {
     public List<NodeDTO> findByMonitoredState(String tenantId, MonitoredState monitoredState) {
         List<Node> all = nodeRepository.findByTenantIdAndMonitoredStateEquals(tenantId, monitoredState);
         return mapper.modelToDto(all);
-    }
-
-    @Transactional(readOnly = true)
-    public Map<String, List<NodeDTO>> listNodeByIds(List<Long> ids, String tenantId) {
-        List<Node> nodeList = nodeRepository.findByIdInAndTenantId(ids, tenantId);
-        if (nodeList.isEmpty()) {
-            return new HashMap<>();
-        }
-        return nodeList.stream().collect(Collectors.groupingBy(node -> node.getMonitoringLocation().getLocation(),
-            Collectors.mapping((Function<Node, NodeDTO>) mapper::modelToDto, Collectors.toList())));
     }
 
     @Transactional
