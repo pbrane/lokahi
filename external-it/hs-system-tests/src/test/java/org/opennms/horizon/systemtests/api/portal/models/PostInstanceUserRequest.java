@@ -29,15 +29,9 @@
 
 package org.opennms.horizon.systemtests.api.portal.models;
 
-import org.opennms.horizon.systemtests.keyvalue.SecretsStorage;
+import lombok.AllArgsConstructor;
 
-public class AuthnRequest {
-    public final String username = SecretsStorage.adminUserEmail;
-    public final String password = SecretsStorage.userPassword;
-    public final Options options = new Options();
-
-    public static class Options {
-        public final Boolean warnBeforePasswordExpired = true;
-        public final Boolean multiOptionalFactorEnroll = false;
-    }
+@AllArgsConstructor
+public class PostInstanceUserRequest {
+    public String email;
 }

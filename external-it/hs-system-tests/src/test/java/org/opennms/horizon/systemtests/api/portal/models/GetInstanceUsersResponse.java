@@ -29,15 +29,16 @@
 
 package org.opennms.horizon.systemtests.api.portal.models;
 
-import org.opennms.horizon.systemtests.keyvalue.SecretsStorage;
+import java.util.List;
 
-public class AuthnRequest {
-    public final String username = SecretsStorage.adminUserEmail;
-    public final String password = SecretsStorage.userPassword;
-    public final Options options = new Options();
+public class GetInstanceUsersResponse {
 
-    public static class Options {
-        public final Boolean warnBeforePasswordExpired = true;
-        public final Boolean multiOptionalFactorEnroll = false;
+    public List<InstanceUser> pagedRecords;
+    public Integer totalRecords;
+
+    public static class InstanceUser {
+        public String email;
+        public String identity;
+        public String name;
     }
 }

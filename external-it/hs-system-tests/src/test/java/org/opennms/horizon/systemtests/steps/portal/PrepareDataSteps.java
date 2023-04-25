@@ -32,6 +32,7 @@ import io.cucumber.java.en.Given;
 import org.opennms.horizon.systemtests.CucumberHooks;
 import org.opennms.horizon.systemtests.api.portal.models.BtoInstancesResponse;
 import org.opennms.horizon.systemtests.keyvalue.SecretsStorage;
+import org.opennms.horizon.systemtests.utils.TestDataStorage;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.List;
@@ -46,13 +47,19 @@ public class PrepareDataSteps {
         portalApi.deleteAllBtoInstances();
     }
 
-    @Given("BTO instance name {string} created")
+    @Given("BTO instance named {string} is created")
     public void prepareAnInstance(String instanceName) {
         if (instanceName.startsWith("random")) {
             instanceName = "Instance_" + RandomStringUtils.randomAlphabetic(10);
             INSTANCES.add(instanceName);
         }
         CucumberHooks.portalApi.createBtoInstance(instanceName, SecretsStorage.adminUserEmail);
+    }
+
+    @Given("BTO instance named {string} is assigned to {string} user")
+    public void prepareAnInstanceForMember(String instanceName, String user) {
+        String userEmail = TestDataStorage.mapUserToEmail(user);
+        CucumberHooks.portalApi.createBtoInstance(instanceName, userEmail);
     }
 
     @Given("A list of BTO instances are created")
@@ -66,5 +73,17 @@ public class PrepareDataSteps {
     public void deleteInstanceByName(String instanceName) {
         BtoInstancesResponse allBtoInstancesByName = CucumberHooks.portalApi.getAllBtoInstancesByName(instanceName);
         portalApi.deleteBtoInstance(allBtoInstancesByName.pagedRecords.get(0).id);
+    }
+
+    @Given("{string} user was assigned to {string} instance")
+    public void assignUserToInstance(String user, String instanceName) {
+        String email = TestDataStorage.mapUserToEmail(user);
+        portalApi.addUserToInstance(instanceName, email);
+    }
+
+    @Given("{string} user was revoked from {string} instance")
+    public void revokeUserToInstance(String user, String instanceName) {
+        String email = TestDataStorage.mapUserToEmail(user);
+        portalApi.revokeUserAccessFromInstance(instanceName, email);
     }
 }

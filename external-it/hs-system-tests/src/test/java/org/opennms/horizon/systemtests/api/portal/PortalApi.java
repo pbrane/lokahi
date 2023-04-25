@@ -35,6 +35,8 @@ import org.opennms.horizon.systemtests.api.portal.models.AuthnRequest;
 import org.opennms.horizon.systemtests.api.portal.models.AuthnResponse;
 import org.opennms.horizon.systemtests.api.portal.models.BtoInstanceRequest;
 import org.opennms.horizon.systemtests.api.portal.models.BtoInstancesResponse;
+import org.opennms.horizon.systemtests.api.portal.models.GetInstanceUsersResponse;
+import org.opennms.horizon.systemtests.api.portal.models.PostInstanceUserRequest;
 import org.opennms.horizon.systemtests.api.portal.models.TokenResponse;
 import org.opennms.horizon.systemtests.keyvalue.SecretsStorage;
 import org.slf4j.Logger;
@@ -137,6 +139,72 @@ public class PortalApi {
         } catch (IOException e) {
             Assert.fail("[TEST] Test failed deleting the bto instances: " + e.getLocalizedMessage());
         }
+    }
+
+    public GetInstanceUsersResponse getAllInstancesUsers(String instanceId) {
+        try {
+            Response<GetInstanceUsersResponse> response = portalService.getInstanceUsers(
+                SecretsStorage.portalOrganizationId,
+                instanceId,
+                10,
+                0,
+                authToken
+            ).execute();
+
+            if (!response.isSuccessful()) {
+                Assert.fail("[TEST] portalService.getInstanceUsers return error:" + response.errorBody().string());
+            }
+
+            return response.body();
+        } catch (IOException e) {
+            Assert.fail("[TEST] portalService.getInstanceUsers failed");
+        }
+        return null;
+    }
+
+    public void addUserToInstance(String instanceName, String userEmail) {
+        String instanceId = getAllBtoInstancesByName(instanceName).pagedRecords.get(0).id;
+
+        try {
+            Response<Void> response = portalService.postInstanceUser(
+                SecretsStorage.portalOrganizationId,
+                instanceId,
+                new PostInstanceUserRequest(userEmail),
+                authToken
+            ).execute();
+
+            if (!response.isSuccessful()) {
+                Assert.fail("[TEST] portalService.postUserToInstance return error:" + response.errorBody().string());
+            }
+        } catch (IOException e) {
+            Assert.fail("[TEST] portalService.postUserToInstance failed");
+        }
+    }
+
+    public void deleteUserFromInstance(String instanceId, String userIdentity) {
+        try {
+            Response<Void> response = portalService.deleteInstanceUser(
+                SecretsStorage.portalOrganizationId,
+                instanceId,
+                userIdentity,
+                authToken
+            ).execute();
+
+            if (!response.isSuccessful()) {
+                Assert.fail("[TEST] portalService.deleteInstanceUser return error:" + response.errorBody().string());
+            }
+        } catch (IOException e) {
+            Assert.fail("[TEST] portalService.deleteInstanceUser failed");
+        }
+    }
+
+    public void revokeUserAccessFromInstance(String instanceName, String userEmail) {
+        String instanceId = getAllBtoInstancesByName(instanceName).pagedRecords.get(0).id;
+        GetInstanceUsersResponse.InstanceUser user = getAllInstancesUsers(instanceId)
+            .pagedRecords
+            .stream().filter(t -> t.email.equals(userEmail))
+            .findFirst().get();
+        deleteUserFromInstance(instanceId, user.identity);
     }
 
     public void deleteAllBtoInstances() {

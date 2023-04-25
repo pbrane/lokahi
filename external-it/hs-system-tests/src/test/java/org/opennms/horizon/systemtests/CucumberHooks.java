@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.systemtests;
 
+import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
 import io.cucumber.java.After;
 import io.cucumber.java.AfterAll;
@@ -52,8 +53,8 @@ public class CucumberHooks {
     public static final List<String> INSTANCES = new ArrayList<>();
     public static String instanceUrl;
     public static String gatewayHost;
-    private static String minionPrefix = "Default_Minion-";
     public static PortalApi portalApi = new PortalApi();
+    private static String minionPrefix = "Default_Minion-";
 
     @Before("@cloud")
     public static void setUp() {
@@ -65,7 +66,7 @@ public class CucumberHooks {
         PortalLoginPage.closeCookieHeader();
         PortalLoginPage.setUsername(SecretsStorage.adminUserEmail);
         PortalLoginPage.clickNext();
-        PortalLoginPage.setPassword(SecretsStorage.adminUserPassword);
+        PortalLoginPage.setPassword(SecretsStorage.userPassword);
         PortalLoginPage.clickSignIn();
 
         PortalCloudPage.verifyMainPageHeader();
@@ -99,7 +100,7 @@ public class CucumberHooks {
 
         CloudLoginPage.setUsername(SecretsStorage.adminUserEmail);
         CloudLoginPage.clickNextBtn();
-        CloudLoginPage.setPassword(SecretsStorage.adminUserPassword);
+        CloudLoginPage.setPassword(SecretsStorage.userPassword);
         CloudLoginPage.clickSignInBtn();
     }
 
@@ -125,11 +126,12 @@ public class CucumberHooks {
         if (Selenide.webdriver().driver().hasWebDriverStarted()) {
             return;
         }
+        Configuration.baseUrl = SecretsStorage.portalHost;
         Selenide.open(SecretsStorage.portalHost);
         PortalLoginPage.closeCookieHeader();
         PortalLoginPage.setUsername(SecretsStorage.adminUserEmail);
         PortalLoginPage.clickNext();
-        PortalLoginPage.setPassword(SecretsStorage.adminUserPassword);
+        PortalLoginPage.setPassword(SecretsStorage.userPassword);
         PortalLoginPage.clickSignIn();
 
         PortalCloudPage.verifyMainPageHeader();
@@ -140,6 +142,29 @@ public class CucumberHooks {
         Selenide.open(SecretsStorage.portalHost + "/cloud");
         PortalCloudPage.verifyMainPageHeader();
         INSTANCES.clear();
+    }
+
+    @Before("@portal-member")
+    public static void loginToPortalAsMember() {
+        portalApi.deleteAllBtoInstances();
+        if (Selenide.webdriver().driver().hasWebDriverStarted()) {
+            return;
+        }
+        Configuration.baseUrl = SecretsStorage.portalHost;
+        Selenide.open(SecretsStorage.portalHost);
+        PortalLoginPage.closeCookieHeader();
+        PortalLoginPage.setUsername(SecretsStorage.memberUserEmail);
+        PortalLoginPage.clickNext();
+        PortalLoginPage.setPassword(SecretsStorage.userPassword);
+        PortalLoginPage.clickSignIn();
+
+        PortalCloudPage.verifyMainPageHeader();
+    }
+
+    @After("@portal-member")
+    public static void returnToThePortalMainPage() {
+        Selenide.open(SecretsStorage.portalHost + "/cloud");
+        PortalCloudPage.verifyMainPageHeader();
     }
 
     @AfterAll

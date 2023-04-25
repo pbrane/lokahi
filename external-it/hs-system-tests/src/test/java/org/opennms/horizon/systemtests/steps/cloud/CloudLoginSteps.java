@@ -56,12 +56,20 @@ public class CloudLoginSteps {
 
     @Then("set password")
     public void setPassword() {
-        CloudLoginPage.setPassword(SecretsStorage.adminUserPassword);
+        CloudLoginPage.setPassword(SecretsStorage.userPassword);
     }
 
     @Then("click on 'Sign in' button")
     public void clickSignIn() {
         CloudLoginPage.clickSignInBtn();
+    }
+
+    @Then("login to Cloud instance as {string} user")
+    public void loginAsUser(String user) {
+        setEmail(user);
+        clickNextBtn();
+        setPassword();
+        clickSignIn();
     }
 
     @Then("verify the instance url for {string} instance")

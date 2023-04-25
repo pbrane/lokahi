@@ -31,6 +31,8 @@ package org.opennms.horizon.systemtests.api.portal;
 import okhttp3.ResponseBody;
 import org.opennms.horizon.systemtests.api.portal.models.BtoInstanceRequest;
 import org.opennms.horizon.systemtests.api.portal.models.BtoInstancesResponse;
+import org.opennms.horizon.systemtests.api.portal.models.GetInstanceUsersResponse;
+import org.opennms.horizon.systemtests.api.portal.models.PostInstanceUserRequest;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -56,6 +58,31 @@ public interface PortalEndpoints {
         @Query("search") String searchPattern,
         @Query("searchColumn") String searchColumn,
         @Query("limit") Integer limit,
+        @Header("authorization") String authToken
+    );
+
+    @GET("api/v1/portal/{organization}/bto-instance/{instanceId}/users")
+    Call<GetInstanceUsersResponse> getInstanceUsers(
+        @Path("organization") String organization,
+        @Path("instanceId") String instanceId,
+        @Query("limit") Integer limit,
+        @Query("offset") Integer offset,
+        @Header("authorization") String authToken
+    );
+
+    @POST("api/v1/portal/{organization}/bto-instance/{instanceId}/users")
+    Call<Void> postInstanceUser(
+        @Path("organization") String organization,
+        @Path("instanceId") String instanceId,
+        @Body PostInstanceUserRequest body,
+        @Header("authorization") String authToken
+    );
+
+    @DELETE("api/v1/portal/{organization}/bto-instance/{instanceId}/users/{userOktaId}")
+    Call<Void> deleteInstanceUser(
+        @Path("organization") String organization,
+        @Path("instanceId") String instanceId,
+        @Path("userOktaId") String userOktaId,
         @Header("authorization") String authToken
     );
 
