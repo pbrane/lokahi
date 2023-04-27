@@ -25,21 +25,31 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-
 package org.opennms.horizon.systemtests.steps.cloud;
 
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.CloudLeftPanelPage;
+import io.cucumber.java.en.When;
+import org.opennms.horizon.systemtests.pages.cloud.InventoryPage;
 
-public class CloudLeftPanelSteps {
+public class InventorySteps {
 
-    @Then("Navigate to the {string} through the left panel")
-    public void clickOnLeftPanelSection(String section) {
-        CloudLeftPanelPage.clickOnPanelSection(section);
+    @Then("Find discovered node with ip {string}")
+    public void findDiscoveredNodeWithIp(String ipAddress) {
+        InventoryPage.findCardWithIp(ipAddress);
     }
 
-    @Then("user sees the navigation panel for instance")
-    public void verifyLeftPanel() {
-        CloudLeftPanelPage.verifyLeftPanelIsDisplayed();
+    @Then("Remove discovered node with ip {string}")
+    public void removeDiscoveredNodeWithIp(String ipAddress) {
+        InventoryPage.clickOnDeleteInventoryNode(ipAddress);
+    }
+
+    @When("Confirm node delete pop up has ip {string}")
+    public void confirmNodeDeletePopUpHasIp(String ipAddress) {
+        InventoryPage.verifyNodeDeletionPopUp(ipAddress);
+    }
+
+    @Then("Click on 'Delete' to remove the discovered node")
+    public void clickOnDeleteToRemoveTheDiscoveredNode() {
+        InventoryPage.clickOnConfirmNodeDeletion();
     }
 }

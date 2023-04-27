@@ -25,31 +25,41 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-
 package org.opennms.horizon.systemtests.pages.cloud;
 
 import com.codeborne.selenide.SelenideElement;
+import org.openqa.selenium.By;
 
 import java.time.Duration;
 
-import static com.codeborne.selenide.Condition.cssClass;
 import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$x;
 
-public class CloudLeftPanelPage {
+public class InventoryPage {
 
-    private static final SelenideElement leftPanel = $("div.feather-app-rail");
+    // TODO should be replaced with element after IDs are assigned HS-1569
+    private static final String inventoryCardPath = "//h4[@data-test='heading' and text()='%s']/../../section[position()=2]";
 
-    public static void verifyLeftPanelIsDisplayed() {
-        leftPanel.shouldBe(visible, Duration.ofSeconds(5));
+    private static final SelenideElement nodeDeleteButton = $x("//button [@data-testid='save-btn']");
+
+    public static void findCardWithIp(String ipAddress) {
+        $x(String.format(inventoryCardPath, ipAddress)).shouldBe(visible, Duration.ofSeconds(30));
     }
 
-    public static void clickOnPanelSection(String section) {
-        leftPanel.shouldBe(visible, Duration.ofSeconds(5)).hover().shouldNotHave(cssClass("narrow"));
-        SelenideElement menuOption = $(String.format("[href='/%s']", section)).shouldBe(enabled);
-        menuOption.click();
-        menuOption.shouldHave(cssClass("selected"));
-        $("div.right").hover().click();
+    public static void clickOnDeleteInventoryNode(String ipAddress) {
+        $x(String.format(inventoryCardPath, ipAddress))
+            .shouldBe(enabled, Duration.ofSeconds(30))
+            .findElement(By.cssSelector("[data-test='delete']"))
+            .click();
     }
+
+    public static void verifyNodeDeletionPopUp(String ipAddress) {
+        $x(String.format("//header [@data-ref-id='feather-dialog-header' and text()='%s']", ipAddress)).shouldBe(visible);
+    }
+
+    public static void clickOnConfirmNodeDeletion() {
+        nodeDeleteButton.shouldBe(enabled).click();
+    }
+
 }

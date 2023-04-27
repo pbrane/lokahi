@@ -13,6 +13,7 @@ import org.opennms.horizon.systemtests.pages.portal.PortalCloudPage;
 import org.opennms.horizon.systemtests.pages.portal.PortalLoginPage;
 import org.testcontainers.containers.GenericContainer;
 import testcontainers.MinionContainer;
+import testcontainers.SnmpdContainer;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -20,7 +21,9 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class CucumberHooks {
+
     public static final List<MinionContainer> MINIONS = new ArrayList<>();
+    public static final List<SnmpdContainer> SNMPDS = new ArrayList<>();
     public static final List<String> INSTANCES = new ArrayList<>();
     public static String instanceUrl;
     public static String gatewayHost;
