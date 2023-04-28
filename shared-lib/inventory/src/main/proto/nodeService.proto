@@ -64,6 +64,8 @@ message NodeCreateDTO {
 
 enum MonitoredState {
   DETECTED = 0;
+  MONITORED = 1;
+  UNMONITORED = 2;
 }
 
 message NodeList {

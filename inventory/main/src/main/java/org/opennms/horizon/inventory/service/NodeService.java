@@ -255,6 +255,8 @@ public class NodeService {
             node.setNodeLabel(nodeInfo.getSystemName());
         }
 
+        node.setMonitoredState(MonitoredState.UNMONITORED);
+
         nodeRepository.save(node);
     }
 
