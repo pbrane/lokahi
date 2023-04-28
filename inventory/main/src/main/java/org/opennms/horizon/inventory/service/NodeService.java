@@ -248,14 +248,14 @@ public class NodeService {
         return tasks;
     }
 
-    public void updateNodeInfo(Node node, NodeInfoResult nodeInfo) {
+    public void updateNodeInfo(Node node, NodeInfoResult nodeInfo,MonitoredState state) {
         mapper.updateFromNodeInfo(nodeInfo, node);
 
         if (StringUtils.isNotEmpty(nodeInfo.getSystemName())) {
             node.setNodeLabel(nodeInfo.getSystemName());
         }
 
-        node.setMonitoredState(MonitoredState.UNMONITORED);
+        node.setMonitoredState(state);
 
         nodeRepository.save(node);
     }
