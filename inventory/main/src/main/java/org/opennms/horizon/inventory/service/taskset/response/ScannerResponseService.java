@@ -37,6 +37,7 @@ import org.opennms.horizon.azure.api.AzureScanResponse;
 import org.opennms.horizon.inventory.dto.ListTagsByEntityIdParamsDTO;
 import org.opennms.horizon.inventory.dto.MonitoredServiceDTO;
 import org.opennms.horizon.inventory.dto.MonitoredServiceTypeDTO;
+import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.TagCreateDTO;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
@@ -161,6 +162,7 @@ public class ScannerResponseService {
                     .setLocation(location)
                     .setManagementIp(pingResponse.getIpAddress())
                     .setLabel(pingResponse.getIpAddress())
+                    .setMonitoredState(MonitoredState.UNMONITORED)
                     .addAllTags(tags)
                     .build();
                 try {
@@ -195,6 +197,7 @@ public class ScannerResponseService {
                     .setLocation(location)
                     .setManagementIp(ipAddress)
                     .setLabel(nodeLabel)
+                    .setMonitoredState(MonitoredState.UNMONITORED)
                     .build();
 
                 node = nodeService.createNode(createDTO, ScanType.AZURE_SCAN, tenantId);
