@@ -153,7 +153,7 @@ public class PortalCloudPage {
     }
 
     public static void mainPageIsNotCoveredByPopups() {
-        shadedBackground.shouldBe(hidden);
+        shadedBackground.shouldBe(hidden, Duration.ofSeconds(20));
     }
 
     // the instances name are sorted

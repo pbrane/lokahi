@@ -98,6 +98,7 @@ public class CucumberHooks {
 
         EditInstancePage.clickOnInstanceUrl();
 
+        CloudLoginPage.waitPageAppear();
         CloudLoginPage.setUsername(SecretsStorage.adminUserEmail);
         CloudLoginPage.clickNextBtn();
         CloudLoginPage.setPassword(SecretsStorage.userPassword);
@@ -172,6 +173,6 @@ public class CucumberHooks {
         if (!MINIONS.isEmpty()) {
             MINIONS.get(0).stop();
         }
-        portalApi.deleteAllBtoInstances();
+//        portalApi.deleteAllBtoInstances();
     }
 }

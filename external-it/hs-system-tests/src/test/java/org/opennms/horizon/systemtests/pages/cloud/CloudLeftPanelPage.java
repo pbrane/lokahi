@@ -31,6 +31,11 @@ package org.opennms.horizon.systemtests.pages.cloud;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 
+import java.time.Duration;
+
+import static com.codeborne.selenide.Condition.cssClass;
+import static com.codeborne.selenide.Condition.enabled;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
 public class CloudLeftPanelPage {
@@ -38,7 +43,7 @@ public class CloudLeftPanelPage {
     private static final SelenideElement leftPanel = $(".app-aside");
 
     public static void verifyLeftPanelIsDisplayed() {
-        leftPanel.shouldBe(Condition.visible);
+        leftPanel.shouldBe(visible);
     }
 
     public static void clickOnApplianceSection() {
@@ -46,6 +51,10 @@ public class CloudLeftPanelPage {
     }
 
     public static void clickOnPanelSection(String section) {
-        $(String.format("[href='/%s']", section)).shouldBe(Condition.enabled).hover().click();
+        $("div.feather-app-rail").shouldBe(visible, Duration.ofSeconds(10)).hover().shouldNotHave(Condition.cssClass("narrow"));
+        SelenideElement menuOption = $(String.format("[href='/%s']", section)).shouldBe(enabled);
+        menuOption.click();
+        menuOption.shouldHave(cssClass("selected"));
+        $("div.right").click();
     }
 }
