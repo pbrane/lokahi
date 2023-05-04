@@ -6,6 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/resource-policy": keep
+    {{- if .Values.DevMode }}
+    "tilt.dev/down-policy": keep
+    {{- end }}
 type: kubernetes.io/tls
 {{$ca := genCA "client-ca" 14 }}
 data:
