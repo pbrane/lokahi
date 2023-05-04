@@ -11,6 +11,7 @@ on:
     branches:
       - 'develop'
     paths-ignore:
+      - '*' # ignores files at the root of the repo but does not ignore subfolders
       - '.github/**'
       - 'CHANGELOG/**'
       - 'build-tools/**'
