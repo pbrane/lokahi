@@ -41,6 +41,9 @@
         <module>flows</module>
         <module>alert</module>
         <module>shaded-grpc-core</module>
+        <module>minion-certificate-manager-api</module>
+        <module>horizon-common-tag</module>
+        <module>spring-boot-logback-json</module>
     </modules>
 
     <build>

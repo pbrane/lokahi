@@ -29,20 +29,53 @@
 
 package org.opennms.horizon.systemtests.steps.portal;
 
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.keyvalue.SecretsStorage;
 import org.opennms.horizon.systemtests.pages.portal.EditInstancePage;
+import org.opennms.horizon.systemtests.utils.TestDataStorage;
 
 public class EditInstanceSteps {
 
     @Then("the IT Administrator sees {string} as a single user for the instance")
     public void instanceHasASingleUser(String email) {
         EditInstancePage.verifyNumberOfUsers(1);
-        if (email.equals("ADMIN")) {
-            email = SecretsStorage.adminUserEmail;
-        } else if (email.equals("OKTA_USER")) {
-            email = SecretsStorage.oktaUserEmail;
-        }
-        EditInstancePage.verifyUserEmailInTable(email);
+        String userEmail = TestDataStorage.mapUserToEmail(email);
+        EditInstancePage.verifyUserEmailInTable(userEmail);
+    }
+
+    @Then("click on 'DELETE INSTANCE' button")
+    public void clickDeleteInstanceBtn() {
+        EditInstancePage.clickDeleteInstance();
+    }
+
+    @Then("the IT Administrator sees the 'Cloud Instance Details' page for the {string} instance")
+    public void checkWeAreOnDetailsPage(String instanceName) {
+        EditInstancePage.verifyPageTitle();
+        EditInstancePage.verifyInstanceName(instanceName);
+    }
+
+    @Then("click on the instance 'URL' link")
+    public void clickOnUrl() {
+        EditInstancePage.clickOnInstanceUrl();
+    }
+
+    @Then("click on 'edit' for instance name")
+    public void clickOnEditInstanceName() {
+        EditInstancePage.clickEditNameBtn();
+    }
+
+    @Then("click on 'copy' button for URL")
+    public void clickOnCopyURLButton() {
+        EditInstancePage.clickCopyURLButton();
+    }
+
+    @And("search 'Search for user' input is empty")
+    public void searchSearchForUserIsEmpty() {
+        EditInstancePage.verifySearchFieldIsEmpty();
+    }
+
+    @Then("click to 'go back' button to return to the OpenNMS Cloud page")
+    public void clickGoBackBtn() {
+        EditInstancePage.clickGoBackButton();
     }
 }

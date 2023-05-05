@@ -31,6 +31,9 @@
 ## 30 = events
 ## 31 = cortex
 ## 32 = prometheus
+## 33 = datachoices
+## 34 = minion-certificate-manager
+## 35 = minion-certificate-verifier
 
 # Tilt config #
 secret_settings(disable_scrub=True)  ## TODO: update secret values so we can reenable scrub
@@ -151,6 +154,11 @@ def jib_project_multi_module(resource_name, image_name, base_path, k8s_resource_
     )
 
 # Deployment #
+load('ext://helm_remote', 'helm_remote')
+helm_remote('cert-manager', repo_name='jetstack', repo_url='https://charts.jetstack.io', set = [
+    'installCRDs=true'
+])
+
 k8s_yaml(
     helm(
         'charts/opennms',
@@ -297,6 +305,26 @@ k8s_resource(
     trigger_mode=TRIGGER_MODE_MANUAL,
 )
 
+### Minion Certificate Manager ###
+jib_project(
+    'minion-certificate-manager',
+    'opennms/horizon-stream-minion-certificate-manager',
+    'minion-certificate-manager',
+    'opennms-minion-certificate-manager',
+    port_forwards=['34089:8990', '34050:5005'],
+    resource_deps=['shared-lib']
+)
+
+# resource_name, image_name, base_path, k8s_resource_name, resource_deps=[], port_forwards=[], labels=None)
+jib_project(
+    'minion-certificate-verifier',
+    'opennms/horizon-stream-minion-certificate-verifier',
+    'minion-certificate-verifier',
+    'opennms-minion-certificate-verifier',
+    port_forwards=['35080:8080', '35050:5005'],
+    resource_deps=['shared-lib']
+)
+
 ## 3rd Party Resources ##
 ### Keycloak ###
 docker_build(
@@ -317,6 +345,13 @@ k8s_resource(
 k8s_resource(
     'mail-server',
     port_forwards=['22080:8025'],
+)
+
+## Development time certificates
+k8s_resource(new_name='opennms-ca',
+  objects=['opennms-ca:clusterissuer'],
+  labels='cert-manager',
+  resource_deps=['cert-manager-startupapicheck']
 )
 
 ### Grafana ###
@@ -357,5 +392,5 @@ k8s_resource(
 ### Others ###
 k8s_resource(
     'ingress-nginx-controller',
-    port_forwards=['8123:80', '0.0.0.0:8990:8990'],
+    port_forwards=['0.0.0.0:8123:80', '0.0.0.0:1443:443'],
 )

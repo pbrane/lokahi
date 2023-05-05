@@ -20,6 +20,10 @@
     <properties>
         <application.docker.image.name>opennms/horizon-stream-notification</application.docker.image.name>
         <sonar.projectKey>opennms_horizon-stream_notification</sonar.projectKey>
+        <!-- Override the Netty version, Azure Communication Services requires a newer version than the one currently
+        specified in the parent pom (4.1.78.Final), but upgrading that version to this one causes issues that prevent
+        the Minion from starting up -->
+        <netty4.version>4.1.89.Final</netty4.version>
     </properties>
 
     <dependencyManagement>
@@ -34,6 +38,11 @@
         </dependencies>
     </dependencyManagement>
 	<dependencies>
+        <dependency>
+            <groupId>org.opennms.horizon.shared</groupId>
+            <artifactId>spring-boot-logback-json</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -241,7 +250,11 @@
             <artifactId>velocity-engine-core</artifactId>
             <version>${velocity.engine.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-communication-email</artifactId>
+            <version>${azure-communication-email.version}</version>
+        </dependency>
 
         <!-- test-->
 		<dependency>
@@ -331,8 +344,43 @@
 				</configuration>
 			</plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>io.opentelemetry.javaagent</groupId>
+                                    <artifactId>opentelemetry-javaagent</artifactId>
+                                    <version>${opentelemetry.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <stripVersion>true</stripVersion>
+                            <outputDirectory>${application.jib.extra.root}/agent</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
+                <configuration>
+                    <container>
+                        <extraClasspath>
+                            <entry>${application.jib.app.config}</entry>
+                        </extraClasspath>
+                    </container>
+                    <extraDirectories>
+                        <paths>${application.jib.extra.root}</paths>
+                    </extraDirectories>
+                </configuration>
                 <executions>
                     <execution>
                         <id>build-docker-image</id>
