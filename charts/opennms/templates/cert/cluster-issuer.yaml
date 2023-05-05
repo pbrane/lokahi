@@ -5,7 +5,7 @@ metadata:
   name: opennms-ca
   namespace: {{ .Release.Namespace }}
   annotations:
-    {{- if .Values.DevMode }}
+    {{- if .Values.devMode }}
     "tilt.dev/down-policy": keep
     {{- end }}
 spec:

@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/resource-policy": keep
-    {{- if .Values.DevMode }}
+    {{- if .Values.devMode }}
     "tilt.dev/down-policy": keep
     {{- end }}
 type: kubernetes.io/tls

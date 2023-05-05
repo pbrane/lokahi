@@ -3,7 +3,7 @@ Host: onmshs.local
 HostIp: 127.0.0.1
 Port: 1443
 Protocol: https
-DevMode: true
+devMode: true
 TLS:
   Enabled: True
   CertificateGeneration: true
