@@ -6,16 +6,13 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/resource-policy": keep
-    {{- if .Values.devMode }}
-    "tilt.dev/down-policy": keep
-    {{- end }}
 type: kubernetes.io/tls
-{{$ca := genCA (nospace (cat .Values.Host "-ca")) 14 }}
+{{ $ca := genCA (nospace (cat .Values.Host "-ca")) 14 }}
 data:
   ca.crt: >-
-    {{b64enc $ca.Cert }}
+    {{ b64enc $ca.Cert }}
   tls.crt: >-
-    {{b64enc $ca.Cert }}
+    {{ b64enc $ca.Cert }}
   tls.key: >-
-    {{b64enc $ca.Key }}
+    {{ b64enc $ca.Key }}
 {{- end }}

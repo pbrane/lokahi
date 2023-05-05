@@ -39,6 +39,7 @@
 secret_settings(disable_scrub=True)  ## TODO: update secret values so we can reenable scrub
 load('ext://helm_resource', 'helm_repo')
 load('ext://uibutton', 'cmd_button', 'location')
+load('ext://k8s_attach', 'k8s_attach')
 
 cmd_button(name='nav-helm-repo-update',
            argv=['sh', '-c', 'cd charts && make init-helm'],
@@ -48,6 +49,31 @@ cmd_button(name='nav-helm-repo-update',
 
 # Functions #
 cluster_arch_cmd = '$(tilt get cluster default -o=jsonpath --template="{.status.arch}")'
+
+def get_k8s_object(object_name):
+    return local(
+        'kubectl get {} -o=yaml 2>/dev/null || true'.format(object_name),
+        quiet=True,
+        echo_off=True,
+    )
+
+def keep_your_secrets(k8s_objects, secret_names):
+    result = [];
+    for r in k8s_objects:
+        if r['kind'] == 'Secret' and r['metadata']['name'] in secret_names:
+            existing = get_k8s_object('secret/{}'.format(r["metadata"]['name'])) # get existing secret, if any
+            if (len(str(existing).rstrip('\n')) > 0): # will be 0 if there's no existing secret
+                print('Existing secret {} found and will be reused.'.format(r['metadata']['name']))
+                r = decode_yaml(existing) # decode Blob into object
+
+            if not r['metadata']['annotations']:
+                r['metadata']['annotations'] = {} # make sure there's an annotations field
+
+            r['metadata']['annotations']['tilt.dev/down-policy'] = 'keep' # tell Tilt to not destroy this object on `tilt down`
+            print('Secret {} will kept on `tilt down`!'.format(r['metadata']['name']))
+
+        result.append(r)
+    return result;
 
 def jib_project(resource_name, image_name, base_path, k8s_resource_name, resource_deps=[], port_forwards=[], labels=None):
     """
@@ -160,14 +186,6 @@ def jib_project_multi_module(resource_name, image_name, base_path, k8s_resource_
         port_forwards=port_forwards,
         trigger_mode=TRIGGER_MODE_MANUAL,
     )
-
-# Deployment #
-k8s_yaml(
-    helm(
-        'charts/opennms',
-        values=['./tilt-helm-values.yaml'],
-    )
-)
 
 # Builds #
 ## Shared ##
@@ -354,32 +372,42 @@ k8s_resource(
 k8s_resource(
     'chart-cert-manager',
     new_name='cert-manager',
-    labels='cert-manager',
+    labels='certificates',
 )
 
 k8s_resource(
     'chart-cert-manager-cainjector',
     new_name='cert-manager-cainjector',
-    labels='cert-manager',
 )
 
 k8s_resource(
     'chart-cert-manager-webhook',
     objects=['chart-cert-manager-webhook:validatingwebhookconfiguration', 'chart-cert-manager-webhook:configmap'],
     new_name='cert-manager-webhook',
-    labels='cert-manager',
 )
 
 k8s_resource(
     'chart-cert-manager-startupapicheck',
     new_name='cert-manager-startupapicheck',
-    labels='cert-manager',
 )
 
-k8s_resource(new_name='opennms-ca',
-  objects=['opennms-ca:clusterissuer'],
-  labels='cert-manager',
-  resource_deps=['cert-manager-startupapicheck']
+k8s_resource(
+    new_name='root-certificate',
+    objects=['root-ca-certificate:secret'],
+    labels='certificates',
+)
+
+k8s_resource(
+    new_name='client-root-certificate',
+    objects=['client-root-ca-certificate:secret'],
+    labels='certificates',
+)
+
+k8s_resource(
+    new_name='clusterissuer',
+    objects=['opennms-ca:clusterissuer'],
+    resource_deps=['cert-manager-startupapicheck'],
+    labels='certificates',
 )
 
 ### Grafana ###
@@ -422,3 +450,13 @@ k8s_resource(
     'ingress-nginx-controller',
     port_forwards=['0.0.0.0:8123:80', '0.0.0.0:1443:443'],
 )
+
+# Deployment #
+k8s_objects = decode_yaml_stream(helm(
+    'charts/opennms',
+    values=['./tilt-helm-values.yaml']
+))
+
+k8s_objects = keep_your_secrets(k8s_objects, ['root-ca-certificate', 'client-root-ca-certificate'])
+
+k8s_yaml(encode_yaml_stream(k8s_objects))

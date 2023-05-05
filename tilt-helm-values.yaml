@@ -5,7 +5,6 @@ Port: 1443
 Protocol: https
 devMode: true
 TLS:
-  Enabled: True
   CertificateGeneration: true
   Cert:
     Name: opennms-ui-certificate
