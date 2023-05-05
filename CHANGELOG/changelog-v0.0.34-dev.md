@@ -1,3 +1,4 @@
+
 Changes:
 * d8b45ea6c Merge pull request #1064 from OpenNMS-Cloud/jira/HS-1350
 * 9cbb22f42 Merge pull request #1086 from OpenNMS-Cloud/deejgregor/otel-config-tweaks
