@@ -37,6 +37,14 @@
 
 # Tilt config #
 secret_settings(disable_scrub=True)  ## TODO: update secret values so we can reenable scrub
+load('ext://helm_resource', 'helm_repo')
+load('ext://uibutton', 'cmd_button', 'location')
+
+cmd_button(name='nav-helm-repo-update',
+           argv=['sh', '-c', 'cd charts && make init-helm'],
+           text='Initialize Helm',
+           location=location.NAV,
+           icon_name='sync')
 
 # Functions #
 cluster_arch_cmd = '$(tilt get cluster default -o=jsonpath --template="{.status.arch}")'
@@ -154,11 +162,6 @@ def jib_project_multi_module(resource_name, image_name, base_path, k8s_resource_
     )
 
 # Deployment #
-load('ext://helm_remote', 'helm_remote')
-helm_remote('cert-manager', repo_name='jetstack', repo_url='https://charts.jetstack.io', set = [
-    'installCRDs=true'
-])
-
 k8s_yaml(
     helm(
         'charts/opennms',
@@ -348,6 +351,31 @@ k8s_resource(
 )
 
 ## Development time certificates
+k8s_resource(
+    'chart-cert-manager',
+    new_name='cert-manager',
+    labels='cert-manager',
+)
+
+k8s_resource(
+    'chart-cert-manager-cainjector',
+    new_name='cert-manager-cainjector',
+    labels='cert-manager',
+)
+
+k8s_resource(
+    'chart-cert-manager-webhook',
+    objects=['chart-cert-manager-webhook:validatingwebhookconfiguration', 'chart-cert-manager-webhook:configmap'],
+    new_name='cert-manager-webhook',
+    labels='cert-manager',
+)
+
+k8s_resource(
+    'chart-cert-manager-startupapicheck',
+    new_name='cert-manager-startupapicheck',
+    labels='cert-manager',
+)
+
 k8s_resource(new_name='opennms-ca',
   objects=['opennms-ca:clusterissuer'],
   labels='cert-manager',

@@ -1,3 +1,8 @@
 apiVersion: v2
 name: opennms
 version: 0.7.4
+dependencies:
+  - name: cert-manager
+    version: 1.11.1
+    repository: https://charts.jetstack.io
+    condition: cert-manager.enabled

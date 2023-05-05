@@ -415,3 +415,6 @@ Prometheus:
       Cpu: 100m
       Memory: 100Mi
 
+# child charts
+cert-manager:
+  enabled: false

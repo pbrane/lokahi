@@ -4,6 +4,10 @@ kind: ClusterIssuer
 metadata:
   name: opennms-ca
   namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- if .Values.DevMode }}
+    "tilt.dev/down-policy": keep
+    {{- end }}
 spec:
   ca:
     secretName: root-ca-certificate

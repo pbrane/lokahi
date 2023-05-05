@@ -1,7 +1,3 @@
-charts/opennms/charts
-charts/opennms/tmpcharts
-charts/opennms-operator/charts
-charts/opennms-operator/tmpcharts
-charts/opennms-operator-dependencies/charts
-charts/opennms-operator-dependencies/tmpcharts
+charts/**/charts
+charts/**/tmpcharts
 *.iml

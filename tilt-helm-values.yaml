@@ -146,5 +146,7 @@ Prometheus:
       Requests:
         Cpu: 100m
         Memory: 100Mi
-Kafka:
+cert-manager:
+  enabled: true
+  installCRDs: true
   LocalPort: 24092
