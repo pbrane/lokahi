@@ -41,11 +41,11 @@
 import { useInventoryQueries } from '@/store/Queries/inventoryQueries'
 import useTheme from '@/composables/useTheme'
 import Network from '@featherds/icon/hardware/Network'
-import { NodeContent } from '@/types/inventory'
+import { MonitoredNode } from '@/types/inventory'
 const { isDark } = useTheme()
 const inventoryQueries = useInventoryQueries()
 
-const nodes = computed((): NodeContent[] => inventoryQueries.nodes)
+const nodes = computed((): MonitoredNode[] => inventoryQueries.nodes)
 const itemSelected = ref()
 
 watchEffect(() => {

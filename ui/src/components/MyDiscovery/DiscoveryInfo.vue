@@ -22,14 +22,14 @@
 
 <script lang="ts" setup>
 import Location from '@featherds/icon/action/Location'
-import { NodeContent } from '@/types/inventory'
+import { MonitoredNode } from '@/types/inventory'
 import { markRaw } from 'vue'
 const Icons = markRaw({
   Location
 })
 
 defineProps<{
-  info: NodeContent
+  info: MonitoredNode
 }>()
 </script>
 
