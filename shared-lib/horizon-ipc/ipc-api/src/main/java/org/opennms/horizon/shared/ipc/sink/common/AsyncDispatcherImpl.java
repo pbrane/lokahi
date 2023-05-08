@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
@@ -45,7 +44,6 @@ import org.opennms.horizon.shared.logging.LogPreservingThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.google.protobuf.Message;
@@ -74,7 +72,7 @@ public class AsyncDispatcherImpl<W, S extends Message, T extends Message> implem
     public AsyncDispatcherImpl(final DispatcherState<W, S, T> state,
                                final SendQueueFactory sendQueueFactory,
                                final Consumer<byte[]> sender) {
-        this.sendQueue = sendQueueFactory.createQueue(state.getModule());
+        this.sendQueue = sendQueueFactory.createQueue(state.getModule().getId());
 
         this.messageDispatcher = AbstractMessageDispatcherFactory.createMessageDispatcher(state, this.sendQueue::enqueue);
 

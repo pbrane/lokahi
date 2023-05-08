@@ -63,6 +63,10 @@
     </bean>
 
      <bean id="sendQueue" class="org.opennms.horizon.minion.grpc.queue.OffHeapSendQueueFactory" destroy-method="close">
+         <argument>
+             <bean class="org.opennms.horizon.minion.grpc.queue.RocksDbStore">
+             </bean>
+         </argument>
          <argument value="${sendQueue.memory}"/>
          <argument value="${sendQueue.offHeap}"/>
      </bean>

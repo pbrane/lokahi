@@ -28,11 +28,9 @@
 
 package org.opennms.horizon.minion.grpc.queue;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.primitives.Bytes;
 
 public class Prefix {
     private final byte[] bytes;

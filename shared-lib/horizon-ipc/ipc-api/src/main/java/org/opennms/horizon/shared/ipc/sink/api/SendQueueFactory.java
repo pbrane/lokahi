@@ -30,5 +30,5 @@ package org.opennms.horizon.shared.ipc.sink.api;
 
 public interface SendQueueFactory {
 
-    <T> SendQueue createQueue(final SinkModule<?, T> module);
+    SendQueue createQueue(final String id);
 }

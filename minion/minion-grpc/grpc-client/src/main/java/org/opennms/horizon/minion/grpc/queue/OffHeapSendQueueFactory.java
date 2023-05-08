@@ -30,30 +30,22 @@ package org.opennms.horizon.minion.grpc.queue;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import org.opennms.horizon.shared.ipc.sink.api.SendQueue;
 import org.opennms.horizon.shared.ipc.sink.api.SendQueueFactory;
-import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
-import org.rocksdb.CompressionType;
-import org.rocksdb.Options;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
 
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Longs;
 
 public class OffHeapSendQueueFactory implements SendQueueFactory, Closeable {
 
-    private final Options rocksDBOptions;
-    private final RocksDB rocksDB;
+    private final Store store;
 
     /**
      * Atomic block ID.
@@ -66,44 +58,25 @@ public class OffHeapSendQueueFactory implements SendQueueFactory, Closeable {
 
     private final Hydra<Element> hydra = new Hydra<>();
 
-    public OffHeapSendQueueFactory(final int memoryElements, final int offHeapElements) throws IOException, RocksDBException {
-        this(Paths.get("./sink/queue").toAbsolutePath(), memoryElements, offHeapElements);
-    }
-
     public OffHeapSendQueueFactory(
-        final Path path,
+        final Store store,
         final int memoryElements,
         final int offHeapElements
-    ) throws IOException, RocksDBException {
+    ) {
+        this.store = Objects.requireNonNull(store);
+
         this.memorySemaphore = new Semaphore(memoryElements);
         this.totalSemaphore = new Semaphore(memoryElements + offHeapElements);
-
-        this.rocksDBOptions = new Options()
-            .setCreateIfMissing(true)
-            .setCompressionType(CompressionType.SNAPPY_COMPRESSION)
-            .setEnableBlobFiles(true)
-            .setEnableBlobGarbageCollection(true)
-            .setMinBlobSize(100_000L)
-            .setBlobCompressionType(CompressionType.SNAPPY_COMPRESSION)
-            .setCreateMissingColumnFamilies(true)
-            .setTargetFileSizeBase(64L * 1024L * 1024L)
-            .setMaxBytesForLevelBase(64L * 1024L * 1024L * 10L)
-            .setMaxBackgroundJobs(Math.max(Runtime.getRuntime().availableProcessors(), 3));
-
-        Files.createDirectories(path);
-
-        this.rocksDB = RocksDB.open(this.rocksDBOptions, path.toString());
     }
 
     @Override
-    public <T> SendQueue createQueue(final SinkModule<?, T> module) {
-        return new OffHeapSendQueue<>(module);
+    public SendQueue createQueue(final String id) {
+        return new OffHeapSendQueue<>(id);
     }
 
     @Override
-    public void close() {
-        this.rocksDB.close();
-        this.rocksDBOptions.close();
+    public void close() throws IOException {
+        this.store.close();
     }
 
     private class OffHeapSendQueue<T> implements SendQueue {
@@ -112,24 +85,19 @@ public class OffHeapSendQueueFactory implements SendQueueFactory, Closeable {
 
         private final Hydra<Element>.SubQueue elements;
 
-        public OffHeapSendQueue(final SinkModule<?, T> module) {
-            this.prefix = new Prefix(module.getId());
+        public OffHeapSendQueue(final String id) {
+            this.prefix = new Prefix(id);
 
             this.elements = OffHeapSendQueueFactory.this.hydra.queue();
 
-            try (final var it = OffHeapSendQueueFactory.this.rocksDB.newIterator()) {
-                it.seek(prefix.getBytes());
-
-                while (it.isValid() && prefix.of(it.key())) {
-                    try {
-                        this.elements.put(new Element(Bytes.concat(it.key())));
-                    } catch (final InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                        throw new RuntimeException(ex);
-                    }
-                    it.next();
+            OffHeapSendQueueFactory.this.store.iterate(this.prefix, key -> {
+                try {
+                    this.elements.put(new Element(Bytes.concat(key)));
+                } catch (final InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(ex);
                 }
-            }
+            });
         }
 
         @Override
@@ -223,11 +191,7 @@ public class OffHeapSendQueueFactory implements SendQueueFactory, Closeable {
                     return;
                 }
 
-                try {
-                    OffHeapSendQueueFactory.this.rocksDB.put(key, this.message);
-                } catch (RocksDBException e) {
-                    throw new IOException(e);
-                }
+                OffHeapSendQueueFactory.this.store.put(key, this.message);
             } finally {
                 this.lock.unlock();
             }
@@ -241,11 +205,7 @@ public class OffHeapSendQueueFactory implements SendQueueFactory, Closeable {
                     return this.message;
                 }
 
-                try {
-                    return OffHeapSendQueueFactory.this.rocksDB.get(this.key);
-                } catch (final RocksDBException e) {
-                    throw new IOException(e);
-                }
+                return OffHeapSendQueueFactory.this.store.get(this.key);
             } finally {
                 this.lock.unlock();
             }
@@ -267,5 +227,14 @@ public class OffHeapSendQueueFactory implements SendQueueFactory, Closeable {
 
     public int getTotalPermits() {
         return this.totalSemaphore.availablePermits();
+    }
+
+    public interface Store extends Closeable {
+
+        byte[] get(final byte[] key) throws IOException;
+
+        void put(final byte[] key, final byte[] message) throws IOException;
+
+        void iterate(final Prefix prefix, final Consumer<byte[]> f);
     }
 }
