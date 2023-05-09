@@ -53,6 +53,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
+import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.TagCreateDTO;
@@ -139,6 +140,8 @@ public class NodeServiceTest {
         verify(tagService).addTags(eq(tenant), any(TagCreateListDTO.class));
         verify(mockConfigUpdateService, timeout(5000)).sendConfigUpdate(tenant, location);
         verify(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreateDTO.getLocation()), eq(tenant));
+        // Check the default state
+        assertThat(nodeCreateDTO.getMonitoredState().equals(MonitoredState.DETECTED));
     }
 
     @Test
@@ -279,5 +282,15 @@ public class NodeServiceTest {
         verifyNoInteractions(mockMonitoringLocationRepository);
         verifyNoInteractions(tagService);
         verifyNoInteractions(mockConfigUpdateService);
+    }
+
+    @Test
+    public void createUnmonitoredNode() throws EntityExistException {
+        NodeCreateDTO nodeCreate = NodeCreateDTO.newBuilder()
+            .setLabel("test-node")
+            .setManagementIp("127.0.0.1")
+            .setMonitoredState(MonitoredState.UNMONITORED)
+            .build();
+        assertThat(nodeCreate.getMonitoredState().equals(MonitoredState.UNMONITORED));
     }
 }
