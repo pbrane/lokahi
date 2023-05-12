@@ -1,0 +1,28 @@
+site:
+  title: OpenNMS Cloud
+  url: 
+  start_page: horizon-stream::index.adoc
+content:
+  sources:
+  - url: .
+    branches: HEAD
+    tags: v*
+ui:
+  bundle:
+    url: https://github.com/opennms-forge/antora-ui-opennms/releases/download/v3.1.0/ui-bundle.zip
+
+asciidoc:
+  attributes:
+    stem: latexmath
+    device:
+    experimental: true
+    year: 2023
+    page-pagination: true
+    environment: dev
+    status: suspended
+output:
+  clean: true
+  dir: ./public
+  destinations:
+  - provider: fs
+  - provider: archive

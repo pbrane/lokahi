@@ -1,0 +1,48 @@
+
+:imagesdir: ../assets/images
+= {page-component-title} User Documentation
+
+:data-uri:
+:icons:
+
+The OpenNMS Portal is a cloud-based platform where users can access and manage the following OpenNMS products, each of which requires a subscription:
+
+ifeval::["{environment}" != "prod"]
+* Cloud
+endif::[]
+* Meridian
+* Appliances
+* Time Series DB
+
+You must have an OpenNMS account to sign in to the Portal (https://portal.opennms.com/).
+
+If you need help with your OpenNMS implementation, contact mailto:sales@opennms.com[OpenNMS support] to purchase customer support.
+
+[[login_first]]
+== First-time sign in
+
+After The OpenNMS Group creates your organization and product subscription, you should receive a welcome email to activate your account.
+If you do not receive this email, contact mailto:sales@opennms.com[OpenNMS sales].
+
+Follow these steps to activate your OpenNMS account:
+
+. Click the *Account Activation* button in your Welcome email.
+. On the Create Your OpenNMS Account screen, type a password in the *Password* box.
+. Click *Create My Account*.
+. Sign in to the OpenNMS Portal with your username and password.
+
+NOTE: After 10 failed attempts to sign in to the {page-component-title}, you are automatically locked out of your account.
+To unlock your account, talk to your OpenNMS Portal administrator, or contact mailto:support@opennms.com[OpenNMS support].
+
+== Portal UI
+
+The Portal UI displays the landing page and a navigation menu at the left of the screen.
+The navigation menu displays entries for only the products for which you have a subscription.
+
+To view your subscription, including status and expiry information, click *Subscriptions* and navigate to the tab for the subscription that you want to view.
+
+Note that if you belong to more than one organization, the Organization menu displays all of the organizations to which you belong:
+
+image::org-menu.png["Organization menu showing two organizations.", 200]
+
+To switch organizations, select the organization that you want to work in from the drop-down list.

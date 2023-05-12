@@ -1,0 +1,9 @@
+name: opennms-cloud
+version: main
+title: OpenNMS Cloud
+display_version: Latest
+asciidoc:
+  attributes:
+    experimental: true
+nav:
+  - modules/ROOT/nav.adoc
