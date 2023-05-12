@@ -30,6 +30,7 @@ package org.opennms.horizon.inventory.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -183,7 +184,7 @@ public class NodeServiceTest {
         verify(mockConfigUpdateService, timeout(5000)).sendConfigUpdate(tenant, location);
         verify(mockIpInterfaceRepository).findByIpAddressAndLocationAndTenantId(any(InetAddress.class), eq(nodeCreateDTO.getLocation()), eq(tenant));
         // Check the default state
-        assertThat(nodeCreateDTO.getMonitoredState().equals(MonitoredState.DETECTED));
+        assertEquals(MonitoredState.DETECTED,nodeCreateDTO.getMonitoredState());
     }
 
     @Test
@@ -324,15 +325,5 @@ public class NodeServiceTest {
         verifyNoInteractions(mockMonitoringLocationRepository);
         verifyNoInteractions(tagService);
         verifyNoInteractions(mockConfigUpdateService);
-    }
-
-    @Test
-    public void createUnmonitoredNode() throws EntityExistException {
-        NodeCreateDTO nodeCreate = NodeCreateDTO.newBuilder()
-            .setLabel("test-node")
-            .setManagementIp("127.0.0.1")
-            .setMonitoredState(MonitoredState.UNMONITORED)
-            .build();
-        assertThat(nodeCreate.getMonitoredState().equals(MonitoredState.UNMONITORED));
     }
 }
