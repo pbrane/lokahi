@@ -1,6 +1,6 @@
 #!/bin/sh
 
-helm upgrade -i opennms ./charts/opennms -f build-tools/basic/helm-values.yaml \
+helm upgrade -i opennms ./charts/opennms -f tilt-helm-values.yaml \
   --set Grafana.Image=opennms/horizon-stream-grafana:local-basic \
   --set Keycloak.Image=opennms/horizon-stream-keycloak:local-basic \
   --set OpenNMS.API.Image=opennms/horizon-stream-rest-server:local-basic \
