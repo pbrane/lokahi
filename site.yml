@@ -1,6 +1,6 @@
 site:
   title: OpenNMS Cloud
-  url: 
+  url:
   start_page: horizon-stream::index.adoc
 content:
   sources:
