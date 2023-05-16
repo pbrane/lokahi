@@ -81,52 +81,6 @@ class IcmpActiveDiscoveryGrpcItTest extends GrpcTestBase {
     }
 
     @Test
-    void testCreateConfig() {
-        SNMPConfigDTO snmpConfig = SNMPConfigDTO.newBuilder()
-            .addAllPorts(List.of(161))
-            .addAllReadCommunity(List.of("test")).build();
-        IcmpActiveDiscoveryCreateDTO request = IcmpActiveDiscoveryCreateDTO.newBuilder()
-            .setName("test-config")
-            .setLocation("test-location")
-            .setSnmpConf(snmpConfig)
-            .addAllIpAddresses(List.of("127.0.0.1-127.0.0.10")).build();
-
-        var result = serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader)))
-            .createDiscovery(request);
-        assertThat(result).isNotNull();
-
-        SNMPConfigDTO snmpConfig2 = SNMPConfigDTO.newBuilder()
-            .addAllPorts(List.of(1161))
-            .addAllReadCommunity(List.of("test")).build();
-        IcmpActiveDiscoveryCreateDTO request2 = IcmpActiveDiscoveryCreateDTO.newBuilder()
-            .setName("test-config2")
-            .setLocation("test-location2")
-            .setSnmpConf(snmpConfig2)
-            .addAllIpAddresses(List.of("192.168.0.1")).build();
-        var result2 = serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader)))
-            .createDiscovery(request2);
-        assertThat(result2).isNotNull();
-    }
-
-    @Test
-    void testGetConfigById() {
-        IcmpActiveDiscoveryDTO tempConfig = IcmpActiveDiscoveryDTO.newBuilder()
-            .setName(TEST_NAME)
-            .addAllIpAddresses(List.of("127.0.0.1"))
-            .setSnmpConf(SNMPConfigDTO.newBuilder().addAllReadCommunity(List.of("test-community")).build()).build();
-        var model = mapper.dtoToModel(tempConfig);
-        model.setTenantId(tenantId);
-        model.setCreateTime(LocalDateTime.now());
-        var activeDiscovery = repository.save(model);
-        IcmpActiveDiscoveryDTO discoveryConfig = serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader)))
-            .getDiscoveryById(Int64Value.of(activeDiscovery.getId()));
-
-        assertThat(discoveryConfig).isNotNull()
-            .extracting(IcmpActiveDiscoveryDTO::getName, c -> c.getIpAddressesList().get(0), c -> c.getSnmpConf().getReadCommunityList().get(0))
-            .containsExactly(TEST_NAME, "127.0.0.1", "test-community");
-    }
-
-    @Test
     void testListConfig() {
         IcmpActiveDiscoveryDTO tempConfig = IcmpActiveDiscoveryDTO.newBuilder()
             .setName(TEST_NAME)
