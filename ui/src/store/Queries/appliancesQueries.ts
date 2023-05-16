@@ -13,7 +13,7 @@ import {
 import { ExtendedMinion } from '@/types/minion'
 import { ExtendedNode } from '@/types/node'
 import useSpinner from '@/composables/useSpinner'
-import { Monitor } from '@/types'
+import { AZURE_SCAN, Monitor } from '@/types'
 
 export const useAppliancesQueries = defineStore('appliancesQueries', {
   state: () => {
@@ -55,21 +55,19 @@ export const useAppliancesQueries = defineStore('appliancesQueries', {
 
     const addMetricsToMinions = (allMinions: Minion[]) => {
       allMinions.forEach(async (minion) => {
-        const { data, isFetching } = await fetchMinionMetrics(minion.systemId as string)
+        const { data } = await fetchMinionMetrics(minion.systemId as string)
         const result = data.value?.minionLatency?.data?.result?.[0]?.values?.[0]
 
-        if (!isFetching.value) {
-          if (result) {
-            const [, val] = result as number[]
+        if (result) {
+          const [, val] = result
 
-            tableMinions.value.push({
-              ...minion,
-              latency: {
-                value: val
-              }
-            })
-          } else tableMinions.value.push(minion)
-        }
+          tableMinions.value.push({
+            ...minion,
+            latency: {
+              value: val
+            }
+          })
+        } else tableMinions.value.push(minion)
       })
     }
 
@@ -107,7 +105,8 @@ export const useAppliancesQueries = defineStore('appliancesQueries', {
 
       allNodes.forEach(async (node) => {
         const { ipAddress: snmpPrimaryIpAddress } = node.ipInterfaces?.filter((ii) => ii.snmpPrimary)[0] || {} // not getting ipAddress from snmpPrimary interface can result in missing metrics for ICMP
-        const { data, isFetching } = await fetchNodeMetrics(node.id as number, snmpPrimaryIpAddress as string)
+        const instance = node.scanType === AZURE_SCAN ? `azure-node-${node.id}` : snmpPrimaryIpAddress!
+        const { data, isFetching } = await fetchNodeMetrics(node.id as number, instance)
         const latencyResult = data.value?.nodeLatency?.data?.result?.[0]?.values?.[0]
         const status = data.value?.nodeStatus?.status
 
@@ -159,14 +158,14 @@ export const useAppliancesQueries = defineStore('appliancesQueries', {
       }
     })
 
-    const locations = computed(() => minionsAndNodes.value?.findAllLocations || [])
+    const locationsList = computed(() => minionsAndNodes.value?.findAllLocations ?? [])
 
     return {
       tableMinions,
       fetchMinionsForTable,
       tableNodes,
       fetchNodesForTable,
-      locations,
+      locationsList,
       fetch: execute
     }
   }

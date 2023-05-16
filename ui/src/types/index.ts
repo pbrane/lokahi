@@ -1,5 +1,6 @@
 import { SORT } from '@featherds/table'
 import { PointerAlignment, PopoverPlacement } from '@featherds/popover'
+// import { ComputedRef } from 'vue'
 
 export * from './flows.d'
 export * from './inventory.d'
@@ -65,3 +66,15 @@ export interface TagSelectItem {
   _text?: string
   tenantId?: string
 }
+
+export interface ContextMenuItem {
+  label: string
+  handler: fncVoid
+}
+
+export interface IButtonTextIcon {
+  label: string | undefined
+  type?: string
+}
+
+export const AZURE_SCAN = 'AZURE_SCAN'

@@ -17,6 +17,10 @@
         Test Containers are used to spin up containers and exercise the public endpoints.
     </description>
 
+    <properties>
+        <application.docker.image.name>opennms/horizon-stream-inventory</application.docker.image.name>
+    </properties>
+
     <dependencies>
         <!-- Dependency to ensure the docker image is built before running the tests -->
         <dependency>
@@ -138,6 +142,15 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+
+
 
     </dependencies>
 
