@@ -63,12 +63,8 @@ spec:
             - name: KC_HOSTNAME_ADMIN_URL
               value: "{{ .Values.Keycloak.HostnameAdminUrl }}"
             {{- end }}
-            - name: KC_DB_SCHEMA
-              value: "{{ .Values.Keycloak.DbSchemaName }}"
-            - name: KC_DB_URL_DATABASE
-              value: "{{ .Values.Keycloak.DbName }}"
-            - name: KC_DB_URL_HOST
-              value: "{{ .Values.Keycloak.DbHost }}"
+            - name: KC_DB_URL
+              value: "jdbc:postgresql://{{ .Values.Keycloak.DbHost }}:5432/{{ .Values.Keycloak.DbName }}?currentSchema={{ .Values.Keycloak.DbSchemaName }}"
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
