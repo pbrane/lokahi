@@ -2,6 +2,7 @@
 <features name="minion-traps-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.6.0">
 
     <feature name="minion-traps" version="${project.version}">
+        <feature>shell</feature>
         <feature>ipc-minion</feature>
         <feature>snmp-snmp4j</feature>
         <feature>plugins-api</feature>
