@@ -38,16 +38,17 @@ import org.opennms.horizon.grpc.traps.contract.TrapDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapIdentity;
 import org.opennms.horizon.minion.traps.listener.TrapSinkModule;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
-import org.opennms.horizon.shared.ipc.sink.api.AsyncDispatcher;
 import org.opennms.horizon.shared.ipc.sink.api.MessageDispatcherFactory;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.horizon.snmp.api.SnmpResult;
 import org.opennms.horizon.snmp.api.SnmpValue;
 import org.opennms.horizon.snmp.api.SnmpValueType;
+import org.opennms.sink.traps.contract.ListenerConfig;
 import org.opennms.sink.traps.contract.TrapConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Command(scope = "opennms", name = "traps-stress",
     description = "Generate synthetic SNMP traps for stress testing.")
@@ -65,7 +66,11 @@ public class StressTraps implements Action {
     public Object execute() {
         System.out.printf("Sending %d traps.\n", numTraps);
         try(var dispatcher = messageDispatcherFactory.createAsyncDispatcher(new TrapSinkModule(
-            TrapConfig.newBuilder().build(), identity))) {
+            TrapConfig.newBuilder().setListenerConfig(ListenerConfig.newBuilder()
+                .setNumThreads(10)
+                .setQueueSize(1000)
+                .setBatchSize(10)
+                .build()).build(), identity, UUID.randomUUID().toString()))) {
             for (int i = 0; i < numTraps; i++) {
                 TrapDTO trap = buildTheTrap();
                 dispatcher.send(trap);

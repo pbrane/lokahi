@@ -44,14 +44,22 @@ public class TrapSinkModule implements SinkModule<TrapDTO, TrapLogDTO> {
 
     private final TrapConfig config;
 
+    private String id;
+
     public TrapSinkModule(TrapConfig trapdConfig, IpcIdentity identity) {
         this.config = trapdConfig;
         this.identity = identity;
     }
 
+    public TrapSinkModule(TrapConfig trapdConfig, IpcIdentity identity, String id) {
+        this.config = trapdConfig;
+        this.identity = identity;
+        this.id = id;
+    }
+
     @Override
     public String getId() {
-        return "Trap";
+        return id != null ? id : "Trap";
     }
 
     @Override
