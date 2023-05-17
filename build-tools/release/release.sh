@@ -18,6 +18,8 @@ PREVIOUS_TAG=$2
 git checkout develop
 git pull -r origin develop
 
+exit 0
+
 # Update Branch release
 git checkout release
 git pull -r origin release
