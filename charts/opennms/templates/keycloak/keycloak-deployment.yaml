@@ -45,7 +45,11 @@ spec:
             requests:
               cpu: "{{ .Values.Keycloak.Resources.Requests.Cpu }}"
               memory: "{{ .Values.Keycloak.Resources.Requests.Memory }}"
-          args: ['--import-realm']
+          args:
+            - --import-realm
+            {{- if .Values.OpenNMS.global.enableJsonLogging }}
+            - --log-console-output=json
+            {{- end }}
           env:
             - name: JAVA_TOOL_OPTIONS
               value: "-javaagent:/opt/keycloak/agent/opentelemetry-javaagent.jar"
