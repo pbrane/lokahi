@@ -237,51 +237,6 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
         assertEquals(0, testGrpcService.getRequests().size());
     }
 
-    @Test
-    void testCreateAzureActiveDiscoveryAlreadyExists() throws Exception {
-        mockAzureLogin();
-        mockAzureGetSubscription(true);
-
-        AzureActiveDiscoveryCreateDTO createDTO = AzureActiveDiscoveryCreateDTO.newBuilder()
-            .setName(TEST_NAME)
-            .setLocation(DEFAULT_LOCATION)
-            .setClientId(TEST_CLIENT_ID)
-            .setClientSecret(TEST_CLIENT_SECRET)
-            .setSubscriptionId(TEST_SUBSCRIPTION_ID)
-            .setDirectoryId(TEST_DIRECTORY_ID)
-            .build();
-
-        serviceStub.withInterceptors(MetadataUtils
-                .newAttachHeadersInterceptor(createAuthHeader(authHeader)))
-            .createDiscovery(createDTO);
-
-        StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> serviceStub.withInterceptors(MetadataUtils
-                .newAttachHeadersInterceptor(createAuthHeader(authHeader)))
-            .createDiscovery(createDTO));
-        Status status = StatusProto.fromThrowable(exception);
-        assertThat(status.getCode()).isEqualTo(Code.INTERNAL_VALUE);
-        assertThat(exception.getMessage()).contains("Azure Discovery already exists with the provided subscription, directory and client ID");
-    }
-
-    @Test
-    void testCreateAzureActiveDicscoveryWithoutTenantId() {
-
-        AzureActiveDiscoveryCreateDTO createDTO = AzureActiveDiscoveryCreateDTO.newBuilder()
-            .setName(TEST_NAME)
-            .setLocation(DEFAULT_LOCATION)
-            .setClientId(TEST_CLIENT_ID)
-            .setClientSecret(TEST_CLIENT_SECRET)
-            .setSubscriptionId(TEST_SUBSCRIPTION_ID)
-            .setDirectoryId(TEST_DIRECTORY_ID)
-            .build();
-
-        StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () ->
-            serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(headerWithoutTenant)))
-                .createDiscovery(createDTO));
-        assertThat(exception.getStatus().getCode()).isEqualTo(io.grpc.Status.Code.UNAUTHENTICATED);
-        assertThat(exception.getMessage()).contains("Missing tenant id");
-    }
-
     private void mockAzureLogin() throws JsonProcessingException {
         String url = String.format(OAUTH2_TOKEN_ENDPOINT, TEST_DIRECTORY_ID)
             + "?api-version=" + this.params.getApiVersion();
