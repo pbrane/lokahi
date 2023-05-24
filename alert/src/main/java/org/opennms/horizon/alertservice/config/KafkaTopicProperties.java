@@ -34,29 +34,25 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 
-@Getter
+@Data
 @ConfigurationProperties(prefix = "kafka.topics")
 public class KafkaTopicProperties {
 
-    @Setter
     private String event;
 
-    @Setter
     private String tagOperation;
 
-    @Setter
     private String alert;
 
-    @Setter
     private String nodeChanged;
 
-    @Setter
     private String monitoringPolicy;
 
     private final CreateTopics createTopics = new CreateTopics();
 
-    @Getter
+    @Data
     public static class CreateTopics {
+        private Boolean enabled;
         private final TopicConfig alert = new TopicConfig();
         private final TopicConfig monitoringPolicy = new TopicConfig();
         private final TopicConfig nodeChanged = new TopicConfig();
