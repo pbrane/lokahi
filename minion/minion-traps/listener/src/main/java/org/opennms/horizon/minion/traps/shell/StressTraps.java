@@ -48,7 +48,6 @@ import org.opennms.sink.traps.contract.TrapConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Command(scope = "opennms", name = "traps-stress",
     description = "Generate synthetic SNMP traps for stress testing.")
@@ -70,7 +69,7 @@ public class StressTraps implements Action {
                 .setNumThreads(10)
                 .setQueueSize(1000)
                 .setBatchSize(10)
-                .build()).build(), identity, UUID.randomUUID().toString()))) {
+                .build()).build(), identity))) {
             for (int i = 0; i < numTraps; i++) {
                 TrapDTO trap = buildTheTrap();
                 dispatcher.send(trap);
