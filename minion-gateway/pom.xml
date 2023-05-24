@@ -24,6 +24,7 @@
         <application.docker.image.name>opennms/horizon-stream-minion-gateway</application.docker.image.name>
         <docker.it.network>rest-server-it-network</docker.it.network>
         <sonar.projectKey>opennms_horizon-stream_minion-gateway</sonar.projectKey>
+        <bucket4j.version>7.6.0</bucket4j.version>
     </properties>
 
     <modules>
@@ -63,4 +64,11 @@
         </pluginManagement>
     </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.github.vladimir-bukhtoyarov</groupId>
+            <artifactId>bucket4j-core</artifactId>
+            <version>${bucket4j.version}</version>
+        </dependency>
+    </dependencies>
 </project>

@@ -1,18 +1,23 @@
 package org.opennms.miniongateway.grpc.server;
 
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Refill;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcServer;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcServerBuilder;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcUtils;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
 import org.opennms.horizon.shared.grpc.interceptor.LoggingInterceptor;
+import org.opennms.horizon.shared.grpc.interceptor.RateLimitingInterceptor;
+import org.opennms.horizon.shared.grpc.interceptor.RateLimitingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
-
 
 @Configuration
 public class GrpcIpcServerConfig {
@@ -50,8 +55,14 @@ public class GrpcIpcServerConfig {
         Properties properties = new Properties();
         properties.setProperty(GrpcIpcUtils.GRPC_MAX_INBOUND_SIZE, Long.toString(maxMessageSize));
 
+        Bucket bucket = Bucket.builder()
+            .addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1))))
+            .addLimit(Bandwidth.classic(5, Refill.intervally(5, Duration.ofSeconds(20))))
+            .build();
+
         return new GrpcIpcServerBuilder(properties, externalGrpcPort, "PT10S", Arrays.asList(
             new LoggingInterceptor(),
+            new RateLimitingInterceptor(new RateLimitingService(bucket)),
             tenantIDGrpcServerInterceptor
         ));
     }
