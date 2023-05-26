@@ -37,8 +37,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.stream.IntStream;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,21 +48,14 @@ import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.model.SnmpInterface;
-import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.taskset.contract.ScanType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ContextConfiguration;
-
-import io.grpc.Context;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -84,6 +78,7 @@ class IpInterfaceRepositoryTest {
     private MonitoringLocationRepository monitoringLocationRepository;
     @Autowired
     private SnmpInterfaceRepository snmpInterfaceRepository;
+    private Map<String, Long> locationMap = new HashMap<>();
 
     @BeforeEach
     public void setup() throws UnknownHostException {
@@ -107,19 +102,19 @@ class IpInterfaceRepositoryTest {
         assertThat(list).isNotEmpty();
 
         for (int i = 0; i < NUM_NODES; i++) {
-            var optional = ipInterfaceRepository.findByIpAddressAndLocationAndTenantId(
-                InetAddress.getByName("192.168.1." + i), "location" + i, "tenant" + i);
+            var optional = ipInterfaceRepository.findByIpAddressAndLocationIdAndTenantId(
+                InetAddress.getByName("192.168.1." + i), locationMap.get("location" + (i)), "tenant" + i);
             assertThat(optional).isNotEmpty();
             assertThat(optional.get().getIpAddress()).isEqualTo(InetAddress.getByName("192.168.1." + i));
 
             // Check with invalid location
-            var optionalInterface = ipInterfaceRepository.findByIpAddressAndLocationAndTenantId(
-                InetAddress.getByName("192.168.1." + i), "location" + i + 3, "tenant" + i);
+            var optionalInterface = ipInterfaceRepository.findByIpAddressAndLocationIdAndTenantId(
+                InetAddress.getByName("192.168.1." + i), locationMap.get("location" + (i + 3)), "tenant" + i);
             assertThat(optionalInterface).isEmpty();
 
             // Check with invalid tenant
-            optionalInterface = ipInterfaceRepository.findByIpAddressAndLocationAndTenantId(
-                InetAddress.getByName("192.168.1." + i), "location" + i, "tenant2" + i + 3);
+            optionalInterface = ipInterfaceRepository.findByIpAddressAndLocationIdAndTenantId(
+                InetAddress.getByName("192.168.1." + i), locationMap.get("location" + (i)), "tenant2" + i + 3);
             assertThat(optionalInterface).isEmpty();
         }
 
@@ -183,6 +178,7 @@ class IpInterfaceRepositoryTest {
             location.setLocation("location" + i);
             location.setTenantId("tenant" + i);
             monitoringLocationRepository.save(location);
+            locationMap.put(location.getLocation(), location.getId());
             node.setMonitoringLocation(location);
             var ipInterface = new IpInterface();
             ipInterface.setTenantId("tenant" + i);

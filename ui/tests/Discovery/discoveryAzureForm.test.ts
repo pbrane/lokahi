@@ -11,7 +11,7 @@ const azureTestPayload: AzureActiveDiscoveryCreateInput = {
   clientSecret: 'secret1',
   directoryId: 'dir1',
   subscriptionId: 'sub1',
-  location: 'Default',
+  locationId: 'Default',
   tags: [{ name: 'default' }]
 }
 

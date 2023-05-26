@@ -57,7 +57,7 @@ public class TenantLocationSpecificHeartbeatMessageMapperImplTest {
         verifyAllFieldsSet(mappedResult, true);
 
         assertEquals("x-tenant-id-x", mappedResult.getTenantId());
-        assertEquals("x-location-x", mappedResult.getLocation());
+        assertEquals("x-location-x", mappedResult.getLocationId());
         assertEquals(123123, mappedResult.getTimestamp().getSeconds());
         assertEquals(456456, mappedResult.getTimestamp().getNanos());
     }
@@ -70,8 +70,8 @@ public class TenantLocationSpecificHeartbeatMessageMapperImplTest {
         TenantLocationSpecificHeartbeatMessage tenantLocationSpecificHeartbeatMessage =
             TenantLocationSpecificHeartbeatMessage.newBuilder()
                 .setTenantId("x-tenant-id-x")
-                .setLocation("x-location-x")
-                .setIdentity(Identity.newBuilder().setSystemId("x-system-id-x").build())
+                .setLocationId("x-location-x")
+                .setIdentity(Identity.newBuilder().setSystemId("x-system-id-x"))
                 .setTimestamp(
                     Timestamp.newBuilder()
                         .setSeconds(123123)
@@ -156,8 +156,8 @@ public class TenantLocationSpecificHeartbeatMessageMapperImplTest {
         Set<String> withTenantTypeFields =
             withTenantTypeDescriptor.getFields().stream().map(Descriptors.FieldDescriptor::getName).collect(Collectors.toSet());
 
-        withTenantTypeFields.remove("tenantId");
-        withTenantTypeFields.remove("location");
+        withTenantTypeFields.remove("tenant_id");
+        withTenantTypeFields.remove("location_id");
 
         assertEquals(withTenantTypeFields, withoutTenantTypeFields);
     }

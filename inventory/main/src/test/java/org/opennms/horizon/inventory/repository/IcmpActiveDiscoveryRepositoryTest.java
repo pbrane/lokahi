@@ -1,13 +1,14 @@
 package org.opennms.horizon.inventory.repository;
 
-import io.grpc.Context;
+import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opennms.horizon.inventory.SpringContextTestInitializer;
+import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.discovery.active.IcmpActiveDiscovery;
 import org.opennms.horizon.inventory.repository.discovery.active.IcmpActiveDiscoveryRepository;
-import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -29,10 +30,24 @@ class IcmpActiveDiscoveryRepositoryTest {
     @Autowired
     private IcmpActiveDiscoveryRepository repository;
 
+    @Autowired
+    private MonitoringLocationRepository monitoringLocationRepo;
+
+    private Long locationId;
+
+    @BeforeEach
+    public void setUp() {
+        MonitoringLocation location = new MonitoringLocation();
+        location.setTenantId(tenantId);
+        location.setLocation("My testing location");
+        location = monitoringLocationRepo.save(location);
+        locationId = location.getId();
+    }
+
     @Test
     public void testActiveDiscoveryConfigPersistence() {
         var discovery = new IcmpActiveDiscovery();
-        discovery.setLocation("MINION");
+        discovery.setLocationId(locationId);
         discovery.setName("Profile-1");
         discovery.setTenantId(tenantId);
         discovery.setSnmpPorts(Collections.singletonList(1161));
@@ -41,17 +56,17 @@ class IcmpActiveDiscoveryRepositoryTest {
         discovery.setCreateTime(LocalDateTime.now());
         var persisted = repository.save(discovery);
         Assertions.assertNotNull(persisted);
-        Assertions.assertEquals("MINION", discovery.getLocation());
+        Assertions.assertEquals(locationId, discovery.getLocationId());
         Assertions.assertEquals("Profile-1", discovery.getName());
         Assertions.assertEquals("OpenNMS", discovery.getSnmpCommunityStrings().get(0));
         Assertions.assertEquals("127.0.0.1", discovery.getIpAddressEntries().get(0));
         Assertions.assertEquals("127.0.0.2", discovery.getIpAddressEntries().get(1));
         Assertions.assertEquals(1161, discovery.getSnmpPorts().get(0));
 
-        var list = repository.findByLocationAndTenantId("MINION", tenantId);
+        var list = repository.findByLocationIdAndTenantId(locationId, tenantId);
         Assertions.assertFalse(list.isEmpty());
 
-        var optional = repository.findByLocationAndName("MINION", "Profile-1");
+        var optional = repository.findByLocationIdAndName(locationId, "Profile-1");
         Assertions.assertTrue(optional.isPresent());
     }
 

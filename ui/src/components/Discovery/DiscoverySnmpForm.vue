@@ -15,7 +15,7 @@
     <DiscoveryLocationsAutocomplete
       class="locations-select"
       type="single"
-      :preLoadedlocation="props.discovery?.location"
+      :preLoadedlocation="props.discovery?.locationId"
       @location-selected="(val) => setSnmpConfig('location', val)"
     />
     <BasicAutocomplete

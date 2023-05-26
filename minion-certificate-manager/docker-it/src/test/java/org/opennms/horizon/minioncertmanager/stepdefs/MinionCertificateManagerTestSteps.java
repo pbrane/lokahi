@@ -83,7 +83,7 @@ public class MinionCertificateManagerTestSteps {
         clientUtils.createGrpcConnection();
     }
 
-    @Given("New Get Minion Certificate with tenantId {string} for location {long}")
+    @Given("New Get Minion Certificate with tenantId {string} for location id {long}")
     public void newActiveDiscoveryWithIpAddressesAndSNMPCommunityAsAtLocation(String tenantId, long locationId) {
         getMinionCertificateRequest = GetMinionCertificateRequest.newBuilder()
             .setTenantId(tenantId)

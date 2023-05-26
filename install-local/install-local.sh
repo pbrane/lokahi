@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #use this script to install a basic version of OpenNMS Horizon Stream locally
 
-set -e
+set -euo pipefail
+trap 's=$?; echo >&2 "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
 LOCAL_DOCKER_CONFIG_JSON="${HOME}/.docker/config.json"
 

@@ -87,6 +87,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
 
 
 @SpringBootTest
@@ -95,7 +97,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Disabled
 class ScannerResponseServiceIntTest extends GrpcTestBase {
-    private static final String TEST_LOCATION = "Default";
+    private static final String TEST_LOCATION_NAME = "test-location";
     private static final String TEST_TENANT_ID = "test-tenant-id";
 
     @Autowired
@@ -124,6 +126,7 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
 
     @Autowired
     private TagRepository tagRepository;
+    private Long locationId;
 
     @BeforeEach
     void beforeTest() {
@@ -142,8 +145,8 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
 
     @Test
     void testAzureAccept() throws Exception {
-        AzureActiveDiscovery discovery = createAzureActiveDiscovery();
         createLocation();
+        AzureActiveDiscovery discovery = createAzureActiveDiscovery();
 
         AzureScanNetworkInterfaceItem interfaceItem = AzureScanNetworkInterfaceItem.newBuilder()
             .setId("/subscriptions/sub-id/resourceGroups/resource-group/providers/Microsoft.Network/NetworkInterface/interface-name")
@@ -161,13 +164,13 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
         AzureScanResponse azureScanResponse = AzureScanResponse.newBuilder().addAllResults(azureScanItems).build();
         ScannerResponse response = ScannerResponse.newBuilder().setResult(Any.pack(azureScanResponse)).build();
 
-        service.accept(TEST_TENANT_ID, TEST_LOCATION, response);
+        service.accept(TEST_TENANT_ID, locationId, response);
 
         // monitor and collect tasks
-        await().atMost(15, TimeUnit.SECONDS).until(() -> testGrpcService.getTaskDefinitions(TEST_LOCATION).stream()
-            .filter(taskDefinition -> taskDefinition.getPluginName().contains("AZURE") &&
-                (taskDefinition.getType().equals(TaskType.MONITOR) || taskDefinition.getType().equals(TaskType.COLLECTOR)))
-            .collect(Collectors.toSet()).size(), Matchers.is(2));
+        await().atMost(15, TimeUnit.SECONDS).until(() -> verify(testGrpcService).publishNewTasks(tenantId, locationId, argThat(arg -> arg.stream()
+            .filter(taskDefinition -> taskDefinition.getPluginName().contains("AZURE") && (taskDefinition.getType().equals(TaskType.MONITOR) || taskDefinition.getType().equals(TaskType.COLLECTOR)))
+            .collect(Collectors.toSet()).size() == 2))
+        );
 
         List<Node> allNodes = nodeRepository.findAll();
         assertEquals(1, allNodes.size());
@@ -197,7 +200,7 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
         SnmpInterface snmpIf = createSnmpInterface(node, ifIndex);
         NodeScanResult result = createNodeScanResult(node.getId(), managedIp, ifIndex);
 
-        service.accept(TEST_TENANT_ID, TEST_LOCATION, ScannerResponse.newBuilder().setResult(Any.pack(result)).build());
+        service.accept(TEST_TENANT_ID, locationId, ScannerResponse.newBuilder().setResult(Any.pack(result)).build());
         assertNodeSystemGroup(node, null);
         nodeRepository.findByIdAndTenantId(node.getId(), TEST_TENANT_ID).ifPresentOrElse(dbNode ->
             assertNodeSystemGroup(dbNode, result.getNodeInfo()), () -> fail("Node not found"));
@@ -226,7 +229,7 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
         NodeCreateDTO createDTO = NodeCreateDTO.newBuilder()
             .setLabel("test-node")
             .setManagementIp(ipAddress)
-            .setLocation(TEST_LOCATION)
+            .setLocationId(String.valueOf(locationId))
             .build();
         return nodeService.createNode(createDTO, ScanType.NODE_SCAN, TEST_TENANT_ID);
     }
@@ -234,8 +237,9 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
     private MonitoringLocation createLocation() {
         MonitoringLocation location = new MonitoringLocation();
         location.setTenantId(TEST_TENANT_ID);
-        location.setLocation(TEST_LOCATION);
+        location.setLocation(TEST_LOCATION_NAME);
         locationRepository.save(location);
+        locationId = location.getId();
         return location;
     }
 
@@ -307,7 +311,7 @@ class ScannerResponseServiceIntTest extends GrpcTestBase {
         discovery.setDirectoryId("directory-id");
         discovery.setSubscriptionId("sub-id");
         discovery.setCreateTime(LocalDateTime.now());
-        discovery.setLocation(TEST_LOCATION);
+        discovery.setLocationId(locationId);
         discovery = azureActiveDiscoveryRepository.save(discovery);
 
         Tag tag = new Tag();

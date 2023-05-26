@@ -28,6 +28,8 @@
 
 package org.opennms.miniongateway.grpc.server.heartbeat;
 
+import java.time.Duration;
+
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.opennms.horizon.grpc.heartbeat.contract.HeartbeatMessage;
 import org.opennms.horizon.grpc.heartbeat.contract.TenantLocationSpecificHeartbeatMessage;
@@ -82,7 +84,10 @@ public class HeartbeatKafkaForwarder implements MessageConsumer<HeartbeatMessage
         String locationId = locationServerInterceptor.readCurrentContextLocationId();
 
         logger.info("Received heartbeat; sending to Kafka: tenantId={}; locationId={}; kafka-topic={}; message={}", tenantId, locationId, kafkaTopic, heartbeatMessage);
+<<<<<<< HEAD
         Span.current().setAttribute("message", heartbeatMessage.toString());
+=======
+>>>>>>> 26b5d7231 (HS-1647 Location to location id migration cont.)
 
         TenantLocationSpecificHeartbeatMessage mapped = tenantLocationSpecificHeartbeatMessageMapper.mapBareToTenanted(tenantId, locationId, heartbeatMessage);
 

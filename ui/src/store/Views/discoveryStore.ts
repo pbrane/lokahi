@@ -48,7 +48,7 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
 
       await addAzureCreds({
         discovery: {
-          location: this.selectedLocations[0],
+          locationId: this.selectedLocations[0],
           tags: this.selectedTags,
           ...this.azure
         }

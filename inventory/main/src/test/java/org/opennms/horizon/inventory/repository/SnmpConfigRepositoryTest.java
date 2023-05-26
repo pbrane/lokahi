@@ -31,8 +31,10 @@ package org.opennms.horizon.inventory.repository;
 import io.grpc.Context;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opennms.horizon.inventory.SpringContextTestInitializer;
+import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.SnmpAgentConfig;
 import org.opennms.horizon.inventory.model.SnmpConfig;
 import org.opennms.horizon.shared.constants.GrpcConstants;
@@ -55,6 +57,19 @@ public class SnmpConfigRepositoryTest {
     @Autowired
     private SnmpConfigRepository snmpConfigRepository;
 
+    @Autowired
+    private MonitoringLocationRepository monitoringLocationRepo;
+    private long locationId;
+
+    @BeforeEach
+    public void setUp() {
+        MonitoringLocation location = new MonitoringLocation();
+        location.setTenantId(tenantId);
+        location.setLocation("A snmp enabled location");
+        location = monitoringLocationRepo.save(location);
+        locationId = location.getId();
+    }
+
     @Test
     public void testSnmpConfigPersistence() {
 
@@ -64,7 +79,7 @@ public class SnmpConfigRepositoryTest {
         snmpAgentConfig.setWriteCommunity("private");
         var snmpConfig = new SnmpConfig();
         snmpConfig.setTenantId(tenantId);
-        snmpConfig.setLocation("MINION");
+        snmpConfig.setLocationId(locationId);
         snmpConfig.setIpAddress(InetAddressUtils.getInetAddress("192.168.1.1"));
         snmpConfig.setTenantId(tenantId);
         snmpConfig.setSnmpAgentConfig(snmpAgentConfig);
@@ -75,8 +90,7 @@ public class SnmpConfigRepositoryTest {
         Assertions.assertEquals("private", snmpConfig.getSnmpAgentConfig().getWriteCommunity());
         Assertions.assertEquals(1161, snmpConfig.getSnmpAgentConfig().getPort());
 
-        var optional = snmpConfigRepository
-            .findByTenantIdAndLocationAndIpAddress(tenantId, "MINION", InetAddressUtils.getInetAddress("192.168.1.1"));
+        var optional = snmpConfigRepository.findByTenantIdAndLocationIdAndIpAddress(tenantId, locationId, InetAddressUtils.getInetAddress("192.168.1.1"));
 
         Assertions.assertTrue(optional.isPresent());
 

@@ -33,6 +33,6 @@ import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapLogDTO;
 
 public interface TenantLocationSpecificTrapLogDTOMapper {
-    TenantLocationSpecificTrapLogDTO mapBareToTenanted(String tenantId, String location, TrapLogDTO bare);
+    TenantLocationSpecificTrapLogDTO mapBareToTenanted(String tenantId, String locationId, TrapLogDTO bare);
     TrapLogDTO mapTenantedToBare(TenantLocationSpecificTrapLogDTO tenantLocationSpecific);
 }

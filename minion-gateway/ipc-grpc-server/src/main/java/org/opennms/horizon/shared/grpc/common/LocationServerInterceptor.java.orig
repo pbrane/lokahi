@@ -28,8 +28,11 @@
 
 package org.opennms.horizon.shared.grpc.common;
 
+<<<<<<< HEAD
 import org.opennms.horizon.shared.constants.GrpcConstants;
 
+=======
+>>>>>>> 306061fb9 (HS-1647 Location to location id migration.)
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.Metadata;
@@ -37,7 +40,10 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
+<<<<<<< HEAD
 import io.opentelemetry.api.trace.Span;
+=======
+>>>>>>> 306061fb9 (HS-1647 Location to location id migration.)
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -49,8 +55,8 @@ public class LocationServerInterceptor implements ServerInterceptor {
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> serverCall, Metadata headers, ServerCallHandler<ReqT, RespT> callHandler) {
         log.debug("Received metadata: {}", headers);
-        String locationId = headers.get(GrpcConstants.LOCATION_ID_REQUEST_KEY);
-         if (locationId == null) {
+        String location = headers.get(GrpcConstants.LOCATION_ID_REQUEST_KEY);
+         if (location == null) {
              //
              // FAILED
              //
@@ -61,7 +67,7 @@ public class LocationServerInterceptor implements ServerInterceptor {
          }
 
         // Write the tenant ID to the current GRPC context
-        Context context = Context.current().withValue(GrpcConstants.LOCATION_ID_CONTEXT_KEY, locationId);
+        Context context = Context.current().withValue(GrpcConstants.LOCATION_ID_CONTEXT_KEY, location);
         return Contexts.interceptCall(context, serverCall, headers, callHandler);
     }
 
@@ -70,12 +76,16 @@ public class LocationServerInterceptor implements ServerInterceptor {
     }
 
     public String readContextLocation(Context context) {
-        var locationId = GrpcConstants.LOCATION_ID_CONTEXT_KEY.get(context);
+<<<<<<< HEAD
+        var location = GrpcConstants.LOCATION_CONTEXT_KEY.get(context);
         var span = Span.current();
         if (span.isRecording()) {
-            span.setAttribute("location-id", locationId);
+            span.setAttribute("location", location);
         }
-        return locationId;
+        return location;
+=======
+        return GrpcConstants.LOCATION_ID_CONTEXT_KEY.get(context);
+>>>>>>> 306061fb9 (HS-1647 Location to location id migration.)
     }
 
 

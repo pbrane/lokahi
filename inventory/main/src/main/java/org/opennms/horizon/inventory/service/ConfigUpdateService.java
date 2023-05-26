@@ -57,34 +57,34 @@ public class ConfigUpdateService {
     private final FlowsConfigService flowsConfigService;
     private final TaskSetPublisher taskSetPublisher;
 
-    private void sendConfigUpdatesToMinion(String tenantId, String location) {
+    private void sendConfigUpdatesToMinion(String tenantId, Long locationId) {
         try {
-            trapConfigService.sendTrapConfigToMinion(tenantId, location);
+            trapConfigService.sendTrapConfigToMinion(tenantId, locationId);
         } catch (Exception e) {
             log.error("Exception while sending traps to Minion", e);
         }
         try {
-            flowsConfigService.sendFlowsConfigToMinion(tenantId, location);
+            flowsConfigService.sendFlowsConfigToMinion(tenantId, locationId);
         } catch (Exception e) {
             log.error("Exception while sending flows to Minion", e);
         }
     }
 
-    public void sendConfigUpdate(String tenantId, String location) {
-        executorService.execute(() -> sendConfigUpdatesToMinion(tenantId, location));
+    public void sendConfigUpdate(String tenantId, Long locationId) {
+        executorService.execute(() -> sendConfigUpdatesToMinion(tenantId, locationId));
     }
 
-    public void removeConfigsFromTaskSet(String tenantId, String location) {
+    public void removeConfigsFromTaskSet(String tenantId, Long locationId) {
 
         executorService.execute(() -> {
             TaskDefinition trapsConfig = TaskDefinition.newBuilder()
-                .setId(TaskUtils.identityForConfig(TRAPS_CONFIG, location)).build();
+                .setId(TaskUtils.identityForConfig(TRAPS_CONFIG, locationId)).build();
             TaskDefinition flowsConfig = TaskDefinition.newBuilder()
-                .setId(TaskUtils.identityForConfig(FLOWS_CONFIG, location)).build();
+                .setId(TaskUtils.identityForConfig(FLOWS_CONFIG, locationId)).build();
             var tasks = new ArrayList<TaskDefinition>();
             tasks.add(trapsConfig);
             tasks.add(flowsConfig);
-            taskSetPublisher.publishTaskDeletion(tenantId, location, tasks);
+            taskSetPublisher.publishTaskDeletion(tenantId, locationId, tasks);
         });
     }
 

@@ -33,8 +33,11 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import org.keycloak.common.VerificationException;
 import org.opennms.horizon.inventory.grpc.taskset.TestTaskSetGrpcService;
+import org.opennms.horizon.inventory.service.taskset.publisher.KafkaTaskSetPublisher;
+import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetPublisher;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -49,6 +52,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 
+@MockBean(TaskSetPublisher.class)
 public abstract class GrpcTestBase {
 
     @DynamicPropertySource
@@ -62,7 +66,8 @@ public abstract class GrpcTestBase {
     protected final String differentTenantHeader = "Bearer esgs12345different";
     private static int port = getAvailablePort(6000, 9000);
     protected ManagedChannel channel;
-    protected TestTaskSetGrpcService testGrpcService;
+
+    protected TaskSetPublisher testGrpcService;
     @Autowired
     private ApplicationContext context;
     @SpyBean
@@ -72,8 +77,7 @@ public abstract class GrpcTestBase {
     private JdbcTemplate jdbcTemplate;
 
     protected void prepareTestGrpc() {
-        testGrpcService = context.getBean(TestTaskSetGrpcService.class);
-        testGrpcService.reset();
+        testGrpcService = context.getBean(TaskSetPublisher.class);
     }
 
     protected void prepareServer() throws VerificationException {
