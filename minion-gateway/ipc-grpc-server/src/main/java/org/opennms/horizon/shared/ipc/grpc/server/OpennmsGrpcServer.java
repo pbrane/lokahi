@@ -35,35 +35,12 @@ import com.google.protobuf.Message;
 import io.grpc.BindableService;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
-import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
-import org.opennms.cloud.grpc.minion.Identity;
-import org.opennms.cloud.grpc.minion.MinionToCloudMessage;
-import org.opennms.cloud.grpc.minion.RpcRequestProto;
-import org.opennms.cloud.grpc.minion.RpcResponseProto;
-import org.opennms.cloud.grpc.minion.SinkMessage;
+import org.opennms.cloud.grpc.minion.*;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcServer;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
 import org.opennms.horizon.shared.grpc.interceptor.InterceptorFactory;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.LocationIndependentRpcClientFactory;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.MinionManager;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcConnectionTracker;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcRequestDispatcher;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcRequestTimeoutManager;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcRequestTracker;
+import org.opennms.horizon.shared.grpc.interceptor.RateLimitingInterceptor;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.*;
 import org.opennms.horizon.shared.ipc.grpc.server.manager.adapter.MinionRSTransportAdapter;
 import org.opennms.horizon.shared.ipc.grpc.server.manager.rpcstreaming.MinionRpcStreamConnectionManager;
 import org.opennms.horizon.shared.ipc.rpc.api.RpcClientFactory;
@@ -73,6 +50,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * OpenNMS GRPC Server runs as OSGI bundle and it runs both RPC/Sink together.
@@ -113,6 +100,7 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
     private RpcRequestTimeoutManager rpcRequestTimeoutManager;
     private MinionManager minionManager;
     private TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor;
+    private RateLimitingInterceptor rateLimitingInterceptor;
 
     private final Map<String, Consumer<SinkMessage>> sinkDispatcherById = new ConcurrentHashMap<>();
 
@@ -366,4 +354,10 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
     }
 
 
+    public RateLimitingInterceptor getRateLimitingInterceptor() {
+        return this.rateLimitingInterceptor;
+    }
+    public void setRateLimitingInterceptor(RateLimitingInterceptor rateLimitingInterceptor) {
+        this.rateLimitingInterceptor = rateLimitingInterceptor;
+    }
 }

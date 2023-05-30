@@ -3,17 +3,16 @@ package org.opennms.miniongateway.grpc.server;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.grpc.stub.StreamObserver;
+import org.apache.ignite.Ignite;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
 import org.opennms.cloud.grpc.minion.Identity;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcServer;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
 import org.opennms.horizon.shared.grpc.interceptor.MeteringInterceptorFactory;
+import org.opennms.horizon.shared.grpc.interceptor.RateLimitingInterceptor;
+import org.opennms.horizon.shared.grpc.interceptor.RateLimitingInterceptorFactory;
 import org.opennms.horizon.shared.ipc.grpc.server.OpennmsGrpcServer;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.LocationIndependentRpcClientFactory;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.MinionManager;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcConnectionTracker;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcRequestTimeoutManager;
-import org.opennms.horizon.shared.ipc.grpc.server.manager.RpcRequestTracker;
+import org.opennms.horizon.shared.ipc.grpc.server.manager.*;
 import org.opennms.horizon.shared.ipc.grpc.server.manager.impl.RpcRequestTimeoutManagerImpl;
 import org.opennms.horizon.shared.ipc.grpc.server.manager.impl.RpcRequestTrackerImpl;
 import org.opennms.horizon.shared.ipc.grpc.server.manager.rpc.LocationIndependentRpcClientFactoryImpl;
@@ -46,6 +45,8 @@ public class GrpcServerConfig {
     @Autowired
     private MetricRegistry metricRegistry;
 
+    @Autowired
+    private Ignite ignite;
     @Bean
     public TenantedTaskSetResultsMapper tenantedTaskSetResultsMapper() {
         return new TenantedTaskSetResultsMapperImpl();
@@ -127,11 +128,13 @@ public class GrpcServerConfig {
         @Autowired TrapsKafkaForwarder trapsKafkaForwarder,
         @Autowired FlowKafkaForwarder flowKafkaForwarder,
         @Autowired RpcRequestTimeoutManager rpcRequestTimeoutManager,
-        @Autowired TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor
+        @Autowired TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor,
+        @Autowired RateLimitingInterceptor rateLimitingInterceptor
     ) throws Exception {
 
         OpennmsGrpcServer server = new OpennmsGrpcServer(serverBuilder, Arrays.asList(
-            new MeteringInterceptorFactory(metricRegistry)
+            new MeteringInterceptorFactory(metricRegistry),
+            new RateLimitingInterceptorFactory(ignite)
         ));
 
         server.setRpcConnectionTracker(rpcConnectionTracker);

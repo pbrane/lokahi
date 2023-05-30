@@ -3,13 +3,13 @@ package org.opennms.miniongateway.grpc.server;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
+import org.apache.ignite.Ignite;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcServer;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcServerBuilder;
 import org.opennms.horizon.shared.grpc.common.GrpcIpcUtils;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
 import org.opennms.horizon.shared.grpc.interceptor.LoggingInterceptor;
 import org.opennms.horizon.shared.grpc.interceptor.RateLimitingInterceptor;
-import org.opennms.horizon.shared.grpc.interceptor.RateLimitingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -45,13 +45,17 @@ public class GrpcIpcServerConfig {
         return new TenantIDGrpcServerInterceptor();
     }
 
+    @Bean
+    public RateLimitingInterceptor prepareRateLimitingInterceptor(@Autowired Ignite ignite) {
+        return new RateLimitingInterceptor(ignite);
+    }
     /**
      * External GRPC service for handling
      *
      * @return
      */
     @Bean(name = "externalGrpcIpcServer", destroyMethod = "stopServer")
-    public GrpcIpcServer prepareExternalGrpcIpcServer(@Autowired TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor) {
+    public GrpcIpcServer prepareExternalGrpcIpcServer(@Autowired TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor, @Autowired RateLimitingInterceptor rateLimitingInterceptor) {
         Properties properties = new Properties();
         properties.setProperty(GrpcIpcUtils.GRPC_MAX_INBOUND_SIZE, Long.toString(maxMessageSize));
 
@@ -62,7 +66,7 @@ public class GrpcIpcServerConfig {
 
         return new GrpcIpcServerBuilder(properties, externalGrpcPort, "PT10S", Arrays.asList(
             new LoggingInterceptor(),
-            new RateLimitingInterceptor(new RateLimitingService(bucket)),
+            rateLimitingInterceptor,
             tenantIDGrpcServerInterceptor
         ));
     }

@@ -2,11 +2,11 @@ tenants:
   - tenantID: opennms-prime
 
     traps: 100   # /m/minion - per minute per minion
-    flows: 10000 # /s
-    metrics: 50  # /s
+#    flows: 10000 # /s
+#    metrics: 50  # /s
 
   - tenantID: opennms-b111
 
     traps: 100   # /m/minion - per minute per minion
-    flows: 10000 # /s
-    metrics: 50  # /s
+#    flows: 10000 # /s
+#    metrics: 50  # /s
