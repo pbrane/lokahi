@@ -29,9 +29,7 @@
 package org.opennms.horizon.dockerit.testcontainers;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
@@ -46,6 +44,8 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.InternetProtocol;
 import org.testcontainers.utility.MountableFile;
+
+import eu.rekawek.toxiproxy.ToxiproxyClient;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class TestContainerRunnerClassRule extends ExternalResource {
@@ -119,9 +119,8 @@ public class TestContainerRunnerClassRule extends ExternalResource {
         this.toxiProxyContainer
             .dependsOn(this.sslGatewayContainer)
             .withNetwork(this.network)
-            .withNetworkAliases("opennms-minion-ssl-gateway") // Use the name of the container we try to intercept connections for
-            .withExposedPorts(8474)
-            .withExposedPorts(19443)
+            .withNetworkAliases("toxiproxy", "opennms-minion-ssl-gateway") // Use the name of the container we try to intercept connections for
+            .withExposedPorts(8474, 19443)
             .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("TOXI-PROXY"))
             .withCopyToContainer(Transferable.of("""
                 [ {
@@ -131,8 +130,11 @@ public class TestContainerRunnerClassRule extends ExternalResource {
                     "enabled": true
                 } ]
             """), "/config.json")
-            .withCommand("-config=/config.json")
+            .withCommand("-config=/config.json", "-host=")
             .start();
+
+        System.setProperty("toxiproxy.host", this.toxiProxyContainer.getHost());
+        System.setProperty("toxiproxy.port", Integer.toString(this.toxiProxyContainer.getMappedPort(8474)));
     }
 
     private void startSslGatewayContainer() {
