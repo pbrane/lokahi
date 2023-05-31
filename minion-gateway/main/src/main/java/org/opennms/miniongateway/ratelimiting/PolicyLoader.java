@@ -1,11 +1,9 @@
 package org.opennms.miniongateway.ratelimiting;
 
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.opennms.horizon.shared.grpc.interceptor.RateLimitingService;
+import org.opennms.horizon.shared.grpc.interceptor.SerializableBucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,13 +38,12 @@ public class PolicyLoader {
         t1.setTenantID("opennms-prime");
         t1.setTraps(100);
         tenants.add(t1);
+//        List<PolicyProperties.Tenant> tenants = policyProperties.getTenants();
         tenants.forEach( (t) -> {
                 int capacity = t.getTraps();
                 int tokens = capacity;
-                Bucket bucket = Bucket.builder()
-                    .addLimit(Bandwidth.classic(capacity, Refill.intervally(tokens, Duration.ofMinutes(1))))
-                    .addLimit(Bandwidth.classic(5, Refill.intervally(5, Duration.ofSeconds(20))))
-                    .build();
+
+            SerializableBucket bucket = new SerializableBucket(capacity, Duration.ofMinutes(1), tokens);
             rateLimitingServices.put(t.getTenantID(), new RateLimitingService(bucket));
             });
         cache.putAll(rateLimitingServices);

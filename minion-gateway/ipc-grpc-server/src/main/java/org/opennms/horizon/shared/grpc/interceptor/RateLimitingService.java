@@ -1,6 +1,5 @@
 package org.opennms.horizon.shared.grpc.interceptor;
 
-import io.github.bucket4j.Bucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,9 +11,9 @@ public class RateLimitingService implements Serializable {
     @Serial
     private static final long serialVersionUID = 6754783666280381320L;
     private final Logger logger = LoggerFactory.getLogger(RateLimitingService.class);
-    private final Bucket bucket;
+    private final SerializableBucket bucket;
 
-    public RateLimitingService(Bucket bucket) {
+    public RateLimitingService(SerializableBucket bucket) {
         this.bucket = bucket;
     }
 
