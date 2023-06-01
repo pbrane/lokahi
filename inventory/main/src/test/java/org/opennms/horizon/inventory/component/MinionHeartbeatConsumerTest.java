@@ -42,11 +42,15 @@ import org.opennms.cloud.grpc.minion_gateway.GatewayRpcRequestProto;
 import org.opennms.cloud.grpc.minion_gateway.GatewayRpcResponseProto;
 import org.opennms.horizon.grpc.echo.contract.EchoResponse;
 import org.opennms.horizon.grpc.heartbeat.contract.TenantLocationSpecificHeartbeatMessage;
+import org.opennms.horizon.inventory.exception.LocationNotFoundException;
+import org.opennms.horizon.inventory.model.MonitoringLocation;
+import org.opennms.horizon.inventory.service.MonitoringLocationService;
 import org.opennms.horizon.inventory.service.MonitoringSystemService;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -64,6 +68,9 @@ public class MinionHeartbeatConsumerTest {
     private KafkaTemplate<String, byte[]> kafkaTemplate;
     @Mock
     private MonitoringSystemService service;
+
+    @Mock
+    private MonitoringLocationService locationService;
 
     @InjectMocks
     @Spy
@@ -93,10 +100,14 @@ public class MinionHeartbeatConsumerTest {
         GatewayRpcResponseProto rpcResponse = GatewayRpcResponseProto.newBuilder().setPayload(Any.pack(response)).build();
         doReturn(CompletableFuture.completedFuture(rpcResponse)).when(rpcClient).sendRpcRequest(eq(TEST_TENANT_ID), any(GatewayRpcRequestProto.class));
         ReflectionTestUtils.setField(messageConsumer, "kafkaTopic", "test-topic");
+        var location  = new MonitoringLocation();
+        location.setLocation(TEST_LOCATION);
+        location.setTenantId(TEST_TENANT_ID);
+        doReturn(Optional.of(location)).when(locationService).findByLocationAndTenantId(eq(TEST_LOCATION), eq(TEST_TENANT_ID));
     }
 
     @Test
-    void testAcceptHeartbeats() throws InterruptedException {
+    void testAcceptHeartbeats() throws LocationNotFoundException {
         messageConsumer.receiveMessage(heartbeat.toByteArray(), headers);
         verify(service, times(1)).addMonitoringSystemFromHeartbeat(any(TenantLocationSpecificHeartbeatMessage.class));
         verify(rpcClient, timeout(5000).atLeast(1)).sendRpcRequest(eq(TEST_TENANT_ID), any(GatewayRpcRequestProto.class));
@@ -104,7 +115,7 @@ public class MinionHeartbeatConsumerTest {
     }
 
     @Test
-    void testAcceptHeartbeatsDelay() throws InterruptedException {
+    void testAcceptHeartbeatsDelay() throws LocationNotFoundException {
         messageConsumer.receiveMessage(heartbeat.toByteArray(), headers);
         doReturn(System.currentTimeMillis() + 30000).when(messageConsumer).getSystemTimeInMsec();
         messageConsumer.receiveMessage(heartbeat.toByteArray(), headers);

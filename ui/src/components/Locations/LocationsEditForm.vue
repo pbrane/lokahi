@@ -10,8 +10,8 @@
         data-test="headline"
       >
         <template #right>
-          <FeatherButton icon="placeholder">
-            <FeatherIcon :icon="placeholder"> </FeatherIcon>
+          <FeatherButton icon="map">
+            <FeatherIcon :icon="icons.Location"> </FeatherIcon>
           </FeatherButton>
           <FeatherButton
             @click="deleteLocation"
@@ -37,10 +37,10 @@
         </div>
         <div class="row">
           <AddressAutocomplete
-            :address-model="addressModel"
+            :addressModel="formInputs"
             class="input-address"
-            :on-address-model-update="onAddressChange"
-          ></AddressAutocomplete>
+            @onAddressChange="onAddressChange"
+          />
         </div>
         <div class="row">
           <FeatherInput
@@ -48,17 +48,13 @@
             v-model="formInputs.longitude"
             class="input-longitude"
             data-test="input-longitude"
-          >
-            <template #pre><FeatherIcon :icon="icons.placeholder" /></template
-          ></FeatherInput>
+          />
           <FeatherInput
             label="Latitude (optional)"
             v-model="formInputs.latitude"
             class="input-latitude"
             data-test="input-latitude"
-          >
-            <template #pre><FeatherIcon :icon="icons.placeholder" /></template
-          ></FeatherInput>
+          />
         </div>
       </div>
       <!-- <div class="row">
@@ -138,10 +134,9 @@ import Location from '@featherds/icon/action/Location'
 import ContentCopy from '@featherds/icon/action/ContentCopy'
 import DownloadFile from '@featherds/icon/action/DownloadFile'
 import Delete from '@featherds/icon/action/Delete'
-import placeholder from '@/assets/placeholder.svg'
 import { string } from 'yup'
 import { useForm } from '@featherds/input-helper'
-import { Location as LocationType } from '@/types/graphql'
+import { MonitoringLocation as LocationType, MonitoringLocationUpdateInput } from '@/types/graphql'
 import { DisplayType } from '@/types/locations.d'
 import { useLocationStore } from '@/store/Views/locationStore'
 
@@ -150,22 +145,23 @@ const props = defineProps<{
 }>()
 
 const locationStore = useLocationStore()
+const selectedLocation = computed(() => locationStore.locationsList.filter((l: LocationType) => l.id === props.id)[0])
+const formInputs = reactive({} as Required<MonitoringLocationUpdateInput>)
 
-const selectedLocation = locationStore.locationsList.filter((l: LocationType) => l.id === props.id)[0]
-const formInputs = ref({
-  id: selectedLocation.id,
-  location: selectedLocation.location,
-  address: selectedLocation.address,
-  longitude: selectedLocation.longitude,
-  latitude: selectedLocation.latitude
+watchEffect(() => {
+  formInputs.id = selectedLocation.value.id,
+  formInputs.location = selectedLocation.value.location,
+  formInputs.address= selectedLocation.value.address,
+  formInputs.longitude= selectedLocation.value.longitude,
+  formInputs.latitude = selectedLocation.value.latitude
 })
 
-const addressModel = ref({ _text: formInputs.value.address, value: 'savedAddress' })
-
 const onAddressChange = (newAddress: any) => {
-  formInputs.value.address = newAddress.value.label
-  formInputs.value.longitude = newAddress.value.x
-  formInputs.value.latitude = newAddress.value.y
+  if (newAddress != undefined) {
+    formInputs.address = newAddress.value.label
+    formInputs.longitude = newAddress.value.x
+    formInputs.latitude = newAddress.value.y
+  }
 }
 
 const form = useForm()
@@ -177,7 +173,7 @@ const onSubmit = async () => {
 
   if (isFormInvalid) return
 
-  const isFormUpdated = await locationStore.updateLocation(formInputs.value)
+  const isFormUpdated = await locationStore.updateLocation(formInputs)
 
   if (isFormUpdated) {
     locationStore.setDisplayType(DisplayType.LIST)
@@ -193,7 +189,6 @@ const deleteLocation = async () => {
   const success = await locationStore.deleteLocation(props.id)
 
   if (success) {
-    locationStore.setDisplayType(DisplayType.LIST)
     form.clearErrors()
   }
 }
@@ -233,8 +228,7 @@ const icons = markRaw({
   Location,
   ContentCopy,
   DownloadFile,
-  Delete,
-  placeholder
+  Delete
 })
 </script>
 

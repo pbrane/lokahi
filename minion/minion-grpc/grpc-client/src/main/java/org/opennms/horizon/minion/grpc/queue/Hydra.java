@@ -28,11 +28,6 @@
 
 package org.opennms.horizon.minion.grpc.queue;
 
-import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
 /**
  * A multi-headed queue.
  *
@@ -42,40 +37,16 @@ import java.util.concurrent.LinkedBlockingQueue;
  * In addition, the global queue can be polled for elements. Elements directly taken from the global queue will still
  * remain in the sub-queue which have been used to enqueue that element.
  */
-public class Hydra<E> {
+public interface Hydra<E> {
+    E poll();
 
-    private final Queue<E> global = new ConcurrentLinkedQueue<>();
+    SubQueue<E> queue();
 
-    public Hydra() {}
+    interface SubQueue<E> {
+        public E take() throws InterruptedException;
 
-    public E poll() {
-        return this.global.poll();
-    }
+        public E poll();
 
-    public SubQueue queue() {
-        return new SubQueue();
-    }
-
-    public class SubQueue {
-        private final BlockingQueue<E> local = new LinkedBlockingQueue<>();
-
-        private SubQueue() {}
-
-        public E take() throws InterruptedException {
-            final var element = this.local.take();
-            Hydra.this.global.remove(element);
-            return element;
-        }
-
-        public E poll() {
-            final var element = this.local.poll();
-            Hydra.this.global.remove(element);
-            return element;
-        }
-
-        public void put(final E element) throws InterruptedException {
-            Hydra.this.global.offer(element);
-            this.local.put(element);
-        }
+        public void put(final E element) throws InterruptedException;
     }
 }

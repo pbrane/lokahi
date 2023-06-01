@@ -24,9 +24,9 @@
         </div>
         <div class="row">
           <AddressAutocomplete
-            :address-model="addressModel"
+            :address-model="formInputs"
             class="input-address"
-            :on-address-model-update="onAddressChange"
+            @onAddressChange="onAddressChange"
           ></AddressAutocomplete>
         </div>
         <div class="row">
@@ -35,17 +35,13 @@
             v-model="formInputs.longitude"
             class="input-longitude"
             data-test="input-longitude"
-          >
-            <template #pre> <FeatherIcon :icon="icons.placeholder" /> </template
-          ></FeatherInput>
+          />
           <FeatherInput
             label="Latitude (optional)"
             v-model="formInputs.latitude"
             class="input-latitude"
             data-test="input-latitude"
-          >
-            <template #pre> <FeatherIcon :icon="icons.placeholder" /> </template
-          ></FeatherInput>
+          />
         </div>
       </div>
       <FooterSection>
@@ -71,7 +67,6 @@
 
 <script setup lang="ts">
 import Location from '@featherds/icon/action/Location'
-import placeholder from '@/assets/placeholder.svg'
 import { string } from 'yup'
 import { useForm } from '@featherds/input-helper'
 import { useLocationStore } from '@/store/Views/locationStore'
@@ -84,15 +79,16 @@ const formDefault = {
   latitude: ''
 }
 
-const addressModel = ref({ _text: '', value: '' })
-const formInputs = ref({
+const formInputs = reactive({
   ...formDefault
 })
 
 const onAddressChange = (newAddress: any) => {
-  formInputs.value.address = newAddress.value.label
-  formInputs.value.longitude = newAddress.value.x
-  formInputs.value.latitude = newAddress.value.y
+  if (newAddress != undefined) {
+    formInputs.address = newAddress.value.label
+    formInputs.longitude = newAddress.value.x
+    formInputs.latitude = newAddress.value.y
+  }
 }
 
 const locationStore = useLocationStore()
@@ -106,10 +102,11 @@ const onSubmit = async () => {
 
   if (isFormInvalid) return
 
-  const isFormSaved = await locationStore.createLocation(formInputs.value as any)
+  const isFormSaved = await locationStore.createLocation(formInputs as any)
 
   if (isFormSaved) {
-    formInputs.value = { ...formDefault }
+    Object.assign(formInputs, formDefault)
+    locationStore.setDisplayType(DisplayType.LIST)
     form.clearErrors()
   }
 }
@@ -119,8 +116,7 @@ onMounted(() => {
 })
 
 const icons = markRaw({
-  Location,
-  placeholder
+  Location
 })
 </script>
 
