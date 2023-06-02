@@ -130,7 +130,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>horizon-integration-test</id>
+                        <id>lokahi-integration-test</id>
                         <goals>
                             <goal>integration-test</goal>
                         </goals>
@@ -148,7 +148,7 @@
                     <!-- Fail the build on IT Failures.  Executed as a separate step so that post-integration-test -->
                     <!--  phase executes even after an IT failure.                                                 -->
                     <execution>
-                        <id>horizon-verify-it</id>
+                        <id>lokahi-verify-it</id>
                         <goals>
                             <goal>verify</goal>
                         </goals>
