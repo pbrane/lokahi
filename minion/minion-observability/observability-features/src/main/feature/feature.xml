@@ -31,7 +31,7 @@
         <bundle dependency="true">wrap:mvn:io.opentracing/opentracing-util/0.31.0</bundle>
     </feature>
 
-    <feature name="observability-horizon-tracing-internal" version="${project.version}">
+    <feature name="observability-lokahi-tracing-internal" version="${project.version}">
         <feature prerequisite="true">wrap</feature>
         <feature>aries-blueprint</feature>
         <feature>observability-opentracing-internal</feature>
@@ -43,7 +43,7 @@
         <feature>aries-blueprint</feature>
         <feature>observability-prometheus-dropwizard-internal</feature>
         <feature>observability-whiteboard-internal</feature>
-        <feature>observability-horizon-tracing-internal</feature>
+        <feature>observability-lokahi-tracing-internal</feature>
 
         <bundle>mvn:org.opennms.lokahi.minion/observability-metrics/${project.version}</bundle>
     </feature>

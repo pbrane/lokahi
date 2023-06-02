@@ -16,8 +16,8 @@
         <feature>icmp-guava-internal</feature>
         <feature>grpc-contract</feature>
         <bundle dependency="true">mvn:org.opennms.lokahi.shared/icmp-api/${project.version}</bundle>
-        <bundle dependency="true">mvn:org.opennms.lokahi.shared/horizon-common-logging/${project.version}</bundle>
-        <bundle dependency="true">mvn:org.opennms.lokahi.shared/horizon-common-utils/${project.version}</bundle>
+        <bundle dependency="true">mvn:org.opennms.lokahi.shared/lokahi-common-logging/${project.version}</bundle>
+        <bundle dependency="true">mvn:org.opennms.lokahi.shared/lokahi-common-utils/${project.version}</bundle>
         <bundle dependency="true">mvn:org.opennms.lib/org.opennms.lib.tracker/0.7</bundle>
     </feature>
 

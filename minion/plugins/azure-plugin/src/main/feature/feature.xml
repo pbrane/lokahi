@@ -4,7 +4,7 @@
     <feature name="azure-plugins" version="${project.version}">
         <feature>plugins-api</feature>
         <bundle>mvn:org.opennms.lokahi.minion/azure-plugin/${project.version}</bundle>
-        <bundle>mvn:org.opennms.lokahi.shared/horizon-common-logging/${project.version}</bundle>
+        <bundle>mvn:org.opennms.lokahi.shared/lokahi-common-logging/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.shared/protobuf/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.shared/azure-http/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.shared.azure/proto/${project.version}</bundle>

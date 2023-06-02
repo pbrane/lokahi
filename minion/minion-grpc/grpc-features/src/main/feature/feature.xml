@@ -50,7 +50,7 @@
         <feature>grpc-contract</feature>
         <feature>grpc-protobuf</feature>
 
-        <bundle>mvn:org.opennms.lokahi.shared/horizon-common-logging/${project.version}</bundle>
+        <bundle>mvn:org.opennms.lokahi.shared/lokahi-common-logging/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.shared/ipc-api/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.minion/grpc-client/${project.version}</bundle>
 

@@ -3,8 +3,8 @@
 
     <repository>mvn:org.opennms.lokahi.minion/ipc-features/${project.version}/xml/features</repository>
 
-    <feature name="plugins-horizon-utils-internal" version="${project.version}">
-        <bundle>mvn:org.opennms.lokahi.shared/horizon-common-utils/${project.version}</bundle>
+    <feature name="plugins-lokahi-utils-internal" version="${project.version}">
+        <bundle>mvn:org.opennms.lokahi.shared/lokahi-common-utils/${project.version}</bundle>
     </feature>
 
     <feature name="plugins-guava-internal">
@@ -43,8 +43,8 @@
         <feature>plugins-model</feature>
         <feature>plugins-eos-internal</feature>
         <feature>plugins-gson-internal</feature>
-<!--        <feature>plugins-horizon-core-lib-internal</feature>-->
-        <feature>plugins-horizon-utils-internal</feature>
+<!--        <feature>plugins-lokahi-core-lib-internal</feature>-->
+        <feature>plugins-lokahi-utils-internal</feature>
 
         <bundle>mvn:com.google.protobuf/protobuf-java/${protobuf.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.minion/plugins-api/${project.version}</bundle>

@@ -3,7 +3,7 @@
     <feature name="node-scan-plugin" version="${project.version}">
         <feature version="${project.version}">plugins-api</feature>
         <feature version="${project.version}">snmp-api</feature>
-        <bundle>mvn:org.opennms.lokahi.shared/horizon-common-logging/${project.version}</bundle>
+        <bundle>mvn:org.opennms.lokahi.shared/lokahi-common-logging/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.shared/protobuf/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.minion/nodescan-plugin/${project.version}</bundle>
     </feature>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <features name="minion-plugin-snmp-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.6.0">
 
-    <feature name="snmp-snmp4j" version="${project.version}" description="Horizon :: SNMP4j">
+    <feature name="snmp-snmp4j" version="${project.version}" description="Lokahi :: SNMP4j">
         <feature prerequisite="true">wrap</feature>
         <feature version="${project.version}">snmp-api</feature>
         <bundle>wrap:mvn:org.snmp4j/snmp4j/${snmp4j.version}</bundle>
         <bundle>mvn:commons-lang/commons-lang/${commons.lang.version}</bundle>
         <bundle>mvn:commons-io/commons-io/${commons.io.version}</bundle>
-        <bundle>mvn:org.opennms.lokahi.shared/horizon-common-logging/${project.version}</bundle>
+        <bundle>mvn:org.opennms.lokahi.shared/lokahi-common-logging/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.shared/snmp-api/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.shared/snmp-impl/${project.version}</bundle>
     </feature>

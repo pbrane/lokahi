@@ -40,7 +40,7 @@
         <feature>ipc-guava-internal</feature>
         <feature>protobuf</feature>
         <feature>grpc-minion</feature>
-        <bundle>mvn:org.opennms.lokahi.shared/horizon-common-logging/${project.version}</bundle>
+        <bundle>mvn:org.opennms.lokahi.shared/lokahi-common-logging/${project.version}</bundle>
         <bundle>mvn:org.opennms.lokahi.shared/ipc-api/${project.version}</bundle>
     </feature>
 
