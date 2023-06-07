@@ -1,15 +1,16 @@
-import { defineStore } from 'pinia'
-import { useLocationQueries } from '../Queries/locationQueries'
-import { useMinionsQueries } from '../Queries/minionsQueries'
-import { DisplayType } from '@/types/locations.d'
-import { useLocationMutations } from '../Mutations/locationMutations'
-import { MonitoringLocationCreateInput, MonitoringLocationUpdateInput } from '@/types/graphql'
+import {defineStore} from 'pinia'
+import {useLocationQueries} from '../Queries/locationQueries'
+import {useMinionsQueries} from '../Queries/minionsQueries'
+import {DisplayType} from '@/types/locations.d'
+import {useLocationMutations} from '../Mutations/locationMutations'
+import {MonitoringLocationCreateInput, MonitoringLocationUpdateInput} from '@/types/graphql'
 
 export const useLocationStore = defineStore('locationStore', () => {
-  const downloadCertificatePassword = ref('')
   const locationsList = ref()
   const minionsList = ref()
   const selectedLocationId = ref()
+  const selectedLocationIdForMinions = ref()
+  const certificatePassword = ref()
   const displayType = ref(DisplayType.LIST)
 
   const saveIsFetching = ref()
@@ -47,15 +48,19 @@ export const useLocationStore = defineStore('locationStore', () => {
     })
   }
 
-  const searchMinions = async (searchTerm = '') => {
-    // const minions = await locationQueries.searchMinion(searchTerm)
-    // minionsList.value = minions?.data?.value?.searchLocation || []
-  }
-
   const selectLocation = (id: number | undefined) => {
     if (id) displayType.value = DisplayType.EDIT
 
     selectedLocationId.value = id
+    selectedLocationIdForMinions.value = id
+    certificatePassword.value = ''
+  }
+
+  const getMinionsForLocationId = (id: number | undefined) => {
+    if (!id) return 
+    displayType.value = DisplayType.LIST
+    selectedLocationIdForMinions.value = id
+    minionsQueries.findMinionsByLocationId(id)
   }
 
   const setDisplayType = (type: DisplayType) => {
@@ -91,14 +96,23 @@ export const useLocationStore = defineStore('locationStore', () => {
   }
 
   const deleteLocation = async (id: number) => {
+    displayType.value = DisplayType.LIST
     const error = await locationMutations.deleteLocation({ id })
 
     if (!error.value) {
-      setDisplayType(DisplayType.LIST)
       await fetchLocations()
     }
 
     return !error.value
+  }
+
+  const getMinionCertificate = async (location: string) => {
+    const response = await locationQueries.getMinionCertificate(location)
+    return response.data.value?.getMinionCertificate
+  }
+
+  const setCertificatePassword = (password: string) => {
+    certificatePassword.value = password
   }
 
   return {
@@ -111,12 +125,15 @@ export const useLocationStore = defineStore('locationStore', () => {
     searchLocations,
     minionsList,
     fetchMinions,
-    searchMinions,
     createLocation,
     saveIsFetching,
     updateLocation,
     updateIsFetching,
     deleteLocation,
-    downloadCertificatePassword
+    getMinionCertificate,
+    certificatePassword,
+    setCertificatePassword,
+    getMinionsForLocationId,
+    selectedLocationIdForMinions
   }
 })

@@ -14,6 +14,10 @@ Keycloak:
   HostnameAdminUrl: https://onmshs.local:1443/auth
 
 OpenNMS:
+  global:
+    openTelemetry:
+      otlpTracesEndpoint: "http://jaeger-collector:4317"
+
   API:
     Resources:
       Limits:

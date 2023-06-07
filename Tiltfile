@@ -38,6 +38,7 @@
 # Tilt config #
 secret_settings(disable_scrub=True)  ## TODO: update secret values so we can reenable scrub
 load('ext://uibutton', 'cmd_button', 'location')
+load('ext://helm_remote', 'helm_remote') # for simple charts like jaeger
 
 cmd_button(name='reload-certificates',
            argv=['sh', '-c', 'find target/tmp/ -type f -exec rm {} \\;'],
@@ -175,9 +176,17 @@ load_certificate_authority("client-root-ca-certificate", "client-ca", "target/tm
 
 
 # Deployment #
+# https://github.com/jaegertracing/helm-charts/tree/main/charts/jaeger
+helm_remote('jaeger', version='0.71.0', repo_url='https://jaegertracing.github.io/helm-charts', values="tilt-jaeger-values.yaml")
+k8s_resource(
+    'jaeger',
+    labels=['0_useful'],
+    port_forwards=port_forward(16686, name="Jaeger UI"),
+)
+
 k8s_yaml(
     helm(
-        'charts/opennms',
+        'charts/lokahi',
         values=['./tilt-helm-values.yaml'],
     )
 )
@@ -345,12 +354,14 @@ docker_build(
 k8s_resource(
     'onms-keycloak',
     new_name='keycloak',
+    labels='keycloak',
     port_forwards=['26080:8080'],
 )
 
 ### Email ###
 k8s_resource(
     'mail-server',
+    labels='z_dependencies',
     port_forwards=['22080:8025'],
 )
 
@@ -361,18 +372,21 @@ docker_build(
 )
 k8s_resource(
     'grafana',
+    labels='z_dependencies',
     port_forwards=['18080:3000'],
 )
 
 ### Cortex ###
 k8s_resource(
     'cortex',
+    labels='z_dependencies',
     port_forwards=['19000:9000'],
 )
 
 ### Postgres ###
 k8s_resource(
     'postgres',
+    labels='z_dependencies',
     port_forwards=['25054:5432'],
 )
 
@@ -380,17 +394,41 @@ k8s_resource(
 k8s_resource(
     'onms-kafka',
     new_name='kafka',
+    labels='z_dependencies',
     port_forwards=['24092:24092'],
 )
 
 ### Prometheus ###
 k8s_resource(
     'prometheus',
+    labels='z_dependencies',
     port_forwards=['32090:9090'],
 )
 
 ### Others ###
 k8s_resource(
     'ingress-nginx-controller',
-    port_forwards=['0.0.0.0:8123:80', '0.0.0.0:1443:443'],
+    labels=['0_useful'],
+    port_forwards=[
+        port_forward(8123, 80, host='0.0.0.0'),
+        port_forward(1443, 443, host='0.0.0.0'),
+    ],
+    links=[
+        link("https://onmshs.local:1443/", name="Web UI"),
+    ],
+)
+
+k8s_resource(
+    'opennms-nginx-errors',
+    labels=['opennms-nginx-errors'],
+)
+
+k8s_resource(
+    'ingress-nginx-admission-create',
+    labels=['z_ingress-nginx-support'],
+)
+
+k8s_resource(
+    'ingress-nginx-admission-patch',
+    labels=['z_ingress-nginx-support'],
 )
