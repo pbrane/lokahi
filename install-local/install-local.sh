@@ -254,7 +254,6 @@ if [ $CONTEXT == "local" ]; then
   echo
   install_nginx
   time helm upgrade -i lokahi ./../charts/lokahi -f ./tmp/install-local-opennms-lokahi-values.yaml --namespace $NAMESPACE --wait --timeout "${TIMEOUT}"
-  if [ $? -ne 0 ]; then exit; fi
 
   cluster_ready_check
 
@@ -278,8 +277,6 @@ elif [ "$CONTEXT" == "custom-images" ]; then
 
   install_helm_chart_custom_images
 
-  if [ $? -ne 0 ]; then exit; fi
-
   cluster_ready_check
 
 elif [ "$CONTEXT" == "cicd" ]; then
@@ -295,8 +292,6 @@ elif [ "$CONTEXT" == "cicd" ]; then
   # output values from the release to help with debugging pipelines
   helm get values lokahi --namespace $NAMESPACE
 
-  if [ $? -ne 0 ]; then exit; fi
-
   cluster_ready_check
 
 elif [ $CONTEXT == "existing-k8s" ]; then
@@ -306,7 +301,6 @@ elif [ $CONTEXT == "existing-k8s" ]; then
   echo
   install_nginx
   time helm upgrade -i lokahi ./../charts/lokahi -f ./tmp/install-local-opennms-lokahi-values.yaml --namespace $NAMESPACE --create-namespace --wait --timeout "${TIMEOUT}"
-  if [ $? -ne 0 ]; then exit; fi
 
   cluster_ready_check
 
