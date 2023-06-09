@@ -180,11 +180,17 @@ create_namespace () {
   kubectl create namespace $NAMESPACE
 }
 
+install_nginx () {
+  helm repo add -n $NAMESPACE ingress-nginx-repo https://kubernetes.github.io/ingress-nginx
+  helm upgrade -i ingress-nginx ingress-nginx-repo/ingress-nginx --version=4.7.0 --values=../tilt-ingress-nginx-values.yaml --namespace $NAMESPACE --wait --timeout "${TIMEOUT}"
+}
+
 install_helm_chart_custom_images () {
   echo
   echo ________________Installing Lokahi________________
   echo
 
+  install_nginx
   if ! time helm upgrade -i lokahi ./../charts/lokahi \
   -f ./tmp/install-local-opennms-lokahi-custom-images-values.yaml \
   --namespace $NAMESPACE \
@@ -246,6 +252,7 @@ if [ $CONTEXT == "local" ]; then
   echo
   echo ________________Installing Lokahi________________
   echo
+  install_nginx
   time helm upgrade -i lokahi ./../charts/lokahi -f ./tmp/install-local-opennms-lokahi-values.yaml --namespace $NAMESPACE --wait --timeout "${TIMEOUT}"
   if [ $? -ne 0 ]; then exit; fi
 
@@ -297,6 +304,7 @@ elif [ $CONTEXT == "existing-k8s" ]; then
   echo
   echo ________________Installing Lokahi________________
   echo
+  install_nginx
   time helm upgrade -i lokahi ./../charts/lokahi -f ./tmp/install-local-opennms-lokahi-values.yaml --namespace $NAMESPACE --create-namespace --wait --timeout "${TIMEOUT}"
   if [ $? -ne 0 ]; then exit; fi
 
