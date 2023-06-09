@@ -181,8 +181,17 @@ create_namespace () {
 }
 
 install_nginx () {
-  helm repo add -n $NAMESPACE ingress-nginx-repo https://kubernetes.github.io/ingress-nginx
-  helm upgrade -i ingress-nginx ingress-nginx-repo/ingress-nginx --version=4.7.0 --values=../tilt-ingress-nginx-values.yaml --namespace $NAMESPACE --wait --timeout "${TIMEOUT}"
+  # The controller.service.type=ClusterIP is because kind doesn't provide a LoadBalancer by default.
+  # https://github.com/fluxcd/flux2/issues/2476#issuecomment-1051275654
+  # https://github.com/kubernetes-sigs/kind/issues/2889#issuecomment-1321223613
+  helm upgrade --install ingress-nginx ingress-nginx \
+    --repo https://kubernetes.github.io/ingress-nginx \
+    --version 4.7.0 \
+    --namespace $NAMESPACE \
+    --set controller.service.type=ClusterIP \
+    --set controller.hostPort.enabled=true \
+    --values=../tilt-ingress-nginx-values.yaml \
+    --wait --timeout "${TIMEOUT}"
 }
 
 install_helm_chart_custom_images () {
