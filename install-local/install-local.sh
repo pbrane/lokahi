@@ -134,7 +134,21 @@ save_part_of_normal_docker_image_load () {
 }
 
 load_part_of_normal_docker_image_load () {
-	docker exec -i "${KIND_CLUSTER_NAME}-control-plane" ctr --namespace="${NAMESPACE}" images import --snapshotter overlayfs -
+	if ! docker exec -i "${KIND_CLUSTER_NAME}-control-plane" ctr --namespace="${NAMESPACE}" images import --snapshotter overlayfs -; then
+		echo "" >&2
+		echo "$(basename $0): failed to import images into kind cluster." >&2
+		echo "If you got the error 'ctr: image might be filtered out'," >&2
+		echo "'ctr: failed to resolve rootfs', or another odd error about an image, it" >&2
+		echo "might be due to trying to load amd64 images on an arm64 system or vice-versa." >&2
+		echo "See: https://github.com/kubernetes-sigs/kind/issues/2772#issuecomment-1145111244" >&2
+		echo "" >&2
+		echo "Double-check that you are using the right image names." >&2
+		echo "" >&2
+		echo "Make sure all of your images are built for the same platform that your" >&2
+		echo "cluster is running as. You can use this command to see the architecture" >&2
+		echo "for an image: docker inspect --format='{{.Architecture}}' <image>" >&2
+		exit 1
+	fi
 }
 
 load_images_to_kind_using_normal_docker () {
@@ -160,7 +174,7 @@ install_helm_chart_custom_images () {
   echo ________________Installing Horizon Stream________________
   echo
 
-  helm upgrade -i lokahi ./../charts/lokahi \
+  if ! helm upgrade -i lokahi ./../charts/lokahi \
   -f ./tmp/install-local-opennms-lokahi-custom-images-values.yaml \
   --namespace $NAMESPACE \
   --set OpenNMS.Alert.Image=${IMAGE_PREFIX}/lokahi-alert:${IMAGE_TAG} \
@@ -177,9 +191,23 @@ install_helm_chart_custom_images () {
   --set OpenNMS.Notification.Image=${IMAGE_PREFIX}/lokahi-notification:${IMAGE_TAG} \
   --set OpenNMS.API.Image=${IMAGE_PREFIX}/lokahi-rest-server:${IMAGE_TAG} \
   --set OpenNMS.UI.Image=${IMAGE_PREFIX}/lokahi-ui:${IMAGE_TAG} \
-  --wait --timeout "${TIMEOUT}"
+  --wait --timeout "${TIMEOUT}"; then
+    helm_debug
+  fi
 
   echo Helm chart installation completed
+}
+
+helm_debug () {
+	echo "$(basename $0): Helm install/upgrade failed to complete within timeout." >&2
+	echo "Pod status:" >&2
+	kubectl get pods --namespace $NAMESPACE >&2
+	echo "" >&2
+	echo "If you see a lot of pods in ErrImagePull or ImagePullBackOff status," >&2
+	echo "there might have been problems loading images into Kind. If you loaded" >&2
+	echo "local images, try setting the LOAD_IMAGES_USING_KIND environment variable" >&2
+	echo "to anything as a workaround and let us know how it goes." >&2
+	exit 1
 }
 
 #### MAIN
@@ -234,7 +262,11 @@ elif [ "$CONTEXT" == "custom-images" ]; then
   # Will add a kind-registry here at some point, see .github/ for sample script.
   echo "START LOADING IMAGES INTO KIND AT $(date)"
 
-  time load_images_to_kind_using_normal_docker
+  if [ -z "${LOAD_IMAGES_USING_KIND}" ]; then
+    time load_images_to_kind_using_normal_docker
+  else
+    time load_images_to_kind_using_slow_kind
+  fi
 
   echo "FINISHED LOADING IMAGES INTO KIND AT $(date)"
 
