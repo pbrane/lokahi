@@ -1,0 +1,19 @@
+query FindLocationsForWelcome {
+  findAllLocations {
+    id
+    location
+  }
+}
+
+query FindMinionsForWelcome($locationId: Long!) {
+  findMinionsByLocationId(locationId: $locationId) {
+    id
+  }
+}
+
+query DownloadMinionCertificateForWelcome($location: Long) {
+  getMinionCertificate(locationId: $location){
+    password
+    certificate
+  }
+}

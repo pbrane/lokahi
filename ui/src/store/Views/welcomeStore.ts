@@ -1,7 +1,11 @@
 import { ItemPreviewProps } from '@/components/Common/ItemPreview.vue'
 import { defineStore } from 'pinia'
+import { useWelcomeQueries } from '../Queries/welcomeQueries'
+import { CertificateResponse } from '@/types/graphql'
 
 interface WelcomeStoreState {
+  showOnboarding: boolean,
+  minionCert: CertificateResponse
   copied: boolean,
   devicePreview: ItemPreviewProps,
   downloaded: boolean,
@@ -18,6 +22,8 @@ interface WelcomeStoreState {
 
 export const useWelcomeStore = defineStore('welcomeStore', {
   state: () => ({
+    showOnboarding: false,
+    minionCert: {},
     copied: false,
     devicePreview: {
       title: 'Device Preview', loading: false, itemTitle: 'Minion Gateway', itemSubtitle: 'Added --/--/--', itemStatuses: [
@@ -37,6 +43,11 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     slideThreeDisabled: false
   } as WelcomeStoreState),
   actions: {
+    async getShowOnboardingState() {
+      const queries = useWelcomeQueries()
+      await queries.checkSetupState()
+      this.showOnboarding = queries.isShowOnboardingState
+    },
     nextSlide() {
       this.slide = this.slide + 1
       if (this.slide === 2) {
@@ -85,7 +96,10 @@ export const useWelcomeStore = defineStore('welcomeStore', {
         this.minionStatusCopy = 'Minion Detected.'
       }
     },
-    downloadClick() {
+    async downloadClick() {
+      const queries = useWelcomeQueries()
+      await queries.downloadMinionCertificate()
+      this.minionCert = queries.minionCert
       this.downloaded = true
       this.minionStatusLoading = true
       this.minionStatusStarted = true

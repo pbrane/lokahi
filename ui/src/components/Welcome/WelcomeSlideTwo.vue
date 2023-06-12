@@ -54,7 +54,7 @@
                         </div>
                     </div>
                     <div class="welcome-slide-table-body">
-                        <pre>docker openms/minion.2.0 -e key=193-b629-c3945-1233-11432 -v &lt;pathToPayload&gt;/minioncert-locationA.zip</pre>
+                        <pre>docker openms/minion.2.0 -e key={{ welcomeStore.minionCert.password }} -v &lt;pathToPayload&gt;/minioncert-locationA.zip</pre>
                     </div>
                 </div>
             </div>
