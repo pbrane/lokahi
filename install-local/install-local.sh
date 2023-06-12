@@ -142,9 +142,11 @@ load_images_to_kind_using_normal_docker () {
 	pull_docker_images
 
 	### DEBUGGING
-	echo =====
-	docker images || crictl images || true
-	echo =====
+	if [ -n "${DEBUG_IMAGES}" ]; then
+		echo =====
+		docker images || crictl images || true
+		echo =====
+	fi
 
 	save_part_of_normal_docker_image_load | load_part_of_normal_docker_image_load
 }
