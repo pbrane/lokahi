@@ -44,14 +44,7 @@ create_cluster() {
 }
 
 cluster_ready_check () {
-
-  # This is the last pod to run, if ready, then give back the terminal session.
-  sleep 60 # Need to wait until the pod is created or else nothing comes back. Messes with the conditional.
-  while [[ $(kubectl get pods -n $NAMESPACE -l=app.kubernetes.io/component="controller-$NAMESPACE" -o jsonpath='{.items[*].status.containerStatuses[0].ready}') == 'false' ]]; do
-    echo "not-ready"
-    sleep 30
-  done
-
+  kubectl rollout status -n $NAMESPACE -w --timeout=$TIMEOUT deployment ingress-nginx-controller
 }
 
 cluster_install_kubelet_config() {
