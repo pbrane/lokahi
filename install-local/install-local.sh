@@ -51,9 +51,12 @@ cluster_install_kubelet_config() {
   # Copy the docker config.json file into the kind-control-plane container
   if [ -f "${LOCAL_DOCKER_CONFIG_JSON}" ]
   then
-    docker cp "${LOCAL_DOCKER_CONFIG_JSON}" "${KIND_CLUSTER_NAME}-control-plane:/var/lib/kubelet/config.json"
+    # https://kind.sigs.k8s.io/docs/user/private-registries/
+    node_name="${KIND_CLUSTER_NAME}-control-plane"
+    docker cp "${LOCAL_DOCKER_CONFIG_JSON}" "${node_name}:/var/lib/kubelet/config.json"
+    docker exec "${node_name}" systemctl restart kubelet.service
   else
-    echo "NO ${HOME}/.docker/config.json: not configuring kind for external docker registry access"
+    echo "NO ${LOCAL_DOCKER_CONFIG_JSON}: not configuring kind for external docker registry access"
   fi
 }
 
