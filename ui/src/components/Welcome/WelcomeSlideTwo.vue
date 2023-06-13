@@ -34,7 +34,7 @@
                     </div>
                     <div class="welcome-slide-table-body">
                         <strong>File Path:</strong>
-                        <span>/tmp/filename.zip</span>
+                        <span>/tmp/filename.p12</span>
                     </div>
                 </div>
             </div>
@@ -54,7 +54,7 @@
                         </div>
                     </div>
                     <div class="welcome-slide-table-body">
-                        <pre>docker openms/minion.2.0 -e key={{ welcomeStore.minionCert.password }} -v &lt;pathToPayload&gt;/minioncert-locationA.zip</pre>
+                        <pre>docker openms/minion.2.0 -e key={{ welcomeStore.minionCert.password }} -v &lt;pathToPayload&gt;/default-certificate.p12</pre>
                     </div>
                 </div>
             </div>

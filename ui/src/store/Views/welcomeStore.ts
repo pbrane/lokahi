@@ -2,9 +2,12 @@ import { ItemPreviewProps } from '@/components/Common/ItemPreview.vue'
 import { defineStore } from 'pinia'
 import { useWelcomeQueries } from '../Queries/welcomeQueries'
 import { CertificateResponse } from '@/types/graphql'
+import { createAndDownloadBlobFile } from '@/components/utils'
+import { fncVoid } from '@/types'
 
 interface WelcomeStoreState {
   showOnboarding: boolean,
+  stopPollingMinions: fncVoid
   minionCert: CertificateResponse
   copied: boolean,
   devicePreview: ItemPreviewProps,
@@ -23,7 +26,8 @@ interface WelcomeStoreState {
 export const useWelcomeStore = defineStore('welcomeStore', {
   state: () => ({
     showOnboarding: false,
-    minionCert: {},
+    stopPollingMinions: () => {},
+    minionCert: { password: '', certificate: '' },
     copied: false,
     devicePreview: {
       title: 'Device Preview', loading: false, itemTitle: 'Minion Gateway', itemSubtitle: 'Added --/--/--', itemStatuses: [
@@ -52,6 +56,9 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       this.slide = this.slide + 1
       if (this.slide === 2) {
         this.loadDevicePreview()
+      }
+      if (this.slide === 3) {
+        this.stopPollingMinions()
       }
       this.scrollTop()
     },
@@ -100,6 +107,12 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       const queries = useWelcomeQueries()
       await queries.downloadMinionCertificate()
       this.minionCert = queries.minionCert
+
+      const { resume: startPollingMinions, pause: stopPollingMinions } = useTimeoutPoll(this.refreshMinions, 10000)
+      startPollingMinions()
+      this.stopPollingMinions = stopPollingMinions
+
+      createAndDownloadBlobFile(this.minionCert.certificate, `${queries.defaultLocationName}-certificate.p12`)
       this.downloaded = true
       this.minionStatusLoading = true
       this.minionStatusStarted = true
@@ -115,6 +128,10 @@ export const useWelcomeStore = defineStore('welcomeStore', {
           this.updateMinionStatusCopy()
         }, 3000)
       }, 3000)
+    },
+    async refreshMinions() {
+      const queries = useWelcomeQueries()
+      await queries.getMinionsByLocId() 
     },
     toggleSlideOneCollapse() {
       this.slideOneCollapseVisible = !this.slideOneCollapseVisible
