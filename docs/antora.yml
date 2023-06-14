@@ -1,0 +1,11 @@
+
+name: lokahi
+version: '1.0'
+title: Lōkahi/Cloud
+asciidoc:
+  attributes:
+    source-language: asciidoc@
+    xrefstyle: short@
+
+nav:
+- modules/ROOT/nav.adoc
