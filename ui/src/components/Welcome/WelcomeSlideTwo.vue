@@ -33,19 +33,19 @@
                         </div>
                     </div>
                     <div class="welcome-slide-table-body">
-                        <strong>File Path:</strong>
-                        <span>/tmp/filename.p12</span>
+                        <strong>File Path: </strong>
+                        <span>/tmp/default.p12</span>
                     </div>
                 </div>
             </div>
             <div class="welcome-slide-step">
                 <h2>Step 2: Copy and Run Docker Install Command</h2>
-                <pre>Replace pathToPayload with the file path to the Payload. (e.g. /tmp/)</pre>
+                <pre>Replace pathToFile with the path to the certificate. (e.g. /tmp/)</pre>
                 <div class="welcome-slide-table">
                     <div class="welcome-slide-table-header">
                         <span>Command</span>
                         <div>
-                            <FeatherButton text @click="welcomeStore.copyDockerClick">
+                            <FeatherButton text @click="welcomeStore.copyDockerClick" :disabled="!welcomeStore.minionCert.password">
                                 <template #icon>
                                     <FeatherIcon :icon="welcomeStore.copied ? CheckIcon : CopyIcon" />
                                 </template>
@@ -54,7 +54,9 @@
                         </div>
                     </div>
                     <div class="welcome-slide-table-body">
-                        <pre>docker openms/minion.2.0 -e key={{ welcomeStore.minionCert.password }} -v &lt;pathToPayload&gt;/default-certificate.p12</pre>
+                        <pre>
+                            {{ welcomeStore.dockerCmd }}
+                        </pre>
                     </div>
                 </div>
             </div>
@@ -164,6 +166,7 @@ const welcomeStore = useWelcomeStore()
             pre {
                 margin:0;
                 white-space: normal;
+                word-wrap: break-word;
             }
         }
     }

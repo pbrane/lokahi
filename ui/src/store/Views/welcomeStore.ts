@@ -86,7 +86,7 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       console.log('Start Monitoring')
     },
     copyDockerClick() {
-      this.copied = true
+      navigator.clipboard.writeText(this.dockerCmd).then(() => this.copied = true)
       setTimeout(() => {
         this.copied = false
       }, 3000)
@@ -150,6 +150,15 @@ export const useWelcomeStore = defineStore('welcomeStore', {
           }, 1000)
         }
       }
+    }
+  },
+  getters: {
+    dockerCmd: (state) => {
+      const route = useRoute()
+      const url = route.fullPath.includes('dev')
+        ? 'minion.onms-fb-dev.dev.nonprod.dataservice.opennms.com'
+        : 'minion.onms-fb-prod.production.prod.dataservice.opennms.com'
+      return `docker run --rm -p 8181:8181 -p 8101:8101 -p 1162:1162/udp -p 8877:8877/udp -p 4729:4729/udp -p 9999:9999/udp -p 162:162/udp -e TZ='America/New_York' -e USE_KUBERNETES="false" -e MINION_GATEWAY_HOST="${url}" -e MINION_GATEWAY_PORT=443 -e MINION_GATEWAY_TLS="true" -e GRPC_CLIENT_KEYSTORE='/opt/karaf/minion.p12' -e GRPC_CLIENT_KEYSTORE_PASSWORD='${state.minionCert.password}'  -e MINION_ID='default'  --mount type=bind,source="pathToFile/default.p12",target="/opt/karaf/minion.p12",readonly opennms/lokahi-minion:latest`
     }
   }
 })
