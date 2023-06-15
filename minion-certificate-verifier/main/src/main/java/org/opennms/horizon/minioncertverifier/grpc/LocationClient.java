@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2023 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
+ * Copyright (C) 2022 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -26,17 +26,13 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.api.portal.models;
+package org.opennms.horizon.minioncertverifier.grpc;
 
+import java.util.Optional;
+import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 
-public class BtoInstanceRequest {
-    public String name;
-    public String admin;
-    public String adminFullName;
+public interface LocationClient {
 
-    public BtoInstanceRequest(String instanceName, String adminEmail) {
-        this.name = instanceName;
-        this.admin = adminEmail;
-        this.adminFullName = "";
-    }
+    Optional<MonitoringLocationDTO> getLocation(String tenantId, long locationId);
+
 }
