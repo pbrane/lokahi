@@ -1,22 +1,18 @@
 .About
-* xref:about:introduction.adoc[Introduction]
-* xref:about:terminology.adoc[Terminology]
+* xref:about:introduction.adoc[]
 
 .Installation
-* xref:installation:requirements.adoc[Requirements]
-* xref:installation:installation.adoc[Installation]
-
-.Configuration
-* xref:configuration:connections.adoc[Connections]
-* xref:configuration:requisitions.adoc[Requisitions]
+* xref:installation:requirements.adoc[]
+* xref:installation:installation.adoc[]
 
 .Operation
-* xref:operation:api-caching.adoc[API Caching]
-* xref:operation:service-assurance.adoc[Service Assurance]
-* xref:operation:event-polling.adoc[Events]
-* xref:operation:data-collection.adoc[Data Collection]
+* xref:operation/discovery:introduction.adoc[]
+* xref:operation/policies:introduction.adoc[]
+* xref:operation/inventory:introduction.adoc[]
+* xref:operation/alerts:introduction.adoc[]
+* xref:operation/visualizations:introduction.adoc[]
+* xref:operation/notifications:introduction.adoc[]
 
 .Reference
-* xref:reference:config-properties.adoc[Config Properties]
-* xref:reference:endpoints.adoc[ReST Endpoints]
-* xref:reference:shell-commands.adoc[Useful Karaf Shell Commands]
+
+* xref:reference:introduction.adoc[]

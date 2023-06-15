@@ -39,3 +39,7 @@ java/bin/
 *.iml
 idea/
 *.log
+
+# Antora artifacts
+/build/
+/public/

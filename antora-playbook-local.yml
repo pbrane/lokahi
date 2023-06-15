@@ -1,5 +1,6 @@
 site:
   title: Lōkahi/Cloud
+  url: https://github.com/OpenNMS-Cloud/lokahi
   start_page: lokahi::index.adoc
 content:
   sources:
@@ -11,13 +12,12 @@ ui:
     url: https://github.com/opennms-forge/antora-ui-opennms/releases/download/v3.1.0/ui-bundle.zip
 asciidoc:
   attributes:
-    experimental: true
     stem: latexmath
     idprefix: ''
     idseparator: '-'
     page-pagination: ''
     source-language: asciidoc@
-    distribution: 'Horizon'
+    distribution: 'Lōkahi/Cloud'
     tabs: tabs
   extensions:
     - ./docs/lib/tabs-block.js
