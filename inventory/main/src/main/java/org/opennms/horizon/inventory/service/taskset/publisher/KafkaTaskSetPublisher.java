@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -28,71 +28,53 @@
 
 package org.opennms.horizon.inventory.service.taskset.publisher;
 
-import io.grpc.ManagedChannel;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.service.contract.AddSingleTaskOp;
 import org.opennms.taskset.service.contract.RemoveSingleTaskOp;
-import org.opennms.taskset.service.contract.TaskSetServiceGrpc;
-import org.opennms.taskset.service.contract.TaskSetServiceGrpc.TaskSetServiceBlockingStub;
 import org.opennms.taskset.service.contract.UpdateSingleTaskOp;
 import org.opennms.taskset.service.contract.UpdateTasksRequest;
-import org.opennms.taskset.service.contract.UpdateTasksResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-public class GrpcTaskSetPublisher implements TaskSetPublisher {
+@RequiredArgsConstructor
+@Component
+@Slf4j
+@PropertySource("classpath:application.yml")
+@Primary
+public class KafkaTaskSetPublisher implements TaskSetPublisher {
 
-    public static final String TASK_SET_PUBLISH_BEAN_NAME = "taskSetServiceBlockingStub";
-    private static final Logger LOG = LoggerFactory.getLogger(GrpcTaskSetPublisher.class);
-    private final ManagedChannel channel;
-    private final long deadline;
+    private static final String DEFAULT_TASK_SET_PUBLISH_TOPIC = "task-set-publisher";
+    private final KafkaTemplate<String, byte[]> kafkaTemplate;
 
-    // Avoid TaskSetServiceBlockingStub sadly because it is final, and hence cannot be mocked.  This is effective
-    private io.grpc.stub.AbstractBlockingStub<TaskSetServiceBlockingStub> taskSetServiceStub;
-
-    // Test helpers to overcome static method calls which are challenging, at best, to mock
-    @Setter
-    private Function<ManagedChannel, io.grpc.stub.AbstractBlockingStub<TaskSetServiceBlockingStub>> taskSetServiceBlockingStubSupplier = this::supplyDefaultTaskSetServiceBlockingStub;
-
-    public GrpcTaskSetPublisher(ManagedChannel channel, long deadline) {
-        this.channel = channel;
-        this.deadline = deadline;
-    }
-
-    public void init() {
-        taskSetServiceStub = taskSetServiceBlockingStubSupplier.apply(channel);
-    }
+    @Value("${kafka.topics.task-set-publisher:" + DEFAULT_TASK_SET_PUBLISH_TOPIC + "}")
+    private String kafkaTopic;
 
     @Override
     public void publishNewTasks(String tenantId, String location, List<TaskDefinition> taskList) {
+
+        log.info("Publishing task updates for location {} with tenantId {}, taskDef = {}", location, tenantId, taskList);
         publishTaskSetUpdate(
             (updateBuilder) -> taskList.forEach((taskDefinition) -> addAdditionOpToTaskUpdate(updateBuilder, taskDefinition)),
             tenantId,
-            location
-        );
+            location);
     }
 
     @Override
     public void publishTaskDeletion(String tenantId, String location, List<TaskDefinition> taskList) {
+
+        log.info("Publishing task removal for location {} with tenantId {}, taskDef = {}", location, tenantId, taskList);
         publishTaskSetUpdate(
             (updateBuilder) -> taskList.forEach((taskDefinition) -> addRemovalOpToUpdate(updateBuilder, taskDefinition.getId())),
             tenantId,
-            location
-        );
-    }
-
-//========================================
-// Internals
-//----------------------------------------
-
-    private TaskSetServiceBlockingStub supplyDefaultTaskSetServiceBlockingStub(ManagedChannel channel) {
-        return TaskSetServiceGrpc.newBlockingStub(channel);
+            location);
     }
 
     private void addAdditionOpToTaskUpdate(UpdateTasksRequest.Builder updateBuilder, TaskDefinition task) {
@@ -124,26 +106,14 @@ public class GrpcTaskSetPublisher implements TaskSetPublisher {
     }
 
     private void publishTaskSetUpdate(Consumer<UpdateTasksRequest.Builder> populateUpdateRequestOp, String tenantId, String location) {
-        try {
-            UpdateTasksRequest.Builder request =
-                UpdateTasksRequest.newBuilder()
-                    .setTenantId(tenantId)
-                    .setLocation(location)
-                    ;
+        UpdateTasksRequest.Builder request =
+            UpdateTasksRequest.newBuilder()
+                .setTenantId(tenantId)
+                .setLocation(location);
 
-            populateUpdateRequestOp.accept(request);
+        populateUpdateRequestOp.accept(request);
 
-            UpdateTasksResponse response =
-                taskSetServiceStub
-                    .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
-                    .updateTasks(request.build())
-                ;
-
-            LOG.info("Update tasks for TaskSet complete: tenant-id={}; location={}; response={}", tenantId, location, response);
-        } catch (Exception exc) {
-            LOG.error("Error updating tasks for TaskSet", exc);
-            throw new RuntimeException("failed to update tasks for TaskSet", exc);
-        }
+        kafkaTemplate.send(kafkaTopic, tenantId + ":" + location, request.build().toByteArray());
 
     }
 }
