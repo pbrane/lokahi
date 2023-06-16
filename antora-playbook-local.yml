@@ -6,6 +6,8 @@ content:
   sources:
   - url: .
     branches: HEAD
+    tags:
+      -v*
     start_path: docs
 ui:
   bundle:
@@ -20,5 +22,5 @@ output:
   clean: true
   dir: ./public
   destinations:
-  - provider: fs
-  - provider: archive
+    - provider: fs
+    - provider: archive

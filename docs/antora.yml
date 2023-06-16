@@ -1,4 +1,3 @@
-
 name: lokahi
 version: '1.0'
 title: Lōkahi/Cloud
@@ -6,6 +5,9 @@ asciidoc:
   attributes:
     source-language: asciidoc@
     xrefstyle: short@
-
 nav:
-- modules/ROOT/nav.adoc
+- modules/ROOT/index.adoc
+- modules/installation/nav.adoc
+- modules/operation/nav.adoc
+- modules/development/nav.adoc
+- modules/reference/nav.adoc
