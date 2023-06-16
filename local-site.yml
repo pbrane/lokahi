@@ -13,11 +13,6 @@ ui:
 asciidoc:
   attributes:
     stem: latexmath
-    idprefix: ''
-    idseparator: '-'
-    page-pagination: ''
-    source-language: asciidoc@
-    distribution: 'Lōkahi/Cloud'
     tabs: tabs
   extensions:
     - ./docs/lib/tabs-block.js
