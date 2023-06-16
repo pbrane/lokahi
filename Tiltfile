@@ -62,8 +62,8 @@ cmd_button(name='reload-helm',
 # Give ourselves more time
 update_settings(k8s_upsert_timeout_secs=60)
 if os.getenv("CI"):
-    # Be a little bit more reserved in CI
-    update_settings(max_parallel_updates=2)
+    # Be a little bit more aggressive in CI
+    update_settings(max_parallel_updates=4)
 
 # Functions #
 cluster_arch_cmd = '$(tilt get cluster default -o=jsonpath --template="{.status.arch}")'
