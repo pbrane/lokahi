@@ -209,6 +209,7 @@ helm_resource('cert-manager', 'jetstack/cert-manager',
 	flags=[
 		'--version=1.11.0',
 		'--set', 'installCRDs=true',
+		'--set', 'cainjector.extraArgs={--leader-elect=false}',
 	],
 	resource_deps=[
 		'jetstack',
