@@ -118,8 +118,6 @@ OpenNMS:
       Requests:
         Cpu: "1"
         Memory: 2Gi
-    env:
-      OTEL_JAVAAGENT_ENABLED: "false"
     IngressAnnotations:
       nginx.ingress.kubernetes.io/auth-tls-secret: default/client-root-ca-certificate
       nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
