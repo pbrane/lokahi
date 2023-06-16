@@ -5,6 +5,20 @@ query FindLocationsForWelcome {
   }
 }
 
+query FindDevicesForWelcome {
+  findAllNodes {
+    id,
+    nodeLabel,
+    createTime,
+    ipInterfaces {
+      id
+      nodeId
+      ipAddress
+      snmpPrimary
+    }
+  }
+}
+
 query FindMinionsForWelcome($locationId: Long!) {
   findMinionsByLocationId(locationId: $locationId) {
     id

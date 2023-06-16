@@ -4,6 +4,8 @@ import { useWelcomeQueries } from '../Queries/welcomeQueries'
 import { CertificateResponse } from '@/types/graphql'
 import { createAndDownloadBlobFile } from '@/components/utils'
 import { fncVoid } from '@/types'
+import { useNodeMutations } from '../Mutations/nodeMutations'
+import router from '@/router'
 
 interface WelcomeStoreState {
   showOnboarding: boolean,
@@ -79,11 +81,37 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       }
     },
     skipSlideThree() {
-      this.prevSlide()
-      console.log('Close this modal')
+      router.push('Dashboard')
     },
-    startMonitoring() {
-      console.log('Start Monitoring')
+    async startMonitoring() {
+      // attempt to add default tag to device to set it in a 'monitored' state
+      const queries = useWelcomeQueries()
+      const mutations = useNodeMutations()
+      const tags = [{ name: 'default' }]
+
+      if (queries.detectedDevice) { // if using the detected device
+        const { ipInterfaces, id } = queries.detectedDevice
+
+        if (ipInterfaces?.[0]?.ipAddress === this.firstDevice.ip) {
+          await mutations.addTagsToNodes({
+            nodeIds: [id],
+            tags
+          })
+        }
+      }
+
+      if (this.firstDevice.name && this.firstDevice.ip) {
+        await mutations.addNode({ // adding new device
+          node: {
+            label: this.firstDevice.name,
+            managementIp: this.firstDevice.ip,
+            location: queries.defaultLocationName,
+            tags
+          }
+        })
+      }
+
+      router.push('Dashboard')
     },
     copyDockerClick() {
       navigator.clipboard.writeText(this.dockerCmd).then(() => this.copied = true)
@@ -96,7 +124,6 @@ export const useWelcomeStore = defineStore('welcomeStore', {
         this.minionStatusCopy = 'Waiting for the Docker Install Command to be complete.'
       }
       if (this.minionStatusStarted && this.minionStatusLoading) {
-
         this.minionStatusCopy = 'Please wait while we detect your minion'
       }
       if (this.minionStatusStarted && !this.minionStatusLoading && this.minionStatusSuccess) {
@@ -105,14 +132,30 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     },
     async downloadClick() {
       const queries = useWelcomeQueries()
+
+      // set and download the minion cert
       await queries.downloadMinionCertificate()
       this.minionCert = queries.minionCert
+      createAndDownloadBlobFile(this.minionCert.certificate, `${queries.defaultLocationName}-certificate.p12`)
 
+      // poll minions until one is detected
       const { resume: startPollingMinions, pause: stopPollingMinions } = useTimeoutPoll(this.refreshMinions, 10000)
       startPollingMinions()
       this.stopPollingMinions = stopPollingMinions
 
-      createAndDownloadBlobFile(this.minionCert.certificate, `${queries.defaultLocationName}-certificate.p12`)
+      watchEffect(() => {
+        if (queries.isMinionDetected) {
+          stopPollingMinions()
+          this.minionStatusSuccess = true
+        }
+      })
+
+      // watch for a returned detected device
+      watchEffect(() => {
+        this.firstDevice.name = queries.detectedDevice?.nodeLabel || ''
+        this.firstDevice.ip = queries.detectedDevice?.ipInterfaces?.[0]?.ipAddress || ''
+      })
+
       this.downloaded = true
       this.minionStatusLoading = true
       this.minionStatusStarted = true
@@ -120,11 +163,8 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       setTimeout(() => {
         this.downloaded = false
         this.minionStatusLoading = false
-        this.minionStatusSuccess = true
         this.updateMinionStatusCopy()
         setTimeout(() => {
-          this.minionStatusSuccess = false
-          this.minionStatusStarted = false
           this.updateMinionStatusCopy()
         }, 3000)
       }, 3000)
@@ -139,26 +179,30 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     updateFirstDevice(key: string, value: string | number | undefined) {
       if (typeof value === 'string') {
         this.firstDevice[key] = value
-        if (value){
 
-          this.devicePreview.loading = true
-          this.devicePreview.itemStatuses[0].status = 'Critical'
-          this.devicePreview.itemStatuses[0].statusColor = 'rgba(165,2,31,0.3)'
-          this.devicePreview.itemStatuses[0].statusText = 'rgba(165,2,31,1)'
-          setTimeout(() => {
-            this.devicePreview.loading = false
-          }, 1000)
-        }
+        // it is not possible to get a status unless a device is already added and monitored.
+        // is this preview supposed to be 'faked'?
+
+        // if (value){
+
+        //   this.devicePreview.loading = true
+        //   this.devicePreview.itemStatuses[0].status = 'Critical'
+        //   this.devicePreview.itemStatuses[0].statusColor = 'rgba(165,2,31,0.3)'
+        //   this.devicePreview.itemStatuses[0].statusText = 'rgba(165,2,31,1)'
+        //   setTimeout(() => {
+        //     this.devicePreview.loading = false
+        //   }, 1000)
+        // }
       }
     }
   },
   getters: {
     dockerCmd: (state) => {
-      const route = useRoute()
-      const url = route.fullPath.includes('dev')
+      const queries = useWelcomeQueries()
+      const url = location.origin.includes('dev')
         ? 'minion.onms-fb-dev.dev.nonprod.dataservice.opennms.com'
         : 'minion.onms-fb-prod.production.prod.dataservice.opennms.com'
-      return `docker run --rm -p 8181:8181 -p 8101:8101 -p 1162:1162/udp -p 8877:8877/udp -p 4729:4729/udp -p 9999:9999/udp -p 162:162/udp -e TZ='America/New_York' -e USE_KUBERNETES="false" -e MINION_GATEWAY_HOST="${url}" -e MINION_GATEWAY_PORT=443 -e MINION_GATEWAY_TLS="true" -e GRPC_CLIENT_KEYSTORE='/opt/karaf/minion.p12' -e GRPC_CLIENT_KEYSTORE_PASSWORD='${state.minionCert.password}'  -e MINION_ID='default'  --mount type=bind,source="pathToFile/default.p12",target="/opt/karaf/minion.p12",readonly opennms/lokahi-minion:latest`
+      return `docker run --rm -p 8181:8181 -p 8101:8101 -p 1162:1162/udp -p 8877:8877/udp -p 4729:4729/udp -p 9999:9999/udp -p 162:162/udp -e TZ='America/New_York' -e USE_KUBERNETES="false" -e MINION_GATEWAY_HOST="${url}" -e MINION_GATEWAY_PORT=443 -e MINION_GATEWAY_TLS="true" -e GRPC_CLIENT_KEYSTORE='/opt/karaf/minion.p12' -e GRPC_CLIENT_KEYSTORE_PASSWORD='${state.minionCert.password}'  -e MINION_ID='${queries.defaultLocationName}'  --mount type=bind,source="pathToFile/${queries.defaultLocationName}-certificate.p12",target="/opt/karaf/minion.p12",readonly opennms/lokahi-minion:latest`
     }
   }
 })

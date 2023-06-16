@@ -4,15 +4,19 @@ import { fncArgVoid } from '@/types'
 import {
   FindLocationsForWelcomeDocument,
   FindMinionsForWelcomeDocument,
-  DownloadMinionCertificateForWelcomeDocument
+  DownloadMinionCertificateForWelcomeDocument,
+  FindDevicesForWelcomeDocument,
+  Node
 } from '@/types/graphql'
 
 export const useWelcomeQueries = defineStore('welcomeQueries', () => {
   const isShowOnboardingState = ref(false)
+  const isMinionDetected = ref(false)
+  const detectedDevice = ref<undefined | Partial<Node>>()
   const minionCert = ref()
   const variables = reactive({ locationId: undefined })
   const certVariables = reactive({ location: undefined })
-  const defaultLocationName = 'default'
+  const defaultLocationName = 'TestLocation'
 
   let promiseResolve: fncArgVoid
   let promiseReject: fncArgVoid
@@ -50,6 +54,13 @@ export const useWelcomeQueries = defineStore('welcomeQueries', () => {
     variables: variables
   })
 
+  // get all devices
+  const { execute: getDevices, onData: onDevicesCallComplete } = useQuery({
+    query: FindDevicesForWelcomeDocument,
+    fetchOnMount: false,
+    cachePolicy: 'network-only'
+  })
+
   // get certificate for location id
   const { onData: onDownloadCertCallComplete, execute: downloadMinionCertificate } = useQuery({
     query: DownloadMinionCertificateForWelcomeDocument,
@@ -63,7 +74,7 @@ export const useWelcomeQueries = defineStore('welcomeQueries', () => {
   onLocationsCallComplete((data) => {
     if (
       data.findAllLocations?.length !== 1 ||
-      data.findAllLocations[0].location?.toLowerCase() !== defaultLocationName
+      data.findAllLocations[0].location?.toLowerCase() !== defaultLocationName.toLowerCase()
     ) {
       promiseResolve()
       return
@@ -72,12 +83,26 @@ export const useWelcomeQueries = defineStore('welcomeQueries', () => {
     certVariables.location = data.findAllLocations[0].id
   })
 
-  // check that there are no configured minions
+  // check if there are configured minions
   onMinionsCallComplete((data) => {
     if (data.findMinionsByLocationId?.length === 0) {
       isShowOnboardingState.value = true
+    } else {
+      isMinionDetected.value = true
+      getDevices()
     }
     promiseResolve()
+  })
+
+  // detected device will be used to auto populate the form
+  onDevicesCallComplete((data) => {
+    for (const device of data.findAllNodes || []) {
+      for (const inter of device.ipInterfaces || []) {
+        if (inter.snmpPrimary) {
+          return detectedDevice.value = device
+        }
+      }
+    }
   })
 
   onLocationsCallError((err) => promiseReject(err))
@@ -91,6 +116,8 @@ export const useWelcomeQueries = defineStore('welcomeQueries', () => {
     checkSetupState,
     isShowOnboardingState,
     defaultLocationName,
+    isMinionDetected,
+    detectedDevice,
     minionCert
   }
 })

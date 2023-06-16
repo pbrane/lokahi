@@ -34,7 +34,7 @@
                     </div>
                     <div class="welcome-slide-table-body">
                         <strong>File Path: </strong>
-                        <span>/tmp/default.p12</span>
+                        <span>/tmp/default-certificate.p12</span>
                     </div>
                 </div>
             </div>
@@ -68,7 +68,7 @@
                 <div :class="['welcome-slide-minion-status',welcomeStore.minionStatusSuccess ? 'welcome-slide-minion-success' : '']">
                     <div class="icon-spin">
                         <FeatherSpinner v-if="welcomeStore.minionStatusLoading && welcomeStore.minionStatusStarted" />
-                        <FeatherIcon :icon="CheckIcon" v-if="welcomeStore.minionStatusSuccess" />
+                        <FeatherIcon :icon="CheckIcon" v-if="!welcomeStore.minionStatusLoading && welcomeStore.minionStatusSuccess" />
                     </div>
                     <div class="copy">
                     {{ welcomeStore.minionStatusCopy }}

@@ -10,7 +10,7 @@
                 <FeatherInput label="Name" :modelValue="welcomeStore.firstDevice.name"
                     @update:modelValue="(e) => welcomeStore.updateFirstDevice('name', e)" />
                 <FeatherInput label="Management IPV4/IPV6" :modelValue="welcomeStore.firstDevice.ip"
-                    @update:modelValue="(e) => welcomeStore.updateFirstDevice('firstDevice', e)" />
+                    @update:modelValue="(e) => welcomeStore.updateFirstDevice('ip', e)" />
                 <FeatherInput label="Community String (optional)" :modelValue="welcomeStore.firstDevice.communityString"
                     @update:modelValue="(e) => welcomeStore.updateFirstDevice('communityString', e)" />
                 <FeatherInput label="Port (optional)" :modelValue="welcomeStore.firstDevice.port"
