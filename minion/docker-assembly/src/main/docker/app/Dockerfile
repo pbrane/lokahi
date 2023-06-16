@@ -33,8 +33,8 @@ RUN chmod -R g=u /opt/karaf/
 
 FROM ${BASE_IMAGE}
 
-RUN groupadd --gid 10001 minion-poc && \
-    useradd --system --uid 10001 --gid minion-poc minion-poc --home-dir /opt/karaf
+RUN groupadd --gid 10001 minion && \
+    useradd --system --uid 10001 --gid minion minion --home-dir /opt/karaf
 
 RUN mkdir -p /opt
 COPY --chown=10001:0 --from=tarball /opt/karaf /opt/karaf
