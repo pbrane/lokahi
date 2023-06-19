@@ -13,9 +13,6 @@ Keycloak:
   HostnamePort: 1443
   HostnameAdminUrl: https://onmshs.local:1443/auth
 
-Postgres:
-  addTestLocation: True
-
 Ingress:
   Enabled: false
 
@@ -42,6 +39,7 @@ OpenNMS:
         Memory: '0'
     IngressAnnotations: {}
   Minion:
+    addTestLocation: true
     Resources:
       Limits:
         Cpu: '0'
@@ -49,60 +47,6 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-    ExtraVolumes:
-      - name: certificate-secrets
-        secret:
-          secretName: root-ca-certificate
-      - name: minion-certificate-manager-secrets
-        secret:
-          secretName: client-root-ca-certificate
-      - name: certificate
-        emptyDir: {}
-    ExtraMounts:
-      - name: certificate-secrets
-        mountPath: "/run/secrets/certificates"
-        readOnly: true
-      - name: minion-certificate-manager-secrets
-        mountPath: "/run/secrets/mtls"
-        readOnly: true
-      - name: certificate
-        mountPath: "/opt/karaf/certs/"
-    ExtraInitContainers:
-      # This container is a development time helper which generates client certificate, key and signs it with
-      # `Client CA` certificate which is running in cluster. It's a bit hacky, since it pulls CA private key
-      # into minion. Please do not use this in production.
-      # Remarks - working directory for this container is /cert which is emptyDir. This empty dir is later mounted
-      # into minion container itself under /opt/karaf/certs/.
-      - image: finalgene/openssh@sha256:5b8073b8720ddb204c48a79e68e2a9f8c470404d475640280eb5df2d6a843eca
-        imagePullPolicy: "IfNotPresent"
-        name: cert-generator
-        command:
-          - /bin/bash
-          - -c
-          - |
-            openssl genrsa -out /cert/client.key.pkcs1 2048
-            openssl pkcs8 -topk8 -in /cert/client.key.pkcs1 -out /cert/client.key -nocrypt
-            openssl req -new -key /cert/client.key -out /cert/client.unsigned.cert -subj "/C=CA/ST=TBD/L=TBD/O=OpenNMS/CN=local-minion/OU=L:1/OU=T:opennms-prime"
-            openssl x509 -req -in /cert/client.unsigned.cert -days 14 -CA /run/secrets/mtls/tls.crt -CAkey /run/secrets/mtls/tls.key -out /cert/client.signed.cert
-            openssl pkcs12 -export -out "/cert/minion.p12" -inkey /cert/client.key -in /cert/client.signed.cert -passout "pass:changeme"
-        securityContext:
-          privileged: false
-          runAsUser: 10001
-          runAsGroup: 10001
-          fsGroup: 10001
-        volumeMounts:
-          - name: certificate
-            mountPath: "/cert"
-          - name: minion-certificate-manager-secrets
-            mountPath: "/run/secrets/mtls"
-    GrpcConfig:
-      grpc.host: ingress-nginx-controller
-      grpc.port: 443
-      grpc.tls.enabled: true
-      grpc.client.truststore: /run/secrets/certificates/tls.crt
-      grpc.client.keystore: /opt/karaf/certs/minion.p12
-      grpc.client.keystore.password: changeme
-      grpc.override.authority: minion.onmshs.local
   MinionGateway:
     Resources:
       Limits:
@@ -114,16 +58,21 @@ OpenNMS:
     env:
       OTEL_JAVAAGENT_ENABLED: "true" # Enable for local development since it adds useful data
     IngressAnnotations:
-      nginx.ingress.kubernetes.io/auth-tls-secret: default/client-root-ca-certificate
-      nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
-      nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
-      nginx.ingress.kubernetes.io/auth-url: "http://opennms-minion-certificate-verifier.default.svc.cluster.local:8080/certificate/debug"
-      nginx.ingress.kubernetes.io/auth-response-headers: "tenant-id, location"
-      nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "false"
-      nginx.ingress.kubernetes.io/server-snippet: |
-        grpc_read_timeout "1200s";
-        grpc_send_timeout "1200s";
-        client_body_timeout "1200s";
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        # This adds the tenant-id and location to the response headers sent to the client so we can use them in
+        # logging. This is bit circuitous, and it is unnecessary to send these to the client, but this was a way I
+        # could figure out how to get the tenant and minion information in the logs using $sent_http_x_tenant_id
+        # and $sent_http_x_location once these response headers are added. They also seem to need to be in the
+        # location block to work.
+        # Note: The response headers are prefixed with "x-", although the headers from the auth service are not.
+        # Note: I am being a little naughty and depending an internal implementation detail of ingress-nginx by
+        # using the authHeader* variables. These are created by ingress-nginx from the auth-response-headers
+        # annotation. The naming of the authHeader* variables is sensitive to the order of the headers in the
+        # nginx.ingress.kubernetes.io/auth-response-headers annotation.
+        add_header x-tenant-id "$authHeader0" always;
+        add_header x-location "$authHeader1" always;
+        set $dummy_val "$opentelemetry_context_traceparent"; # workaround for https://github.com/kubernetes/ingress-nginx/issues/9811
+        grpc_set_header 'traceparent' $opentelemetry_context_traceparent; # This doesn't get sent downstream normally. :(
   MinionCertificateManager:
     Enabled: true
     CaSecretName: root-ca-certificate
