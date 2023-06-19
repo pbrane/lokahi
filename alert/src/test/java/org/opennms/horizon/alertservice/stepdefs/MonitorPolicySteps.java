@@ -40,6 +40,7 @@ import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.platform.commons.util.StringUtils;
 import org.opennms.horizon.alerts.proto.Alert;
+import org.opennms.horizon.alerts.proto.AlertConditionProto;
 import org.opennms.horizon.alerts.proto.AlertEventDefinitionProto;
 import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsRequest;
@@ -49,7 +50,6 @@ import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.alerts.proto.OverTimeUnit;
 import org.opennms.horizon.alerts.proto.PolicyRuleProto;
 import org.opennms.horizon.alerts.proto.Severity;
-import org.opennms.horizon.alerts.proto.AlertConditionProto;
 import org.opennms.horizon.alertservice.AlertGrpcClientUtils;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
 import org.opennms.horizon.shared.common.tag.proto.Operation;
@@ -66,9 +66,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -155,8 +153,11 @@ public class MonitorPolicySteps {
 
     @Then("Create a new policy with give parameters")
     public void createANewPolicyWithGiveParameters() {
+        ruleBuilder.clearSnmpEvents();
         triggerBuilders.forEach(b -> ruleBuilder.addSnmpEvents(b.build()));
-        MonitorPolicyProto policy = policyBuilder.addRules(ruleBuilder.build()).build();
+        MonitorPolicyProto policy = policyBuilder
+            .clearRules()
+            .addRules(ruleBuilder.build()).build();
         MonitorPolicyProto dbPolicy = grpcClient.getPolicyStub().createPolicy(policy);
         policyId = dbPolicy.getId();
         log.info("Creating policy {}", policy);
