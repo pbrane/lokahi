@@ -35,7 +35,7 @@ Our current goal is that you can develop and run Lōkahi on a development system
 
 * Linux x86 (`x86_64-unknown-linux-gnu`)
 * Darwin x86 (`x86_64-apple-darwin`)
-* Darwin arm (1aarch64-apple-darwin1)
+* Darwin arm (`aarch64-apple-darwin`)
 
 Lōkahi requires a Kubernetes-compatible infrastructure for deploying the application.
 
