@@ -1,6 +1,11 @@
 .Operation
-* xref:discovery/introduction.adoc[Network Discovery]
-* xref:policies/introduction.adoc[Monitoring Policies]
+* xref:discovery/introduction.adoc[]
+** xref:discovery/active.adoc[]
+** xref:discovery/passive.adoc[]
+** xref:discovery/manage.adoc[]
+* xref:policies/introduction.adoc[]
+** xref:policies/create.adoc[]
+** xref:policies/manage.adoc[]
 * xref:inventory/introduction.adoc[Network Inventory]
 ** xref:inventory/nodes.adoc[Manage Nodes]
 * xref:alerts/introduction.adoc[Manage Alerts]

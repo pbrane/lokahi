@@ -1,6 +1,0 @@
-:imagesdir: ../assets/images
-:!sectids:
-
-= Reference
-
-test
