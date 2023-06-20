@@ -1,7 +1,10 @@
 <template>
-    <div :class="['welcome-slide-two-wrapper',visible ? 'visible' : 'hidden', 
-    welcomeStore.slide > 2 ? 'down' : '',
-    welcomeStore.slide < 2 ? 'up' : ''
+    <div :class="[
+        'welcome-slide-two-wrapper',
+        isDark ? 'dark' : 'light',
+        visible ? 'visible' : 'hidden',
+        welcomeStore.slide > 2 ? 'down' : '',
+        welcomeStore.slide < 2 ? 'up' : ''
     ]">
         <div class="welcome-slide-two-inner">
             <div class="welcome-slide-two-title">
@@ -28,7 +31,7 @@
                                 <template #icon>
                                     <FeatherIcon :icon="welcomeStore.downloaded ? CheckIcon : DownloadIcon" />
                                 </template>
-                                {{downloadCopy}}
+                                {{ downloadCopy }}
                             </FeatherButton>
                         </div>
                     </div>
@@ -45,17 +48,18 @@
                     <div class="welcome-slide-table-header">
                         <span>Command</span>
                         <div>
-                            <FeatherButton text @click="welcomeStore.copyDockerClick" :disabled="!welcomeStore.minionCert.password">
+                            <FeatherButton text @click="welcomeStore.copyDockerClick"
+                                :disabled="!welcomeStore.minionCert.password">
                                 <template #icon>
                                     <FeatherIcon :icon="welcomeStore.copied ? CheckIcon : CopyIcon" />
                                 </template>
-                                {{copyButtonCopy}}
+                                {{ copyButtonCopy }}
                             </FeatherButton>
                         </div>
                     </div>
                     <div class="welcome-slide-table-body">
                         <pre>
-                            {{ welcomeStore.dockerCmd }}
+                            {{ dockerCmd }}
                         </pre>
                     </div>
                 </div>
@@ -65,13 +69,15 @@
                 <h2>Step 3: Detect Your Minion</h2>
                 <p>We will automatically detect your Minion once it is set up.</p>
 
-                <div :class="['welcome-slide-minion-status',welcomeStore.minionStatusSuccess ? 'welcome-slide-minion-success' : '']">
+                <div
+                    :class="['welcome-slide-minion-status', welcomeStore.minionStatusSuccess ? 'welcome-slide-minion-success' : '']">
                     <div class="icon-spin">
                         <FeatherSpinner v-if="welcomeStore.minionStatusLoading && welcomeStore.minionStatusStarted" />
-                        <FeatherIcon :icon="CheckIcon" v-if="!welcomeStore.minionStatusLoading && welcomeStore.minionStatusSuccess" />
+                        <FeatherIcon :icon="CheckIcon"
+                            v-if="!welcomeStore.minionStatusLoading && welcomeStore.minionStatusSuccess" />
                     </div>
                     <div class="copy">
-                    {{ welcomeStore.minionStatusCopy }}
+                        {{ welcomeStore.minionStatusCopy }}
                     </div>
                 </div>
             </div>
@@ -89,12 +95,15 @@ import CopyIcon from '@featherds/icon/action/ContentCopy'
 import CheckIcon from '@featherds/icon/action/CheckCircle'
 import DownloadIcon from '@featherds/icon/action/DownloadFile'
 import InformationIcon from '@featherds/icon/action/Info'
+import useTheme from '@/composables/useTheme'
 defineProps({
-  visible: {type: Boolean, default: false}
+    visible: { type: Boolean, default: false }
 })
 const downloadCopy = computed(() => welcomeStore.downloaded ? 'Downloaded' : 'Download')
 const copyButtonCopy = computed(() => welcomeStore.copied ? 'Copied' : 'Copy')
+const dockerCmd = computed(() => welcomeStore.dockerCmd());
 const welcomeStore = useWelcomeStore()
+const { isDark } = useTheme();
 </script>
 <style lang="scss" scoped>
 @import '@featherds/styles/themes/variables';
@@ -107,17 +116,35 @@ const welcomeStore = useWelcomeStore()
     padding: 35px 40px 40px 40px;
     max-width: 660px;
     margin-bottom: 40px;
-    margin-top:-4px;
-    width:100%;
-    position:absolute;
+    margin-top: -4px;
+    width: 100%;
+    position: absolute;
+
     h1 {
         @include headline1();
         margin-bottom: 16px;
     }
 }
 
+.welcome-slide-two-wrapper.dark {
+
+    .welcome-slide-two-location-callout,
+    .welcome-slide-table-body {
+        background-color: #e5f4f9;
+        color: var($primary-text-on-color);
+    }
+}
+
+.welcome-slide-two-wrapper.light {
+
+    .welcome-slide-two-location-callout,
+    .welcome-slide-table-body {
+        background-color: #e5f4f9;
+    }
+}
+
+
 .welcome-slide-two-location-callout {
-    background-color: #e5f4f9;
     display: flex;
     align-items: center;
     border-radius: 3px;
@@ -153,7 +180,7 @@ const welcomeStore = useWelcomeStore()
         border-radius: 3px;
 
         .welcome-slide-table-header {
-            color:var($disabled-text-on-surface);
+            color: var($disabled-text-on-surface);
             padding: 12px 24px;
             display: flex;
             justify-content: space-between;
@@ -161,65 +188,72 @@ const welcomeStore = useWelcomeStore()
         }
 
         .welcome-slide-table-body {
-            background-color: #e5f4f9;
             padding: 12px 24px;
+
             pre {
-                margin:0;
+                margin: 0;
                 white-space: normal;
                 word-wrap: break-word;
             }
         }
     }
 }
+
 .welcome-slide-minion-status {
-    display:flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding:24px 0;
+    padding: 24px 0;
     border: 1px solid var($border-on-surface);
-    border-radius:3px;
-    margin-top:24px;
-    color:var($disabled-text-on-surface);
+    border-radius: 3px;
+    margin-top: 24px;
+    color: var($disabled-text-on-surface);
 
     :deep(.spinner-container) {
-        width:24px;
-        height:24px;
-        margin-right:24px;
+        width: 24px;
+        height: 24px;
+        margin-right: 24px;
     }
 }
+
 .welcome-slide-footer {
-    display:flex;
+    display: flex;
     justify-content: flex-end;
 }
 
 .visible {
-    opacity:1;
-    pointer-events:all;
+    opacity: 1;
+    pointer-events: all;
     transform: translateY(0px);
     transition: opacity 0.1s ease-in-out 0.2s, transform 0.2s ease-out 0.2s;
 }
+
 .hidden {
-    opacity:0;
+    opacity: 0;
     transition: opacity 0.2s ease-in-out 0s, transform 0.3s ease-in 0s;
-    pointer-events:none;
+    pointer-events: none;
 }
+
 .down.hidden {
     transform: translateY(20px);
 }
+
 .up.hidden {
     transform: translateY(-20px);
 }
+
 .welcome-slide-minion-success {
-    background-color: rgba(11,114,12,0.2);
-}
-.welcome-slide-minion-success .icon-spin{
-    color: var($success);
-    font-size:26px;
-    margin-right:12px;
-}
-.welcome-slide-minion-success .copy{
-    color: var($primary-text-on-surface);
-    font-weight:700;
+    background-color: rgba(11, 114, 12, 0.2);
 }
 
+.welcome-slide-minion-success .icon-spin {
+    color: var($success);
+    font-size: 26px;
+    margin-right: 12px;
+}
+
+.welcome-slide-minion-success .copy {
+    color: var($primary-text-on-surface);
+    font-weight: 700;
+}
 </style>

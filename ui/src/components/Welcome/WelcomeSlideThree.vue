@@ -16,8 +16,8 @@
                 <FeatherInput label="Port (optional)" :modelValue="welcomeStore.firstDevice.port"
                     @update:modelValue="(e) => welcomeStore.updateFirstDevice('port', e)" />
             </div>
-            <ItemPreview :loading="welcomeStore.devicePreview.loading" :title="welcomeStore.devicePreview.title" :itemTitle="welcomeStore.devicePreview.itemTitle"
-                :itemSubtitle="welcomeStore.devicePreview.itemSubtitle"
+            <ItemPreview :loading="welcomeStore.devicePreview.loading" :title="welcomeStore.devicePreview.title"
+                :itemTitle="welcomeStore.devicePreview.itemTitle" :itemSubtitle="welcomeStore.devicePreview.itemSubtitle"
                 :itemStatuses="welcomeStore.devicePreview.itemStatuses" />
             <div class="welcome-slide-footer">
                 <FeatherButton text @click="welcomeStore.skipSlideThree">Skip</FeatherButton>
@@ -32,7 +32,7 @@
 import { useWelcomeStore } from '@/store/Views/welcomeStore'
 import ItemPreview from '../Common/ItemPreview.vue'
 defineProps({
-  visible: { type: Boolean, default: false }
+    visible: { type: Boolean, default: false }
 })
 const welcomeStore = useWelcomeStore()
 </script>

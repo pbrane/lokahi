@@ -5,16 +5,16 @@ import { MaybeLazyOrRef, useQuery } from 'villus'
 import { QueryNotificationOptions, QueryOptions } from './queryService'
 import { QueryService } from '.'
 
-export const downloadCertificateBundle = (location: string) => {
-  const queryOptions: QueryOptions<{ location: string }> = {
+export const downloadCertificateBundle = async (locationId: number) => {
+  const queryOptions: QueryOptions<{ location: number }> = {
     query: DownloadMinionCertificateForWelcomeDocument,
-    variables: { location }
+    variables: { location: locationId }
   }
 
   const notificationOptions: QueryNotificationOptions = {
     notifyOnError: true,
     notifyOnSuccess: true
   }
-
-  return QueryService.executeQuery(queryOptions, notificationOptions)
+  const minionCertificate = await QueryService.executeQuery(queryOptions, notificationOptions)
+  return minionCertificate.getMinionCertificate;
 }

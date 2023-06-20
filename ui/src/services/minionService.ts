@@ -1,7 +1,7 @@
 import { FindMinionsByLocationIdDocument } from '@/types/graphql'
 import { QueryService } from '.'
 
-export const getMinionsByLocationId = (locationId: string) => {
+export const getMinionsByLocationId = (locationId: number) => {
 
   const queryOptions = {
     query: FindMinionsByLocationIdDocument,
@@ -16,5 +16,5 @@ export const getMinionsByLocationId = (locationId: string) => {
     successMessage: 'Minions Located'
   }
 
-  return QueryService.executeQuery<{ locationId: string }>(queryOptions, notificationOptions)
+  return QueryService.executeQuery<{ locationId: number }>(queryOptions, notificationOptions)
 }

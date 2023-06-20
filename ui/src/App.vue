@@ -1,9 +1,5 @@
 <template>
-  <FeatherAppLayout
-    contentLayout="full"
-    class="feather-styles layout"
-    v-if="ready"
-  >
+  <FeatherAppLayout contentLayout="full" class="feather-styles layout" v-if="welcomeStore.ready">
     <template v-slot:header>
       <Menubar />
     </template>
@@ -22,14 +18,10 @@
 
 <script setup lang="ts">
 import { useWelcomeStore } from '@/store/Views/welcomeStore'
-const router = useRouter()
 const welcomeStore = useWelcomeStore()
-const ready = ref(false)
 
 onBeforeMount(async () => {
-  await welcomeStore.getShowOnboardingState()
-  if (welcomeStore.showOnboarding) await router.push('Welcome')
-  ready.value = true
+  await welcomeStore.init()
 })
 </script>
 

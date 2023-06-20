@@ -2,15 +2,13 @@ import { defineStore } from 'pinia'
 import {
   CertificateResponse,
   FindDevicesForWelcomeDocument,
-  FindLocationsForWelcomeDocument,
   Node
 } from '@/types/graphql'
 import { createAndDownloadBlobFile } from '@/components/utils'
-import { fncVoid } from '@/types'
-import { useNodeMutations } from '../Mutations/nodeMutations'
 import router from '@/router'
-import { getMinionsByLocationId } from '@/services/minionService'
-import { CertificateService, MinionService, NodeService, QueryService } from '@/services'
+import { CertificateService, LocationService, MinionService, NodeService, QueryService } from '@/services'
+import { WelcomeLocations } from '@/services/locationService'
+import { ItemPreviewProps } from '@/components/Common/commonTypes'
 
 interface WelcomeStoreState {
   showOnboarding: boolean
@@ -21,10 +19,12 @@ interface WelcomeStoreState {
   devicePreview: ItemPreviewProps
   downloaded: boolean
   firstDevice: Record<string, string>
+  firstLocation: WelcomeLocations
   minionStatusCopy: string
   minionStatusLoading: boolean
   minionStatusStarted: boolean
   minionStatusSuccess: boolean
+  ready: boolean
   refreshing: boolean
   slide: number
   slideOneCollapseVisible: boolean
@@ -34,42 +34,44 @@ interface WelcomeStoreState {
 
 export const useWelcomeStore = defineStore('welcomeStore', {
   state: () =>
-    ({
-      showOnboarding: false,
-      minionCert: { password: '', certificate: '' },
-      copied: false,
-      defaultLocationName: 'TestLocation',
-      detectedDevice: {},
-      devicePreview: {
-        title: 'Device Preview',
-        loading: false,
-        itemTitle: 'Minion Gateway',
-        itemSubtitle: 'Added --/--/--',
-        itemStatuses: [
-          { title: 'ICMP Latency', status: 'Normal', statusColor: '#cee3ce', statusText: '#0b720c' },
-          { title: 'SNMP Uptime', status: 'Normal', statusColor: '#cee3ce', statusText: '#0b720c' }
-        ]
-      },
-      downloaded: false,
-      minionStatusCopy: 'Waiting for the Docker Install Command to be complete.',
-      minionStatusLoading: false,
-      minionStatusSuccess: false,
-      minionStatusStarted: false,
-      refreshing: false,
-      slide: 1,
-      slideOneCollapseVisible: false,
-      slideTwoDisabled: false,
-      firstDevice: { name: '', ip: '', communityString: '', port: '' },
-      slideThreeDisabled: false
-    } as WelcomeStoreState),
+  ({
+    showOnboarding: false,
+    minionCert: { password: '', certificate: '' },
+    copied: false,
+    defaultLocationName: 'TestLocation',
+    detectedDevice: {},
+    devicePreview: {
+      title: 'Device Preview',
+      loading: false,
+      itemTitle: 'Minion Gateway',
+      itemSubtitle: 'Added --/--/--',
+      itemStatuses: [
+        { title: 'ICMP Latency', status: 'Normal', statusColor: '#cee3ce', statusText: '#0b720c' },
+        { title: 'SNMP Uptime', status: 'Normal', statusColor: '#cee3ce', statusText: '#0b720c' }
+      ]
+    },
+    downloaded: false,
+    firstLocation: { id: -1, location: '' },
+    minionStatusCopy: 'Waiting for the Docker Install Command to be complete.',
+    minionStatusLoading: false,
+    minionStatusSuccess: false,
+    minionStatusStarted: false,
+    ready: false,
+    refreshing: false,
+    slide: 1,
+    slideOneCollapseVisible: false,
+    slideTwoDisabled: false,
+    firstDevice: { name: '', ip: '', communityString: '', port: '' },
+    slideThreeDisabled: false
+  } as WelcomeStoreState),
   actions: {
     async init() {
       let onboardingState = true
       let detectedDevice = null
-      const locations = await QueryService.executeQuery({ query: FindLocationsForWelcomeDocument })
-
-      if (locations.length > 0 || locations[0]?.toLowerCase() !== this.defaultLocationName.toLowerCase()) {
-        const minions: [] = await getMinionsByLocationId(locations[0].id)
+      const locations = await LocationService.getLocationsForWelcome()
+      this.firstLocation = locations?.[0]
+      if (this.firstLocation) {
+        const minions: [] = await MinionService.getMinionsByLocationId(this.firstLocation.id)
         if (minions.length > 0) {
           const devices = await QueryService.executeQuery({ query: FindDevicesForWelcomeDocument })
           detectedDevice = devices?.find((d: any) => d.ipInterfaces?.find((e: any) => e.snmpPrimary))
@@ -79,8 +81,13 @@ export const useWelcomeStore = defineStore('welcomeStore', {
           }
         }
       }
-
+      if (onboardingState) {
+        router.push('/welcome');
+      }
       this.showOnboarding = onboardingState
+      setTimeout(() => {
+        this.ready = true;
+      }, 150)
     },
     nextSlide() {
       this.slide = this.slide + 1
@@ -152,7 +159,7 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       return `docker run --rm -p 8181:8181 -p 8101:8101 -p 1162:1162/udp -p 8877:8877/udp -p 4729:4729/udp -p 9999:9999/udp -p 162:162/udp -e TZ='America/New_York' -e USE_KUBERNETES="false" -e MINION_GATEWAY_HOST="${url}" -e MINION_GATEWAY_PORT=443 -e MINION_GATEWAY_TLS="true" -e GRPC_CLIENT_KEYSTORE='/opt/karaf/minion.p12' -e GRPC_CLIENT_KEYSTORE_PASSWORD='${this.minionCert.password}'  -e MINION_ID='${this.defaultLocationName}'  --mount type=bind,source="pathToFile/${this.defaultLocationName}-certificate.p12",target="/opt/karaf/minion.p12",readonly opennms/lokahi-minion:latest`
     },
     async downloadClick() {
-      this.minionCert = await CertificateService.downloadCertificateBundle(this.defaultLocationName)
+      this.minionCert = await CertificateService.downloadCertificateBundle(this.firstLocation.id)
       createAndDownloadBlobFile(this.minionCert.certificate, `${this.defaultLocationName}-certificate.p12`)
 
       this.refreshing = true
@@ -164,8 +171,8 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       this.updateMinionStatusCopy()
     },
     async refreshMinions() {
-      if (this.refreshing) {
-        const localMinions = await MinionService.getMinionsByLocationId(this.defaultLocationName)
+      if (this.refreshing && this.firstLocation.location) {
+        const localMinions = await MinionService.getMinionsByLocationId(this.firstLocation.id)
         if (localMinions) {
           this.refreshing = false
           this.minionStatusSuccess = true

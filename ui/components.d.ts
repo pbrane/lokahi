@@ -105,6 +105,8 @@ declare module '@vue/runtime-core' {
     LocationsList: typeof import('./src/components/Locations/LocationsList.vue')['default']
     LocationsMinionsCard: typeof import('./src/components/Locations/LocationsMinionsCard.vue')['default']
     LocationsMinionsList: typeof import('./src/components/Locations/LocationsMinionsList.vue')['default']
+    LogoDarkIcon: typeof import('./src/components/Common/LogoDarkIcon.vue')['default']
+    'LogoDarkIcon.svg': typeof import('./src/components/Common/LogoDarkIcon.svg.vue')['default']
     MapAlarmsGrid: typeof import('./src/components/Map/MapAlarmsGrid.vue')['default']
     MapNodesGrid: typeof import('./src/components/Map/MapNodesGrid.vue')['default']
     MapSearch: typeof import('./src/components/Map/MapSearch.vue')['default']

@@ -10,10 +10,11 @@
                 few&nbsp;minutes.</p>
         </div>
         <CollapsingCard title="Requirements: Before you Begin" :open="welcomeStore.slideOneCollapseVisible"
-            :headerClicked="welcomeStore.toggleSlideOneCollapse"
-            >
+            :headerClicked="welcomeStore.toggleSlideOneCollapse">
             <template #icon>
-                <FeatherIcon :icon="Lightbulb" title="Lightbulb" />
+                <div>
+                    <FeatherIcon :icon="Lightbulb" title="Lightbulb" :class="isDark ? 'icon-dark' : 'icon-light'" />
+                </div>
             </template>
             <template #body>
                 <div>
@@ -62,9 +63,11 @@ import CollapsingCard from '../Common/CollapsingCard.vue'
 import Lightbulb from '../Common/LightbulbIcon.vue'
 import ChevronRight from '@featherds/icon/navigation/ChevronRight'
 import { useWelcomeStore } from '@/store/Views/welcomeStore'
+import useTheme from '@/composables/useTheme';
 const welcomeStore = useWelcomeStore()
+const { isDark } = useTheme();
 defineProps({
-  visible: { type: Boolean, default: false }
+    visible: { type: Boolean, default: false }
 })
 </script>
 <style lang="scss" scoped>
@@ -113,7 +116,7 @@ ul li {
 
 .welcome-text {
     margin-top: 24px;
-    margin-bottom:24px;
+    margin-bottom: 24px;
 }
 
 .visible {
@@ -132,7 +135,17 @@ ul li {
 
 .welcome-slide-one-wrapper {
     position: absolute;
+
     a {
-        color: #273180;
+        color: var($clickable-normal);
     }
-}</style>
+}
+
+.icon-dark {
+    color: var($primary-text-on-surface);
+}
+
+.icon-light {
+    color: blue;
+}
+</style>
