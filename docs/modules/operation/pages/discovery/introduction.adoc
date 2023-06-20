@@ -1,0 +1,5 @@
+:imagesdir: ../assets/images
+:!sectids:
+
+= Network Discovery
+

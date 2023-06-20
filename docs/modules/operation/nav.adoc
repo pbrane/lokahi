@@ -1,10 +1,8 @@
-
 .Operation
-
-* xref:discovery:introduction.adoc[Network Discovery]
-* xref:policies:introduction.adoc[Monitoring Policies]
-* xref:inventory:introduction.adoc[Network Inventory]
-** xref:inventory:nodes.adoc[Manage Nodes]
-* xref:alerts:introduction.adoc[Manage Alerts]
-* xref:visualizations:introduction.adoc[Visualizations]
-* xref:notifications:introduction.adoc[Notifications]
+* xref:discovery/introduction.adoc[Network Discovery]
+* xref:policies/introduction.adoc[Monitoring Policies]
+* xref:inventory/introduction.adoc[Network Inventory]
+** xref:inventory/nodes.adoc[Manage Nodes]
+* xref:alerts/introduction.adoc[Manage Alerts]
+* xref:visualizations/introduction.adoc[Visualizations]
+* xref:notifications/introduction.adoc[Notifications]
