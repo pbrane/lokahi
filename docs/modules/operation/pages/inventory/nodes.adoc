@@ -2,7 +2,7 @@
 = Manage Nodes
 
 Node management involves assessing the nodes that OpenNMS Cloud has identified on your network and determining whether you want to monitor them.
-See https://github.com/OpenNMS-Cloud/horizon-stream/wiki/Inventory-Management[inventory management] for a detailed description of node categories (monitored, unmonitored, and detected).
+See xref:inventory/introduction.adoc[inventory management] for a detailed description of node categories (monitored, unmonitored, and detected).
 
 NOTE: Remember that node discovery and management are iterative processes.
 You may identify nodes that OpenNMS is currently monitoring that you don't want to monitor or think would fit better in a different monitoring policy.
@@ -13,7 +13,7 @@ Unmonitored and detected nodes are nodes that OpenNMS Cloud is not monitoring.
 In the case of unmonitored nodes, OpenNMS discovered the nodes, but they did not match any of the criteria in your monitoring policies.
 Detected nodes were identified indirectly, and have not gone through a discovery process.
 
-To start monitoring these nodes, you need to https://github.com/OpenNMS-Cloud/horizon-stream/wiki/Monitoring-Policies[create a monitoring policy] that uses tags or other criteria to identify them as nodes you want to monitor.
+To start monitoring these nodes, you need to xref:get-started/policies/create.adoc[create a monitoring policy] that uses tags or other criteria to identify them as nodes you want to monitor.
 You can also optionally use tags to categorize and identify these nodes.
 
 [[tag-create]]
