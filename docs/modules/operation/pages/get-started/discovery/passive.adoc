@@ -1,7 +1,7 @@
 = Create a Passive Discovery
 
-A xref:discovery/introduction.adoc#passive-discovery[passive discovery] is one method to identify the devices on your network and add them to your monitoring inventory.
-You may also choose to xref:discovery/active.adoc[create an active discovery].
+A xref:get-started/discovery/introduction.adoc#passive-discovery[passive discovery] is one method to identify the devices on your network and add them to your monitoring inventory.
+You may also choose to xref:get-started/discovery/active.adoc[create an active discovery].
 
 You can create only one passive discovery:
 

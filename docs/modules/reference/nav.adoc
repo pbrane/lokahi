@@ -1,3 +1,4 @@
 
 .Reference
-* xref:reference:introduction.adoc[Reference]
+* xref:reference:introduction.adoc[]
+* xref:reference:severities.adoc[]

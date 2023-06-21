@@ -12,3 +12,4 @@
 * xref:alerts/introduction.adoc[Manage Alerts]
 * xref:visualizations/introduction.adoc[Visualizations]
 * xref:notifications/introduction.adoc[Notifications]
+** xref:notifications/pagerduty.adoc[]
