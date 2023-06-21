@@ -72,7 +72,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import static org.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -179,6 +179,16 @@ public class InventoryProcessingStepDefinitions {
         var systems = monitoringSystemStub.listMonitoringSystem(Empty.newBuilder().build()).getSystemsList();
         assertEquals(systemId, systems.get(0).getSystemId());
         assertEquals(backgroundHelper.getTenantId(), systems.get(0).getTenantId());
+    }
+
+    @Then("verify Monitoring system is removed with system id {string}")
+    public void verifyMonitoringSystemIsRemovedWithSystemId(String systemId) {
+        await().atMost(30, TimeUnit.SECONDS).pollDelay(10L, TimeUnit.MILLISECONDS).until(() -> {
+            var monitoringSystemStub = backgroundHelper.getMonitoringSystemStub();
+            var systems = monitoringSystemStub.listMonitoringSystem(Empty.newBuilder().build()).getSystemsList()
+                .stream().filter(s -> systemId.equals(s.getSystemId())).toList();
+            assertEquals(0, systems.size());
+        });
     }
 
     @Then("verify Monitoring location is created with location {string}")
