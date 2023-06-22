@@ -28,8 +28,8 @@
             <div class="welcome-slide-footer">
                 <FeatherButton text @click="welcomeStore.skipSlideThree">Skip
                 </FeatherButton>
-                <FeatherButton v-if="welcomeStore.discoverySubmitted" primary :disabled="welcomeStore.slideThreeDisabled"
-                    @click="welcomeStore.startMonitoring">
+                <FeatherButton v-if="welcomeStore.discoverySubmitted" primary :disabled="!welcomeStore.slideThreeDisabled"
+                    @click="welcomeStore.skipSlideThree">
                     Continue
                 </FeatherButton>
                 <FeatherButton v-if="!welcomeStore.discoverySubmitted" primary @click="welcomeStore.startDiscovery">

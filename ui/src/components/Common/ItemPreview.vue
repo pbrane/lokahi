@@ -21,7 +21,7 @@
       <div>
         <FeatherSpinner />
       </div>
-      <div>Loading device preview</div>
+      <div>Loading first discovery</div>
     </div>
   </div>
 </template>

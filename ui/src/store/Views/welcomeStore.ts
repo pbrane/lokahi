@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import * as yup from 'yup'
 import {
   CertificateResponse,
-  FindDevicesForWelcomeDocument,
   Node
 } from '@/types/graphql'
 import { createAndDownloadBlobFile } from '@/components/utils'
@@ -17,6 +16,9 @@ import { REGEX_EXPRESSIONS } from '@/components/Discovery/discovery.constants'
 import { validationErrorsToStringRecord } from '@/services/validationService'
 import { useAppliancesQueries } from '../Queries/appliancesQueries'
 import { getNodeDetails } from '@/services/nodeService'
+import useMinionCmd from '@/composables/useMinionCmd'
+import { ComputedRef } from 'vue'
+import { useNodeMutations } from '../Mutations/nodeMutations'
 
 interface WelcomeStoreState {
   showOnboarding: boolean
@@ -41,6 +43,12 @@ interface WelcomeStoreState {
   slide: number
   slideOneCollapseVisible: boolean
   slideThreeDisabled: boolean
+  minionCmd: {
+    minionDockerCmd: ComputedRef<string>;
+    setPassword: (pass: string) => string;
+    setMinionId: (minionIdString: string) => string;
+    clearMinionCmdVals: () => void;
+  },
   validateOnKeyup: boolean
 }
 
@@ -51,10 +59,10 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     showOnboarding: false,
     minionCert: { password: '', certificate: '' },
     copied: false,
-    defaultLocationName: 'TestLocation',
+    defaultLocationName: 'default',
     detectedDevice: {},
     devicePreview: {
-      title: 'Device Preview',
+      title: 'Node Discovery',
       loading: false,
       itemTitle: 'Minion Gateway',
       itemSubtitle: 'Added --/--/--',
@@ -64,6 +72,7 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       ]
     },
     downloaded: false,
+    minionCmd: useMinionCmd(),
     firstLocation: { id: -1, location: '' },
     invalidForm: true,
     minionStatusCopy: 'Waiting for the Docker Install Command to be complete.',
@@ -74,7 +83,7 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     refreshing: false,
     slide: 1,
     slideOneCollapseVisible: false,
-    firstDiscovery: { name: '', ip: '', communityString: 'public', port: '161' },
+    firstDiscovery: { name: 'MyFirstDiscovery', ip: '192.168.1.1', communityString: 'public', port: '161' },
     firstDiscoveryErrors: { name: '', ip: '', communityString: '', port: '' },
     firstDiscoveryValidation: yup.object().shape({
       name: yup.string().required("Please enter a name"),
@@ -89,23 +98,23 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     async init() {
       let onboardingState = true
       const minions = await MinionService.getAllMinions();
+      this.createDefaultLocation();
       if (minions?.length > 0) {
         onboardingState = false
       } else {
         router.push('/welcome');
-        this.createDefaultLocation();
       }
       this.showOnboarding = onboardingState
       setTimeout(() => {
         this.ready = true;
-      }, 150)
+      }, 350)
     },
     async createDefaultLocation() {
       const locations = await LocationService.getLocationsForWelcome();
-      const existingDefault = locations?.find((d) => d.location === 'Default' || d.location === 'TestLocation');
+      const existingDefault = locations?.find((d) => d.location === 'default');
       if (!existingDefault) {
         const locationMutations = useLocationMutations();
-        const { data } = await locationMutations.createLocation({ location: 'Default' })
+        const { data } = await locationMutations.createLocation({ location: 'default' })
         if (data?.location && data?.id) {
           this.firstLocation = { location: data.location, id: data.id }
         }
@@ -148,47 +157,48 @@ export const useWelcomeStore = defineStore('welcomeStore', {
         this.validateOnKeyup = true;
       }
     },
+    async getFirstNode() {
+      const { getDiscoveries } = useDiscoveryQueries();
+      await getDiscoveries();
+      const details = await getNodeDetails(this.firstDiscovery.name);
+      const metric = details?.metrics?.nodeLatency?.data?.result?.[0]?.values?.[0]?.[1]
+      if (details.detail && metric) {
+        this.devicePreview.itemTitle = details.detail.nodeLabel
+        this.devicePreview.itemSubtitle = 'Added ' + new Intl.DateTimeFormat('en-US').format(new Date(details.detail.createTime))
+        this.devicePreview.itemStatuses[0].status = details.metrics.nodeStatus.status
+        this.devicePreview.itemStatuses[0].title = 'Status'
+        if (details.metrics.nodeStatus.status === 'UP') {
+          this.devicePreview.itemStatuses[0].statusColor = '#cee3ce'
+          this.devicePreview.itemStatuses[0].statusText = '#0b720c'
+        } else {
+          this.devicePreview.itemStatuses[0].statusColor = 'rgba(165,2,31,0.3)'
+          this.devicePreview.itemStatuses[0].statusText = 'rgba(165,2,31,1)'
+        }
+        this.devicePreview.itemStatuses[1].status = metric < 10 ? 'Normal' : 'Critical';
+        this.devicePreview.itemStatuses[1].title = 'ICMP'
+        if (this.devicePreview.itemStatuses[1].status === 'Normal') {
+          this.devicePreview.itemStatuses[1].statusColor = '#cee3ce'
+          this.devicePreview.itemStatuses[1].statusText = '#0b720c'
+        } else {
+          this.devicePreview.itemStatuses[1].statusColor = 'rgba(165,2,31,0.3)'
+          this.devicePreview.itemStatuses[1].statusText = 'rgba(165,2,31,1)'
+        }
+
+        this.devicePreview.loading = false;
+      } else {
+        setTimeout(this.getFirstNode, 10000)
+      }
+    },
     async startDiscovery() {
       await this.validateFirstDiscovery();
       if (!this.invalidForm) {
         const { createDiscoveryConfig } = useDiscoveryMutations();
-        const { getDiscoveries } = useDiscoveryQueries();
-        await createDiscoveryConfig({ request: { ipAddresses: [this.firstDiscovery.ip], location: this.firstLocation.location, name: this.firstDiscovery.name, snmpConfig: { ports: [Number(this.firstDiscovery.port)], readCommunities: [this.firstDiscovery.communityString] } } })
+        await createDiscoveryConfig({ request: { ipAddresses: [this.firstDiscovery.ip], locationId: this.firstLocation.id.toString(), name: this.firstDiscovery.name, snmpConfig: { ports: [Number(this.firstDiscovery.port)], readCommunities: [this.firstDiscovery.communityString] } } })
+
         this.devicePreview.loading = true;
         this.discoverySubmitted = true;
-        const responses = await getDiscoveries();
-
-        this.devicePreview.loading = true;
-        const myDiscovery = responses.data?.listActiveDiscovery?.slice(-1);
-        this.devicePreview.itemStatuses = [{ status: '', title: '', statusColor: '', statusText: '' }]
-        getNodeDetails();
-        this.devicePreview.itemStatuses[0].status = 'Normal'
-        this.devicePreview.itemStatuses[0].title = 'ICMP'
-        this.devicePreview.itemStatuses[0].statusColor = 'rgba(165,2,31,0.3)'
-        this.devicePreview.itemStatuses[0].statusText = 'rgba(165,2,31,1)'
-        this.devicePreview.loading = false;
-        //   setTimeout(() => {
-        //     this.devicePreview.loading = false
-        //   }, 1000)
-        console.log('MY DISCOVERY!', myDiscovery?.[0])
+        this.getFirstNode();
       }
-    },
-    async startMonitoring() {
-      const tags = [{ name: 'default' }]
-
-      if (this.detectedDevice) {
-        const { ipInterfaces, id } = this.detectedDevice
-
-        if (ipInterfaces?.[0]?.ipAddress === this.firstDiscovery.ip) {
-          await NodeService.addTagsToNodes(id, tags)
-        }
-      }
-
-      if (this.firstDiscovery.name && this.firstDiscovery.ip) {
-        await NodeService.addDeviceToNode(this.firstDiscovery.name, this.firstDiscovery.ip, this.defaultLocationName, tags)
-      }
-
-      router.push('Dashboard')
     },
     copyDockerClick() {
       navigator.clipboard.writeText(this.dockerCmd()).then(() => (this.copied = true))
@@ -208,17 +218,16 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       }
     },
     dockerCmd() {
-      const url = location.origin.includes('dev')
-        ? 'minion.onms-fb-dev.dev.nonprod.dataservice.opennms.com'
-        : 'minion.onms-fb-prod.production.prod.dataservice.opennms.com'
-      let dcmd = `docker run --rm -p 8181:8181 -p 8101:8101 -p 1162:1162/udp -p 8877:8877/udp -p 4729:4729/udp -p 9999:9999/udp -p 162:162/udp -e TZ='America/New_York' -e USE_KUBERNETES="false" -e MINION_GATEWAY_HOST="${url}" -e MINION_GATEWAY_PORT=443 -e MINION_GATEWAY_TLS="true" -e GRPC_CLIENT_KEYSTORE='/opt/karaf/minion.p12' -e GRPC_CLIENT_KEYSTORE_PASSWORD='${this.minionCert.password}'  -e MINION_ID='${this.defaultLocationName}'  --mount type=bind,source="pathToFile/${this.defaultLocationName}-certificate.p12",target="/opt/karaf/minion.p12",readonly opennms/lokahi-minion:latest`
+      let dcmd = this.minionCmd.minionDockerCmd
       if (location.origin.includes('local')) {
-        dcmd = `docker run --rm -p 8181:8181 -p 8101:8101 -p 1162:1162/udp -p 8877:8877/udp -p 4729:4729/udp -p 9999:9999/udp -p 162:162/udp -e TZ='America/New_York' -e USE_KUBERNETES="false" -e MINION_GATEWAY_HOST="host.docker.internal" -e MINION_GATEWAY_PORT=1443 -e MINION_GATEWAY_TLS="true" -e GRPC_CLIENT_TRUSTSTORE=/opt/karaf/gateway.crt --mount type=bind,source="${import.meta.env.VITE_MINION_PATH}/target/tmp/server-ca.crt",target="/opt/karaf/gateway.crt",readonly -e GRPC_CLIENT_KEYSTORE='/opt/karaf/minion.p12' -e GRPC_CLIENT_KEYSTORE_PASSWORD='${this.minionCert.password}' -e MINION_ID='Default' --mount type=bind,source="${import.meta.env.VITE_MINION_PATH}/target/tmp/TestLocation-certificate.p12",target="/opt/karaf/minion.p12",readonly  -e GRPC_CLIENT_OVERRIDE_AUTHORITY="minion.onmshs.local" -e IGNITE_SERVER_ADDRESSES="localhost" opennms/lokahi-minion:latest`
+        dcmd = `docker run --rm -p 8181:8181 -p 8101:8101 -p 1162:1162/udp -p 8877:8877/udp -p 4729:4729/udp -p 9999:9999/udp -p 162:162/udp -e TZ='America/New_York' -e USE_KUBERNETES="false" -e MINION_GATEWAY_HOST="host.docker.internal" -e MINION_GATEWAY_PORT=1443 -e MINION_GATEWAY_TLS="true" -e GRPC_CLIENT_TRUSTSTORE=/opt/karaf/gateway.crt --mount type=bind,source="${import.meta.env.VITE_MINION_PATH}/target/tmp/server-ca.crt",target="/opt/karaf/gateway.crt",readonly -e GRPC_CLIENT_KEYSTORE='/opt/karaf/minion.p12' -e GRPC_CLIENT_KEYSTORE_PASSWORD='${this.minionCert.password}' -e MINION_ID='default' --mount type=bind,source="${import.meta.env.VITE_MINION_PATH}/target/tmp/${this.defaultLocationName}-certificate.p12",target="/opt/karaf/minion.p12",readonly  -e GRPC_CLIENT_OVERRIDE_AUTHORITY="minion.onmshs.local" -e IGNITE_SERVER_ADDRESSES="localhost" opennms/lokahi-minion:latest`
       }
       return dcmd;
     },
     async downloadClick() {
       this.minionCert = await CertificateService.downloadCertificateBundle(this.firstLocation.id)
+      this.minionCmd.setPassword(this.minionCert.password || '');
+      this.minionCmd.setMinionId(this.defaultLocationName);
       createAndDownloadBlobFile(this.minionCert.certificate, `${this.defaultLocationName}-certificate.p12`)
 
       this.refreshing = true
@@ -230,7 +239,6 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       this.updateMinionStatusCopy()
     },
     async refreshMinions() {
-      console.log('refreshing!', this.refreshing, this.firstLocation.location)
       if (this.refreshing && this.firstLocation.location) {
         const localMinions = await MinionService.getAllMinions()
         if (localMinions?.length > 0) {
@@ -269,5 +277,4 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       }
     }
   },
-  getters: {}
 })

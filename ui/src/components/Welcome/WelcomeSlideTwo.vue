@@ -83,7 +83,7 @@
             </div>
             <div class="welcome-slide-footer">
                 <FeatherButton text @click="welcomeStore.prevSlide">Back</FeatherButton>
-                <FeatherButton primary :disabled="welcomeStore.minionStatusSuccess" @click="welcomeStore.nextSlide">
+                <FeatherButton primary :disabled="!welcomeStore.minionStatusSuccess" @click="welcomeStore.nextSlide">
                     Continue
                 </FeatherButton>
             </div>
