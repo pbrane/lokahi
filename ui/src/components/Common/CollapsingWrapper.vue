@@ -10,6 +10,7 @@
 defineProps({
     open: { type: Boolean, default: false },
 })
+
 </script>
 
 <style lang="scss" scoped>

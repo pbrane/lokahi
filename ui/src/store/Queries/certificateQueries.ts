@@ -14,7 +14,7 @@ export const useCertificateQueries = defineStore('certificateQueries', () => {
             variables: { location: locationId }
         })
         const cert = await execute();
-        return cert.data.getMinionCertificate;
+        return { password: cert.data?.getMinionCertificate?.password, certificate: cert.data?.getMinionCertificate?.certificate };
     }
 
     return { getMinionCertificate };

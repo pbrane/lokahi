@@ -18,7 +18,7 @@ export const useLocationQueries = defineStore('locationQueries', () => {
       fetchOnMount: false,
     })
     const response = await execute();
-    return toRaw(response?.data?.findAllLocations) || [];
+    return toRaw(response?.data?.findAllLocations)?.map((d) => ({ id: d.id, location: d.location || '' })) || [];
   }
 
   const fetchMinions = () =>
