@@ -20,7 +20,7 @@
 import { useWelcomeStore } from '@/store/Views/welcomeStore'
 const welcomeStore = useWelcomeStore()
 
-onBeforeMount(async () => {
+onMounted(async () => {
   await welcomeStore.init()
 })
 </script>

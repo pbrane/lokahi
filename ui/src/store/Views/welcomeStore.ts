@@ -6,8 +6,6 @@ import {
 } from '@/types/graphql'
 import { createAndDownloadBlobFile } from '@/components/utils'
 import router from '@/router'
-import { CertificateService, LocationService, MinionService, NodeService, QueryService } from '@/services'
-import { WelcomeLocations } from '@/services/locationService'
 import { ItemPreviewProps } from '@/components/Common/commonTypes'
 import { useLocationMutations } from '../Mutations/locationMutations'
 import { useDiscoveryMutations } from '../Mutations/discoveryMutations'
@@ -15,40 +13,48 @@ import { useDiscoveryQueries } from '../Queries/discoveryQueries'
 import { REGEX_EXPRESSIONS } from '@/components/Discovery/discovery.constants'
 import { validationErrorsToStringRecord } from '@/services/validationService'
 import { useAppliancesQueries } from '../Queries/appliancesQueries'
-import { getNodeDetails } from '@/services/nodeService'
 import useMinionCmd from '@/composables/useMinionCmd'
 import { ComputedRef } from 'vue'
 import { useNodeMutations } from '../Mutations/nodeMutations'
+import { useLocationQueries } from '../Queries/locationQueries'
+import { useNodeQueries } from '../Queries/nodeQueries'
+import { useMinionsQueries } from '../Queries/minionsQueries'
+import { useCertificateQueries } from '../Queries/certificateQueries'
 
 interface WelcomeStoreState {
-  showOnboarding: boolean
-  minionCert: CertificateResponse
   copied: boolean
+  copyButtonCopy: string
+  doneLoading: boolean
+  doneGradient: boolean
+  downloading: boolean;
   defaultLocationName: string
   detectedDevice: Partial<Node> | undefined
   devicePreview: ItemPreviewProps
   discoverySubmitted: boolean
+  downloadCopy: string
   downloaded: boolean
   firstDiscovery: Record<string, string>
   firstDiscoveryErrors: Record<string, string>
   firstDiscoveryValidation: yup.ObjectSchema<{}>,
-  firstLocation: WelcomeLocations
+  firstLocation: { id: number, location: string }
   invalidForm: boolean
+  minionCert: CertificateResponse
+  minionCmd: {
+    minionDockerCmd: ComputedRef<string>;
+    setPassword: (pass: string) => string;
+    setMinionId: (minionIdString: string) => string;
+    clearMinionCmdVals: () => void;
+  }
   minionStatusCopy: string
   minionStatusLoading: boolean
   minionStatusStarted: boolean
   minionStatusSuccess: boolean
   ready: boolean
   refreshing: boolean
+  showOnboarding: boolean
   slide: number
   slideOneCollapseVisible: boolean
   slideThreeDisabled: boolean
-  minionCmd: {
-    minionDockerCmd: ComputedRef<string>;
-    setPassword: (pass: string) => string;
-    setMinionId: (minionIdString: string) => string;
-    clearMinionCmdVals: () => void;
-  },
   validateOnKeyup: boolean
 }
 
@@ -56,22 +62,27 @@ export const useWelcomeStore = defineStore('welcomeStore', {
   state: () =>
   ({
     discoverySubmitted: false,
+    doneGradient: false,
+    doneLoading: false,
     showOnboarding: false,
     minionCert: { password: '', certificate: '' },
     copied: false,
+    copyButtonCopy: 'Copy',
     defaultLocationName: 'default',
     detectedDevice: {},
     devicePreview: {
       title: 'Node Discovery',
       loading: false,
-      itemTitle: 'Minion Gateway',
+      itemTitle: '',
       itemSubtitle: 'Added --/--/--',
       itemStatuses: [
         { title: 'ICMP Latency', status: 'Normal', statusColor: '#cee3ce', statusText: '#0b720c' },
         { title: 'SNMP Uptime', status: 'Normal', statusColor: '#cee3ce', statusText: '#0b720c' }
       ]
     },
+    downloadCopy: 'Download',
     downloaded: false,
+    downloading: false,
     minionCmd: useMinionCmd(),
     firstLocation: { id: -1, location: '' },
     invalidForm: true,
@@ -97,8 +108,9 @@ export const useWelcomeStore = defineStore('welcomeStore', {
   actions: {
     async init() {
       let onboardingState = true
-      const minions = await MinionService.getAllMinions();
-      this.createDefaultLocation();
+      const { getAllMinions } = useMinionsQueries()
+      const minions = await getAllMinions();
+      await this.createDefaultLocation();
       if (minions?.length > 0) {
         onboardingState = false
       } else {
@@ -107,11 +119,18 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       this.showOnboarding = onboardingState
       setTimeout(() => {
         this.ready = true;
-      }, 350)
+      }, 200)
+      setTimeout(() => {
+        this.doneGradient = true;
+      }, 210)
+      setTimeout(() => {
+        this.doneLoading = true;
+      }, 450)
     },
     async createDefaultLocation() {
-      const locations = await LocationService.getLocationsForWelcome();
-      const existingDefault = locations?.find((d) => d.location === 'default');
+      const { fetchLocationsForWelcome } = useLocationQueries();
+      const locations = await fetchLocationsForWelcome();
+      const existingDefault = locations?.find((d: { location: string }) => d.location === 'default');
       if (!existingDefault) {
         const locationMutations = useLocationMutations();
         const { data } = await locationMutations.createLocation({ location: 'default' })
@@ -159,22 +178,23 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     },
     async getFirstNode() {
       const { getDiscoveries } = useDiscoveryQueries();
+      const { getNodeDetails } = useNodeQueries();
       await getDiscoveries();
       const details = await getNodeDetails(this.firstDiscovery.name);
       const metric = details?.metrics?.nodeLatency?.data?.result?.[0]?.values?.[0]?.[1]
       if (details.detail && metric) {
-        this.devicePreview.itemTitle = details.detail.nodeLabel
+        this.devicePreview.itemTitle = details.detail.nodeLabel || ''
         this.devicePreview.itemSubtitle = 'Added ' + new Intl.DateTimeFormat('en-US').format(new Date(details.detail.createTime))
-        this.devicePreview.itemStatuses[0].status = details.metrics.nodeStatus.status
+        this.devicePreview.itemStatuses[0].status = details.metrics?.nodeStatus?.status || ''
         this.devicePreview.itemStatuses[0].title = 'Status'
-        if (details.metrics.nodeStatus.status === 'UP') {
+        if (details.metrics?.nodeStatus?.status === 'UP') {
           this.devicePreview.itemStatuses[0].statusColor = '#cee3ce'
           this.devicePreview.itemStatuses[0].statusText = '#0b720c'
         } else {
           this.devicePreview.itemStatuses[0].statusColor = 'rgba(165,2,31,0.3)'
           this.devicePreview.itemStatuses[0].statusText = 'rgba(165,2,31,1)'
         }
-        this.devicePreview.itemStatuses[1].status = metric < 10 ? 'Normal' : 'Critical';
+        this.devicePreview.itemStatuses[1].status = metric.toString();
         this.devicePreview.itemStatuses[1].title = 'ICMP'
         if (this.devicePreview.itemStatuses[1].status === 'Normal') {
           this.devicePreview.itemStatuses[1].statusColor = '#cee3ce'
@@ -225,22 +245,30 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       return dcmd;
     },
     async downloadClick() {
-      this.minionCert = await CertificateService.downloadCertificateBundle(this.firstLocation.id)
-      this.minionCmd.setPassword(this.minionCert.password || '');
-      this.minionCmd.setMinionId(this.defaultLocationName);
-      createAndDownloadBlobFile(this.minionCert.certificate, `${this.defaultLocationName}-certificate.p12`)
+      const { getMinionCertificate } = useCertificateQueries();
+      this.downloadCopy = 'Downloading'
+      this.downloading = true;
+      setTimeout(async () => {
+        this.minionCert = await getMinionCertificate(this.firstLocation.id)
+        this.downloading = false;
+        this.downloaded = true
+        this.downloadCopy = 'Downloaded'
+        this.minionCmd.setPassword(this.minionCert.password || '');
+        this.minionCmd.setMinionId(this.defaultLocationName);
+        createAndDownloadBlobFile(this.minionCert.certificate, `${this.defaultLocationName}-certificate.p12`)
 
-      this.refreshing = true
-      this.refreshMinions()
+        this.refreshing = true
+        this.refreshMinions()
 
-      this.downloaded = true
-      this.minionStatusLoading = true
-      this.minionStatusStarted = true
-      this.updateMinionStatusCopy()
+        this.minionStatusLoading = true
+        this.minionStatusStarted = true
+        this.updateMinionStatusCopy()
+      }, 1000)
     },
     async refreshMinions() {
       if (this.refreshing && this.firstLocation.location) {
-        const localMinions = await MinionService.getAllMinions()
+        const { getAllMinions } = useMinionsQueries();
+        const localMinions = await getAllMinions()
         if (localMinions?.length > 0) {
           this.refreshing = false
           this.minionStatusSuccess = true

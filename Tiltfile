@@ -60,7 +60,7 @@ cmd_button(name='reload-helm',
            icon_name='system_update_alt')
 
 # Give ourselves more time
-update_settings(k8s_upsert_timeout_secs=160)
+update_settings(k8s_upsert_timeout_secs=60)
 if os.getenv("CI"):
     # Be a little bit more aggressive in CI
     update_settings(max_parallel_updates=4)

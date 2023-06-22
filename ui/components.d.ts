@@ -3,7 +3,7 @@
 // Read more: https://github.com/vuejs/core/pull/3399
 import '@vue/runtime-core'
 
-export {}
+export { }
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
@@ -106,7 +106,6 @@ declare module '@vue/runtime-core' {
     LocationsMinionsCard: typeof import('./src/components/Locations/LocationsMinionsCard.vue')['default']
     LocationsMinionsList: typeof import('./src/components/Locations/LocationsMinionsList.vue')['default']
     LogoDarkIcon: typeof import('./src/components/Common/LogoDarkIcon.vue')['default']
-    'LogoDarkIcon.svg': typeof import('./src/components/Common/LogoDarkIcon.svg.vue')['default']
     MapAlarmsGrid: typeof import('./src/components/Map/MapAlarmsGrid.vue')['default']
     MapNodesGrid: typeof import('./src/components/Map/MapNodesGrid.vue')['default']
     MapSearch: typeof import('./src/components/Map/MapSearch.vue')['default']

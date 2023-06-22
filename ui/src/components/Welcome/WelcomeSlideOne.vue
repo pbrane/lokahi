@@ -135,6 +135,7 @@ ul li {
 
 .welcome-slide-one-wrapper {
     position: absolute;
+    padding-bottom: 40px;
 
     a {
         color: var($clickable-normal);

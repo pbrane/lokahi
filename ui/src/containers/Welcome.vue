@@ -1,9 +1,9 @@
 <template>
   <div class="welcome-wrapper">
-    <div class="gradiant">
+    <div :class="['gradiant', welcomeStore.doneGradient ? 'loaded' : '']">
       <GradiantBG />
     </div>
-    <div class="welcome-contain">
+    <div :class="['welcome-contain', welcomeStore.doneLoading ? 'loaded' : '']">
       <div class="welcome-inner">
         <div class="welcome-logo">
           <LogoIcon v-if="!isDark" />
@@ -44,6 +44,18 @@ const { isDark } = useTheme();
   background-color: var($background);
 }
 
+.welcome-contain {
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  transform: translateY(4px);
+  transition: opacity 0.9s ease-in-out, transform 0.5s ease-in-out 0s;
+}
+
+.welcome-contain.loaded {
+  opacity: 1;
+  transform: translateY(0px);
+}
+
 .welcome-inner {
   max-width: 660px;
   padding-top: 132px;
@@ -65,5 +77,11 @@ const { isDark } = useTheme();
   width: 100%;
   height: 100vh;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.gradiant.loaded {
+  opacity: 1;
 }
 </style>

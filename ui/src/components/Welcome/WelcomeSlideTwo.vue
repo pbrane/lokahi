@@ -27,12 +27,18 @@
                     <div class="welcome-slide-table-header">
                         <div>Minion Installation Bundle</div>
                         <div>
-                            <FeatherButton text @click="welcomeStore.downloadClick">
+                            <FeatherButton text @click="welcomeStore.downloadClick" v-if="!welcomeStore.downloading">
                                 <template #icon>
                                     <FeatherIcon :icon="welcomeStore.downloaded ? CheckIcon : DownloadIcon" />
                                 </template>
-                                {{ downloadCopy }}
+                                {{ welcomeStore.downloadCopy }}
                             </FeatherButton>
+                            <div class="loader-button" v-if="welcomeStore.downloading">
+                                <div class="loader-button-inner">
+                                    <FeatherSpinner />
+                                    {{ welcomeStore.downloadCopy }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="welcome-slide-table-body">
@@ -41,46 +47,49 @@
                     </div>
                 </div>
             </div>
-            <div class="welcome-slide-step">
-                <h2>Step 2: Copy and Run Docker Install Command</h2>
-                <pre>Replace pathToFile with the path to the certificate. (e.g. /tmp/)</pre>
-                <div class="welcome-slide-table">
-                    <div class="welcome-slide-table-header">
-                        <span>Command</span>
-                        <div>
-                            <FeatherButton text @click="welcomeStore.copyDockerClick"
-                                :disabled="!welcomeStore.minionCert.password">
-                                <template #icon>
-                                    <FeatherIcon :icon="welcomeStore.copied ? CheckIcon : CopyIcon" />
-                                </template>
-                                {{ copyButtonCopy }}
-                            </FeatherButton>
+            <CollapsingWrapper :open="!!welcomeStore.minionCert.password">
+                <div class="welcome-slide-step">
+                    <h2>Step 2: Copy and Run Docker Install Command</h2>
+                    <pre>Replace pathToFile with the path to the certificate. (e.g. /tmp/)</pre>
+                    <div class="welcome-slide-table">
+                        <div class="welcome-slide-table-header">
+                            <span>Command</span>
+                            <div>
+                                <FeatherButton text @click="welcomeStore.copyDockerClick"
+                                    :disabled="!welcomeStore.minionCert.password">
+                                    <template #icon>
+                                        <FeatherIcon :icon="welcomeStore.copied ? CheckIcon : CopyIcon" />
+                                    </template>
+                                    {{ welcomeStore.copyButtonCopy }}
+                                </FeatherButton>
+                            </div>
                         </div>
-                    </div>
-                    <div class="welcome-slide-table-body">
-                        <pre>
+                        <div class="welcome-slide-table-body">
+                            <pre>
                             {{ dockerCmd }}
                         </pre>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="welcome-slide-step">
-                <h2>Step 3: Detect Your Minion</h2>
-                <p>We will automatically detect your Minion once it is set up.</p>
+                <div class="welcome-slide-step">
+                    <h2>Step 3: Detect Your Minion</h2>
+                    <p>We will automatically detect your Minion once it is set up.</p>
 
-                <div
-                    :class="['welcome-slide-minion-status', welcomeStore.minionStatusSuccess ? 'welcome-slide-minion-success' : '']">
-                    <div class="icon-spin">
-                        <FeatherSpinner v-if="welcomeStore.minionStatusLoading && welcomeStore.minionStatusStarted" />
-                        <FeatherIcon :icon="CheckIcon"
-                            v-if="!welcomeStore.minionStatusLoading && welcomeStore.minionStatusSuccess" />
-                    </div>
-                    <div class="copy">
-                        {{ welcomeStore.minionStatusCopy }}
+                    <div
+                        :class="['welcome-slide-minion-status', welcomeStore.minionStatusSuccess ? 'welcome-slide-minion-success' : '']">
+                        <div class="icon-spin">
+                            <FeatherSpinner v-if="welcomeStore.minionStatusLoading && welcomeStore.minionStatusStarted" />
+                            <FeatherIcon :icon="CheckIcon"
+                                v-if="!welcomeStore.minionStatusLoading && welcomeStore.minionStatusSuccess" />
+                        </div>
+                        <div class="copy">
+                            {{ welcomeStore.minionStatusCopy }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </CollapsingWrapper>
+
             <div class="welcome-slide-footer">
                 <FeatherButton text @click="welcomeStore.prevSlide">Back</FeatherButton>
                 <FeatherButton primary :disabled="!welcomeStore.minionStatusSuccess" @click="welcomeStore.nextSlide">
@@ -97,11 +106,11 @@ import CheckIcon from '@featherds/icon/action/CheckCircle'
 import DownloadIcon from '@featherds/icon/action/DownloadFile'
 import InformationIcon from '@featherds/icon/action/Info'
 import useTheme from '@/composables/useTheme'
+import CollapsingWrapper from '../Common/CollapsingWrapper.vue'
+import { FeatherSpinner } from '@featherds/progress'
 defineProps({
     visible: { type: Boolean, default: false }
 })
-const downloadCopy = computed(() => welcomeStore.downloaded ? 'Downloaded' : 'Download')
-const copyButtonCopy = computed(() => welcomeStore.copied ? 'Copied' : 'Copy')
 const dockerCmd = computed(() => welcomeStore.dockerCmd());
 const welcomeStore = useWelcomeStore()
 const { isDark } = useTheme();
@@ -256,5 +265,23 @@ const { isDark } = useTheme();
 .welcome-slide-minion-success .copy {
     color: var($primary-text-on-surface);
     font-weight: 700;
+}
+
+.loader-button {
+    position: relative;
+    left: -10px;
+}
+
+.loader-button-inner {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    max-height: 36px;
+
+    :deep(svg) {
+        max-width: 15px;
+        margin-right: 12px;
+    }
 }
 </style>
