@@ -126,7 +126,7 @@ export const useWelcomeStore = defineStore('welcomeStore', {
         this.doneLoading = true;
       }, 650)
     },
-    buildItemStatus(metrics: ListNodeMetricsQuery | null | undefined, { title, condition, status }: { title: string, status: string, condition: boolean }) {
+    buildItemStatus({ title, condition, status }: { title: string, status: string, condition: boolean }) {
 
       const successStatus = condition ? this.getSuccessStatus() : this.getFailureStatus();
 
@@ -152,9 +152,11 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     },
     copyDockerClick() {
       navigator.clipboard.writeText(this.dockerCmd()).then(() => (this.copied = true))
+      this.copyButtonCopy = 'Copied';
       setTimeout(() => {
+        this.copyButtonCopy = 'Copy';
         this.copied = false
-      }, 3000)
+      }, 5000)
     },
     dockerCmd() {
       let dcmd = this.minionCmd.minionDockerCmd
@@ -167,22 +169,24 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       const { getMinionCertificate } = useCertificateQueries();
       this.downloadCopy = 'Downloading'
       this.downloading = true;
-      setTimeout(async () => {
-        this.minionCert = await getMinionCertificate(this.firstLocation.id)
-        this.downloading = false;
-        this.downloaded = true
-        this.downloadCopy = 'Downloaded'
-        this.minionCmd.setPassword(this.minionCert.password || '');
-        this.minionCmd.setMinionId(this.defaultLocationName);
-        createAndDownloadBlobFile(this.minionCert.certificate, `${this.defaultLocationName}-certificate.p12`)
+      this.minionCert = await getMinionCertificate(this.firstLocation.id)
+      this.downloading = false;
+      this.downloaded = true
+      this.downloadCopy = 'Downloaded'
+      this.minionCmd.setPassword(this.minionCert.password || '');
+      this.minionCmd.setMinionId(this.defaultLocationName);
+      createAndDownloadBlobFile(this.minionCert.certificate, `${this.defaultLocationName}-certificate.p12`)
 
-        this.refreshing = true
-        this.refreshMinions()
+      this.refreshing = true
+      this.refreshMinions()
 
-        this.minionStatusLoading = true
-        this.minionStatusStarted = true
-        this.updateMinionStatusCopy()
-      }, 1000)
+      this.minionStatusLoading = true
+      this.minionStatusStarted = true
+      this.updateMinionStatusCopy()
+      setTimeout(() => {
+        this.downloadCopy = 'Download';
+        this.downloaded = false;
+      }, 5000)
     },
     async getFirstNode() {
       const { getDiscoveries } = useDiscoveryQueries();
@@ -246,11 +250,11 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     setDevicePreview(detail: { nodeLabel?: string | undefined, createTime: number }, metrics: ListNodeMetricsQuery | null | undefined, metric: number) {
       this.devicePreview.itemTitle = detail.nodeLabel || ''
       this.devicePreview.itemSubtitle = 'Added ' + new Intl.DateTimeFormat('en-US').format(new Date(detail.createTime))
-      this.devicePreview.itemStatuses[0] = this.buildItemStatus(metrics, {
+      this.devicePreview.itemStatuses[0] = this.buildItemStatus({
         title: 'Status', status: metrics?.nodeStatus?.status || '', condition:
           metrics?.nodeStatus?.status === 'UP'
       });
-      this.devicePreview.itemStatuses[0] = this.buildItemStatus(metrics, {
+      this.devicePreview.itemStatuses[1] = this.buildItemStatus({
         title: 'ICMP', status: metric.toString(), condition:
           metric.toString() === 'Normal'
       });
