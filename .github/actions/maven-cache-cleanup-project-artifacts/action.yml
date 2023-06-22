@@ -9,7 +9,7 @@ runs:
 
         if [ -d ~/.m2/repository/org/opennms/lokahi ]
         then
-          echo "Cleanup org.opennms.horizon maven content cached"
+          echo "Cleanup org.opennms.lokahi maven content cached"
 
           cd ~/.m2/repository/org/opennms/lokahi
 
