@@ -23,6 +23,12 @@
             <groupId>org.opennms.horizon.minion.gateway</groupId>
             <artifactId>minion-gateway-main</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.opennms.horizon.shared</groupId>
+                    <artifactId>spring-boot-logback-json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

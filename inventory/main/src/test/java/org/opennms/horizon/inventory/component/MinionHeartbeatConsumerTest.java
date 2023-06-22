@@ -29,6 +29,8 @@
 package org.opennms.horizon.inventory.component;
 
 import com.google.protobuf.Any;
+import java.util.Optional;
+import java.util.Random;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,6 +61,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class MinionHeartbeatConsumerTest {
@@ -68,7 +71,6 @@ public class MinionHeartbeatConsumerTest {
     private KafkaTemplate<String, byte[]> kafkaTemplate;
     @Mock
     private MonitoringSystemService service;
-
     @Mock
     private MonitoringLocationService locationService;
 
@@ -77,7 +79,7 @@ public class MinionHeartbeatConsumerTest {
     MinionHeartbeatConsumer messageConsumer;
 
     private final String TEST_TENANT_ID = "test-tenant";
-    private final String TEST_LOCATION = "test-location";
+    private final Long TEST_LOCATION_ID = new Random().nextLong(1, Long.MAX_VALUE);
     private Map<String, Object> headers;
     private TenantLocationSpecificHeartbeatMessage heartbeat;
 
@@ -88,7 +90,7 @@ public class MinionHeartbeatConsumerTest {
 
         heartbeat = TenantLocationSpecificHeartbeatMessage.newBuilder()
             .setTenantId(TEST_TENANT_ID)
-            .setLocation(TEST_LOCATION)
+            .setLocationId(String.valueOf(TEST_LOCATION_ID))
             .setIdentity(
                 Identity.newBuilder()
                     .setSystemId(systemId)
@@ -101,13 +103,17 @@ public class MinionHeartbeatConsumerTest {
         doReturn(CompletableFuture.completedFuture(rpcResponse)).when(rpcClient).sendRpcRequest(eq(TEST_TENANT_ID), any(GatewayRpcRequestProto.class));
         ReflectionTestUtils.setField(messageConsumer, "kafkaTopic", "test-topic");
         var location  = new MonitoringLocation();
-        location.setLocation(TEST_LOCATION);
+        location.setId(TEST_LOCATION_ID);
         location.setTenantId(TEST_TENANT_ID);
-        doReturn(Optional.of(location)).when(locationService).findByLocationAndTenantId(eq(TEST_LOCATION), eq(TEST_TENANT_ID));
     }
 
     @Test
     void testAcceptHeartbeats() throws LocationNotFoundException {
+        var location  = new MonitoringLocation();
+        location.setId(TEST_LOCATION_ID);
+        location.setTenantId(TEST_TENANT_ID);
+        doReturn(Optional.of(location)).when(locationService).getByIdAndTenantId(TEST_LOCATION_ID, TEST_TENANT_ID);
+
         messageConsumer.receiveMessage(heartbeat.toByteArray(), headers);
         verify(service, times(1)).addMonitoringSystemFromHeartbeat(any(TenantLocationSpecificHeartbeatMessage.class));
         verify(rpcClient, timeout(5000).atLeast(1)).sendRpcRequest(eq(TEST_TENANT_ID), any(GatewayRpcRequestProto.class));
@@ -116,9 +122,15 @@ public class MinionHeartbeatConsumerTest {
 
     @Test
     void testAcceptHeartbeatsDelay() throws LocationNotFoundException {
+        var location  = new MonitoringLocation();
+        location.setId(TEST_LOCATION_ID);
+        location.setTenantId(TEST_TENANT_ID);
+        doReturn(Optional.of(location)).when(locationService).getByIdAndTenantId(TEST_LOCATION_ID, TEST_TENANT_ID);
+
         messageConsumer.receiveMessage(heartbeat.toByteArray(), headers);
         doReturn(System.currentTimeMillis() + 30000).when(messageConsumer).getSystemTimeInMsec();
         messageConsumer.receiveMessage(heartbeat.toByteArray(), headers);
+
         verify(service, times(2)).addMonitoringSystemFromHeartbeat(any(TenantLocationSpecificHeartbeatMessage.class));
         verify(rpcClient, timeout(5000).times(2)).sendRpcRequest(eq(TEST_TENANT_ID), any(GatewayRpcRequestProto.class));
         verify(kafkaTemplate, timeout(5000).times(2)).send(any(ProducerRecord.class));

@@ -373,7 +373,7 @@ class TagGrpcItTest extends GrpcTestBase {
 
     @Test
     void testGetTagListForActiveDiscoveryWithNameLikeNoResults() {
-        long activeDiscoveryId = setupAzureActiveDiscoveryDatabase();
+        AzureActiveDiscovery activeDiscovery = setupAzureActiveDiscoveryDatabase();
 
         TagCreateDTO createDTO1 = TagCreateDTO.newBuilder()
             .setName(TEST_TAG_NAME_1)
@@ -382,7 +382,7 @@ class TagGrpcItTest extends GrpcTestBase {
         TagCreateListDTO createListDTO1 = TagCreateListDTO.newBuilder()
             .addAllTags(Collections.singletonList(createDTO1))
             .addEntityIds(TagEntityIdDTO.newBuilder()
-                .setActiveDiscoveryId(activeDiscoveryId)).build();
+                .setActiveDiscoveryId(activeDiscovery.getId())).build();
 
         serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader))).addTags(createListDTO1);
 
@@ -393,7 +393,7 @@ class TagGrpcItTest extends GrpcTestBase {
         TagCreateListDTO createListDTO2 = TagCreateListDTO.newBuilder()
             .addAllTags(Collections.singletonList(createDTO2))
             .addEntityIds(TagEntityIdDTO.newBuilder()
-                .setActiveDiscoveryId(activeDiscoveryId)).build();
+                .setActiveDiscoveryId(activeDiscovery.getId())).build();
 
         serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader))).addTags(createListDTO2);
 
@@ -402,7 +402,7 @@ class TagGrpcItTest extends GrpcTestBase {
 
         ListTagsByEntityIdParamsDTO params = ListTagsByEntityIdParamsDTO.newBuilder()
             .setEntityId(TagEntityIdDTO.newBuilder()
-                .setActiveDiscoveryId(activeDiscoveryId))
+                .setActiveDiscoveryId(activeDiscovery.getId()))
             .setParams(TagListParamsDTO.newBuilder()
                 .setSearchTerm("tag-name-INVALID").build()).build();
         TagListDTO tagsByNodeId = serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader))).getTagsByEntityId(params);
@@ -450,7 +450,7 @@ class TagGrpcItTest extends GrpcTestBase {
 
     @Test
     void testGetTagListForActiveDiscovery() {
-        long activeDiscoveryId = setupAzureActiveDiscoveryDatabase();
+        AzureActiveDiscovery activeDiscovery = setupAzureActiveDiscoveryDatabase();
 
         TagCreateDTO createDTO1 = TagCreateDTO.newBuilder()
             .setName(TEST_TAG_NAME_1)
@@ -459,7 +459,7 @@ class TagGrpcItTest extends GrpcTestBase {
         TagCreateListDTO createListDTO1 = TagCreateListDTO.newBuilder()
             .addAllTags(Collections.singletonList(createDTO1))
             .addEntityIds(TagEntityIdDTO.newBuilder()
-                .setActiveDiscoveryId(activeDiscoveryId)).build();
+                .setActiveDiscoveryId(activeDiscovery.getId())).build();
 
         serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader))).addTags(createListDTO1);
 
@@ -470,7 +470,7 @@ class TagGrpcItTest extends GrpcTestBase {
         TagCreateListDTO createListDTO2 = TagCreateListDTO.newBuilder()
             .addAllTags(Collections.singletonList(createDTO2))
             .addEntityIds(TagEntityIdDTO.newBuilder()
-                .setActiveDiscoveryId(activeDiscoveryId)).build();
+                .setActiveDiscoveryId(activeDiscovery.getId())).build();
 
         serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader))).addTags(createListDTO2);
 
@@ -479,7 +479,7 @@ class TagGrpcItTest extends GrpcTestBase {
 
         ListTagsByEntityIdParamsDTO params = ListTagsByEntityIdParamsDTO.newBuilder()
             .setEntityId(TagEntityIdDTO.newBuilder()
-                .setActiveDiscoveryId(activeDiscoveryId))
+                .setActiveDiscoveryId(activeDiscovery.getId()))
             .setParams(TagListParamsDTO.newBuilder().build()).build();
         TagListDTO tagsByNodeId = serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader))).getTagsByEntityId(params);
         List<TagDTO> tagsList = tagsByNodeId.getTagsList();
@@ -488,7 +488,7 @@ class TagGrpcItTest extends GrpcTestBase {
 
     @Test
     void testGetTagListForAzureCredentialWithNameLike() {
-        long activeDiscoveryId = setupAzureActiveDiscoveryDatabase();
+        AzureActiveDiscovery activeDiscovery = setupAzureActiveDiscoveryDatabase();
 
         TagCreateDTO createDTO1 = TagCreateDTO.newBuilder()
             .setName(TEST_TAG_NAME_1)
@@ -497,7 +497,7 @@ class TagGrpcItTest extends GrpcTestBase {
         TagCreateListDTO createListDTO1 = TagCreateListDTO.newBuilder()
             .addAllTags(Collections.singletonList(createDTO1))
             .addEntityIds(TagEntityIdDTO.newBuilder()
-                .setActiveDiscoveryId(activeDiscoveryId)).build();
+                .setActiveDiscoveryId(activeDiscovery.getId())).build();
 
         serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader))).addTags(createListDTO1);
 
@@ -508,7 +508,7 @@ class TagGrpcItTest extends GrpcTestBase {
         TagCreateListDTO createListDTO2 = TagCreateListDTO.newBuilder()
             .addAllTags(Collections.singletonList(createDTO2))
             .addEntityIds(TagEntityIdDTO.newBuilder()
-                .setActiveDiscoveryId(activeDiscoveryId)).build();
+                .setActiveDiscoveryId(activeDiscovery.getId())).build();
 
         serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader))).addTags(createListDTO2);
 
@@ -517,7 +517,7 @@ class TagGrpcItTest extends GrpcTestBase {
 
         ListTagsByEntityIdParamsDTO params = ListTagsByEntityIdParamsDTO.newBuilder()
             .setEntityId(TagEntityIdDTO.newBuilder()
-                .setActiveDiscoveryId(activeDiscoveryId))
+                .setActiveDiscoveryId(activeDiscovery.getId()))
             .setParams(TagListParamsDTO.newBuilder().setSearchTerm("tag-name").build()).build();
         TagListDTO tagsByNodeId = serviceStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createAuthHeader(authHeader))).getTagsByEntityId(params);
         List<TagDTO> tagsList = tagsByNodeId.getTagsList();
@@ -646,9 +646,14 @@ class TagGrpcItTest extends GrpcTestBase {
         return node.getId();
     }
 
-    private long setupAzureActiveDiscoveryDatabase() {
+    private AzureActiveDiscovery setupAzureActiveDiscoveryDatabase() {
+        MonitoringLocation location = new MonitoringLocation();
+        location.setTenantId(tenantId);
+        location.setLocation(TEST_LOCATION);
+        long locationId = locationRepository.save(location).getId();
+
         AzureActiveDiscovery discovery = new AzureActiveDiscovery();
-        discovery.setLocation(TEST_LOCATION);
+        discovery.setLocationId(locationId);
         discovery.setName("test-name");
         discovery.setDirectoryId("test-directory-id");
         discovery.setSubscriptionId("test-subscription-id");
@@ -657,6 +662,6 @@ class TagGrpcItTest extends GrpcTestBase {
         discovery.setCreateTime(LocalDateTime.now());
         discovery.setTenantId(tenantId);
         discovery = azureActiveDiscoveryRepository.saveAndFlush(discovery);
-        return discovery.getId();
+        return discovery;
     }
 }

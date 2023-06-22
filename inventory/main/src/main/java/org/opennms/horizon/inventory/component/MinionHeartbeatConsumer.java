@@ -29,6 +29,7 @@
 package org.opennms.horizon.inventory.component;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +43,7 @@ import org.opennms.cloud.grpc.minion_gateway.MinionIdentity;
 import org.opennms.horizon.grpc.echo.contract.EchoRequest;
 import org.opennms.horizon.grpc.echo.contract.EchoResponse;
 import org.opennms.horizon.grpc.heartbeat.contract.TenantLocationSpecificHeartbeatMessage;
+import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.service.MonitoringLocationService;
 import org.opennms.horizon.inventory.service.MonitoringSystemService;
@@ -93,34 +95,30 @@ public class MinionHeartbeatConsumer {
             TenantLocationSpecificHeartbeatMessage message = TenantLocationSpecificHeartbeatMessage.parseFrom(data);
 
             String tenantId = message.getTenantId();
-            String location = message.getLocation();
+            String locationId = message.getLocationId();
 
-            log.info("Received heartbeat message for minion: tenant-id={}; location={}; system-id={}",
-                tenantId, location, message.getIdentity().getSystemId());
             Span.current().setAttribute("user", tenantId);
-            Span.current().setAttribute("location", location);
+            Span.current().setAttribute("location-id", locationId);
             Span.current().setAttribute("system-id", message.getIdentity().getSystemId());
 
-            var optionalLocation = locationService.findByLocationAndTenantId(location, tenantId);
-            if (optionalLocation.isEmpty()) {
-                log.warn("Received heartbeat from unknown location {}", location);
+            Optional<MonitoringLocationDTO> location = locationService.getByIdAndTenantId(Long.parseLong(locationId), tenantId);
+            if (location.isEmpty()) {
+                log.info("Received heartbeat message for orphaned minion: tenantId={}; locationId={}; systemId={}",
+                    tenantId, locationId, message.getIdentity().getSystemId());
                 return;
             }
+            log.info("Received heartbeat message for minion: tenantId={}; locationId={}; systemId={}",
+                tenantId, locationId, message.getIdentity().getSystemId());
             service.addMonitoringSystemFromHeartbeat(message);
 
             String systemId = message.getIdentity().getSystemId();
-            String key = tenantId + "_" + location + "-" + systemId;
+            String key = tenantId + "_" + locationId + "-" + systemId;
 
             Long lastRun = rpcMaps.get(key);
             if (lastRun == null || (getSystemTimeInMsec() > (lastRun + MONITOR_PERIOD))) { //prevent run too many rpc calls
-                CompletableFuture.runAsync(() -> runRpcMonitor(tenantId, location, systemId));
+                CompletableFuture.runAsync(() -> runRpcMonitor(tenantId, locationId, systemId));
                 rpcMaps.put(key, getSystemTimeInMsec());
             }
-
-            Span.current().setStatus(StatusCode.OK);
-        } catch (LocationNotFoundException e) {
-            log.error("Location not found while processing heartbeat message: {}", e.getMessage());
-            Span.current().setStatus(StatusCode.ERROR, "Location not found while processing heartbeat message: " + e.getMessage());
         } catch (Exception e) {
             log.error("Error while processing heartbeat message: ", e);
             Span.current().recordException(e);
@@ -134,8 +132,8 @@ public class MinionHeartbeatConsumer {
         }
     }
 
-    private void runRpcMonitor(String tenantId, String location, String systemId) {
-        log.info("Sending RPC request for minion {} with location {}", systemId, location);
+    private void runRpcMonitor(String tenantId, String locationId, String systemId) {
+        log.info("Sending RPC request for tenantId={}; locationId={}; systemId={}", tenantId, locationId, systemId);
         EchoRequest echoRequest = EchoRequest.newBuilder()
             .setTime(System.nanoTime())
             .setMessage(Strings.repeat("*", DEFAULT_MESSAGE_SIZE))
@@ -143,8 +141,8 @@ public class MinionHeartbeatConsumer {
 
         MinionIdentity minionIdentity =
             MinionIdentity.newBuilder()
-                .setTenant(tenantId)
-                .setLocation(location)
+                .setTenantId(tenantId)
+                .setLocationId(locationId)
                 .setSystemId(systemId)
                 .build();
 
@@ -166,18 +164,18 @@ public class MinionHeartbeatConsumer {
             })
             .whenComplete((echoResponse, error) -> {
                     if (error != null) {
-                        log.error("Unable to complete echo request for monitoring system {} with tenant {}, location {}",
-                            systemId, tenantId, location, error);
+                        log.error("Unable to complete echo request for monitoring with tenantId={}; locationId={}; systemId={}",
+                            tenantId, locationId, systemId, error);
                         return;
                     }
                     long responseTime = (System.nanoTime() - echoResponse.getTime()) / 1000000;
-                    publishResult(systemId, location, tenantId, responseTime);
+                    publishResult(systemId, locationId, tenantId, responseTime);
                     log.info("Response time for minion {} is {} msecs", systemId, responseTime);
                 }
             );
     }
 
-    private void publishResult(String systemId, String location, String tenantId, long responseTime) {
+    private void publishResult(String systemId, String locationId, String tenantId, long responseTime) {
         // TODO: use a separate structure from TaskSetResult - this is not the result of processing a TaskSet
         org.opennms.taskset.contract.Identity identity =
             org.opennms.taskset.contract.Identity.newBuilder()
@@ -197,7 +195,7 @@ public class MinionHeartbeatConsumer {
             .build();
         TenantLocationSpecificTaskSetResults results = TenantLocationSpecificTaskSetResults.newBuilder()
             .setTenantId(tenantId)
-            .setLocation(location)
+            .setLocationId(locationId)
             .addResults(result)
             .build();
 

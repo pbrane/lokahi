@@ -36,12 +36,12 @@ import org.opennms.horizon.shared.grpc.traps.contract.mapper.TenantLocationSpeci
 public class TenantLocationSpecificTrapLogDTOMapperImpl implements TenantLocationSpecificTrapLogDTOMapper {
 
     @Override
-    public TenantLocationSpecificTrapLogDTO mapBareToTenanted(String tenantId, String location, TrapLogDTO bare) {
+    public TenantLocationSpecificTrapLogDTO mapBareToTenanted(String tenantId, String locationId, TrapLogDTO bare) {
 
         var result =
             TenantLocationSpecificTrapLogDTO.newBuilder()
                 .setTenantId(tenantId)
-                .setLocation(location)
+                .setLocationId(locationId)
                 .setTrapAddress(bare.getTrapAddress())
                 .setIdentity(bare.getIdentity())
                 .addAllTrapDTO(bare.getTrapDTOList())

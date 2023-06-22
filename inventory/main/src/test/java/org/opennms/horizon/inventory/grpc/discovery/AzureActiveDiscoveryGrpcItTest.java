@@ -44,7 +44,6 @@ import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.keycloak.common.VerificationException;
 import org.opennms.horizon.inventory.SpringContextTestInitializer;
@@ -53,9 +52,11 @@ import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryDTO;
 import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryServiceGrpc;
 import org.opennms.horizon.inventory.dto.TagCreateDTO;
 import org.opennms.horizon.inventory.grpc.GrpcTestBase;
+import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.Tag;
 import org.opennms.horizon.inventory.model.discovery.active.ActiveDiscovery;
 import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery;
+import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.TagRepository;
 import org.opennms.horizon.inventory.repository.discovery.active.AzureActiveDiscoveryRepository;
 import org.opennms.horizon.shared.azure.http.dto.AzureHttpParams;
@@ -82,6 +83,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.opennms.horizon.shared.azure.http.AzureHttpClient.OAUTH2_TOKEN_ENDPOINT;
 import static org.opennms.horizon.shared.azure.http.AzureHttpClient.SUBSCRIPTION_ENDPOINT;
 
@@ -89,14 +94,13 @@ import static org.opennms.horizon.shared.azure.http.AzureHttpClient.SUBSCRIPTION
 @ContextConfiguration(initializers = {SpringContextTestInitializer.class})
 @AutoConfigureObservability     // Make sure to include Metrics (for some reason they are disabled by default in the integration grey-box test)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@Disabled
 class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
     private static final String TEST_NAME = "name";
     private static final String TEST_CLIENT_ID = "client-id";
     private static final String TEST_CLIENT_SECRET = "client-secret";
     private static final String TEST_SUBSCRIPTION_ID = "subscription-id";
     private static final String TEST_DIRECTORY_ID = "directory-id";
-    private static final String DEFAULT_LOCATION = "Default";
+    private static final String DEFAULT_LOCATION_NAME = "Default";
     private static final String TEST_TAG_NAME_1 = "tag-name-1";
     private static final String TEST_TENANT_ID = "tenant-id";
 
@@ -104,6 +108,9 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
 
     @Autowired
     private AzureActiveDiscoveryRepository repository;
+
+    @Autowired
+    private MonitoringLocationRepository monitoringLocationRepo;
 
     @Autowired
     private AzureHttpParams params;
@@ -115,6 +122,7 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
     public WireMockRule wireMock = new WireMockRule(wireMockConfig().port(12345));
 
     private final ObjectMapper snakeCaseMapper;
+    private long locationId;
 
     public AzureActiveDiscoveryGrpcItTest() {
         this.snakeCaseMapper = new ObjectMapper();
@@ -127,6 +135,12 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
         prepareServer();
         serviceStub = AzureActiveDiscoveryServiceGrpc.newBlockingStub(channel);
         wireMock.start();
+
+        MonitoringLocation location = new MonitoringLocation();
+        location.setTenantId(TEST_TENANT_ID);
+        location.setLocation(DEFAULT_LOCATION_NAME);
+        location = monitoringLocationRepo.save(location);
+        locationId = location.getId();
     }
 
     @AfterEach
@@ -144,7 +158,7 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
         TagCreateDTO tagCreateDto1 = TagCreateDTO.newBuilder().setName(TEST_TAG_NAME_1).build();
 
         AzureActiveDiscoveryCreateDTO createDTO = AzureActiveDiscoveryCreateDTO.newBuilder()
-            .setLocation(DEFAULT_LOCATION)
+            .setLocationId(String.valueOf(locationId))
             .setName(TEST_NAME)
             .setClientId(TEST_CLIENT_ID)
             .setClientSecret(TEST_CLIENT_SECRET)
@@ -153,28 +167,32 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
             .addAllTags(List.of(tagCreateDto1))
             .build();
 
-        AzureActiveDiscoveryDTO dicsovery = serviceStub.withInterceptors(MetadataUtils
-                .newAttachHeadersInterceptor(createAuthHeader(authHeader)))
+        AzureActiveDiscoveryDTO discoveryDTO = serviceStub.withInterceptors(MetadataUtils
+            .newAttachHeadersInterceptor(createAuthHeader(authHeader)))
             .createDiscovery(createDTO);
 
-        assertTrue(dicsovery.getId() > 0);
+        assertTrue(discoveryDTO.getId() > 0);
 
-        await().atMost(10, TimeUnit.SECONDS).until(() -> testGrpcService.getTaskDefinitions(DEFAULT_LOCATION).stream()
-            .filter(taskDef -> taskDef.getType().equals(TaskType.SCANNER)).toList().size(), Matchers.is(1));
+        await().atMost(10, TimeUnit.SECONDS).until(() ->
+            verify(testGrpcService).publishNewTasks(eq(tenantId), eq(locationId), argThat(arg -> arg.stream()
+                .filter(taskDef -> taskDef.getType().equals(TaskType.SCANNER))
+                .toList().size() == 1)
+            )
+        );
 
-        assertEquals(createDTO.getClientId(), dicsovery.getClientId());
-        assertEquals(createDTO.getSubscriptionId(), dicsovery.getSubscriptionId());
-        assertEquals(createDTO.getDirectoryId(), dicsovery.getDirectoryId());
-        assertTrue(dicsovery.getCreateTimeMsec() > 0L);
+        assertEquals(createDTO.getClientId(), discoveryDTO.getClientId());
+        assertEquals(createDTO.getSubscriptionId(), discoveryDTO.getSubscriptionId());
+        assertEquals(createDTO.getDirectoryId(), discoveryDTO.getDirectoryId());
+        assertTrue(discoveryDTO.getCreateTimeMsec() > 0L);
 
         List<AzureActiveDiscovery> list = repository.findAll();
         assertEquals(1, list.size());
 
         AzureActiveDiscovery discovery = list.get(0);
         assertTrue(discovery.getId() > 0);
-        assertNotNull(discovery.getLocation());
+        assertNotNull(discovery.getLocationId());
         assertEquals(createDTO.getName(), discovery.getName());
-        assertEquals(createDTO.getLocation(), discovery.getLocation());
+        assertEquals(Long.parseLong(createDTO.getLocationId()), discovery.getLocationId());
         assertEquals(createDTO.getClientId(), discovery.getClientId());
         assertEquals(createDTO.getClientSecret(), discovery.getClientSecret());
         assertEquals(createDTO.getSubscriptionId(), discovery.getSubscriptionId());
@@ -199,7 +217,7 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
 
         AzureActiveDiscoveryCreateDTO createDTO = AzureActiveDiscoveryCreateDTO.newBuilder()
             .setName(TEST_NAME)
-            .setLocation(DEFAULT_LOCATION)
+            .setLocationId(String.valueOf(locationId))
             .setClientId(TEST_CLIENT_ID)
             .setClientSecret(TEST_CLIENT_SECRET)
             .setSubscriptionId(TEST_SUBSCRIPTION_ID)
@@ -212,7 +230,7 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
         Status status = StatusProto.fromThrowable(exception);
         assertEquals("Code: Message", status.getMessage());
         assertThat(status.getCode()).isEqualTo(Code.INTERNAL_VALUE);
-        assertEquals(0, testGrpcService.getRequests().size());
+        verifyNoInteractions(testGrpcService);
     }
 
     @Test
@@ -222,7 +240,7 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
 
         AzureActiveDiscoveryCreateDTO createDTO = AzureActiveDiscoveryCreateDTO.newBuilder()
             .setName(TEST_NAME)
-            .setLocation(DEFAULT_LOCATION)
+            .setLocationId(String.valueOf(locationId))
             .setClientId(TEST_CLIENT_ID)
             .setClientSecret(TEST_CLIENT_SECRET)
             .setSubscriptionId(TEST_SUBSCRIPTION_ID)
@@ -234,7 +252,7 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
             .createDiscovery(createDTO));
         Status status = StatusProto.fromThrowable(exception);
         assertThat(status.getCode()).isEqualTo(Code.INTERNAL_VALUE);
-        assertEquals(0, testGrpcService.getRequests().size());
+        verifyNoInteractions(testGrpcService);
     }
 
     @Test
@@ -244,7 +262,7 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
 
         AzureActiveDiscoveryCreateDTO createDTO = AzureActiveDiscoveryCreateDTO.newBuilder()
             .setName(TEST_NAME)
-            .setLocation(DEFAULT_LOCATION)
+            .setLocationId(String.valueOf(locationId))
             .setClientId(TEST_CLIENT_ID)
             .setClientSecret(TEST_CLIENT_SECRET)
             .setSubscriptionId(TEST_SUBSCRIPTION_ID)
@@ -268,7 +286,7 @@ class AzureActiveDiscoveryGrpcItTest extends GrpcTestBase {
 
         AzureActiveDiscoveryCreateDTO createDTO = AzureActiveDiscoveryCreateDTO.newBuilder()
             .setName(TEST_NAME)
-            .setLocation(DEFAULT_LOCATION)
+            .setLocationId(String.valueOf(locationId))
             .setClientId(TEST_CLIENT_ID)
             .setClientSecret(TEST_CLIENT_SECRET)
             .setSubscriptionId(TEST_SUBSCRIPTION_ID)

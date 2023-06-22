@@ -28,7 +28,7 @@ public class TestTaskSetGrpcService extends TaskSetServiceGrpc.TaskSetServiceImp
         this.requests.add(request);
 
         // Apply the updates to the taskset for the location
-        applyTaskSetUpdatesForLocation(request.getLocation(), request.getUpdateList());
+        applyTaskSetUpdatesForLocation(request.getLocationId(), request.getUpdateList());
 
         log.info("Called TestTaskSetGrpcService.updateTasks with request = {}", request);
         responseObserver.onNext(UpdateTasksResponse.newBuilder().build());
@@ -40,8 +40,8 @@ public class TestTaskSetGrpcService extends TaskSetServiceGrpc.TaskSetServiceImp
     }
 
     // TBD888: change the tests to verify the individual updates instead of the end result of the updates
-    public Set<TaskDefinition> getTaskDefinitions(String location) {
-        var taskSet = taskSetMap.get(location);
+    public Set<TaskDefinition> getTaskDefinitions(String locationId) {
+        var taskSet = taskSetMap.get(locationId);
 
         if (taskSet == null) {
             return new HashSet<>();
@@ -54,8 +54,8 @@ public class TestTaskSetGrpcService extends TaskSetServiceGrpc.TaskSetServiceImp
 // Internals
 //----------------------------------------
 
-    private void applyTaskSetUpdatesForLocation(String location, List<UpdateSingleTaskOp> updates) {
-        Map locationMap = taskSetMap.computeIfAbsent(location, key -> new HashMap<>());
+    private void applyTaskSetUpdatesForLocation(String locationId, List<UpdateSingleTaskOp> updates) {
+        Map locationMap = taskSetMap.computeIfAbsent(locationId, key -> new HashMap<>());
 
         for (UpdateSingleTaskOp singleTaskOp : updates) {
             if (singleTaskOp.hasAddTask()) {

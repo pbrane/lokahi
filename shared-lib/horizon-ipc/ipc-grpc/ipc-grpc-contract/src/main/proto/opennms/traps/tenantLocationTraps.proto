@@ -8,8 +8,8 @@ import "opennms/traps/traps.proto";
 import "opennms_minion_ipc.proto";
 
 message TenantLocationSpecificTrapLogDTO {
-  string tenantId = 100;
-  string location = 101;
+  string tenant_id = 100;
+  string location_id = 101;
 
   minion.Identity identity = 1;
   string trapAddress = 2;

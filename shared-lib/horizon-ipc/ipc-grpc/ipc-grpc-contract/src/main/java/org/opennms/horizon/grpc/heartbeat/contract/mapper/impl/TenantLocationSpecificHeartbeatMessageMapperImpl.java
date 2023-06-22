@@ -6,12 +6,11 @@ import org.opennms.horizon.grpc.heartbeat.contract.mapper.TenantLocationSpecific
 
 public class TenantLocationSpecificHeartbeatMessageMapperImpl implements TenantLocationSpecificHeartbeatMessageMapper {
     @Override
-    public TenantLocationSpecificHeartbeatMessage mapBareToTenanted(String tenantId, String location, HeartbeatMessage bare) {
+    public TenantLocationSpecificHeartbeatMessage mapBareToTenanted(String tenantId, String locationId, HeartbeatMessage bare) {
         TenantLocationSpecificHeartbeatMessage result =
             TenantLocationSpecificHeartbeatMessage.newBuilder()
                 .setTenantId(tenantId)
-                .setLocation(location)
-
+                .setLocationId(locationId)
                 .setIdentity(bare.getIdentity())
                 .setTimestamp(bare.getTimestamp())
                 .build();

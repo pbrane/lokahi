@@ -64,23 +64,23 @@ public class FlowsConfigService {
 
         for (MonitoringLocationDTO dto : allLocations) {
             try {
-                sendFlowsConfigToMinion(dto.getTenantId(), dto.getLocation());
+                sendFlowsConfigToMinion(dto.getTenantId(), dto.getId());
             } catch (Exception e) {
-                LOG.error("Fail to sent flow config for tenant: {}, to location: {}", dto.getTenantId(), dto.getLocation());
+                LOG.error("Fail to sent flow config for tenantId={}; locationId={}", dto.getTenantId(), dto.getLocation());
             }
         }
     }
 
-    public void sendFlowsConfigToMinion(String tenantId, String location) {
+    public void sendFlowsConfigToMinion(String tenantId, Long locationId) {
         FlowsConfig flowsConfig = readFlowsConfig();
         if (flowsConfig != null) {
-            publishFlowsConfig(tenantId, location, flowsConfig);
+            publishFlowsConfig(tenantId, locationId, flowsConfig);
         }
     }
 
-    private void publishFlowsConfig(String tenantId, String location, FlowsConfig flowsConfig) {
+    private void publishFlowsConfig(String tenantId, Long locationId, FlowsConfig flowsConfig) {
         TaskDefinition taskDefinition = TaskDefinition.newBuilder()
-            .setId(TaskUtils.identityForConfig(FLOWS_CONFIG, location))
+            .setId(TaskUtils.identityForConfig(FLOWS_CONFIG, locationId))
             .setPluginName("flows.parsers.config")
             .setType(TaskType.LISTENER)
             .setConfiguration(Any.pack(flowsConfig))
@@ -88,7 +88,7 @@ public class FlowsConfigService {
 
         var taskList = new ArrayList<TaskDefinition>();
         taskList.add(taskDefinition);
-        taskSetPublisher.publishNewTasks(tenantId, location, taskList);
+        taskSetPublisher.publishNewTasks(tenantId, locationId, taskList);
     }
 
     @VisibleForTesting
