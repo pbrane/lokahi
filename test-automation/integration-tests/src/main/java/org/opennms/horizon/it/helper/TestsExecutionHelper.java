@@ -190,7 +190,7 @@ public class TestsExecutionHelper {
             String accessToken = getUserAccessTokenSupplier().get();
 
             Response response = executePost(url, accessToken, gqlQuery);
-            LOG.info("Response from server: {}", response.asPrettyString());
+            //LOG.info("Response from server: {}", response.asPrettyString());
             return response;
 
         } catch (MalformedURLException e) {
