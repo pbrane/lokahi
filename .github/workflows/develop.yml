@@ -150,7 +150,8 @@ jobs:
       ui
     ]
     runs-on:
-      labels: ubuntu-latest-8-cores
+      labels: vmgharunnereastusdev
+      #labels: ubuntu-latest-8-cores
     timeout-minutes: 30 # Prevents hung workflows on the larger runners from costing more than necessary
     steps:
 
