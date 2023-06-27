@@ -69,6 +69,7 @@ public class InventoryTestSteps {
 
     // Runtime Data
     private String minionLocation;
+    private String locationTimeStamp;
     private FindAllMinionsQueryResult findAllMinionsQueryResult;
     private List<MinionData> minionsAtLocation;
     private String lastMinionQueryResultBody;
@@ -92,6 +93,14 @@ public class InventoryTestSteps {
     public void createLocation(String location) throws Exception {
         String queryList = GQLQueryConstants.CREATE_LOCATION;
 
+        /* Need explanation.
+         * */
+        locationTimeStamp = "TIMESTAMP-TODO";
+
+        LOG.info("LOCATION TEST: {}", location);
+        location = location + locationTimeStamp;
+        LOG.info("LOCATION TEST: {}", location);
+
         GQLQuery gqlQuery = new GQLQuery();
         gqlQuery.setQuery(queryList);
         gqlQuery.setVariables(Map.of("location", location));
@@ -102,8 +111,10 @@ public class InventoryTestSteps {
 
     @Given("Location {string} is removed")
     public void deleteLocation(String location) throws Exception {
+        final String locationLmda = location + locationTimeStamp;
+
         LocationData locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> loc.getLocation().equals(location))
+            .filter(loc -> loc.getLocation().equals(locationLmda))
             .findFirst().orElse(null);
 
         if (locationData == null) {
@@ -120,26 +131,32 @@ public class InventoryTestSteps {
 
     @Given("Location {string} does not exist")
     public void queryLocationDoNotExist(String location) throws MalformedURLException {
+        final String locationLmda = location + locationTimeStamp;
+
         List<LocationData> locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(data -> data.getLocation().equals(location)).toList();
+            .filter(data -> data.getLocation().equals(locationLmda)).toList();
         assertTrue(locationData.isEmpty());
     }
 
     @Then("Location {string} do exist")
     public void queryLocationDoExist(String location) throws MalformedURLException {
+        final String locationLmda = location + locationTimeStamp;
+
         Optional<LocationData> locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(data -> data.getLocation().equals(location))
+            .filter(data -> data.getLocation().equals(locationLmda))
             .findFirst();
         assertTrue(locationData.isPresent());
     }
 
     @Given("At least one Minion is running with location {string}")
     public void atLeastOneMinionIsRunningWithLocation(String location) {
-        minionLocation = location;
+        minionLocation = location + locationTimeStamp;
     }
 
     @Given("No Minion running with location {string}")
     public void check(String location) throws MalformedURLException {
+        location = location + locationTimeStamp;
+
         atLeastOneMinionIsRunningWithLocation(location);
         assertFalse(checkAtLeastOneMinionAtGivenLocation());
     }
@@ -177,8 +194,10 @@ public class InventoryTestSteps {
 
     @Then("Add a device with label {string} IP address {string} and location {string}")
     public void addADeviceWithLabelIPAddressAndLocation(String label, String ipAddress, String location) throws MalformedURLException {
+        final String locationLmda = location + locationTimeStamp;
+
         LocationData locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> location.equals(loc.getLocation()))
+            .filter(loc -> locationLmda.equals(loc.getLocation()))
             .findFirst().orElse(null);
 
         if (locationData == null) {
@@ -256,13 +275,15 @@ public class InventoryTestSteps {
 
     @When("Request certificate for location {string}")
     public void requestCertificateForLocation(String location) throws MalformedURLException {
+        final String locationLmda = location = location + locationTimeStamp;
+
         LOG.info("Requesting certificate for location {}.", location);
 
         Long locationId = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> loc.getLocation().equals(location))
+            .filter(loc -> loc.getLocation().equals(locationLmda))
             .findFirst()
             .map(LocationData::getId)
-            .orElseThrow(() -> new IllegalArgumentException("Unknown location " + location));
+            .orElseThrow(() -> new IllegalArgumentException("Unknown location " + locationLmda));
 
         String query = String.format(GQLQueryConstants.CREATE_MINION_CERTIFICATE, locationId);
         GQLQuery gqlQuery = new GQLQuery();
@@ -283,6 +304,8 @@ public class InventoryTestSteps {
 
     @Then("Minion {string} is started in location {string}")
     public void startMinion(String systemId, String location) throws IOException {
+        location = location + locationTimeStamp;
+
         if (!keystores.containsKey(location)) {
             fail("Could not find location " + location + " certificate");
         }
