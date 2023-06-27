@@ -13,6 +13,7 @@ public class CucumberCommandLineRunner {
             "--plugin", "json:cucumber.reports/cucumber-report.json",
             "--plugin", "html:cucumber.reports/cucumber-report.html",
             "--plugin", "pretty",
+            "--tags", "not @ignore",
             "--glue", "org.opennms.horizon.it",
             "classpath:org/opennms/horizon/it"
     };

@@ -18,6 +18,10 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     #Then At least one Minion is running with location "TestLocation"
     #Then Wait for at least one minion for the given location reported by inventory with timeout 600000ms
 
+  @ignore
+  Scenario: Create "SOMETHING" location and request Minion certificate
+    Given Minion "Stuart" is stopped
+
   Scenario: Create "External" location and request Minion certificate
     Given Minion "Stuart" is stopped
     Given No Minion running with location "External"
