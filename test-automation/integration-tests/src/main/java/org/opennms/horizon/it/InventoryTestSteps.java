@@ -98,7 +98,6 @@ public class InventoryTestSteps {
 
         Response response = helper.executePostQuery(gqlQuery);
         assertEquals(response.getStatusCode(), 200);
-        System.out.println("Response code: " + response.getStatusCode() + "\n" + response.getBody().asString());
         assertFalse(helper.responseContainsErrors(response));
     }
 
