@@ -98,6 +98,8 @@ public class InventoryTestSteps {
 
         Response response = helper.executePostQuery(gqlQuery);
         assertEquals(response.getStatusCode(), 200);
+        System.out.println("Response code: " + response.getStatusCode() + "\n" + response.getBody().asString());
+        assertFalse(helper.responseContainsErrors(response));
     }
 
     @Given("Location {string} is removed")
@@ -116,6 +118,9 @@ public class InventoryTestSteps {
 
         Response response = helper.executePostQuery(gqlQuery);
         assertEquals(response.getStatusCode(), 200);
+//        TODO: The current API always fails on location deletion. This needs to be uncommented
+//              once it's working properly (fails from the UI also).
+//        assertFalse(helper.responseContainsErrors(response));
     }
 
     @Given("Location {string} does not exist")
@@ -204,6 +209,7 @@ public class InventoryTestSteps {
 
         assertEquals("add-device query failed: status=" + restAssuredResponse.getStatusCode() + "; body=" + restAssuredResponse.getBody().asString(),
             200, restAssuredResponse.getStatusCode());
+        assertFalse("add-device query failed", helper.responseContainsErrors(restAssuredResponse));
 
         CreateNodeResult createNodeResult = restAssuredResponse.getBody().as(CreateNodeResult.class);
 
@@ -360,6 +366,7 @@ public class InventoryTestSteps {
         lastMinionQueryResultBody = restAssuredResponse.getBody().asString();
 
         Assert.assertEquals(200, restAssuredResponse.getStatusCode());
+        assertFalse(helper.responseContainsErrors(restAssuredResponse));
 
         return restAssuredResponse.getBody().as(FindAllMinionsQueryResult.class);
     }
