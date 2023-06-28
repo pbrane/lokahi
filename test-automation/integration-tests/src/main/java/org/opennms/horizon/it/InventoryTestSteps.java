@@ -1,5 +1,6 @@
 package org.opennms.horizon.it;
 
+import java.util.Date;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.StopContainerCmd;
 import com.github.dockerjava.api.command.WaitContainerCmd;
@@ -93,9 +94,13 @@ public class InventoryTestSteps {
     public void createLocation(String location) throws Exception {
         String queryList = GQLQueryConstants.CREATE_LOCATION;
 
+        Date date = new Date();
+        //This method returns the time in millis
+        long timeMilli = date.getTime();
+
         /* Need explanation.
          * */
-        locationTimeStamp = "TIMESTAMP-TODO";
+        locationTimeStamp = "-" + String.valueOf(timeMilli);
 
         LOG.info("LOCATION TEST: {}", location);
         location = location + locationTimeStamp;
