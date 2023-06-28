@@ -9,7 +9,7 @@ data:
   grpc-config: |
     grpc.max.message.size=104857600
     # Properties below override these defined earlier in file!
-    {{- if .Values.OpenNMS.Minion.addTestLocation }}
+    {{- if .Values.OpenNMS.Minion.addDefaultLocation }}
     grpc.host: ingress-nginx-controller
     grpc.port: 443
     grpc.tls.enabled: true

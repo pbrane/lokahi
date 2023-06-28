@@ -95,7 +95,7 @@ OpenNMS:
     ExtraMounts: []
     ExtraInitContainers: []
     GrpcConfig: {}
-    addTestLocation: false
+    addDefaultLocation: false
   MinionGateway:
     ServiceName: opennms-minion-gateway
     TlsSecretName: opennms-minion-gateway-certificate
