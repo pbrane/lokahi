@@ -95,14 +95,13 @@ public class InventoryTestSteps {
         String queryList = GQLQueryConstants.CREATE_LOCATION;
 
         Date date = new Date();
-        //This method returns the time in millis
         long timeMilli = date.getTime();
 
-        /* Need explanation.
-         * */
-        locationTimeStamp = "-" + String.valueOf(timeMilli);
+        /* This is so multiple workflows can run at the same time in the pipeline and not conflict.
+         * Each has its own location.
+         */
+        locationTimeStamp = String.valueOf(timeMilli);
 
-        LOG.info("LOCATION TEST: {}", location);
         location = location + locationTimeStamp;
         LOG.info("LOCATION TEST: {}", location);
 
@@ -310,13 +309,17 @@ public class InventoryTestSteps {
     @Then("Minion {string} is started in location {string}")
     public void startMinion(String systemId, String location) throws IOException {
         location = location + locationTimeStamp;
+        String systemIdOriginal = systemId;
+        systemId = systemId + locationTimeStamp;
+
+        LOG.info("SystemId - Minion {}.", systemId);
 
         if (!keystores.containsKey(location)) {
             fail("Could not find location " + location + " certificate");
         }
 
         Entry<String, byte[]> certificate = keystores.get(location);
-        stopMinion(systemId);
+        stopMinion(systemIdOriginal);
 
         GenericContainer<?> minion = new GenericContainer<>(DockerImageName.parse(helper.getMinionImageNameSupplier().get()))
             .withEnv("MINION_GATEWAY_HOST", helper.getMinionIngressSupplier().get())
@@ -356,6 +359,10 @@ public class InventoryTestSteps {
 
     @Then("Minion {string} is stopped")
     public void stopMinion(String systemId) {
+        systemId = systemId + locationTimeStamp;
+
+        LOG.info("SystemId - Minion {}.", systemId);
+
         DockerClient dockerClient = DockerClientFactory.lazyClient();
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
