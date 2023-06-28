@@ -184,7 +184,7 @@ public class TestsExecutionHelper {
      * @return boolean True if there are errors in the response
      */
     public boolean responseContainsErrors(Response response) {
-        List errorList = response.jsonPath().getList("errors");
+        List<Object> errorList = response.jsonPath().getList("errors");
         return (errorList != null && errorList.size() > 0);
     }
 

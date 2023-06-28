@@ -27,7 +27,6 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Location "External" does not exist
     Then Minion "Kevin" is stopped
 
-  @onetest
   Scenario: Verify Minion echo measurements are recorded into prometheus for a running Minion
     Then Create location "Measurements"
     Then Location "Measurements" do exist
