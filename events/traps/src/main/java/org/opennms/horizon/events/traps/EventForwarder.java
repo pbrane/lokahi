@@ -58,14 +58,14 @@ public class EventForwarder {
 
     public void sendTrapEvents(EventLog eventLog) {
         LOG.info("Sending {} events to events topic for tenant: {}", eventLog.getEventsCount(), eventLog.getTenantId());
-        var record = new ProducerRecord<String, byte[]>(trapEventsTopic, eventLog.toByteArray());
-        kafkaTemplate.send(record);
+        var producerRecord = new ProducerRecord<String, byte[]>(trapEventsTopic, eventLog.toByteArray());
+        kafkaTemplate.send(producerRecord);
     }
 
     public void sendInternalEvent(Event event) {
         LOG.info("Sending event with UEI: {} for interface: {} for tenantId={}; locationId={}", event.getUei(),
             event.getIpAddress(), event.getTenantId(), event.getLocationId());
-        var record = new ProducerRecord<String, byte[]>(internalEventsTopic, event.toByteArray());
-        kafkaTemplate.send(record);
+        var producerRecord = new ProducerRecord<String, byte[]>(internalEventsTopic, event.toByteArray());
+        kafkaTemplate.send(producerRecord);
     }
 }
