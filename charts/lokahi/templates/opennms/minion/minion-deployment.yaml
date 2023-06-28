@@ -1,3 +1,4 @@
+{{- if .Values.OpenNMS.Minion.Enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -170,3 +171,4 @@ spec:
               - unset JAVA_TOOL_OPTIONS; echo "opennms:task-set-print" | bin/client -b | grep -q taskDefinition
             initialDelaySeconds: 25
             periodSeconds: 5
+{{- end }}

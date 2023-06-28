@@ -1,3 +1,4 @@
+{{- if .Values.OpenNMS.Minion.Enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -24,3 +25,4 @@ data:
   opennms-minion-identity: |
     id=${env:HOSTNAME:-UNKNOWN}
     location=${env:LOCATION:-Default}
+{{- end }}

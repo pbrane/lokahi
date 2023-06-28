@@ -44,6 +44,7 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
+    Enabled: true
     addDefaultLocation: true
   MinionGateway:
     Image: opennms/lokahi-minion-gateway:local
