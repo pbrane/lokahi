@@ -82,6 +82,23 @@ Feature: Alert Service Basic Functionality
       | alerts[0].counter == 2        |
       | alerts[0].severity == CLEARED |
 
+  Scenario: Verify that alerts can be cleared by other events, and then recreated
+    Then Send event with UEI "uei.opennms.org/generic/traps/SNMP_Link_Down" with tenant "tenantA" with node 10
+    Then List alerts for tenant "tenantA", with timeout 5000ms, until JSON response matches the following JSON path expressions
+      | alerts.size() == 1          |
+      | alerts[0].counter == 1      |
+      | alerts[0].severity == MINOR |
+    Then Send event with UEI "uei.opennms.org/generic/traps/SNMP_Link_Up" with tenant "tenantA" with node 10
+    Then List alerts for tenant "tenantA", with timeout 5000ms, until JSON response matches the following JSON path expressions
+      | alerts.size() == 1            |
+      | alerts[0].counter == 2        |
+      | alerts[0].severity == CLEARED |
+    Then Send event with UEI "uei.opennms.org/generic/traps/SNMP_Link_Down" with tenant "tenantA" with node 10
+    Then List alerts for tenant "tenantA", with timeout 5000ms, until JSON response matches the following JSON path expressions
+      | alerts.size() == 1          |
+      | alerts[0].counter == 3      |
+      | alerts[0].severity == MINOR |
+
   Scenario: Verify alert can be acknowledged and unacknowledged
     Then Send event with UEI "uei.opennms.org/generic/traps/SNMP_Link_Down" with tenant "tenantA" with node 10
     Then List alerts for tenant "tenantA", with timeout 5000ms, until JSON response matches the following JSON path expressions
