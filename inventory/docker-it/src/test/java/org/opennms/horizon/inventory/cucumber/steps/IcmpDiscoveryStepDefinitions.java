@@ -31,7 +31,7 @@ package org.opennms.horizon.inventory.cucumber.steps;
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
 import com.google.protobuf.Int64Value;
-import io.cucumber.java.BeforeAll;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -39,9 +39,10 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.opennms.horizon.inventory.cucumber.InventoryBackgroundHelper;
+import org.opennms.horizon.inventory.cucumber.kafkahelper.KafkaConsumerRunner;
 import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryCreateDTO;
 import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryList;
 import org.opennms.horizon.inventory.discovery.SNMPConfigDTO;
@@ -55,14 +56,23 @@ import org.opennms.taskset.contract.PingResponse;
 import org.opennms.taskset.contract.ScannerResponse;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TenantLocationSpecificTaskSetResults;
+import org.opennms.taskset.service.contract.UpdateSingleTaskOp;
+import org.opennms.taskset.service.contract.UpdateTasksRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.awaitility.Awaitility.await;
+
 
 public class IcmpDiscoveryStepDefinitions {
 
@@ -70,6 +80,8 @@ public class IcmpDiscoveryStepDefinitions {
     private final InventoryBackgroundHelper backgroundHelper;
     private IcmpActiveDiscoveryCreateDTO icmpDiscovery;
     private long activeDiscoveryId;
+    private String taskLocation;
+    private KafkaConsumerRunner kafkaConsumerRunner;
 
     public IcmpDiscoveryStepDefinitions(InventoryBackgroundHelper backgroundHelper) {
         this.backgroundHelper = backgroundHelper;
@@ -85,18 +97,15 @@ public class IcmpDiscoveryStepDefinitions {
         backgroundHelper.kafkaBootstrapURLInSystemProperty(systemPropertyName);
     }
 
-    @Given("[ICMP Discovery] MOCK Minion Gateway Base URL in system property {string}")
-    public void icmpDiscoveryMOCKMinionGatewayBaseURLInSystemProperty(String arg0) {
-    }
 
     @Given("[ICMP Discovery] Grpc TenantId {string}")
     public void icmpDiscoveryGrpcTenantId(String tenantId) {
         backgroundHelper.grpcTenantId(tenantId);
     }
 
-    @Given("[ICMP Discovery] Grpc location {string}")
-    public void grpcLocation(String location) {
-        backgroundHelper.grpcLocation(location);
+    @Given("The taskset for location named {string}")
+    public void theTasksetAtLocation(String taskLocation) {
+        this.taskLocation = backgroundHelper.findLocationId(taskLocation);
     }
 
     @Given("[ICMP Discovery] Create Grpc Connection for Inventory")
@@ -107,30 +116,30 @@ public class IcmpDiscoveryStepDefinitions {
     @Given("New Active Discovery with IpAddresses {string} and SNMP community as {string} at location {string}")
     public void newActiveDiscoveryWithIpAddressesAndSNMPCommunityAsAtLocation(String ipAddressStrings, String snmpReadCommunity, String location) {
         icmpDiscovery = IcmpActiveDiscoveryCreateDTO.newBuilder()
-            .addIpAddresses(ipAddressStrings).setSnmpConf(SNMPConfigDTO.newBuilder().addReadCommunity(snmpReadCommunity).build())
-            .setLocation(location).build();
+            .addIpAddresses(ipAddressStrings).setSnmpConfig(SNMPConfigDTO.newBuilder().addReadCommunity(snmpReadCommunity).build())
+            .setLocationId(backgroundHelper.findLocationId(location)).build();
     }
 
 
 
-    @Given("New Active Discovery with IpAddresses {string} and SNMP community as {string} at location {string} with tags {string}")
+    @Given("New Active Discovery with IpAddresses {string} and SNMP community as {string} at location named {string} with tags {string}")
     public void newActiveDiscoveryWithIpAddressesAndSNMPCommunityAsAtLocationWithTags(String ipAddressStrings, String snmpReadCommunity,
                                                                                       String location, String tags) {
         var tagsList = tags.split(",");
         icmpDiscovery = IcmpActiveDiscoveryCreateDTO.newBuilder()
-            .addIpAddresses(ipAddressStrings).setSnmpConf(SNMPConfigDTO.newBuilder()
+            .addIpAddresses(ipAddressStrings).setSnmpConfig(SNMPConfigDTO.newBuilder()
                 .addReadCommunity(snmpReadCommunity).build())
             .addAllTags(Stream.of(tagsList).map(tag -> TagCreateDTO.newBuilder().setName(tag).build()).toList())
-            .setLocation(location).build();
+            .setLocationId(backgroundHelper.findLocationId(location)).build();
     }
 
     @Then("create Active Discovery and validate it's created active discovery with above details.")
     public void createActiveDiscoveryAndValidateItSCreatedActiveDiscoveryWithAboveDetails() {
         var icmpDiscoveryDto = backgroundHelper.getIcmpActiveDiscoveryServiceBlockingStub().createDiscovery(icmpDiscovery);
         activeDiscoveryId = icmpDiscoveryDto.getId();
-        Assertions.assertEquals(icmpDiscovery.getLocation(), icmpDiscoveryDto.getLocation());
+        Assertions.assertEquals(icmpDiscovery.getLocationId(), icmpDiscoveryDto.getLocationId());
         Assertions.assertEquals(icmpDiscovery.getIpAddresses(0), icmpDiscoveryDto.getIpAddresses(0));
-        Assertions.assertEquals(icmpDiscovery.getSnmpConf().getReadCommunity(0), icmpDiscoveryDto.getSnmpConf().getReadCommunity(0));
+        Assertions.assertEquals(icmpDiscovery.getSnmpConfig().getReadCommunity(0), icmpDiscoveryDto.getSnmpConfig().getReadCommunity(0));
         var tagListQuery = ListTagsByEntityIdParamsDTO.newBuilder()
             .setEntityId(TagEntityIdDTO.newBuilder().setActiveDiscoveryId(icmpDiscoveryDto.getId()).build())
             .build();
@@ -145,9 +154,9 @@ public class IcmpDiscoveryStepDefinitions {
     @Then("verify get active discovery with above details.")
     public void GetActiveDiscoveryWithAboveDetails() {
         var icmpDiscoveryDto = backgroundHelper.getIcmpActiveDiscoveryServiceBlockingStub().getDiscoveryById(Int64Value.of(activeDiscoveryId));
-        Assertions.assertEquals(icmpDiscovery.getLocation(), icmpDiscoveryDto.getLocation());
+        Assertions.assertEquals(icmpDiscovery.getLocationId(), icmpDiscoveryDto.getLocationId());
         Assertions.assertEquals(icmpDiscovery.getIpAddresses(0), icmpDiscoveryDto.getIpAddresses(0));
-        Assertions.assertEquals(icmpDiscovery.getSnmpConf().getReadCommunity(0), icmpDiscoveryDto.getSnmpConf().getReadCommunity(0));
+        Assertions.assertEquals(icmpDiscovery.getSnmpConfig().getReadCommunity(0), icmpDiscoveryDto.getSnmpConfig().getReadCommunity(0));
         var tagListQuery = ListTagsByEntityIdParamsDTO.newBuilder()
             .setEntityId(TagEntityIdDTO.newBuilder().setActiveDiscoveryId(icmpDiscoveryDto.getId()).build())
             .build();
@@ -157,6 +166,13 @@ public class IcmpDiscoveryStepDefinitions {
         // Take one tag and validate if it exists on the discovery.
         var tag = tagsCreated.get(0);
         Assertions.assertTrue(tagList.getTagsList().stream().map(TagDTO::getName).toList().contains(tag));
+    }
+
+    @Then("verify the task set update is published for icmp discovery within {int}ms")
+    public void verifyTheTaskSetUpdateIsPublishedForIcmpDiscoveryWithinMs(int timeout) {
+        String taskIdPattern = "discovery:\\d+/" + this.taskLocation;
+        await().atMost(timeout, TimeUnit.MILLISECONDS).pollDelay(2, TimeUnit.SECONDS).pollInterval(2, TimeUnit.SECONDS)
+            .until(() -> matchesTaskPatternForUpdate(taskIdPattern).get(), Matchers.is(true));
     }
 
     @Then("send discovery ping results for {string} to Kafka topic {string}")
@@ -177,7 +193,7 @@ public class IcmpDiscoveryStepDefinitions {
             TenantLocationSpecificTaskSetResults taskSetResults =
                 TenantLocationSpecificTaskSetResults.newBuilder()
                     .setTenantId(backgroundHelper.getTenantId())
-                    .setLocation(icmpDiscovery.getLocation())
+                    .setLocationId(icmpDiscovery.getLocationId())
                     .addResults(taskResult)
                     .build();
             var producerRecord = new ProducerRecord<String, byte[]>(topic, taskSetResults.toByteArray());
@@ -193,20 +209,20 @@ public class IcmpDiscoveryStepDefinitions {
         Assertions.assertEquals(items, list.getDiscoveriesCount());
     }
 
-    @Then("verify that node is created for {string} and location {string} with same tags within {int}ms")
+    @Then("verify that node is created for {string} and location named {string} with same tags within {int}ms")
     public void verifyThatNodeIsCreatedForAndLocationWithTheTagsInPreviousScenario(String ipAddress, String location, int timeout) {
-
-        Awaitility.await().pollInterval(2000, TimeUnit.MILLISECONDS).atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+        String locationId = backgroundHelper.findLocationId(location);
+        await().pollInterval(2000, TimeUnit.MILLISECONDS).atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
             try {
                 var nodeId = backgroundHelper.getNodeServiceBlockingStub().
-                    getNodeIdFromQuery(NodeIdQuery.newBuilder().setLocation(location).setIpAddress(ipAddress).build());
+                    getNodeIdFromQuery(NodeIdQuery.newBuilder().setLocationId(locationId).setIpAddress(ipAddress).build());
                 return nodeId != null && nodeId.getValue() != 0;
             } catch (Exception e) {
                 return false;
             }
         });
         var nodeId = backgroundHelper.getNodeServiceBlockingStub().
-            getNodeIdFromQuery(NodeIdQuery.newBuilder().setLocation(location).setIpAddress(ipAddress).build());
+            getNodeIdFromQuery(NodeIdQuery.newBuilder().setLocationId(locationId).setIpAddress(ipAddress).build());
         var nodeDto = backgroundHelper.getNodeServiceBlockingStub().getNodeById(nodeId);
         Assertions.assertTrue(nodeDto.getIpInterfacesList().stream().anyMatch(ipInterfaceDTO -> ipInterfaceDTO.getIpAddress().equals(ipAddress)));
         var tagListQuery = ListTagsByEntityIdParamsDTO.newBuilder()
@@ -222,4 +238,58 @@ public class IcmpDiscoveryStepDefinitions {
     }
 
 
+    private AtomicBoolean matchesTaskPattern(String taskIdPattern, InventoryProcessingStepDefinitions.PublishType publishType) {
+        AtomicBoolean matched = new AtomicBoolean(false);
+        var list = kafkaConsumerRunner.getValues();
+        var tasks = new ArrayList<UpdateTasksRequest>();
+        for (byte[] taskSet : list) {
+            try {
+                var taskDefPub = UpdateTasksRequest.parseFrom(taskSet);
+                tasks.add(taskDefPub);
+            } catch (InvalidProtocolBufferException ignored) {
+
+            }
+        }
+        LOG.info("taskIdPattern = {}, publish type = {}, Tasks :  {}", taskIdPattern, publishType, tasks);
+        for (UpdateTasksRequest task : tasks) {
+            var addTasks = task.getUpdateList().stream().filter(UpdateSingleTaskOp::hasAddTask).collect(Collectors.toList());
+            var removeTasks = task.getUpdateList().stream().filter(UpdateSingleTaskOp::hasRemoveTask).collect(Collectors.toList());
+            if (publishType.equals(InventoryProcessingStepDefinitions.PublishType.UPDATE)) {
+                boolean matchForTaskId = addTasks.stream().anyMatch(updateSingleTaskOp ->
+                    updateSingleTaskOp.getAddTask().getTaskDefinition().getId().matches(taskIdPattern));
+                if (matchForTaskId) {
+                    matched.set(true);
+                }
+            }
+            if (publishType.equals(InventoryProcessingStepDefinitions.PublishType.REMOVE)) {
+                boolean matchForTaskId = removeTasks.stream().anyMatch(updateSingleTaskOp ->
+                    updateSingleTaskOp.getRemoveTask().getTaskId().matches(taskIdPattern));
+                if (matchForTaskId) {
+                    matched.set(true);
+                }
+            }
+
+        }
+        return matched;
+    }
+
+    AtomicBoolean matchesTaskPatternForUpdate(String taskIdPattern) {
+        return matchesTaskPattern(taskIdPattern, InventoryProcessingStepDefinitions.PublishType.UPDATE);
+    }
+
+    AtomicBoolean matchesTaskPatternForDelete(String taskIdPattern) {
+        return matchesTaskPattern(taskIdPattern, InventoryProcessingStepDefinitions.PublishType.REMOVE);
+    }
+
+    @Given("Discovery Subscribe to kafka topic {string}")
+    public void discoverySubscribeToKafkaTopic(String topic) {
+        kafkaConsumerRunner = new KafkaConsumerRunner(backgroundHelper.getKafkaBootstrapUrl(), topic);
+        Executors.newSingleThreadExecutor().execute(kafkaConsumerRunner);
+    }
+
+    @Then("Discovery shutdown kafka consumer")
+    public void discoveryShutdownKafkaConsumer() {
+        kafkaConsumerRunner.shutdown();
+        await().atMost(3, TimeUnit.SECONDS).until(() -> kafkaConsumerRunner.isShutdown().get(), Matchers.is(true));
+    }
 }

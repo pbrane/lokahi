@@ -53,13 +53,12 @@ import static io.cucumber.core.options.Constants.PLUGIN_PROPERTY_NAME;
 
 @Suite
 @IncludeEngines("cucumber")
-@SelectClasspathResource("org/opennms/horizon/inventory")
+@SelectClasspathResource("org/opennms/horizon/inventory/")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "json:target/cucumber-report.json, html:target/cucumber.html, pretty")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "org.opennms.horizon.inventory,org.opennms.horizon.testtool.miniongateway.wiremock.client")
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @ignore")
 public class CucumberRunnerIT {
 
-    public static final String MOCK_MINION_GATEWAY_DOCKER_IMAGE = "opennms-inventory/mock-minion-gateway:local";
     public static final String KAFKA_BOOTSTRAP_SERVER_PROPERTYNAME = "kafka.bootstrap-servers";
 
     private static final Logger LOG = LoggerFactory.getLogger(CucumberRunnerIT.class);
@@ -70,7 +69,6 @@ public class CucumberRunnerIT {
     private static KafkaContainer kafkaContainer;
     private static GenericContainer applicationContainer;
     private static GenericContainer azureWireMockContainer;
-    private static GenericContainer mockMinionGatewayContainer;
     private static PostgreSQLContainer postgreSQLContainer;
 
     private static Network network;
@@ -110,8 +108,7 @@ public class CucumberRunnerIT {
         String bootstrapServers = kafkaContainer.getBootstrapServers();
         System.setProperty(KAFKA_BOOTSTRAP_SERVER_PROPERTYNAME, bootstrapServers);
         LOG.info("KAFKA LOCALHOST BOOTSTRAP SERVERS {}", bootstrapServers);
-
-        startMockMinionGatewayContainer();
+        
         startApplicationContainer(false);   // DEBUGGING - set to true to expose the application debugging on host port 5005
     }
 
@@ -121,7 +118,6 @@ public class CucumberRunnerIT {
         kafkaContainer.stop();
         azureWireMockContainer.stop();
         postgreSQLContainer.stop();
-        mockMinionGatewayContainer.stop();
     }
 
     @SuppressWarnings({"unchecked"})
@@ -134,7 +130,6 @@ public class CucumberRunnerIT {
             .withNetwork(network)
             .withNetworkAliases("application", "application-host")
             .dependsOn(kafkaContainer, azureWireMockContainer, postgreSQLContainer)
-            .dependsOn(kafkaContainer, postgreSQLContainer, mockMinionGatewayContainer)
             .withStartupTimeout(Duration.ofMinutes(5))
             .withEnv("JAVA_TOOL_OPTIONS", "-Djava.security.egd=file:/dev/./urandom -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
             .withEnv("SPRING_KAFKA_BOOTSTRAP_SERVERS", kafkaContainer.getNetworkAliases().get(0) + ":9092")
@@ -169,24 +164,4 @@ public class CucumberRunnerIT {
         System.setProperty("application-external-http-base-url", "http://localhost:" + externalHttpPort);
     }
 
-    @SuppressWarnings({"unchecked"})
-    private static void startMockMinionGatewayContainer() {
-        mockMinionGatewayContainer = new GenericContainer(DockerImageName.parse(MOCK_MINION_GATEWAY_DOCKER_IMAGE).toString());
-        mockMinionGatewayContainer
-            .withNetwork(network)
-            .withNetworkAliases("opennms-minion-gateway")
-            .withEnv("JAVA_TOOL_OPTIONS", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
-            .withExposedPorts(8080)
-            .withStartupTimeout(Duration.ofMinutes(1))
-            .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("MOCK-MINION-GATEWAY"));
-
-        // DEBUGGING: uncomment to force local port 5005
-        // mockMinionGatewayContainer.getPortBindings().add("5005:5005");
-
-        mockMinionGatewayContainer.start();
-
-        var mockMinionGatewayContainerMappedPort = mockMinionGatewayContainer.getMappedPort(8080); // application-external-grpc-port
-        LOG.info("MOCK-MINION-GATEWAY MAPPED PORTS:  rest={}", mockMinionGatewayContainerMappedPort);
-        System.setProperty("mock-minion-gateway.rest-url", "http://localhost:" + String.valueOf(mockMinionGatewayContainerMappedPort));
-    }
 }

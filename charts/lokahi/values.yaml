@@ -95,6 +95,7 @@ OpenNMS:
     ExtraMounts: []
     ExtraInitContainers: []
     GrpcConfig: {}
+    addTestLocation: false
   MinionGateway:
     ServiceName: opennms-minion-gateway
     TlsSecretName: opennms-minion-gateway-certificate
@@ -105,6 +106,7 @@ OpenNMS:
     InternalGrpcPort: 8991
     IgniteClientPort: 10800
     Replicas: 1
+    UseKubernetes: "true"
     DbName: "horizon_stream"
     DbSchemaName: "minion_gateway"
     DbHost: "postgres"
@@ -122,7 +124,7 @@ OpenNMS:
       nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
       nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
       nginx.ingress.kubernetes.io/auth-url: "http://opennms-minion-certificate-verifier.default.svc.cluster.local:8080/certificate/debug"
-      nginx.ingress.kubernetes.io/auth-response-headers: "tenant-id, location"
+      nginx.ingress.kubernetes.io/auth-response-headers: "tenant-id, location-id"
       nginx.ingress.kubernetes.io/server-snippet: |
         grpc_read_timeout "1200s";
         grpc_send_timeout "1200s";
@@ -342,7 +344,7 @@ CortexClient:
 Kafka:
   Enabled: true
   ServiceName: onms-kafka
-  Image: bitnami/kafka:3.3.1-debian-11-r1
+  Image: bitnami/kafka:3.3.2-debian-11-r28 # latest 3.3.2 version not affected by https://github.com/bitnami/containers/issues/33271
   ImagePullPolicy: IfNotPresent
   Replicas: 1
   Port: 9092
