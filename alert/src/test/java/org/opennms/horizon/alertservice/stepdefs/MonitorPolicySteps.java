@@ -126,16 +126,16 @@ public class MonitorPolicySteps {
             .setComponentType(ManagedObjectType.valueOf(type.toUpperCase()));
     }
 
-    @Given("Trigger events data")
-    public void triggerEventsData(DataTable data) {
+    @Given("Alert condition data")
+    public void alertConditionData(DataTable data) {
         List<Map<String, String>> mapList = data.asMaps();
         mapList.forEach(map -> {
-            TriggerEventProto.Builder eventBuilder = TriggerEventProto.newBuilder().setTriggerEvent(EventType.valueOf(map.get("trigger_event")))
+            TriggerEventProto.Builder eventBuilder = TriggerEventProto.newBuilder().setTriggerEvent(EventType.valueOf(map.get("trigger_event_type")))
                 .setCount(Integer.parseInt(map.get("count")))
                 .setOvertime(Integer.parseInt(map.get("overtime")))
                 .setOvertimeUnit(OverTimeUnit.valueOf(map.get("overtime_unit").toUpperCase()))
                 .setSeverity(Severity.valueOf(map.get("severity").toUpperCase()));
-            String clearEvent = map.get("clear_event");
+            String clearEvent = map.get("clear_event_type");
             if(StringUtils.isNotBlank(clearEvent)) {
                 eventBuilder.setClearEvent(EventType.valueOf(clearEvent));
             }
