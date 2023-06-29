@@ -48,7 +48,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "trigger_event")
+@Table(name = "alert_condition")
 @Getter
 @Setter
 public class AlertCondition {

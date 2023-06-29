@@ -132,7 +132,7 @@ public class Alert implements Serializable {
     private String nodeLabel;
 
     @OneToOne
-    @JoinColumn(name = "trigger_event_id", referencedColumnName = "id")
+    @JoinColumn(name = "alert_condition_id", referencedColumnName = "id")
     private AlertCondition alertCondition;
 
     public void incrementCount() {
