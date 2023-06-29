@@ -135,9 +135,9 @@ public class MonitorPolicySteps {
                 .setOvertime(Integer.parseInt(map.get("overtime")))
                 .setOvertimeUnit(OverTimeUnit.valueOf(map.get("overtime_unit").toUpperCase()))
                 .setSeverity(Severity.valueOf(map.get("severity").toUpperCase()));
-            String clearEvent = map.get("clear_event_type");
-            if(StringUtils.isNotBlank(clearEvent)) {
-                eventBuilder.setClearEventType(EventType.valueOf(clearEvent));
+            String clearEventType = map.get("clear_event_type");
+            if(StringUtils.isNotBlank(clearEventType)) {
+                eventBuilder.setClearEventType(EventType.valueOf(clearEventType));
             }
             eventType = eventBuilder.getTriggerEventType();
             triggerBuilders.add(eventBuilder);

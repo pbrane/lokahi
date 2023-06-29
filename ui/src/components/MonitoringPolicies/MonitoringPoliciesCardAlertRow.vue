@@ -59,7 +59,7 @@
       </div>
       <div class="col box double">
         {{
-          condition.clearEvent !== Unknowns.UNKNOWN_EVENT ? snakeToTitleCase(condition.clearEvent as string) : '&nbsp;'
+          condition.clearEventType !== Unknowns.UNKNOWN_EVENT ? snakeToTitleCase(condition.clearEventType as string) : '&nbsp;'
         }}
       </div>
     </div>

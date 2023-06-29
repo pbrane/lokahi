@@ -72,9 +72,9 @@
     >
       <div class="text">Clear Event (optional)</div>
       <BasicSelect
-        :list="clearEventOptions"
-        @item-selected="(val: string) => updateConditionProp('clearEvent', val)"
-        :selectedId="condition.clearEvent"
+        :list="clearEventTypeOptions"
+        @item-selected="(val: string) => updateConditionProp('clearEventType', val)"
+        :selectedId="condition.clearEventType"
       />
     </div>
   </div>
@@ -110,7 +110,7 @@ const severityList = [
   { id: Severity.Cleared, name: 'Cleared'}
 ]
 
-const clearEventOptions = [
+const clearEventTypeOptions = [
   { id: Unknowns.UNKNOWN_EVENT, name: '' },
   { id: SNMPEventType.SNMP_LINK_DOWN, name: 'SNMP Link Down'},
 ]
