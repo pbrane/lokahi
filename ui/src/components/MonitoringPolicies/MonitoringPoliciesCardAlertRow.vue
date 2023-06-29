@@ -41,7 +41,7 @@
 
     <div class="mp-card-alert-row">
       <div class="subtitle">{{ conditionLetters[index] + '.' }}</div>
-      <div class="col subtitle double">{{ snakeToTitleCase(condition.triggerEvent as string) }}</div>
+      <div class="col subtitle double">{{ snakeToTitleCase(condition.triggerEventType as string) }}</div>
       <div class="col half box">{{ condition.count }}</div>
       <div class="col half box">{{ condition.overtime || '&nbsp' }}</div>
       <div class="col box double">

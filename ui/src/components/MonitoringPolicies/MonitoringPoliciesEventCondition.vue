@@ -15,10 +15,10 @@
       <BasicSelect
         label=""
         hideLabel
-        :list="triggerEventOptions"
-        @item-selected="(val: number) => updateConditionProp('triggerEvent', val)"
+        :list="triggerEventTypeOptions"
+        @item-selected="(val: number) => updateConditionProp('triggerEventType', val)"
         :disabled="policy.isDefault"
-        :selectedId="condition.triggerEvent"
+        :selectedId="condition.triggerEventType"
       />
     </div>
 
@@ -68,7 +68,7 @@
 
     <div
       class="inner-col"
-      v-if="condition.triggerEvent === SNMPEventType.SNMP_LINK_UP"
+      v-if="condition.triggerEventType === SNMPEventType.SNMP_LINK_UP"
     >
       <div class="text">Clear Event (optional)</div>
       <BasicSelect
@@ -115,7 +115,7 @@ const clearEventOptions = [
   { id: SNMPEventType.SNMP_LINK_DOWN, name: 'SNMP Link Down'},
 ]
 
-const triggerEventOptions = [
+const triggerEventTypeOptions = [
   { id: SNMPEventType.SNMP_COLD_START, name: 'SNMP Cold Start' },
   { id: SNMPEventType.SNMP_WARM_START, name: 'SNMP Warm Start' },
   { id: SNMPEventType.SNMP_AUTHEN_FAILURE, name: 'SNMP Authentication Failure' },
