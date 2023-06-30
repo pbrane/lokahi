@@ -62,6 +62,8 @@ spec:
               value: /api
             - name: GRAPHQL_SPQR_GUI_TARGET_ENDPOINT
               value: /api/graphql
+	    - name: GRPC_SERVER_DEADLINE
+              value: {{ .Values.OpenNMS.API.GrpcServerDeadline }}
             - name: GRPC_URL_INVENTORY
               value: "{{ .Values.OpenNMS.Inventory.ServiceName }}:{{ .Values.OpenNMS.Inventory.GrpcPort }}"
             - name: GRPC_URL_EVENTS
