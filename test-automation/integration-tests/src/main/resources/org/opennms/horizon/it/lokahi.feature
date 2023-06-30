@@ -51,14 +51,14 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Minion "Kevin" is stopped
       # Kevin not being removed.
 
-  @ignore
+  @internal
   Scenario: Verify Minion echo measurements are recorded into prometheus for a running Minion
     Then Read the list of connected Minions from the BFF
     Then Find the minions running in the given location
     Then Verify at least one minion was found for the location
     Then Read the "response_time_msec" metrics with label "instance" set to the Minion System ID for each Minion found with timeout 120000ms
 
-  @ignore
+  @internal
   Scenario: Add devices and verify monitoring metrics are recorded into prometheus
     Then Add a device with label "local1" IP address "127.1.0.1" and location "TestLocation"
     Then Add a device with label "local2" IP address "127.1.0.2" and location "TestLocation"
@@ -70,7 +70,7 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Delete the node "local2" from inventory in location "TestLocation"
     Then Delete the node "local3" from inventory in location "TestLocation"
 
-  @ignore
+  @internal
   Scenario: Create a Node and check it status
     Then Add a device with label "NodeUp" IP address "127.1.0.4" and location "TestLocation"
     Then Check the status of the Node with expected status "UP"
@@ -79,7 +79,7 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Check the status of the Node with expected status "DOWN"
     Then Delete the node "NodeDown" from inventory in location "TestLocation"
 
-  @ignore
+  @internal
   Scenario: Create discovery and check the status of the discovered node
     # Currently this test is using Minion open port 161 to make a discovery. In future would be preferred to use container with open ports
     Then Add a new active discovery for the name "Automation Discovery Tests" at location "TestLocation" with ip address "127.1.0.5" and port 161, readCommunities "public"
