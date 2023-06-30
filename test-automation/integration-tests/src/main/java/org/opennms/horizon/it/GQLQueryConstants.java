@@ -24,6 +24,9 @@ public abstract class GQLQueryConstants {
     public static final String GET_NODE_ID =
         "query NodesTableParts { findAllNodes { id nodeLabel}}";
 
+    public static final String LIST_NODES_QUERY = "query { findAllNodes { id nodeLabel location { id location } } }";
+
+
     public static final String DELETE_NODE_BY_ID =
         "mutation DeleteNode($id: Long!) {  deleteNode(id: $id)}";
 

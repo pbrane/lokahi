@@ -23,10 +23,12 @@ import org.junit.Assert;
 import org.opennms.horizon.it.gqlmodels.CreateNodeData;
 import org.opennms.horizon.it.gqlmodels.GQLQuery;
 import org.opennms.horizon.it.gqlmodels.LocationData;
+import org.opennms.horizon.it.gqlmodels.NodeData;
 import org.opennms.horizon.it.gqlmodels.querywrappers.CreateNodeResult;
 import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllLocationsData;
 import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllMinionsQueryResult;
 import org.opennms.horizon.it.gqlmodels.MinionData;
+import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllNodesData;
 import org.opennms.horizon.it.helper.TestsExecutionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -277,6 +279,33 @@ public class InventoryTestSteps {
         assertTrue(done);
     }
 
+    @Then("Delete the node {string} from inventory in location {string}")
+    public void deleteNodeFromInventory(String nodeLabel, String locationName) throws MalformedURLException {
+        final String locationLmda = locationName + locationTimeStamp;
+        LOG.info("Deleting node {} from location {}.", nodeLabel, locationLmda);
+
+        String queryList = GQLQueryConstants.DELETE_NODE_BY_ID;
+
+        NodeData node = commonQueryNodes().stream()
+            .filter(element -> element.getNodeLabel().equals(nodeLabel) && element.getLocation().getLocation().equals(locationLmda))
+            .findFirst().orElseThrow(
+                () -> new IllegalArgumentException("Node " + nodeLabel + " not found in location " + locationName));
+
+        Map<String, Object> queryVariables = Map.of("id", node.getId());
+
+        GQLQuery gqlQuery = new GQLQuery();
+        gqlQuery.setQuery(queryList);
+        gqlQuery.setVariables(queryVariables);
+
+        Response response = helper.executePostQuery(gqlQuery);
+
+        JsonPath jsonPathEvaluator = response.jsonPath();
+        LinkedHashMap lhm = jsonPathEvaluator.get("data");
+        Boolean done = (Boolean) lhm.get("deleteNode");
+        System.out.println("node id is: " + node.getId());
+        assertTrue(done);
+    }
+
     @When("Request certificate for location {string}")
     public void requestCertificateForLocation(String location) throws MalformedURLException {
         final String locationLmda = location = location + locationTimeStamp;
@@ -332,6 +361,7 @@ public class InventoryTestSteps {
             .withEnv("GRPC_CLIENT_KEYSTORE_PASSWORD", certificate.getKey())
             .withEnv("GRPC_CLIENT_OVERRIDE_AUTHORITY", helper.getMinionIngressOverrideAuthority().get())
             .withNetworkAliases("minion-" + systemId.toLowerCase())
+            //.withNetwork(Network.newNetwork())
             .withNetwork(Network.SHARED)
             .withLabel("label", systemId);
         minions.put(systemId, minion);
@@ -397,6 +427,18 @@ public class InventoryTestSteps {
         Assert.assertEquals(200, restAssuredResponse.getStatusCode());
 
         return restAssuredResponse.getBody().as(FindAllMinionsQueryResult.class);
+    }
+
+    private List<NodeData> commonQueryNodes() throws MalformedURLException {
+        GQLQuery gqlQuery = new GQLQuery();
+        gqlQuery.setQuery(GQLQueryConstants.LIST_NODES_QUERY);
+
+        Response restAssuredResponse = helper.executePostQuery(gqlQuery);
+        lastMinionQueryResultBody = restAssuredResponse.getBody().asString();
+
+        Assert.assertEquals(200, restAssuredResponse.getStatusCode());
+
+        return restAssuredResponse.getBody().as(FindAllNodesData.class).getData().getFindAllNodes();
     }
 
     private List<MinionData> commonFilterMinionsAtLocation(FindAllMinionsQueryResult findAllMinionsQueryResult) {

@@ -41,9 +41,10 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.1" with timeout 120000ms
     Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.2" with timeout 120000ms
     Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.3" with timeout 120000ms
-    Then Delete the first node from inventory
-    Then Delete the first node from inventory
-    Then Delete the first node from inventory
+    # Delete the node {string} from inventory in location {string}
+    Then Delete the node "local1" from inventory in location "External"
+    Then Delete the node "local2" from inventory in location "External"
+    Then Delete the node "local3" from inventory in location "External"
 
     When Location "External" is removed
     Then Location "External" does not exist
@@ -65,18 +66,18 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.1" with timeout 120000ms
     Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.2" with timeout 120000ms
     Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.3" with timeout 120000ms
-    Then Delete the first node from inventory
-    Then Delete the first node from inventory
-    Then Delete the first node from inventory
+    Then Delete the node "local1" from inventory in location "TestLocation"
+    Then Delete the node "local2" from inventory in location "TestLocation"
+    Then Delete the node "local3" from inventory in location "TestLocation"
 
   @ignore
   Scenario: Create a Node and check it status
     Then Add a device with label "NodeUp" IP address "127.1.0.4" and location "TestLocation"
     Then Check the status of the Node with expected status "UP"
-    Then Delete the first node from inventory
+    Then Delete the node "NodeUp" from inventory in location "TestLocation"
     Then Add a device with label "NodeDown" IP address "192.168.0.4" and location "TestLocation"
     Then Check the status of the Node with expected status "DOWN"
-    Then Delete the first node from inventory
+    Then Delete the node "NodeDown" from inventory in location "TestLocation"
 
   @ignore
   Scenario: Create discovery and check the status of the discovered node
