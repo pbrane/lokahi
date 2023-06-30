@@ -79,10 +79,6 @@ public class MonitorTaskSetService {
                     .build();
                 }
             case SNMP -> {
-                configuration = Any.pack(SnmpMonitorRequest.newBuilder()
-                    .setHost(ipAddress)
-                    .build());
-            case SNMP -> {
                 var requestBuilder = SnmpMonitorRequest.newBuilder()
                     .setHost(ipAddress);
                 if (snmpConfiguration != null) {

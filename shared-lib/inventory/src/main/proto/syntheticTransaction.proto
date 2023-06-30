@@ -105,7 +105,7 @@ message SyntheticTransactionTestLocationRequestDTO {
 
 // request execution of plugin within location
 message SyntheticTestLocationConfigurationDTO {
-  string location = 1;
+  string location_id = 1;
   SyntheticTestPluginConfigurationDTO plugin_configuration = 2;
 }
 

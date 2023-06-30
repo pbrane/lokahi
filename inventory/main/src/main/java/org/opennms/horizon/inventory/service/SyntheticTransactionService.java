@@ -49,6 +49,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.cloud.grpc.minion.RpcRequestProto;
 import org.opennms.cloud.grpc.minion.RpcResponseProto;
+import org.opennms.cloud.grpc.minion_gateway.GatewayRpcRequestProto;
+import org.opennms.cloud.grpc.minion_gateway.GatewayRpcResponseProto;
+import org.opennms.cloud.grpc.minion_gateway.MinionIdentity;
 import org.opennms.horizon.grpc.task.contract.TaskRequest;
 import org.opennms.horizon.grpc.task.contract.TaskResponse;
 import org.opennms.horizon.inventory.component.MinionRpcClient;
@@ -187,7 +190,7 @@ public class SyntheticTransactionService  {
             tasks.add(taskDefinition);
 
             taskSetPublisher.publishNewTasks(
-                syntheticTest.getTenantId(), location.getLocation(), tasks
+                syntheticTest.getTenantId(), location.getId(), tasks
             );
         }
 
@@ -272,8 +275,9 @@ public class SyntheticTransactionService  {
         }
         Message message = configParser.parse(configuration.getConfigMap());
 
-        Optional<String> location = monitoringLocationRepository.findByLocationAndTenantId(request.getLocation(), tenantId)
-            .map(MonitoringLocation::getLocation);
+        Long locationId = Long.parseLong(request.getLocationId());
+        Optional<Long> location = monitoringLocationRepository.findByIdAndTenantId(locationId, tenantId)
+            .map(MonitoringLocation::getId);
         if (location.isEmpty()) {
             return CompletableFuture.completedFuture(SyntheticTestStatusDTO.newBuilder()
                 .setReason("Unknown location")
@@ -331,21 +335,28 @@ public class SyntheticTransactionService  {
     }
 
     // execute
-    private CompletableFuture<Map<String, SyntheticTestStatusDTO>> callMonitorInLocation(String tenantId, String location, String pluginName, Message pluginConfig) {
+    private CompletableFuture<Map<Long, SyntheticTestStatusDTO>> callMonitorInLocation(String tenantId, Long locationId, String pluginName, Message pluginConfig) {
         TaskRequest taskDefinition = TaskRequest.newBuilder()
             .setPluginName(pluginName)
             .setConfiguration(Any.pack(pluginConfig))
             .build();
-        RpcRequestProto rpcRequest = RpcRequestProto.newBuilder()
+
+        MinionIdentity minionIdentity =
+            MinionIdentity.newBuilder()
+                .setTenantId(tenantId)
+                .setLocationId(String.valueOf(locationId))
+                .build();
+
+        GatewayRpcRequestProto rpcRequest = GatewayRpcRequestProto.newBuilder()
             .setRpcId(UUID.randomUUID().toString())
-            .setLocation(location)
+            .setIdentity(minionIdentity)
             .setModuleId("task")
             .setPayload(Any.pack(taskDefinition))
             .setExpirationTime(System.currentTimeMillis() + 30_000)
             .build();
 
         return rpcClient.sendRpcRequest(tenantId, rpcRequest)
-            .thenApply(RpcResponseProto::getPayload)
+            .thenApply(GatewayRpcResponseProto::getPayload)
             .thenApply(payload -> {
                 Builder statusDTO = SyntheticTestStatusDTO.newBuilder();
                 try {
@@ -357,7 +368,7 @@ public class SyntheticTransactionService  {
                     log.warn("Could not handle rpc request {} for tenant {}", rpcRequest, tenantId, e);
                     statusDTO.setReason("Failure while parsing monitor answer");
                 }
-                return ImmutableMap.of(location, statusDTO.build());
+                return ImmutableMap.of(locationId, statusDTO.build());
             });
     }
 
