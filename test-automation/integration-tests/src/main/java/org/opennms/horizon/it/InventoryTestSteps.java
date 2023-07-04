@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -126,7 +127,7 @@ public class InventoryTestSteps {
     public void queryLocationDoNotExist(String location) throws MalformedURLException {
         List<LocationData> locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
             .filter(data -> data.getLocation().equals(location)).toList();
-        assertTrue(locationData.isEmpty());
+        assertTrue("locations should be empty but was: " + Arrays.deepToString(locationData.toArray()), locationData.isEmpty());
     }
 
     @Then("Location {string} do exist")
@@ -145,7 +146,7 @@ public class InventoryTestSteps {
     @Given("No Minion running with location {string}")
     public void check(String location) throws MalformedURLException {
         atLeastOneMinionIsRunningWithLocation(location);
-        assertFalse(checkAtLeastOneMinionAtGivenLocation());
+        assertFalse("there should be no minions at location '" + location + "': " +  Arrays.deepToString(getMinionsAtGivenLocation().toArray()), checkAtLeastOneMinionAtGivenLocation());
     }
 
 
@@ -364,13 +365,17 @@ public class InventoryTestSteps {
     }
 
 
-    private boolean checkAtLeastOneMinionAtGivenLocation() throws MalformedURLException {
+    private List<MinionData> getMinionsAtGivenLocation() throws MalformedURLException {
         FindAllMinionsQueryResult findAllMinionsQueryResult = commonQueryMinions();
         List<MinionData> filtered = commonFilterMinionsAtLocation(findAllMinionsQueryResult);
 
         LOG.debug("MINIONS for location: count={}; location={}", filtered.size(), minionLocation);
 
-        return ( ! filtered.isEmpty() );
+        return filtered;
+    }
+
+    private boolean checkAtLeastOneMinionAtGivenLocation() throws MalformedURLException {
+        return ( ! getMinionsAtGivenLocation().isEmpty() );
     }
 
     /** @noinspection rawtypes*/
