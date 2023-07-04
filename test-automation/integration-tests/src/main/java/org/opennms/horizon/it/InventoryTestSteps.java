@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.StopContainerCmd;
 import com.github.dockerjava.api.command.WaitContainerCmd;
 import com.github.dockerjava.api.model.Container;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -77,6 +78,20 @@ public class InventoryTestSteps {
 
     // certificate related runtime info location -> [keystore password=pkcs12 byte sequence]
     private Map<String, Entry<String, byte[]>> keystores = new ConcurrentHashMap<>();
+
+//========================================
+// Hooks
+//----------------------------------------
+
+    @After
+    // Cleanup non-default locations so we don't break later runs
+    public void after() throws Exception {
+        if (minionLocation != null && !"default".equals(minionLocation)) {
+            if (getLocationData(minionLocation).findFirst().isPresent()) {
+                deleteLocation(minionLocation);
+            }
+        }
+    }
 
 //========================================
 // Getters and Setters
