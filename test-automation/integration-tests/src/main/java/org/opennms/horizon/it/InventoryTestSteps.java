@@ -1,47 +1,41 @@
 package org.opennms.horizon.it;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.StopContainerCmd;
-import com.github.dockerjava.api.command.WaitContainerCmd;
-import com.github.dockerjava.api.model.Container;
-import io.cucumber.java.After;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
-import org.awaitility.Awaitility;
-import org.junit.Assert;
-import org.opennms.horizon.it.gqlmodels.CreateNodeData;
-import org.opennms.horizon.it.gqlmodels.GQLQuery;
-import org.opennms.horizon.it.gqlmodels.LocationData;
-import org.opennms.horizon.it.gqlmodels.querywrappers.CreateNodeResult;
-import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllLocationsData;
-import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllMinionsQueryResult;
-import org.opennms.horizon.it.gqlmodels.MinionData;
-import org.opennms.horizon.it.helper.TestsExecutionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.awaitility.Awaitility;
+import org.opennms.horizon.it.gqlmodels.CreateNodeData;
+import org.opennms.horizon.it.gqlmodels.GQLQuery;
+import org.opennms.horizon.it.gqlmodels.LocationData;
+import org.opennms.horizon.it.gqlmodels.MinionData;
+import org.opennms.horizon.it.gqlmodels.querywrappers.CreateNodeResult;
+import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllMinionsQueryResult;
+import org.opennms.horizon.it.helper.TestsExecutionHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -49,13 +43,17 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
-import org.testcontainers.utility.ResourceReaper;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.StopContainerCmd;
+import com.github.dockerjava.api.command.WaitContainerCmd;
+import com.github.dockerjava.api.model.Container;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import io.cucumber.java.After;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 
 public class InventoryTestSteps {
 
@@ -399,7 +397,7 @@ public class InventoryTestSteps {
 
         lastMinionQueryResultBody = restAssuredResponse.getBody().asString();
 
-        Assert.assertEquals(200, restAssuredResponse.getStatusCode());
+        assertEquals(200, restAssuredResponse.getStatusCode());
         assertFalse(helper.responseContainsErrors(restAssuredResponse));
 
         return restAssuredResponse.getBody().as(FindAllMinionsQueryResult.class);
