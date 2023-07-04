@@ -18,6 +18,7 @@ import java.util.Base64;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.opennms.horizon.it.gqlmodels.CreateNodeData;
@@ -104,10 +105,7 @@ public class InventoryTestSteps {
 
     @Given("Location {string} is removed")
     public void deleteLocation(String location) throws Exception {
-        LocationData locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> loc.getLocation().equals(location))
-            .findFirst().orElse(null);
-
+        LocationData locationData = getLocationData(location).findFirst().orElse(null);
         if (locationData == null) {
             fail("Location " + location + " not found");
         }
@@ -123,18 +121,20 @@ public class InventoryTestSteps {
 //        assertFalse(helper.responseContainsErrors(response));
     }
 
+    public Stream<LocationData> getLocationData(String location) throws MalformedURLException {
+        return helper.commonQueryLocations().getData().getFindAllLocations().stream()
+            .filter(loc -> loc.getLocation().equals(location));
+    }
+
     @Given("Location {string} does not exist")
     public void queryLocationDoNotExist(String location) throws MalformedURLException {
-        List<LocationData> locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(data -> data.getLocation().equals(location)).toList();
+        List<LocationData> locationData = getLocationData(location).toList();
         assertTrue("locations should be empty but was: " + Arrays.deepToString(locationData.toArray()), locationData.isEmpty());
     }
 
     @Then("Location {string} do exist")
     public void queryLocationDoExist(String location) throws MalformedURLException {
-        Optional<LocationData> locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(data -> data.getLocation().equals(location))
-            .findFirst();
+        Optional<LocationData> locationData = getLocationData(location).findFirst();
         assertTrue(locationData.isPresent());
     }
 
@@ -182,9 +182,7 @@ public class InventoryTestSteps {
 
     @Then("Add a device with label {string} IP address {string} and location {string}")
     public void addADeviceWithLabelIPAddressAndLocation(String label, String ipAddress, String location) throws MalformedURLException {
-        LocationData locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> location.equals(loc.getLocation()))
-            .findFirst().orElse(null);
+        LocationData locationData = getLocationData(location).findFirst().orElse(null);
 
         if (locationData == null) {
             fail("Location " + location + " not found");
@@ -265,8 +263,7 @@ public class InventoryTestSteps {
     public void requestCertificateForLocation(String location) throws MalformedURLException {
         LOG.info("Requesting certificate for location {}.", location);
 
-        Long locationId = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> loc.getLocation().equals(location))
+        Long locationId = getLocationData(location)
             .findFirst()
             .map(LocationData::getId)
             .orElseThrow(() -> new IllegalArgumentException("Unknown location " + location));
