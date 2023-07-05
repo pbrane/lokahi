@@ -99,14 +99,6 @@ public class InventoryTestSteps {
         Date date = new Date();
         long timeMilli = date.getTime();
 
-        /* This is so multiple workflows can run at the same time in the pipeline and not conflict.
-         * Each has its own location.
-         */
-        locationTimeStamp = String.valueOf(timeMilli);
-
-        location = location + locationTimeStamp;
-        LOG.info("LOCATION TEST: {}", location);
-
         GQLQuery gqlQuery = new GQLQuery();
         gqlQuery.setQuery(queryList);
         gqlQuery.setVariables(Map.of("location", location));
@@ -118,10 +110,9 @@ public class InventoryTestSteps {
 
     @Given("Location {string} is removed")
     public void deleteLocation(String location) throws Exception {
-        final String locationLmda = location + locationTimeStamp;
 
         LocationData locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> loc.getLocation().equals(locationLmda))
+            .filter(loc -> loc.getLocation().equals(location))
             .findFirst().orElse(null);
 
         if (locationData == null) {
@@ -141,31 +132,28 @@ public class InventoryTestSteps {
 
     @Given("Location {string} does not exist")
     public void queryLocationDoNotExist(String location) throws MalformedURLException {
-        final String locationLmda = location + locationTimeStamp;
 
         List<LocationData> locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(data -> data.getLocation().equals(locationLmda)).toList();
+            .filter(data -> data.getLocation().equals(location)).toList();
         assertTrue(locationData.isEmpty());
     }
 
     @Then("Location {string} do exist")
     public void queryLocationDoExist(String location) throws MalformedURLException {
-        final String locationLmda = location + locationTimeStamp;
 
         Optional<LocationData> locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(data -> data.getLocation().equals(locationLmda))
+            .filter(data -> data.getLocation().equals(location))
             .findFirst();
         assertTrue(locationData.isPresent());
     }
 
     @Given("At least one Minion is running with location {string}")
     public void atLeastOneMinionIsRunningWithLocation(String location) {
-        minionLocation = location + locationTimeStamp;
+        minionLocation = location;
     }
 
     @Given("No Minion running with location {string}")
     public void check(String location) throws MalformedURLException {
-        location = location + locationTimeStamp;
 
         atLeastOneMinionIsRunningWithLocation(location);
         assertFalse(checkAtLeastOneMinionAtGivenLocation());
@@ -204,10 +192,9 @@ public class InventoryTestSteps {
 
     @Then("Add a device with label {string} IP address {string} and location {string}")
     public void addADeviceWithLabelIPAddressAndLocation(String label, String ipAddress, String location) throws MalformedURLException {
-        final String locationLmda = location + locationTimeStamp;
 
         LocationData locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> locationLmda.equals(loc.getLocation()))
+            .filter(loc -> location.equals(loc.getLocation()))
             .findFirst().orElse(null);
 
         if (locationData == null) {
@@ -286,13 +273,13 @@ public class InventoryTestSteps {
 
     @Then("Delete the node {string} from inventory in location {string}")
     public void deleteNodeFromInventory(String nodeLabel, String locationName) throws MalformedURLException {
-        final String locationLmda = locationName + locationTimeStamp;
-        LOG.info("Deleting node {} from location {}.", nodeLabel, locationLmda);
+
+        LOG.info("Deleting node {} from location {}.", nodeLabel, locationName);
 
         String queryList = GQLQueryConstants.DELETE_NODE_BY_ID;
 
         NodeData node = commonQueryNodes().stream()
-            .filter(element -> element.getNodeLabel().equals(nodeLabel) && element.getLocation().getLocation().equals(locationLmda))
+            .filter(element -> element.getNodeLabel().equals(nodeLabel) && element.getLocation().getLocation().equals(locationName))
             .findFirst().orElseThrow(
                 () -> new IllegalArgumentException("Node " + nodeLabel + " not found in location " + locationName));
 
@@ -313,15 +300,14 @@ public class InventoryTestSteps {
 
     @When("Request certificate for location {string}")
     public void requestCertificateForLocation(String location) throws MalformedURLException {
-        final String locationLmda = location = location + locationTimeStamp;
 
         LOG.info("Requesting certificate for location {}.", location);
 
         Long locationId = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> loc.getLocation().equals(locationLmda))
+            .filter(loc -> loc.getLocation().equals(location))
             .findFirst()
             .map(LocationData::getId)
-            .orElseThrow(() -> new IllegalArgumentException("Unknown location " + locationLmda));
+            .orElseThrow(() -> new IllegalArgumentException("Unknown location " + location));
 
         String query = String.format(GQLQueryConstants.CREATE_MINION_CERTIFICATE, locationId);
         GQLQuery gqlQuery = new GQLQuery();
@@ -342,18 +328,13 @@ public class InventoryTestSteps {
 
     @Then("Minion {string} is started in location {string}")
     public void startMinion(String systemId, String location) throws IOException {
-        location = location + locationTimeStamp;
-        String systemIdOriginal = systemId;
-        systemId = systemId + locationTimeStamp;
-
-        LOG.info("SystemId - Minion {}.", systemId);
 
         if (!keystores.containsKey(location)) {
             fail("Could not find location " + location + " certificate");
         }
 
         Entry<String, byte[]> certificate = keystores.get(location);
-        stopMinion(systemIdOriginal);
+        stopMinion(systemId);
 
         GenericContainer<?> minion = new GenericContainer<>(DockerImageName.parse(helper.getMinionImageNameSupplier().get()))
             .withEnv("MINION_GATEWAY_HOST", helper.getMinionIngressSupplier().get())
@@ -394,9 +375,6 @@ public class InventoryTestSteps {
 
     @Then("Minion {string} is stopped")
     public void stopMinion(String systemId) {
-        systemId = systemId + locationTimeStamp;
-
-        LOG.info("SystemId - Minion {}.", systemId);
 
         DockerClient dockerClient = DockerClientFactory.lazyClient();
         List<Container> containers = dockerClient.listContainersCmd().exec();
