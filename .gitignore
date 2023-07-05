@@ -41,5 +41,5 @@ idea/
 *.log
 
 # Antora artifacts
-/build/
-/public/
+build/
+public/
