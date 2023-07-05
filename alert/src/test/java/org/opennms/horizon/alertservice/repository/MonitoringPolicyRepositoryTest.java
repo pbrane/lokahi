@@ -169,7 +169,7 @@ public class MonitoringPolicyRepositoryTest {
         policy.getRules().forEach(r -> {
             r.setTenantId(tenantId);
             r.setPolicy(policy);
-            r.getTriggerEvents().forEach(e -> {
+            r.getAlertConditions().forEach(e -> {
                 e.setTenantId(tenantId);
                 e.setRule(r);
             });

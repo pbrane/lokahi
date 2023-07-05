@@ -26,13 +26,26 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.alertservice.db.repository;
+package org.opennms.horizon.alertservice.mapper;
 
-import org.opennms.horizon.alertservice.db.entity.TriggerEvent;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.NullValueCheckStrategy;
+import org.opennms.horizon.alertservice.db.entity.AlertCondition;
+import org.opennms.horizon.alerts.proto.TriggerEventProto;
 
-@Repository
-public interface TriggerEventRepository extends JpaRepository<TriggerEvent, Long> {
+@Mapper(componentModel = "spring")
+public interface AlertConditionMapper {
 
+    @Mapping(source = "triggerEvent", target = "triggerEventType")
+    @Mapping(source = "clearEvent", target = "clearEventType")
+    @Mapping(target = "rule", ignore = true)
+    @Mapping(target = "alertDefinition", ignore = true)
+    AlertCondition protoToEntity(TriggerEventProto proto);
+
+    @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    @Mapping(source = "triggerEventType", target = "triggerEvent")
+    @Mapping(source = "clearEventType", target = "clearEvent")
+    TriggerEventProto entityToProto(AlertCondition event);
 }
