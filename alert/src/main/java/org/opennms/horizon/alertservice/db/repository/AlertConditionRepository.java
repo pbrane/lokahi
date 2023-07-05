@@ -28,11 +28,11 @@
 
 package org.opennms.horizon.alertservice.db.repository;
 
-import org.opennms.horizon.alertservice.db.entity.TriggerEvent;
+import org.opennms.horizon.alertservice.db.entity.AlertCondition;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TriggerEventRepository extends JpaRepository<TriggerEvent, Long> {
+public interface AlertConditionRepository extends JpaRepository<AlertCondition, Long> {
 
 }

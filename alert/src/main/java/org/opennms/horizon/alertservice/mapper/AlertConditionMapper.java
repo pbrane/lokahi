@@ -31,12 +31,12 @@ package org.opennms.horizon.alertservice.mapper;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
-import org.opennms.horizon.alertservice.db.entity.TriggerEvent;
+import org.opennms.horizon.alertservice.db.entity.AlertCondition;
 import org.opennms.horizon.alerts.proto.TriggerEventProto;
 
 @Mapper(componentModel = "spring")
-public interface TriggerEventMapper {
-    TriggerEvent protoToEntity(TriggerEventProto proto);
+public interface AlertConditionMapper {
+    AlertCondition protoToEntity(TriggerEventProto proto);
     @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    TriggerEventProto entityToProto(TriggerEvent event);
+    TriggerEventProto entityToProto(AlertCondition event);
 }

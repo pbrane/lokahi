@@ -88,5 +88,5 @@ public class AlertDefinition implements Serializable {
     private ManagedObjectType managedObjectType;
 
     @Column(name = "trigger_event_id")
-    private Long triggerEventId;
+    private Long alertConditionId;
 }

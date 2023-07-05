@@ -33,12 +33,10 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 import org.opennms.horizon.alerts.proto.AlertType;
-import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
 import org.opennms.horizon.alerts.proto.Severity;
 
@@ -135,7 +133,7 @@ public class Alert implements Serializable {
 
     @OneToOne
     @JoinColumn(name = "trigger_event_id", referencedColumnName = "id")
-    private TriggerEvent triggerEvent;
+    private AlertCondition alertCondition;
 
     public void incrementCount() {
         counter++;
