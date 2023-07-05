@@ -35,14 +35,10 @@ import io.leangen.graphql.annotations.GraphQLQuery;
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import lombok.RequiredArgsConstructor;
+import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.server.mapper.AlertMapper;
 import org.opennms.horizon.server.mapper.TagMapper;
-import org.opennms.horizon.server.model.alerts.AlertResponse;
-import org.opennms.horizon.server.model.alerts.CountAlertResponse;
-import org.opennms.horizon.server.model.alerts.DeleteAlertResponse;
-import org.opennms.horizon.server.model.alerts.ListAlertResponse;
-import org.opennms.horizon.server.model.alerts.MonitorPolicy;
-import org.opennms.horizon.server.model.alerts.TimeRange;
+import org.opennms.horizon.server.model.alerts.*;
 import org.opennms.horizon.server.model.inventory.tag.TagCreate;
 import org.opennms.horizon.server.model.inventory.tag.TagListMonitorPolicyAdd;
 import org.opennms.horizon.server.service.grpc.AlertsClient;
@@ -141,6 +137,11 @@ public class GrpcAlertService {
     @GraphQLQuery
     public Mono<MonitorPolicy> getDefaultPolicy(@GraphQLEnvironment ResolutionEnvironment env) {
         return Mono.just(alertsClient.getDefaultPolicy(headerUtil.getAuthHeader(env)));
+    }
+
+    @GraphQLQuery
+    public Flux<AlertEventDefinition> listEventDefinitions(EventType eventType, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(alertsClient.listEventDefinitions(eventType, headerUtil.getAuthHeader(env)));
     }
 
     private void createTagsInInventory(String authHeader, long monitoringPolicyId, List<String> policyTags) {

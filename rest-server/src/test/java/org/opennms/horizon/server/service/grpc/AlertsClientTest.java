@@ -52,6 +52,7 @@ import org.opennms.horizon.alerts.proto.AlertServiceGrpc;
 import org.opennms.horizon.alerts.proto.DeleteAlertResponse;
 import org.opennms.horizon.alerts.proto.ListAlertsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
+import org.opennms.horizon.server.mapper.AlertEventDefinitionMapper;
 import org.opennms.horizon.server.mapper.alert.MonitorPolicyMapper;
 import org.opennms.horizon.server.model.alerts.TimeRange;
 import org.opennms.horizon.shared.constants.GrpcConstants;
@@ -70,7 +71,9 @@ public class AlertsClientTest {
     @Rule
     public static final GrpcCleanupRule grpcCleanUp = new GrpcCleanupRule();
 
-    private static MonitorPolicyMapper policyMapper;
+    private static MonitorPolicyMapper monitorPolicyMapper;
+
+    private static AlertEventDefinitionMapper alertEventDefinitionMapper;
     private static AlertsClient client;
     private static MockServerInterceptor mockInterceptor;
     private static AlertServiceGrpc.AlertServiceImplBase mockAlertService;
@@ -122,8 +125,8 @@ public class AlertsClientTest {
         grpcCleanUp.register(InProcessServerBuilder.forName("AlertsClientTest").intercept(mockInterceptor)
             .addService(mockAlertService).directExecutor().build().start());
         ManagedChannel channel = grpcCleanUp.register(InProcessChannelBuilder.forName("AlertsClientTest").directExecutor().build());
-        policyMapper = Mappers.getMapper(MonitorPolicyMapper.class);
-        client = new AlertsClient(channel, 5000, policyMapper);
+        monitorPolicyMapper = Mappers.getMapper(MonitorPolicyMapper.class);
+        client = new AlertsClient(channel, 5000, monitorPolicyMapper, alertEventDefinitionMapper);
         client.initialStubs();
     }
 
@@ -135,7 +138,7 @@ public class AlertsClientTest {
     }
 
     @Test
-    public void testListAlerts() {
+    void testListAlerts() {
         String methodName = new Object() {
         }.getClass().getEnclosingMethod().getName();
         ArgumentCaptor<ListAlertsRequest> captor = ArgumentCaptor.forClass(ListAlertsRequest.class);
@@ -147,7 +150,7 @@ public class AlertsClientTest {
     }
 
     @Test
-    public void testAcknowledgeAlert() {
+    void testAcknowledgeAlert() {
         String methodName = new Object() {
         }.getClass().getEnclosingMethod().getName();
         ArgumentCaptor<AlertRequest> captor = ArgumentCaptor.forClass(AlertRequest.class);
@@ -159,7 +162,7 @@ public class AlertsClientTest {
     }
 
     @Test
-    public void testUnacknowledgeAlert() {
+    void testUnacknowledgeAlert() {
         String methodName = new Object() {
         }.getClass().getEnclosingMethod().getName();
         ArgumentCaptor<AlertRequest> captor = ArgumentCaptor.forClass(AlertRequest.class);
@@ -171,7 +174,7 @@ public class AlertsClientTest {
     }
 
     @Test
-    public void testClearAlert() {
+    void testClearAlert() {
         String methodName = new Object() {
         }.getClass().getEnclosingMethod().getName();
         ArgumentCaptor<AlertRequest> captor = ArgumentCaptor.forClass(AlertRequest.class);
@@ -183,7 +186,7 @@ public class AlertsClientTest {
     }
 
     @Test
-    public void testEscalateAlert() {
+    void testEscalateAlert() {
         String methodName = new Object() {
         }.getClass().getEnclosingMethod().getName();
         ArgumentCaptor<AlertRequest> captor = ArgumentCaptor.forClass(AlertRequest.class);

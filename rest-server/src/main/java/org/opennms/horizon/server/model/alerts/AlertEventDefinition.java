@@ -26,17 +26,19 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.server.mapper.alert;
+package org.opennms.horizon.server.model.alerts;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.NullValueCheckStrategy;
-import org.opennms.horizon.server.mapper.AlertEventDefinitionMapper;
-import org.opennms.horizon.server.model.alerts.AlertCondition;
-import org.opennms.horizon.alerts.proto.AlertConditionProto;
+import lombok.Getter;
+import lombok.Setter;
+import org.opennms.horizon.alerts.proto.EventType;
 
-@Mapper(componentModel = "spring",
-    nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, uses = { AlertEventDefinitionMapper.class })
-public interface AlertConditionMapper {
-    AlertCondition map(AlertConditionProto protoEvent);
-    AlertConditionProto map(AlertCondition event);
+@Getter
+@Setter
+public class AlertEventDefinition {
+    private Long id;
+    private String uei;
+    private String name;
+    private String reductionKey;
+    private String clearKey;
+    private EventType eventType;
 }
