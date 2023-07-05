@@ -1,61 +1,59 @@
 package org.opennms.horizon.it;
 
-import java.util.Date;
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.StopContainerCmd;
-import com.github.dockerjava.api.command.WaitContainerCmd;
-import com.github.dockerjava.api.model.Container;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.time.Duration;
-import java.util.Base64;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import org.awaitility.Awaitility;
-import org.junit.Assert;
-import org.opennms.horizon.it.gqlmodels.CreateNodeData;
-import org.opennms.horizon.it.gqlmodels.GQLQuery;
-import org.opennms.horizon.it.gqlmodels.LocationData;
-import org.opennms.horizon.it.gqlmodels.NodeData;
-import org.opennms.horizon.it.gqlmodels.querywrappers.CreateNodeResult;
-import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllLocationsData;
-import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllMinionsQueryResult;
-import org.opennms.horizon.it.gqlmodels.MinionData;
-import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllNodesData;
-import org.opennms.horizon.it.helper.TestsExecutionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.awaitility.Awaitility;
+import org.opennms.horizon.it.gqlmodels.CreateNodeData;
+import org.opennms.horizon.it.gqlmodels.GQLQuery;
+import org.opennms.horizon.it.gqlmodels.LocationData;
+import org.opennms.horizon.it.gqlmodels.MinionData;
+import org.opennms.horizon.it.gqlmodels.querywrappers.CreateNodeResult;
+import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllMinionsQueryResult;
+import org.opennms.horizon.it.helper.TestsExecutionHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.ResourceReaper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.StopContainerCmd;
+import com.github.dockerjava.api.command.WaitContainerCmd;
+import com.github.dockerjava.api.model.Container;
+
+import io.cucumber.java.After;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 
 public class InventoryTestSteps {
 
@@ -79,6 +77,20 @@ public class InventoryTestSteps {
 
     // certificate related runtime info location -> [keystore password=pkcs12 byte sequence]
     private Map<String, Entry<String, byte[]>> keystores = new ConcurrentHashMap<>();
+
+//========================================
+// Hooks
+//----------------------------------------
+
+    @After
+    // Cleanup non-default locations so we don't break later runs
+    public void after() throws Exception {
+        if (minionLocation != null && !"default".equals(minionLocation)) {
+            if (getLocationData(minionLocation).findFirst().isPresent()) {
+                deleteLocation(minionLocation);
+            }
+        }
+    }
 
 //========================================
 // Getters and Setters
@@ -110,11 +122,7 @@ public class InventoryTestSteps {
 
     @Given("Location {string} is removed")
     public void deleteLocation(String location) throws Exception {
-
-        LocationData locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> loc.getLocation().equals(location))
-            .findFirst().orElse(null);
-
+        LocationData locationData = getLocationData(location).findFirst().orElse(null);
         if (locationData == null) {
             fail("Location " + location + " not found");
         }
@@ -130,20 +138,21 @@ public class InventoryTestSteps {
 //        assertFalse(helper.responseContainsErrors(response));
     }
 
+    public Stream<LocationData> getLocationData(String location) throws MalformedURLException {
+        return helper.commonQueryLocations().getData().getFindAllLocations().stream()
+            .filter(loc -> loc.getLocation().equals(location));
+    }
+
     @Given("Location {string} does not exist")
     public void queryLocationDoNotExist(String location) throws MalformedURLException {
 
-        List<LocationData> locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(data -> data.getLocation().equals(location)).toList();
-        assertTrue(locationData.isEmpty());
+        List<LocationData> locationData = getLocationData(location).toList();
+        assertTrue("locations should be empty but was: " + Arrays.deepToString(locationData.toArray()), locationData.isEmpty());
     }
 
     @Then("Location {string} do exist")
     public void queryLocationDoExist(String location) throws MalformedURLException {
-
-        Optional<LocationData> locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(data -> data.getLocation().equals(location))
-            .findFirst();
+        Optional<LocationData> locationData = getLocationData(location).findFirst();
         assertTrue(locationData.isPresent());
     }
 
@@ -156,7 +165,7 @@ public class InventoryTestSteps {
     public void check(String location) throws MalformedURLException {
 
         atLeastOneMinionIsRunningWithLocation(location);
-        assertFalse(checkAtLeastOneMinionAtGivenLocation());
+        assertFalse("there should be no minions at location '" + location + "': " +  Arrays.deepToString(getMinionsAtGivenLocation().toArray()), checkAtLeastOneMinionAtGivenLocation());
     }
 
 
@@ -192,10 +201,7 @@ public class InventoryTestSteps {
 
     @Then("Add a device with label {string} IP address {string} and location {string}")
     public void addADeviceWithLabelIPAddressAndLocation(String label, String ipAddress, String location) throws MalformedURLException {
-
-        LocationData locationData = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> location.equals(loc.getLocation()))
-            .findFirst().orElse(null);
+        LocationData locationData = getLocationData(location).findFirst().orElse(null);
 
         if (locationData == null) {
             fail("Location " + location + " not found");
@@ -247,6 +253,7 @@ public class InventoryTestSteps {
             assertTrue(false);
         }
     }
+
 
     @Then("Delete the first node from inventory")
     public void deleteFirstNodeFromInventory() throws MalformedURLException {
@@ -303,8 +310,7 @@ public class InventoryTestSteps {
 
         LOG.info("Requesting certificate for location {}.", location);
 
-        Long locationId = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(loc -> loc.getLocation().equals(location))
+        Long locationId = getLocationData(location)
             .findFirst()
             .map(LocationData::getId)
             .orElseThrow(() -> new IllegalArgumentException("Unknown location " + location));
@@ -326,29 +332,43 @@ public class InventoryTestSteps {
         keystores.put(location, Map.entry(pkcs12password, pkcs12));
     }
 
-    @Then("Minion {string} is started in location {string}")
-    public void startMinion(String systemId, String location) throws IOException {
+    @Then("Minion {string} is started with shared networking in location {string}")
+    public void startMinionSharedNetwork(String systemId, String location) throws IOException {
+        startMinion(systemId, location, true);
+    }
 
+    @Then("Minion {string} is started in location {string}")
+    public void startMinionSpecificNetwork(String systemId, String location) throws IOException {
+        startMinion(systemId, location, false);
+    }
+
+    public void startMinion(String systemId, String location, boolean sharedNetworking) throws IOException {
         if (!keystores.containsKey(location)) {
             fail("Could not find location " + location + " certificate");
         }
 
         Entry<String, byte[]> certificate = keystores.get(location);
+
         stopMinion(systemId);
 
+        Network network;
+        if (sharedNetworking) {
+            network = Network.SHARED;
+        } else {
+            network = helper.getCommonNetworkSupplier().get();
+        }
         GenericContainer<?> minion = new GenericContainer<>(DockerImageName.parse(helper.getMinionImageNameSupplier().get()))
             .withEnv("MINION_GATEWAY_HOST", helper.getMinionIngressSupplier().get())
             .withEnv("MINION_GATEWAY_PORT", String.valueOf(helper.getMinionIngressPortSupplier().get()))
             .withEnv("MINION_GATEWAY_TLS", String.valueOf(helper.getMinionIngressTlsEnabledSupplier().get()))
             .withEnv("MINION_ID", systemId)
             .withEnv("USE_KUBERNETES", "false")
-            .withEnv("IGNITE_SERVER_ADDRESSES", "127.0.0.1")
             .withEnv("GRPC_CLIENT_KEYSTORE", "/opt/karaf/minion.p12")
             .withEnv("GRPC_CLIENT_KEYSTORE_PASSWORD", certificate.getKey())
             .withEnv("GRPC_CLIENT_OVERRIDE_AUTHORITY", helper.getMinionIngressOverrideAuthority().get())
+            .withEnv("IGNITE_SERVER_ADDRESSES", "localhost")
             .withNetworkAliases("minion-" + systemId.toLowerCase())
-            //.withNetwork(Network.newNetwork())
-            .withNetwork(Network.SHARED)
+            .withNetwork(network)
             .withLabel("label", systemId);
         minions.put(systemId, minion);
 
@@ -389,13 +409,18 @@ public class InventoryTestSteps {
         }
     }
 
-    private boolean checkAtLeastOneMinionAtGivenLocation() throws MalformedURLException {
+
+    private List<MinionData> getMinionsAtGivenLocation() throws MalformedURLException {
         FindAllMinionsQueryResult findAllMinionsQueryResult = commonQueryMinions();
         List<MinionData> filtered = commonFilterMinionsAtLocation(findAllMinionsQueryResult);
 
         LOG.debug("MINIONS for location: count={}; location={}", filtered.size(), minionLocation);
 
-        return ( ! filtered.isEmpty() );
+        return filtered;
+    }
+
+    private boolean checkAtLeastOneMinionAtGivenLocation() throws MalformedURLException {
+        return ( ! getMinionsAtGivenLocation().isEmpty() );
     }
 
     /** @noinspection rawtypes*/
@@ -407,7 +432,7 @@ public class InventoryTestSteps {
 
         lastMinionQueryResultBody = restAssuredResponse.getBody().asString();
 
-        Assert.assertEquals(200, restAssuredResponse.getStatusCode());
+        assertEquals(200, restAssuredResponse.getStatusCode());
         assertFalse(helper.responseContainsErrors(restAssuredResponse));
 
         return restAssuredResponse.getBody().as(FindAllMinionsQueryResult.class);
@@ -467,6 +492,7 @@ public class InventoryTestSteps {
         LOG.info("Status of the node: " + currentStatus);
         return currentStatus.equals(expectedStatus);
     }
+
 
     /**
      * Method to get the ID of the first node in the inventory

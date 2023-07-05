@@ -1,3 +1,4 @@
+@inventory
 Feature: Minion Monitoring via Echo Messages Logged in Prometheus
 
   Background: Login to Keycloak
@@ -26,7 +27,7 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Create location "External"
     Then Location "External" do exist
     Then Request certificate for location "External"
-    When Minion "Kevin" is started in location "External"
+    When Minion "Kevin" is started with shared networking in location "External"
     Then At least one Minion is running with location "External"
     #Then Wait for at least one minion for the given location reported by inventory with timeout 600000ms
 
@@ -56,7 +57,7 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Create location "Measurements"
     Then Location "Measurements" do exist
     Then Request certificate for location "Measurements"
-    When Minion "Stuart" is started in location "Measurements"
+    When Minion "Stuart" is started with shared networking in location "Measurements"
     Then At least one Minion is running with location "Measurements"
     Then Read the list of connected Minions from the BFF
     Then Find the minions running in the given location
@@ -70,7 +71,7 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Create location "Metrics"
     Then Location "Metrics" do exist
     Then Request certificate for location "Metrics"
-    When Minion "Bob" is started in location "Metrics"
+    When Minion "Bob" is started with shared networking in location "Metrics"
     Then At least one Minion is running with location "Metrics"
     Then Add a device with label "local1" IP address "127.1.0.1" and location "Metrics"
     Then Add a device with label "local2" IP address "127.1.0.2" and location "Metrics"
@@ -91,7 +92,7 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Create location "NodeStatus"
     Then Location "NodeStatus" do exist
     Then Request certificate for location "NodeStatus"
-    When Minion "Carl" is started in location "NodeStatus"
+    When Minion "Carl" is started with shared networking in location "NodeStatus"
     Then At least one Minion is running with location "NodeStatus"
     Then Add a device with label "NodeUp" IP address "127.1.0.4" and location "NodeStatus"
     Then Check the status of the Node with expected status "UP"
@@ -108,7 +109,7 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Create location "NodeDiscovery"
     Then Location "NodeDiscovery" do exist
     Then Request certificate for location "NodeDiscovery"
-    When Minion "Dave" is started in location "NodeDiscovery"
+    When Minion "Dave" is started with shared networking in location "NodeDiscovery"
     Then At least one Minion is running with location "NodeDiscovery"
   # Currently this test is using Minion open port 161 to make a discovery. In future would be preferred to use container with open ports
     Then Add a new active discovery for the name "Automation Discovery Tests" at location "NodeDiscovery" with ip address "127.1.0.5" and port 161, readCommunities "public"
