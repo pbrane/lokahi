@@ -70,7 +70,6 @@ public class InventoryTestSteps {
 
     // Runtime Data
     private String minionLocation;
-    private String locationTimeStamp;
     private FindAllMinionsQueryResult findAllMinionsQueryResult;
     private List<MinionData> minionsAtLocation;
     private String lastMinionQueryResultBody;
@@ -108,9 +107,6 @@ public class InventoryTestSteps {
     public void createLocation(String location) throws Exception {
         String queryList = GQLQueryConstants.CREATE_LOCATION;
 
-        Date date = new Date();
-        long timeMilli = date.getTime();
-
         GQLQuery gqlQuery = new GQLQuery();
         gqlQuery.setQuery(queryList);
         gqlQuery.setVariables(Map.of("location", location));
@@ -145,7 +141,6 @@ public class InventoryTestSteps {
 
     @Given("Location {string} does not exist")
     public void queryLocationDoNotExist(String location) throws MalformedURLException {
-
         List<LocationData> locationData = getLocationData(location).toList();
         assertTrue("locations should be empty but was: " + Arrays.deepToString(locationData.toArray()), locationData.isEmpty());
     }
@@ -163,7 +158,6 @@ public class InventoryTestSteps {
 
     @Given("No Minion running with location {string}")
     public void check(String location) throws MalformedURLException {
-
         atLeastOneMinionIsRunningWithLocation(location);
         assertFalse("there should be no minions at location '" + location + "': " +  Arrays.deepToString(getMinionsAtGivenLocation().toArray()), checkAtLeastOneMinionAtGivenLocation());
     }
@@ -177,7 +171,7 @@ public class InventoryTestSteps {
                 .atMost(timeout, TimeUnit.MILLISECONDS)
                 .ignoreExceptions()
                 .until(this::checkAtLeastOneMinionAtGivenLocation)
-                ;
+            ;
         } finally {
             LOG.info("LAST CHECK MINION RESPONSE BODY: {}", lastMinionQueryResultBody);
         }
@@ -278,36 +272,8 @@ public class InventoryTestSteps {
         assertTrue(done);
     }
 
-    @Then("Delete the node {string} from inventory in location {string}")
-    public void deleteNodeFromInventory(String nodeLabel, String locationName) throws MalformedURLException {
-
-        LOG.info("Deleting node {} from location {}.", nodeLabel, locationName);
-
-        String queryList = GQLQueryConstants.DELETE_NODE_BY_ID;
-
-        NodeData node = commonQueryNodes().stream()
-            .filter(element -> element.getNodeLabel().equals(nodeLabel) && element.getLocation().getLocation().equals(locationName))
-            .findFirst().orElseThrow(
-                () -> new IllegalArgumentException("Node " + nodeLabel + " not found in location " + locationName));
-
-        Map<String, Object> queryVariables = Map.of("id", node.getId());
-
-        GQLQuery gqlQuery = new GQLQuery();
-        gqlQuery.setQuery(queryList);
-        gqlQuery.setVariables(queryVariables);
-
-        Response response = helper.executePostQuery(gqlQuery);
-
-        JsonPath jsonPathEvaluator = response.jsonPath();
-        LinkedHashMap lhm = jsonPathEvaluator.get("data");
-        Boolean done = (Boolean) lhm.get("deleteNode");
-        System.out.println("node id is: " + node.getId());
-        assertTrue(done);
-    }
-
     @When("Request certificate for location {string}")
     public void requestCertificateForLocation(String location) throws MalformedURLException {
-
         LOG.info("Requesting certificate for location {}.", location);
 
         Long locationId = getLocationData(location)
@@ -395,7 +361,6 @@ public class InventoryTestSteps {
 
     @Then("Minion {string} is stopped")
     public void stopMinion(String systemId) {
-
         DockerClient dockerClient = DockerClientFactory.lazyClient();
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
@@ -438,18 +403,6 @@ public class InventoryTestSteps {
         return restAssuredResponse.getBody().as(FindAllMinionsQueryResult.class);
     }
 
-    private List<NodeData> commonQueryNodes() throws MalformedURLException {
-        GQLQuery gqlQuery = new GQLQuery();
-        gqlQuery.setQuery(GQLQueryConstants.LIST_NODES_QUERY);
-
-        Response restAssuredResponse = helper.executePostQuery(gqlQuery);
-        lastMinionQueryResultBody = restAssuredResponse.getBody().asString();
-
-        Assert.assertEquals(200, restAssuredResponse.getStatusCode());
-
-        return restAssuredResponse.getBody().as(FindAllNodesData.class).getData().getFindAllNodes();
-    }
-
     private List<MinionData> commonFilterMinionsAtLocation(FindAllMinionsQueryResult findAllMinionsQueryResult) {
         List<MinionData> minionData = findAllMinionsQueryResult.getData().getFindAllMinions();
 
@@ -457,7 +410,7 @@ public class InventoryTestSteps {
             minionData.stream()
                 .filter((md) -> Objects.equals(md.getLocation().getLocation(), minionLocation))
                 .collect(Collectors.toList())
-        ;
+            ;
 
         LOG.debug("MINIONS for location: count={}; location={}", minionsAtLocation.size(), minionLocation);
 
