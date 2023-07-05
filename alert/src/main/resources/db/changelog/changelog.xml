@@ -19,4 +19,5 @@
     <include file="/db/changelog/hs-0.1.0/tables/update_alert_trigger_event.xml" />
     <include file="/db/changelog/hs-0.1.0/tables/node.xml" />
     <include file="/db/changelog/hs-0.1.0/tables/rename_trigger_event_to_alert_condition.xml" />
+    <include file="/db/changelog/hs-0.1.0/tables/remove_event_match.xml" />
 </databaseChangeLog>
