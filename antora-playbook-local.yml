@@ -1,20 +1,23 @@
 site:
-  title: Lōkahi/Cloud
-  url: https://github.com/OpenNMS-Cloud/lokahi
+  title: Lokahi
   start_page: lokahi::index.adoc
 content:
   sources:
   - url: .
     branches: HEAD
-    tags:
-      -v*
     start_path: docs
 ui:
   bundle:
     url: https://github.com/opennms-forge/antora-ui-opennms/releases/download/v3.1.0/ui-bundle.zip
 asciidoc:
   attributes:
+    experimental: true
     stem: latexmath
+    idprefix: ''
+    idseparator: '-'
+    page-pagination: ''
+    source-language: asciidoc@
+    distribution: 'Lokahi'
     tabs: tabs
   extensions:
     - ./docs/lib/tabs-block.js
@@ -22,5 +25,5 @@ output:
   clean: true
   dir: ./public
   destinations:
-    - provider: fs
-    - provider: archive
+  - provider: fs
+  - provider: archive

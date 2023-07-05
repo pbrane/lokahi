@@ -43,3 +43,5 @@ idea/
 # Antora artifacts
 build/
 public/
+node_modules
+
