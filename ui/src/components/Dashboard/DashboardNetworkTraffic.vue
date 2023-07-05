@@ -1,6 +1,8 @@
 <template>
-  <DashboardEmptyState :texts="dashboardText.NetworkTraffic"
-    v-if="networkTrafficIn.length < 1 && networkTrafficOut.length < 1">
+  <DashboardEmptyState
+    :texts="dashboardText.NetworkTraffic"
+    v-if="networkTrafficIn.length <= 1 && networkTrafficOut.length <= 1"
+  >
     <template v-slot:icon>
       <FeatherIcon :icon="isDark ? AreaChartDark : AreaChart" class="empty-chart-icon" />
     </template>
@@ -18,15 +20,15 @@ import { format, fromUnixTime } from 'date-fns'
 import { useDashboardStore } from '@/store/Views/dashboardStore'
 import { optionsGraph } from './dashboardNetworkTraffic.config'
 import { ChartData } from '@/types'
-import { format as d3Format } from 'd3'
 import { ChartOptions } from 'chart.js'
+import 'chartjs-adapter-date-fns'
 import { humanFileSize } from '../utils'
 
 const { onThemeChange, isDark } = useTheme()
 
 const store = useDashboardStore()
-const networkTrafficIn = ref([] as [string, number][])
-const networkTrafficOut = ref([] as [string, number][])
+const networkTrafficIn = ref([] as [number, number][])
+const networkTrafficOut = ref([] as [number, number][])
 const dataGraph = ref({} as ChartData)
 const configGraph = ref({})
 
@@ -37,11 +39,11 @@ onMounted(async () => {
 })
 
 //format data for the graph
-const formatValues = (list: [number, number][]): [string, number][] =>
+const formatValues = (list: [number, number][]): [number, number][] =>
   list.map((i) => {
-    const transformToDate = (val: number) => format(fromUnixTime(val), 'kk:mm')
+    const transformTimeStampToMillis = (val: number) => val * 1000
     const transformtoGb = (val: number) => val
-    return [transformToDate(i[0]), transformtoGb(i[1])]
+    return [transformTimeStampToMillis(i[0]), transformtoGb(i[1])]
   })
 
 const createConfigGraph = (list: number[]) => {
@@ -55,6 +57,7 @@ const createConfigGraph = (list: number[]) => {
     position: 'right'
   }
   options.scales.x = {
+    type: 'time',
     grid: {
       display: false
     },
@@ -66,39 +69,48 @@ const createConfigGraph = (list: number[]) => {
         if ((index === 0 || index === lastIndex) && list[index]) {
           return format(fromUnixTime(list[index]), 'LLL d')
         }
-        return index % 2 === 0 ? this.getLabelForValue(Number(val)) : ''
+
+        return index % 2 === 0 ? format(new Date(val), 'kk:mm') : ''
       },
       maxTicksLimit: 12
+    },
+    time: {
+      tooltipFormat: 'kk:mm'
     }
   }
   return options
 }
 
-const createData = (list: [string, number][]) => {
+const createData = (list: [number, number][]) => {
   return {
     labels: list.map((i) => i[0]),
     datasets: [
       {
+        borderWidth: 0,
         data: networkTrafficIn.value,
-        segment: {
-          borderColor: 'transparent'
-        },
-        label: 'Outbound'
+        label: 'Outbound',
+        spanGaps: 1000 * 60 * 3 // no line over 3+ minute gaps
       },
       {
+        borderWidth: 0,
         data: networkTrafficOut.value,
-        segment: {
-          borderColor: 'transparent'
-        },
-        label: 'Inbound'
+        label: 'Inbound',
+        spanGaps: 1000 * 60 * 3
       }
     ]
   }
 }
 
 watchEffect(() => {
-  networkTrafficIn.value = formatValues(store.totalNetworkTrafficIn)
-  networkTrafficOut.value = formatValues(store.totalNetworkTrafficOut)
+  // add a final point 'now', which is used to track the gap between the previous point and now
+  const totalTrafficIn = [...store.totalNetworkTrafficIn]
+  totalTrafficIn.push([Date.now() / 1000, 0])
+
+  const totalTrafficOut = [...store.totalNetworkTrafficOut]
+  totalTrafficOut.push([Date.now() / 1000, 0])
+
+  networkTrafficIn.value = formatValues(totalTrafficIn)
+  networkTrafficOut.value = formatValues(totalTrafficOut)
   dataGraph.value = createData(networkTrafficIn.value)
   const dates = store.totalNetworkTrafficIn.map((v) => v[0]) //dates before format
   configGraph.value = createConfigGraph(dates)

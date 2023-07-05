@@ -12,7 +12,7 @@ import { ChartData } from '@/types'
 import { PropType } from 'vue'
 import { Line } from 'vue-chartjs'
 import { downloadCanvas } from '../Graphs/utils'
-
+import 'chartjs-adapter-date-fns'
 
 import {
   Chart,
@@ -30,7 +30,7 @@ const { onThemeChange, isDark } = useTheme()
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
-defineProps({
+const props = defineProps({
   id: {
     required: true,
     type: String
@@ -46,6 +46,10 @@ defineProps({
   selectedFilterRange: {
     required: true,
     type: String
+  },
+  format: {
+    required: true,
+    type: Function as PropType<(val: string) => string>
   }
 })
 const lineChart = ref()
@@ -111,10 +115,14 @@ const chartOptions = computed<ChartOptions<any>>(() => {
     },
     scales: {
       x: {
+        type: 'time',
         stacked: true,
         grid: {
           display: true,
           color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+        },
+        ticks: {
+          callback: (val: number) => props.format(new Date(val).toISOString())
         }
       },
       y: {
