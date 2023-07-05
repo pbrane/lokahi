@@ -26,22 +26,41 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.alertservice.mapper;
+package org.opennms.horizon.alertservice.db.entity;
 
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.NullValueCheckStrategy;
-import org.opennms.horizon.alerts.proto.AlertConditionProto;
-import org.opennms.horizon.alertservice.db.entity.AlertCondition;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.opennms.horizon.alerts.proto.EventType;
 
-@Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-public interface AlertConditionMapper {
+import java.io.Serial;
+import java.io.Serializable;
 
-    @Mapping(target = "rule", ignore = true)
-    @Mapping(target = "alertDefinition", ignore = true)
-    AlertCondition protoToEntity(AlertConditionProto proto);
+@Entity
+@Table(name="event_definition")
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
+public class EventDefinition implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 7275548439687562161L;
 
-    @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    AlertConditionProto entityToProto(AlertCondition event);
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(length=256, nullable=false)
+    private String eventUei;
+
+    private String name;
+
+    private String reductionKey;
+
+    private String clearKey;
+
+    @Enumerated(EnumType.STRING)
+    private EventType eventType;
 }

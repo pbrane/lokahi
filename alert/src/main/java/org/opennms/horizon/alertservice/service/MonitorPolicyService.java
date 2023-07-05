@@ -30,21 +30,25 @@ package org.opennms.horizon.alertservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opennms.horizon.alerts.proto.AlertConditionProto;
+import org.opennms.horizon.alerts.proto.AlertEventDefinitionProto;
 import org.opennms.horizon.alerts.proto.AlertType;
 import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
 import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.alerts.proto.PolicyRuleProto;
 import org.opennms.horizon.alerts.proto.Severity;
-import org.opennms.horizon.alerts.proto.AlertConditionProto;
+import org.opennms.horizon.alertservice.db.entity.AlertCondition;
 import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
+import org.opennms.horizon.alertservice.db.entity.EventDefinition;
 import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
 import org.opennms.horizon.alertservice.db.entity.Tag;
-import org.opennms.horizon.alertservice.db.entity.AlertCondition;
+import org.opennms.horizon.alertservice.db.repository.AlertConditionRepository;
 import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
+import org.opennms.horizon.alertservice.db.repository.EventDefinitionRepository;
 import org.opennms.horizon.alertservice.db.repository.MonitorPolicyRepository;
 import org.opennms.horizon.alertservice.db.repository.TagRepository;
-import org.opennms.horizon.alertservice.db.repository.AlertConditionRepository;
+import org.opennms.horizon.alertservice.mapper.EventDefinitionMapper;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -64,31 +68,42 @@ public class MonitorPolicyService {
     private static final String DEFAULT_POLICY = "default_policy";
     private static final String DEFAULT_RULE = "default_rule";
     private static final String DEFAULT_TAG = "default";
-    private static final String UEI_GENERIC_TEMPLATE = "uei.opennms.org/generic/traps/%s"; //%s is the event type
-    private static final String REDUCTION_KEY_TEMPLATE = "%s:%s:%d";
+    private static final String COLD_START_TRAP_NAME = "SNMP Cold Start";
+    private static final String WARM_START_TRAP_NAME = "SNMP Warm Start";
+
     private final MonitorPolicyMapper policyMapper;
     private final MonitorPolicyRepository repository;
     private final AlertDefinitionRepository definitionRepo;
-    private final AlertConditionRepository eventRepository;
+    private final EventDefinitionRepository eventDefinitionRepository;
+    private final EventDefinitionMapper eventDefinitionMapper;
+    private final AlertConditionRepository alertConditionRepository;
     private final TagRepository tagRepository;
 
     @EventListener(ApplicationReadyEvent.class)
+    @Transactional
     public void defaultPolicies() {
-        if(repository.findAllByTenantId(SYSTEM_TENANT).isEmpty()) {
-            AlertConditionProto coldReboot = AlertConditionProto.newBuilder()
-                .setTriggerEventType(EventType.SNMP_Cold_Start)
+        if (repository.findAllByTenantId(SYSTEM_TENANT).isEmpty()) {
+            // TODO: Refactor how the EventDefinitions are found
+            AlertEventDefinitionProto coldStartTrap = eventDefinitionRepository
+                .findByEventTypeAndName(EventType.SNMP_TRAP, COLD_START_TRAP_NAME)
+                .map(eventDefinitionMapper::entityToProto).orElseThrow();
+            AlertEventDefinitionProto warmStartTrap = eventDefinitionRepository
+                .findByEventTypeAndName(EventType.SNMP_TRAP, WARM_START_TRAP_NAME)
+                .map(eventDefinitionMapper::entityToProto).orElseThrow();
+            AlertConditionProto coldRebootCondition = AlertConditionProto.newBuilder()
+                .setTriggerEvent(coldStartTrap)
                 .setCount(1)
                 .setSeverity(Severity.CRITICAL)
                 .build();
-            AlertConditionProto warmReboot = AlertConditionProto.newBuilder()
-                .setTriggerEventType(EventType.SNMP_Warm_Start)
+            AlertConditionProto warmRebootCondition = AlertConditionProto.newBuilder()
+                .setTriggerEvent(warmStartTrap)
                 .setCount(1)
                 .setSeverity(Severity.MAJOR)
                 .build();
             PolicyRuleProto defaultRule = PolicyRuleProto.newBuilder()
                 .setName(DEFAULT_RULE)
                 .setComponentType(ManagedObjectType.NODE)
-                .addAllSnmpEvents(List.of(coldReboot, warmReboot))
+                .addAllSnmpEvents(List.of(coldRebootCondition, warmRebootCondition))
                 .build();
             MonitorPolicyProto defaultPolicy = MonitorPolicyProto.newBuilder()
                 .setName(DEFAULT_POLICY)
@@ -177,14 +192,12 @@ public class MonitorPolicyService {
                 e.setRule(r);
             });
         });
-        policy.getTags().forEach( tag -> {
-            tag.setTenantId(tenantId);
-        });
+        policy.getTags().forEach(tag -> tag.setTenantId(tenantId));
     }
 
     private void createOrUpdateAlertDefinition() {
-        List<AlertCondition> list =  eventRepository.findAll();
-        log.info("found {} events", list.size());
+        List<AlertCondition> list =  alertConditionRepository.findAll();
+        log.info("found {} alert conditions", list.size());
         list.forEach(this::createOrUpdateAlertDefinition);
         definitionRepo.flush();
     }
@@ -195,47 +208,35 @@ public class MonitorPolicyService {
             .forEach(this::createOrUpdateAlertDefinition));
     }
 
-    private void createOrUpdateAlertDefinition(AlertCondition event) {
-        String uei = getUeiFromEventType(event.getTriggerEventType());
-        definitionRepo.findFirstByAlertConditionId(event.getId())
+    private void createOrUpdateAlertDefinition(AlertCondition condition) {
+        String uei = condition.getTriggerEvent().getEventUei();
+        definitionRepo.findFirstByAlertConditionId(condition.getId())
             .ifPresentOrElse(definition -> {
-                if(!uei.equals(definition.getUei())) {
-                    log.info("update alert definition for event {} ", event.getTriggerEventType());
+                if (!uei.equals(definition.getUei())) {
+                    log.info("update alert definition for event {} ", condition.getTriggerEvent());
+                    definition.setReductionKey(condition.getTriggerEvent().getReductionKey());
                     definition.setUei(uei);
-                    definition.setReductionKey(REDUCTION_KEY_TEMPLATE);
-                    definition.setType(getAlertTypeFromEventType(event.getTriggerEventType()));
-                    setClearKey(definition, event.getClearEventType());
+                    definition.setType(getAlertTypeFromEventDefinition(condition.getTriggerEvent()));
+                    definition.setClearKey(condition.getTriggerEvent().getClearKey());
                     definitionRepo.save(definition);
                 }
             }, ()-> {
-                log.info("creating alert definition for event {}", event.getTriggerEventType());
+                log.info("creating alert definition for event {}", condition.getTriggerEvent());
                 AlertDefinition definition = new AlertDefinition();
                 definition.setUei(uei);
-                definition.setTenantId(event.getTenantId());
-                definition.setReductionKey(REDUCTION_KEY_TEMPLATE);
-                definition.setType(getAlertTypeFromEventType(event.getTriggerEventType()));
-                definition.setAlertConditionId(event.getId());
-                setClearKey(definition, event.getClearEventType());
+                definition.setTenantId(condition.getTenantId());
+                definition.setReductionKey(condition.getTriggerEvent().getReductionKey());
+                definition.setType(getAlertTypeFromEventDefinition(condition.getTriggerEvent()));
+                definition.setAlertConditionId(condition.getId());
+                definition.setClearKey(condition.getTriggerEvent().getClearKey());
                 definitionRepo.save(definition);
             });
     }
 
-    private void setClearKey(AlertDefinition definition, EventType clearType) {
-        if(clearType != null && !clearType.equals(EventType.UNKNOWN_EVENT) && !clearType.equals(EventType.UNRECOGNIZED)) {
-            definition.setClearKey("%s:" + getUeiFromEventType(clearType) + ":%d");
+    private AlertType getAlertTypeFromEventDefinition(EventDefinition eventDefinition) {
+        if (eventDefinition.getClearKey() != null) {
+            return AlertType.CLEAR;
         }
-    }
-
-    private String getUeiFromEventType(EventType type) {
-        return String.format(UEI_GENERIC_TEMPLATE, type.name());
-    }
-
-    private AlertType getAlertTypeFromEventType(EventType eventType) {
-        return switch (eventType) {
-            case SNMP_Cold_Start, SNMP_Warm_Start -> AlertType.PROBLEM_WITHOUT_CLEAR;
-            case SNMP_Link_Down -> AlertType.PROBLEM_WITH_CLEAR;
-            case SNMP_Link_Up -> AlertType.CLEAR;
-            default -> AlertType.ALARM_TYPE_UNDEFINED;
-        };
+        return AlertType.ALARM_TYPE_UNDEFINED;
     }
 }
