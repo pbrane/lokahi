@@ -62,7 +62,8 @@
                 </a>
             </template>
         </CollapsingCard>
-        <FeatherButton primary @click="welcomeStore.nextSlide" data-test="welcome-slide-one-setup-button">Start Setup
+        <FeatherButton primary @click="welcomeStore.nextSlide"
+            id="welcome-slide-one-start-setup-button" data-test="welcome-slide-one-setup-button">Start Setup
         </FeatherButton>
     </div>
 </template>

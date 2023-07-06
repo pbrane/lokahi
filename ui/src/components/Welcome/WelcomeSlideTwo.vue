@@ -30,6 +30,7 @@
                         <div>Minion Installation Bundle</div>
                         <div>
                             <FeatherButton text @click="welcomeStore.downloadClick" v-if="!welcomeStore.downloading"
+                                id="welcome-slide-two-download-button"
                                 data-test="welcome-slide-two-download-button">
                                 <template #icon>
                                     <FeatherIcon :icon="welcomeStore.downloaded ? CheckIcon : DownloadIcon" />
@@ -101,11 +102,13 @@
                     This blocks the user from continuing to slide 3 until the minion is found.
                 <FeatherButton primary 
                 :disabled="!welcomeStore.minionStatusSuccess"
+                    id="welcome-slide-two-continue-button"
                     data-id="welcome-slide-two-continue-button" @click="welcomeStore.nextSlide">
                     Continue
                 </FeatherButton>
                 -->
-                <FeatherButton primary data-id="welcome-slide-two-continue-button" @click="welcomeStore.nextSlide">
+                <FeatherButton primary data-id="welcome-slide-two-continue-button"
+                    id="welcome-slide-two-continue-button" @click="welcomeStore.nextSlide">
                     Continue
                 </FeatherButton>
             </div>

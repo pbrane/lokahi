@@ -8,16 +8,20 @@
             </div>
             <div class="welcome-slide-three-form">
                 <FeatherInput label="Name" data-test="welcome-slide-three-name-input"
+                    id="welcome-slide-three-discovery-name-input"
                     :modelValue="welcomeStore.firstDiscovery.name" :error="welcomeStore.firstDiscoveryErrors.name"
                     @update:modelValue="(e) => welcomeStore.updateFirstDiscovery('name', e)" />
                 <FeatherInput label="Management IPV4/IPV6" data-test="welcome-slide-three-ip-input"
+                    id="welcome-slide-three-discovery-ip-input"
                     :modelValue="welcomeStore.firstDiscovery.ip" :error="welcomeStore.firstDiscoveryErrors.ip"
                     @update:modelValue="(e) => welcomeStore.updateFirstDiscovery('ip', e)" />
                 <FeatherInput label="Community String (optional)" data-test="welcome-slide-three-community-string-input"
+                    id="welcome-slide-three-discovery-community-string-input"
                     :modelValue="welcomeStore.firstDiscovery.communityString"
                     :error="welcomeStore.firstDiscoveryErrors.communityString"
                     @update:modelValue="(e) => welcomeStore.updateFirstDiscovery('communityString', e)" />
                 <FeatherInput label="Port (optional)" data-test="welcome-slide-three-port-input"
+                    id="welcome-slide-three-discovery-port-input"
                     :modelValue="welcomeStore.firstDiscovery.port"
                     :error="welcomeStore.firstDiscoveryErrors.communityString"
                     @update:modelValue="(e) => welcomeStore.updateFirstDiscovery('port', e)" />
@@ -28,14 +32,19 @@
                 :itemSubtitle="welcomeStore.devicePreview.itemSubtitle"
                 :itemStatuses="welcomeStore.devicePreview.itemStatuses" />
             <div class="welcome-slide-footer">
-                <FeatherButton data-test="welcome-store-slide-three-skip-button" text @click="welcomeStore.skipSlideThree">
+                <FeatherButton data-test="welcome-store-slide-three-skip-button"
+                    id="welcome-slide-three-skip-button"
+                    text @click="welcomeStore.skipSlideThree">
                     Skip
                 </FeatherButton>
-                <FeatherButton data-test="welcome-store-slide-three-continue-button" v-if="welcomeStore.discoverySubmitted"
+                <FeatherButton data-test="welcome-store-slide-three-continue-button"
+                    v-if="welcomeStore.discoverySubmitted"
+                    id="welcome-slide-three-continue-button"
                     primary :disabled="!welcomeStore.slideThreeDisabled" @click="welcomeStore.skipSlideThree">
                     Continue
                 </FeatherButton>
                 <FeatherButton v-if="!welcomeStore.discoverySubmitted"
+                    id="welcome-slide-three-start-discovery-button"
                     data-test="welcome-store-page-three-start-discovery-button" primary
                     @click="welcomeStore.startDiscovery">
                     Start Discovery
