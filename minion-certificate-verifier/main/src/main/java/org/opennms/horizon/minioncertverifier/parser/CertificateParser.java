@@ -26,16 +26,29 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.alertservice.grpc;
+package org.opennms.horizon.minioncertverifier.parser;
 
-import org.opennms.horizon.alerts.proto.AlertConfigurationServiceGrpc;
-import org.springframework.stereotype.Component;
+import java.io.ByteArrayInputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
-/**
- * A temporary noop implementation of the service.
- *
- * Will evolve with the data model as necessary.
- */
-@Component
-public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc.AlertConfigurationServiceImplBase {
+public class CertificateParser {
+    private final X509Certificate certificate;
+    public CertificateParser(String pemInput) throws CertificateException {
+        var certStream  =  new ByteArrayInputStream(URLDecoder.decode(pemInput, StandardCharsets.UTF_8).getBytes());
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+        certificate = (X509Certificate) certFactory.generateCertificate(certStream);
+    }
+
+    public String getSubjectDn(){
+        return certificate.getSubjectX500Principal().getName();
+    }
+
+    public String getSerialNumber(){
+        return certificate.getSerialNumber().toString(16).toUpperCase();
+    }
+
 }

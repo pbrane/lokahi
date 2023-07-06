@@ -26,16 +26,25 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.server.mapper.alert;
+package org.opennms.miniongateway.grpc.server.kafka;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.NullValueCheckStrategy;
-import org.opennms.horizon.server.model.alerts.TriggerEvent;
-import org.opennms.horizon.alerts.proto.TriggerEventProto;
+import com.google.protobuf.Message;
+import lombok.RequiredArgsConstructor;
+import org.opennms.horizon.shared.grpc.common.LocationServerInterceptor;
+import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring",
-    nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-public interface TriggerEventMapper {
-    TriggerEvent map(TriggerEventProto protoEvent);
-    TriggerEventProto map(TriggerEvent event);
+@Component
+@RequiredArgsConstructor
+public class SinkMessageKafkaPublisherFactory {
+
+    private final TenantIDGrpcServerInterceptor tenantInterceptor;
+    private final LocationServerInterceptor locationInterceptor;
+    private final KafkaTemplate<String, byte[]> kafkaTemplate;
+
+    public <I extends Message, O extends Message> SinkMessageKafkaPublisher<I, O> create(SinkMessageMapper<I, O> mapper, String topic) {
+        return new SinkMessageKafkaPublisher<>(kafkaTemplate, tenantInterceptor, locationInterceptor, mapper, topic);
+    }
+
 }

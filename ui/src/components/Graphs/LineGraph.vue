@@ -1,27 +1,12 @@
 <template>
-  <div
-    v-if="graphs.dataSets.value.length"
-    class="container"
-  >
+  <div v-if="graphs.dataSets.value.length" class="container">
     <div class="canvas-wrapper">
-      <FeatherTooltip
-        title="Download to PDF"
-        v-slot="{ attrs, on }"
-      >
-        <FeatherButton
-          v-bind="attrs"
-          v-on="on"
-          icon="Download"
-          class="download-icon"
-          @click="onDownload"
-        >
+      <FeatherTooltip title="Download to PDF" v-slot="{ attrs, on }">
+        <FeatherButton v-bind="attrs" v-on="on" icon="Download" class="download-icon" @click="onDownload">
           <FeatherIcon :icon="DownloadFile" />
         </FeatherButton>
       </FeatherTooltip>
-      <canvas
-        class="canvas"
-        :id="`${graph.label}`"
-      ></canvas>
+      <canvas class="canvas" :id="`${graph.label}`"></canvas>
     </div>
   </div>
 </template>
@@ -32,11 +17,14 @@ import { ChartOptions, TitleOptions, ChartData } from 'chart.js'
 import Chart from 'chart.js/auto'
 // import zoomPlugin from 'chartjs-plugin-zoom'
 import { PropType } from 'vue'
-import { formatTimestamp, downloadCanvas } from './utils'
+import { downloadCanvas } from './utils'
 import { GraphProps } from '@/types/graphs'
 import DownloadFile from '@featherds/icon/action/DownloadFile'
-import { format } from 'd3'
 import useTheme from '@/composables/useTheme'
+import 'chartjs-adapter-date-fns'
+import { format, add } from 'date-fns'
+
+import { humanFileSize } from '../utils'
 const emits = defineEmits(['has-data'])
 // Chart.register(zoomPlugin) disable zoom until phase 2
 const graphs = useGraphs()
@@ -44,11 +32,21 @@ const props = defineProps({
   graph: {
     required: true,
     type: Object as PropType<GraphProps>
-  }
+  },
+  type: { type: String, default: 'latency' }
 })
 const { onThemeChange, isDark } = useTheme()
-const yAxisFormatter = format('.3s')
+
 let chart: any = {}
+const formatAxisBasedOnType = (context: number) => {
+  let formattedAxis = context.toFixed(1);
+  if (props.type === 'bytes') {
+    formattedAxis = humanFileSize(context)
+  } else if (props.type === 'percentage') {
+    formattedAxis = (context * 100).toFixed(2) + '%'
+  }
+  return formattedAxis
+}
 const options = computed<ChartOptions<any>>(() => ({
   responsive: true,
   aspectRatio: 1.4,
@@ -68,6 +66,17 @@ const options = computed<ChartOptions<any>>(() => ({
         enabled: true,
         mode: 'x'
       }
+    },
+    tooltip: {
+      usePointStyle: true,
+      callbacks: {
+        label: (context: any) => {
+          return ` ${context.label} - ${formatAxisBasedOnType(context.parsed.y)}`
+        },
+        title: () => {
+          return ''
+        },
+      }
     }
   },
   scales: {
@@ -77,13 +86,19 @@ const options = computed<ChartOptions<any>>(() => ({
         text: props.graph.label
       } as TitleOptions,
       ticks: {
-        callback: (value: any, index: any) => (index % 2 === 0 ? yAxisFormatter(value as number) : ''),
+        callback: (value: any, index: any) => (formatAxisBasedOnType(value)),
         maxTicksLimit: 8
       },
       stacked: false
     },
     x: {
+      type: 'time',
+      time: {
+        tooltipFormat: 'kk:mm',
+        parser: (val: number) => val * 1000 // convert to miliseconds before applying format
+      },
       ticks: {
+        callback: (val: number) => format(new Date(val), 'kk:mm'),
         maxTicksLimit: 12
       },
       grid: {
@@ -95,10 +110,12 @@ const options = computed<ChartOptions<any>>(() => ({
 }))
 const xAxisLabels = computed(() => {
   const graphsDataSetsValues = (graphs.dataSets.value[0]?.values as any) || ([] as any)
-  const totalLabels = graphsDataSetsValues.map((val: any) => {
-    return formatTimestamp(val[0], 'minutes')
-  })
-  return totalLabels
+
+  // if collector down, this tracks the gap between the previous point and now
+  const date = add(new Date(), { minutes: 2 })
+  graphsDataSetsValues.push([date.getTime() / 1000, 0])
+
+  return graphsDataSetsValues.map((val: number[]) => val[0])
 })
 const dataSets = computed(() => {
   const bgColor = ['green', 'blue'] // TODO: find solution to set bg color, in regards to FeatherDS theme switching
@@ -109,7 +126,10 @@ const dataSets = computed(() => {
     backgroundColor: bgColor[i],
     borderColor: bgColor[i],
     hitRadius: 5,
-    hoverRadius: 6
+    hoverRadius: 6,
+    // hides the last point, which tracks the gap between the previous point and now
+    pointRadius: Array.from(Array(xAxisLabels.value.length).keys()).map((_, index) => xAxisLabels.value.length -1 === index ? 0 : 3),
+    spanGaps: 1000 * 60 * 2 // no line over 2+ minute gaps
   }))
 })
 const chartData = computed<ChartData<any>>(() => {
@@ -155,6 +175,7 @@ onThemeChange(() => {
 <!-- TODO: make theme switching works in graphs -->
 <style scoped lang="scss">
 @use '@featherds/styles/themes/variables';
+
 .container {
   position: relative;
   width: 30%;
@@ -163,12 +184,15 @@ onThemeChange(() => {
   border-radius: 10px;
   padding: var(variables.$spacing-m);
 }
+
 .canvas-wrapper {
   width: 100%;
+
   .download-icon {
     position: absolute;
     right: 15px;
     top: 19px;
+
     svg {
       font-size: 15px;
     }

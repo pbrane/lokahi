@@ -44,7 +44,8 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-    addTestLocation: true
+    Enabled: true
+    addDefaultLocation: true
   MinionGateway:
     Image: opennms/lokahi-minion-gateway:local
     Resources:
@@ -57,6 +58,7 @@ OpenNMS:
     IngressAnnotations:
       nginx.ingress.kubernetes.io/auth-tls-secret: $NAMESPACE/client-root-ca-certificate
       nginx.ingress.kubernetes.io/auth-url: "http://opennms-minion-certificate-verifier.$NAMESPACE.svc.cluster.local:8080/certificate/debug"
+      nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: true
   MinionCertificateVerifier:
     Image: opennms/lokahi-minion-certificate-verifier:local
     Resources:
