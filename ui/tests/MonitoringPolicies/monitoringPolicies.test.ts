@@ -2,11 +2,11 @@ import MonitoringPolicies from '@/containers/MonitoringPolicies.vue'
 import mount from 'tests/mountWithPiniaVillus'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
-import { Unknowns, SNMPEventType, ComponentType } from '@/components/MonitoringPolicies/monitoringPolicies.constants'
-import { Severity } from '@/types/graphql'
+import { ComponentType, Unknowns } from '@/components/MonitoringPolicies/monitoringPolicies.constants'
+import { EventType, MonitorPolicy, Severity } from '@/types/graphql'
 import featherInputFocusDirective from '@/directives/v-focus'
 
-const testingPayload = {
+const testingPayload: MonitorPolicy = {
   name: 'Policy1',
   memo: '',
   notifyByEmail: false,
@@ -22,9 +22,12 @@ const testingPayload = {
           count: 1,
           overtime: undefined,
           severity: Severity.Critical,
-          triggerEventType: SNMPEventType.SNMP_COLD_START,
-          overtimeUnit: Unknowns.UNKNOWN_UNIT,
-          clearEventType: Unknowns.UNKNOWN_EVENT
+          triggerEvent: {
+            id: 1,
+            name: 'SNMP Cold Start',
+            eventType: EventType.SnmpTrap
+          },
+          overtimeUnit: Unknowns.UNKNOWN_UNIT
         }
       ]
     }
