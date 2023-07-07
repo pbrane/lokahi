@@ -32,7 +32,6 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +40,9 @@ import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.platform.commons.util.StringUtils;
 import org.opennms.horizon.alerts.proto.Alert;
-import org.opennms.horizon.alerts.proto.AlertEventDefinitionListRequest;
 import org.opennms.horizon.alerts.proto.AlertEventDefinitionProto;
 import org.opennms.horizon.alerts.proto.EventType;
+import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsRequest;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
 import org.opennms.horizon.alerts.proto.MonitorPolicyList;
 import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
@@ -289,12 +288,12 @@ public class MonitorPolicySteps {
     }
 
     private Map<String, AlertEventDefinitionProto> loadSnmpTrapDefinitions() {
-        AlertEventDefinitionListRequest request = AlertEventDefinitionListRequest.newBuilder()
+        ListAlertEventDefinitionsRequest request = ListAlertEventDefinitionsRequest.newBuilder()
             .setEventType(EventType.SNMP_TRAP)
             .build();
         List<AlertEventDefinitionProto> eventDefinitionsList = this.grpcClient.getAlertEventDefinitionStub()
-            .listEventDefinitionsByType(request)
-            .getEventDefinitionsList();
+            .listAlertEventDefinitions(request)
+            .getAlertEventDefinitionsList();
        return eventDefinitionsList.stream()
             .collect(Collectors.toMap(
             AlertEventDefinitionProto::getName, Function.identity()));

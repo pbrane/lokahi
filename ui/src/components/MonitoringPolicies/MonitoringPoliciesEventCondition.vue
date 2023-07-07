@@ -94,7 +94,7 @@ const props = defineProps<{
   index: number
 }>()
 
-const eventDefinitionStore = useAlertEventDefinitionQueries()
+const alertEventDefinitionStore = useAlertEventDefinitionQueries()
 
 const emit = defineEmits(['updateCondition', 'deleteCondition'])
 
@@ -124,9 +124,9 @@ let clearEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 let triggerEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 
 const fetchEventDefinitions = async () => {
-  await eventDefinitionStore.listEventDefinitions(props.eventType)
-  clearEventDefinitionOptions.value = eventDefinitionStore.listEventDefinitionsData
-  triggerEventDefinitionOptions.value = eventDefinitionStore.listEventDefinitionsData
+  await alertEventDefinitionStore.listAlertEventDefinitions(props.eventType)
+  clearEventDefinitionOptions.value = alertEventDefinitionStore.listAlertEventDefinitionsData
+  triggerEventDefinitionOptions.value = alertEventDefinitionStore.listAlertEventDefinitionsData
 }
 
 const updateConditionProp = (property: string, value: number | string) => {

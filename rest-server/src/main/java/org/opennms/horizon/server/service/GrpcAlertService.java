@@ -140,8 +140,8 @@ public class GrpcAlertService {
     }
 
     @GraphQLQuery
-    public Flux<AlertEventDefinition> listEventDefinitions(EventType eventType, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(alertsClient.listEventDefinitions(eventType, headerUtil.getAuthHeader(env)));
+    public Flux<AlertEventDefinition> listAlertEventDefinitions(EventType eventType, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(alertsClient.listAlertEventDefinitions(eventType, headerUtil.getAuthHeader(env)));
     }
 
     private void createTagsInInventory(String authHeader, long monitoringPolicyId, List<String> policyTags) {

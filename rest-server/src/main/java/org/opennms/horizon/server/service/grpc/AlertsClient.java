@@ -34,7 +34,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import lombok.RequiredArgsConstructor;
-import org.opennms.horizon.alerts.proto.AlertEventDefinitionListRequest;
 import org.opennms.horizon.alerts.proto.AlertEventDefinitionServiceGrpc;
 import org.opennms.horizon.alerts.proto.AlertRequest;
 import org.opennms.horizon.alerts.proto.AlertResponse;
@@ -43,6 +42,7 @@ import org.opennms.horizon.alerts.proto.CountAlertResponse;
 import org.opennms.horizon.alerts.proto.DeleteAlertResponse;
 import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alerts.proto.Filter;
+import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
 import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
@@ -212,16 +212,16 @@ public class AlertsClient {
             .getPolicyById(Int64Value.of(id)));
     }
 
-    public List<AlertEventDefinition> listEventDefinitions(EventType eventType, String accessToken) {
+    public List<AlertEventDefinition> listAlertEventDefinitions(EventType eventType, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
 
-        var request = AlertEventDefinitionListRequest.newBuilder().setEventType(eventType).build();
+        var request = ListAlertEventDefinitionsRequest.newBuilder().setEventType(eventType).build();
 
         return alertEventDefinitionStub
             .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
             .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
-            .listEventDefinitionsByType(request).getEventDefinitionsList().stream().map(alertEventDefinitionMapper::protoToAlertEventDefinition).toList();
+            .listAlertEventDefinitions(request).getAlertEventDefinitionsList().stream().map(alertEventDefinitionMapper::protoToAlertEventDefinition).toList();
     }
 
     public static long getStartTime(TimeRange timeRange) {

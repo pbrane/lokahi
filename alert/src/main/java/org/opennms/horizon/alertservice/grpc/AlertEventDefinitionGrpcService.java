@@ -31,9 +31,9 @@ package org.opennms.horizon.alertservice.grpc;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alerts.proto.AlertEventDefinitionProto;
-import org.opennms.horizon.alerts.proto.AlertEventDefinitionListRequest;
-import org.opennms.horizon.alerts.proto.AlertEventDefinitionListResult;
 import org.opennms.horizon.alerts.proto.AlertEventDefinitionServiceGrpc;
+import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsRequest;
+import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsResponse;
 import org.opennms.horizon.alertservice.db.entity.EventDefinition;
 import org.opennms.horizon.alertservice.db.repository.EventDefinitionRepository;
 import org.opennms.horizon.alertservice.mapper.EventDefinitionMapper;
@@ -50,13 +50,13 @@ public class AlertEventDefinitionGrpcService extends AlertEventDefinitionService
     private final EventDefinitionMapper eventDefinitionMapper;
 
     @Override
-    public void listEventDefinitionsByType(AlertEventDefinitionListRequest request, StreamObserver<AlertEventDefinitionListResult> responseObserver) {
+    public void listAlertEventDefinitions(ListAlertEventDefinitionsRequest request, StreamObserver<ListAlertEventDefinitionsResponse> responseObserver) {
         List<EventDefinition> eventDefinitions = eventDefinitionRepository.findByEventType(request.getEventType());
-        List<AlertEventDefinitionProto> eventDefinitionProtos = eventDefinitions.stream()
+        List<AlertEventDefinitionProto> alertEventDefinitionProtos = eventDefinitions.stream()
             .map(eventDefinitionMapper::entityToProto)
             .toList();
-        AlertEventDefinitionListResult result = AlertEventDefinitionListResult.newBuilder()
-            .addAllEventDefinitions(eventDefinitionProtos).build();
+        ListAlertEventDefinitionsResponse result = ListAlertEventDefinitionsResponse.newBuilder()
+            .addAllAlertEventDefinitions(alertEventDefinitionProtos).build();
         responseObserver.onNext(result);
         responseObserver.onCompleted();
     }

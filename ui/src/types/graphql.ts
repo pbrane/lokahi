@@ -598,7 +598,7 @@ export type Query = {
   getMinionCertificate?: Maybe<CertificateResponse>;
   icmpActiveDiscoveryById?: Maybe<IcmpActiveDiscovery>;
   listActiveDiscovery?: Maybe<Array<Maybe<ActiveDiscovery>>>;
-  listEventDefinitions?: Maybe<Array<Maybe<AlertEventDefinition>>>;
+  listAlertEventDefinitions?: Maybe<Array<Maybe<AlertEventDefinition>>>;
   listIcmpActiveDiscovery?: Maybe<Array<Maybe<IcmpActiveDiscovery>>>;
   listMonitoryPolicies?: Maybe<Array<Maybe<MonitorPolicy>>>;
   locationByName?: Maybe<MonitoringLocation>;
@@ -724,7 +724,7 @@ export type QueryIcmpActiveDiscoveryByIdArgs = {
 
 
 /** Query root */
-export type QueryListEventDefinitionsArgs = {
+export type QueryListAlertEventDefinitionsArgs = {
   eventType?: InputMaybe<EventType>;
 };
 
@@ -1165,12 +1165,12 @@ export type ListTagsByNodeIdsQueryVariables = Exact<{
 
 export type ListTagsByNodeIdsQuery = { __typename?: 'Query', tagsByNodeIds?: Array<{ __typename?: 'NodeTags', nodeId: any, tags?: Array<{ __typename?: 'Tag', id: any, name?: string }> }> };
 
-export type ListEventDefinitionsQueryVariables = Exact<{
+export type ListAlertEventDefinitionsQueryVariables = Exact<{
   eventType?: InputMaybe<EventType>;
 }>;
 
 
-export type ListEventDefinitionsQuery = { __typename?: 'Query', listEventDefinitions?: Array<{ __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }> };
+export type ListAlertEventDefinitionsQuery = { __typename?: 'Query', listAlertEventDefinitions?: Array<{ __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }> };
 
 export type NodesTablePartsFragment = { __typename?: 'Query', findAllNodes?: Array<{ __typename?: 'Node', id: any, nodeLabel?: string, tenantId?: string, createTime: any, monitoringLocationId: any, scanType?: string, ipInterfaces?: Array<{ __typename?: 'IpInterface', ipAddress?: string, snmpPrimary?: boolean }> }> };
 
@@ -1422,7 +1422,7 @@ export const SavePagerDutyConfigDocument = {"kind":"Document","definitions":[{"k
 export const ListTagsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListTags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TagsParts"}}]}},...TagsPartsFragmentDoc.definitions]} as unknown as DocumentNode<ListTagsQuery, ListTagsQueryVariables>;
 export const ListTagsSearchDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListTagsSearch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"searchTerm"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TagsSearchParts"}}]}},...TagsSearchPartsFragmentDoc.definitions]} as unknown as DocumentNode<ListTagsSearchQuery, ListTagsSearchQueryVariables>;
 export const ListTagsByNodeIdsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListTagsByNodeIds"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"nodeIds"}},"type":{"kind":"ListType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Long"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tagsByNodeIds"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"nodeIds"},"value":{"kind":"Variable","name":{"kind":"Name","value":"nodeIds"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodeId"}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]} as unknown as DocumentNode<ListTagsByNodeIdsQuery, ListTagsByNodeIdsQueryVariables>;
-export const ListEventDefinitionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListEventDefinitions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"EventType"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listEventDefinitions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"eventType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}}]}}]}}]} as unknown as DocumentNode<ListEventDefinitionsQuery, ListEventDefinitionsQueryVariables>;
+export const ListAlertEventDefinitionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListAlertEventDefinitions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"EventType"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listAlertEventDefinitions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"eventType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}}]}}]}}]} as unknown as DocumentNode<ListAlertEventDefinitionsQuery, ListAlertEventDefinitionsQueryVariables>;
 export const ListNodesForTableDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListNodesForTable"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"NodesTableParts"}}]}},...NodesTablePartsFragmentDoc.definitions]} as unknown as DocumentNode<ListNodesForTableQuery, ListNodesForTableQueryVariables>;
 export const ListMinionsForTableDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListMinionsForTable"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MinionsTableParts"}}]}},...MinionsTablePartsFragmentDoc.definitions]} as unknown as DocumentNode<ListMinionsForTableQuery, ListMinionsForTableQueryVariables>;
 export const ListMinionMetricsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListMinionMetrics"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"instance"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"monitor"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"timeRange"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"timeRangeUnit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"TimeRangeUnit"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MinionLatencyParts"}}]}},...MinionLatencyPartsFragmentDoc.definitions,...MetricPartsFragmentDoc.definitions]} as unknown as DocumentNode<ListMinionMetricsQuery, ListMinionMetricsQueryVariables>;

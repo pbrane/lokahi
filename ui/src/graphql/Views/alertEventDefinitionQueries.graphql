@@ -1,5 +1,5 @@
-query ListEventDefinitions($eventType: EventType) {
-    listEventDefinitions(eventType: $eventType) {
+query ListAlertEventDefinitions($eventType: EventType) {
+    listAlertEventDefinitions(eventType: $eventType) {
         id
         name
         eventType

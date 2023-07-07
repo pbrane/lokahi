@@ -3,16 +3,16 @@ import { useQuery } from 'villus'
 import {
   AlertEventDefinition,
   EventType,
-  ListEventDefinitionsDocument,
-  ListEventDefinitionsQuery
+  ListAlertEventDefinitionsDocument,
+  ListAlertEventDefinitionsQuery
 } from "@/types/graphql";
 
 export const useAlertEventDefinitionQueries = defineStore('alertEventDefinitionQueries', () => {
-  const listEventDefinitionsData = ref(<AlertEventDefinition[]>[])
+  const listAlertEventDefinitionsData = ref(<AlertEventDefinition[]>[])
 
-  const listEventDefinitions = async (eventType: EventType) => {
+  const listAlertEventDefinitions = async (eventType: EventType) => {
     const { data, execute } = useQuery({
-      query: ListEventDefinitionsDocument,
+      query: ListAlertEventDefinitionsDocument,
       variables: {
         eventType: eventType
       },
@@ -22,11 +22,11 @@ export const useAlertEventDefinitionQueries = defineStore('alertEventDefinitionQ
 
     await execute()
 
-    listEventDefinitionsData.value = data.value?.listEventDefinitions ?? []
+    listAlertEventDefinitionsData.value = data.value?.listAlertEventDefinitions ?? []
   }
 
   return {
-    listEventDefinitions,
-    listEventDefinitionsData
+    listAlertEventDefinitions,
+    listAlertEventDefinitionsData
   }
 })
