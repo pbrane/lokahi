@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.server.mapper;
+package org.opennms.horizon.server.mapper.alert;
 
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;

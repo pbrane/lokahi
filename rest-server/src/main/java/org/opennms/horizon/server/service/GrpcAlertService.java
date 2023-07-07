@@ -36,7 +36,7 @@ import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alerts.proto.EventType;
-import org.opennms.horizon.server.mapper.AlertMapper;
+import org.opennms.horizon.server.mapper.alert.AlertMapper;
 import org.opennms.horizon.server.mapper.TagMapper;
 import org.opennms.horizon.server.model.alerts.*;
 import org.opennms.horizon.server.model.inventory.tag.TagCreate;

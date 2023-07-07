@@ -37,8 +37,5 @@ import org.opennms.horizon.alertservice.db.entity.EventDefinition;
 @Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
     collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
 public interface EventDefinitionMapper {
-
-    EventDefinition protoToEntity(AlertEventDefinitionProto proto);
-
     AlertEventDefinitionProto entityToProto(EventDefinition entity);
 }

@@ -32,7 +32,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.opennms.horizon.server.mapper.AlertEventDefinitionMapper;
+import org.opennms.horizon.server.mapper.alert.AlertEventDefinitionMapper;
 import org.opennms.horizon.server.mapper.alert.MonitorPolicyMapper;
 import org.opennms.horizon.server.service.flows.FlowClient;
 import org.opennms.horizon.server.service.grpc.AlertsClient;

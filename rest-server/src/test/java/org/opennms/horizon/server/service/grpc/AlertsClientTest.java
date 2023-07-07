@@ -52,7 +52,7 @@ import org.opennms.horizon.alerts.proto.AlertServiceGrpc;
 import org.opennms.horizon.alerts.proto.DeleteAlertResponse;
 import org.opennms.horizon.alerts.proto.ListAlertsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
-import org.opennms.horizon.server.mapper.AlertEventDefinitionMapper;
+import org.opennms.horizon.server.mapper.alert.AlertEventDefinitionMapper;
 import org.opennms.horizon.server.mapper.alert.MonitorPolicyMapper;
 import org.opennms.horizon.server.model.alerts.TimeRange;
 import org.opennms.horizon.shared.constants.GrpcConstants;

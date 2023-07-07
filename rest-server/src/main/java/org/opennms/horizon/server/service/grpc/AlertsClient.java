@@ -49,7 +49,7 @@ import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.alerts.proto.MonitorPolicyServiceGrpc;
 import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alerts.proto.TimeRangeFilter;
-import org.opennms.horizon.server.mapper.AlertEventDefinitionMapper;
+import org.opennms.horizon.server.mapper.alert.AlertEventDefinitionMapper;
 import org.opennms.horizon.server.mapper.alert.MonitorPolicyMapper;
 import org.opennms.horizon.server.model.alerts.AlertEventDefinition;
 import org.opennms.horizon.server.model.alerts.MonitorPolicy;

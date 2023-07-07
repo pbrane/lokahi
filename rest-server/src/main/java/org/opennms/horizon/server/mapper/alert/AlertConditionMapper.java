@@ -30,7 +30,6 @@ package org.opennms.horizon.server.mapper.alert;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
-import org.opennms.horizon.server.mapper.AlertEventDefinitionMapper;
 import org.opennms.horizon.server.model.alerts.AlertCondition;
 import org.opennms.horizon.alerts.proto.AlertConditionProto;
 
