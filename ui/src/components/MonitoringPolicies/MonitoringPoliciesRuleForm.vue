@@ -81,7 +81,7 @@
               <MonitoringPoliciesThresholdCondition
                 v-for="(cond, index) in store.selectedRule!.alertConditions"
                 :key="cond.id"
-                :index="index"
+                :index="index as number"
                 :condition="(cond as ThresholdCondition)"
                 @updateCondition="(condition) => store.updateCondition(cond.id, condition)"
                 @deleteCondition="(id: string) => store.deleteCondition(id)"
@@ -94,7 +94,8 @@
                 :condition="(cond as EventCondition)"
                 :policy="store.selectedPolicy"
                 :rule="store.selectedRule"
-                :index="index"
+                :event-type="EventType.SnmpTrap"
+                :index="index as number"
                 @updateCondition="(condition) => store.updateCondition(cond.id, condition)"
                 @deleteCondition="(id: string) => store.deleteCondition(id)"
               />
@@ -115,10 +116,10 @@
 </template>
 
 <script setup lang="ts">
-import {useMonitoringPoliciesStore} from '@/store/Views/monitoringPoliciesStore'
-import {EventCondition, Rule, ThresholdCondition} from '@/types/policies'
+import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { EventCondition, Rule, ThresholdCondition } from '@/types/policies'
 import Add from '@featherds/icon/action/Add'
-import {ComponentType, DetectionMethodTypes, ThresholdMetrics} from './monitoringPolicies.constants'
+import { ComponentType, DetectionMethodTypes, ThresholdMetrics } from './monitoringPolicies.constants'
 import { EventType } from '@/types/graphql'
 
 const store = useMonitoringPoliciesStore()

@@ -90,6 +90,7 @@ const props = defineProps<{
   condition: EventCondition
   policy: Policy
   rule: Rule
+  eventType: EventType
   index: number
 }>()
 
@@ -123,7 +124,7 @@ let clearEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 let triggerEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 
 const fetchEventDefinitions = async () => {
-  await eventDefinitionStore.listEventDefinitions(EventType.SnmpTrap)
+  await eventDefinitionStore.listEventDefinitions(props.eventType)
   clearEventDefinitionOptions.value = eventDefinitionStore.listEventDefinitionsData
   triggerEventDefinitionOptions.value = eventDefinitionStore.listEventDefinitionsData
 }
