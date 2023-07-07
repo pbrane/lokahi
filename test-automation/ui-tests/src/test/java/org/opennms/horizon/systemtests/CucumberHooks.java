@@ -33,21 +33,35 @@ import io.cucumber.java.After;
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.Before;
 import org.opennms.horizon.systemtests.pages.cloud.CloudLoginPage;
+import org.opennms.horizon.systemtests.pages.cloud.OKTALoginPage;
+import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
+import testcontainers.DockerComposeMinionContainer;
 import testcontainers.MinionContainer;
-
+import java.io.File;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class CucumberHooks {
     public static final List<MinionContainer> MINIONS = new ArrayList<>();
+    public static final Map<String, DockerComposeMinionContainer> DC_MINIONS = new HashMap<>();
     public static String instanceUrl;
-    public static String gatewayHost;
     private static final String MINION_PREFIX = "Default_Minion-";
+    public static String gatewayPort;
+    public static String gatewayUrl;
+
     private static final String LOCAL_INSTANCE_URL_DEFAULT = "https://onmshs.local:1443";
     private static final String LOCAL_MINION_GATEWAY_HOST_DEFAULT = "minion.onmshs.local";
+    private static final String LOCAL_MINION_GATEWAY_HOST_PORT = "1443";
+
+    private static final String CLOUD_INSTANCE_URL_DEFAULT = "https://2e6975ac-12c0-47db-9213-3975e8dc6092.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
+    private static final String CLOUD_MINION_GATEWAY_HOST_PORT = "443";
+    private static final String CLOUD_MINION_GATEWAY_HOST_DEFAULT = "minion.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
     private static final String ADMIN_DEFAULT_USERNAME = "admin";
     private static final String ADMIN_DEFAULT_PASSWORD = "admin";
 
@@ -57,32 +71,34 @@ public class CucumberHooks {
             return;
         }
 
-        long timeCode = Instant.now().toEpochMilli();
-
-        instanceUrl = LOCAL_INSTANCE_URL_DEFAULT;
-        gatewayHost = LOCAL_MINION_GATEWAY_HOST_DEFAULT;
-
-        MinionContainer minionContainer = new MinionContainer(
-            gatewayHost,
-            MINION_PREFIX + timeCode,
-            "location-" + timeCode
-        );
-
-        minionContainer.start();
-        MINIONS.add(minionContainer);
+        instanceUrl = CLOUD_INSTANCE_URL_DEFAULT;
+        gatewayPort = CLOUD_MINION_GATEWAY_HOST_PORT;
+        gatewayUrl = CLOUD_MINION_GATEWAY_HOST_DEFAULT;
 
         Selenide.open(instanceUrl);
+        //loginToLocalInstance();
+        loginToCloudInstance();
+    }
+
+    private static void loginToLocalInstance() {
         CloudLoginPage.checkPageTitle();
         CloudLoginPage.setUsername(ADMIN_DEFAULT_USERNAME);
         CloudLoginPage.setPassword(ADMIN_DEFAULT_PASSWORD);
         CloudLoginPage.clickSignInBtn();
     }
 
+    private static void loginToCloudInstance() {
+        OKTALoginPage.setUsername("brener.maxim@gmail.com");
+        OKTALoginPage.clickNextBtn();
+        OKTALoginPage.setPassword("HelloIamGr00t!");
+        OKTALoginPage.clickSubmitBtn();
+    }
+
     @After("@cloud")
     public static void tearDownCloud() {
         Selenide.open(instanceUrl);
 
-        Stream<MinionContainer> aDefault = MINIONS.stream().dropWhile(container -> !container.minionId.startsWith(MINION_PREFIX));
+        Stream<MinionContainer> aDefault = MINIONS.stream();
         aDefault.forEach(GenericContainer::stop);
 
         if (MINIONS.isEmpty()) {
@@ -96,8 +112,13 @@ public class CucumberHooks {
 
     @AfterAll
     public static void tearDown() {
-        if (!MINIONS.isEmpty()) {
-            MINIONS.get(0).stop();
-        }
+        Stream<MinionContainer> aDefault = MINIONS.stream();
+        aDefault.forEach(GenericContainer::stop);
+
+        Stream<DockerComposeMinionContainer> bDefault = DC_MINIONS.values().stream();
+        bDefault.forEach(DockerComposeContainer::stop);
+
+        File download = Paths.get("target/downloads").toFile();
+        download.delete();
     }
 }
