@@ -1,15 +1,11 @@
 import { defineStore } from 'pinia'
 import { useQuery } from 'villus'
 import {
-  AlertEventDefinition,
   EventType,
-  ListAlertEventDefinitionsDocument,
-  ListAlertEventDefinitionsQuery
-} from "@/types/graphql";
+  ListAlertEventDefinitionsDocument
+} from '@/types/graphql'
 
 export const useAlertEventDefinitionQueries = defineStore('alertEventDefinitionQueries', () => {
-  const listAlertEventDefinitionsData = ref(<AlertEventDefinition[]>[])
-
   const listAlertEventDefinitions = async (eventType: EventType) => {
     const { data, execute } = useQuery({
       query: ListAlertEventDefinitionsDocument,
@@ -22,11 +18,10 @@ export const useAlertEventDefinitionQueries = defineStore('alertEventDefinitionQ
 
     await execute()
 
-    listAlertEventDefinitionsData.value = data.value?.listAlertEventDefinitions ?? []
+    return data
   }
 
   return {
-    listAlertEventDefinitions,
-    listAlertEventDefinitionsData
+    listAlertEventDefinitions
   }
 })

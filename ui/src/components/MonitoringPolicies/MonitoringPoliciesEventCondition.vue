@@ -48,7 +48,7 @@
       <div class="text">&nbsp;</div>
       <BasicSelect
         :list="durationOptions"
-        @item-selected="(val: number) => updateConditionProp('overtimeUnit', val)"
+        @item-selected="(val: number) => alertCondition.overtimeUnit = val"
         :selectedId="alertCondition.overtimeUnit"
         :disabled="policy.isDefault"
       />
@@ -58,7 +58,7 @@
       <div class="text">Severity</div>
       <BasicSelect
         :list="severityList"
-        @item-selected="(val: string) => updateConditionProp('severity', val)"
+        @item-selected="(val: string) => alertCondition.severity = val"
         :selectedId="alertCondition.severity"
         :disabled="policy.isDefault"
       />
@@ -73,6 +73,7 @@
         text-prop="name"
         v-model="alertCondition.clearEvent"
         :disabled="policy.isDefault"
+        clear="Remove"
       />
     </div>
   </div>
@@ -85,6 +86,9 @@ import { EventType, Severity, TimeRangeUnit } from '@/types/graphql'
 import { Ref } from 'vue'
 import { ISelectItemType } from '@featherds/select'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
+import useSnackbar from '@/composables/useSnackbar'
+
+const { showSnackbar } = useSnackbar()
 
 const props = defineProps<{
   condition: EventCondition
@@ -123,17 +127,15 @@ const severityList = [
 let clearEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 let triggerEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 
-const fetchEventDefinitions = async () => {
-  await alertEventDefinitionStore.listAlertEventDefinitions(props.eventType)
-  clearEventDefinitionOptions.value = alertEventDefinitionStore.listAlertEventDefinitionsData
-  triggerEventDefinitionOptions.value = alertEventDefinitionStore.listAlertEventDefinitionsData
-}
-
-const updateConditionProp = (property: string, value: number | string) => {
-  alertCondition.value![property] = value
-}
-
-fetchEventDefinitions().catch(() => 'Failed to fetch AlertEventDefinitions')
+alertEventDefinitionStore.listAlertEventDefinitions(props.eventType)
+  .then((result) => {
+    clearEventDefinitionOptions.value = result.value?.listAlertEventDefinitions || []
+    triggerEventDefinitionOptions.value = result.value?.listAlertEventDefinitions || []
+  }).catch(() =>
+    showSnackbar({
+      msg: 'Failed to load selectable events.'
+    })
+  )
 
 </script>
 
