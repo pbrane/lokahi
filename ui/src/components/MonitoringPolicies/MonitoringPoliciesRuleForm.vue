@@ -118,7 +118,8 @@
 import {useMonitoringPoliciesStore} from '@/store/Views/monitoringPoliciesStore'
 import {EventCondition, Rule, ThresholdCondition} from '@/types/policies'
 import Add from '@featherds/icon/action/Add'
-import {ComponentType, DetectionMethodTypes, EventMetrics, ThresholdMetrics} from './monitoringPolicies.constants'
+import {ComponentType, DetectionMethodTypes, ThresholdMetrics} from './monitoringPolicies.constants'
+import { EventType } from '@/types/graphql'
 
 const store = useMonitoringPoliciesStore()
 const addIcon = markRaw(Add)
@@ -148,8 +149,8 @@ const thresholdMetricsOptions = [
 ]
 
 const eventMetricsOptions = [
-  { id: EventMetrics.SNMP_TRAP, name: 'SNMP Trap' }
-  // { id: EventMetrics.INTERNAL, name: 'Internal' } BE Not ready yet
+  { id: EventType.SnmpTrap, name: 'SNMP Trap' }
+  // { id: EventType.Internal, name: 'Internal' } BE Not ready yet
 ]
 
 const selectComponentType = (type: string) => (store.selectedRule!.componentType = type)

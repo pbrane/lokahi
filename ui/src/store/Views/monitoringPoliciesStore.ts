@@ -6,14 +6,11 @@ import { useMonitoringPoliciesQueries } from '../Queries/monitoringPoliciesQueri
 import useSnackbar from '@/composables/useSnackbar'
 import {
   DetectionMethodTypes,
-  SNMPEventType,
   ComponentType,
-  EventMetrics,
   ThresholdLevels,
   Unknowns
 } from '@/components/MonitoringPolicies/monitoringPolicies.constants'
-import { MonitorPolicy } from '@/types/graphql'
-import { Severity, TimeRangeUnit } from '@/types/graphql'
+import { EventType, MonitorPolicy, Severity, TimeRangeUnit } from '@/types/graphql'
 
 const { showSnackbar } = useSnackbar()
 
@@ -49,8 +46,8 @@ const getDefaultEventCondition = () => ({
   count: 1,
   severity: Severity.Critical,
   overtimeUnit: Unknowns.UNKNOWN_UNIT,
-  triggerEventType: SNMPEventType.SNMP_COLD_START,
-  clearEventType: Unknowns.UNKNOWN_EVENT
+  triggerEvent: null,
+  clearEvent: null
 })
 
 const getDefaultRule = () => ({
@@ -58,7 +55,7 @@ const getDefaultRule = () => ({
   name: '',
   componentType: ComponentType.NODE,
   detectionMethod: DetectionMethodTypes.EVENT,
-  metricName: EventMetrics.SNMP_TRAP,
+  metricName: EventType.SnmpTrap,
   alertConditions: [getDefaultEventCondition()]
 })
 
@@ -105,6 +102,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       return this.selectedRule.alertConditions.push(getDefaultEventCondition())
     },
     updateCondition(id: string, condition: Condition) {
+
+      console.log("Emitting condition updatE)")
       this.selectedRule!.alertConditions.map((currentCondition) => {
         if (currentCondition.id === id) {
           return { ...currentCondition, ...condition }

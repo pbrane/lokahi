@@ -21,11 +21,6 @@ export enum ComponentType {
   NODE = 'NODE'
 }
 
-export enum EventMetrics {
-  SNMP_TRAP = 'SNMP_TRAP',
-  INTERNAL = 'INTERNAL'
-}
-
 export enum ThresholdMetrics {
   OVER_UTILIZATION = 'OVER_UTILIZATION',
   SATURATION = 'SATURATION',

@@ -1,0 +1,7 @@
+query ListEventDefinitions($eventType: EventType) {
+    listEventDefinitions(eventType: $eventType) {
+        id
+        name
+        eventType
+    }
+}

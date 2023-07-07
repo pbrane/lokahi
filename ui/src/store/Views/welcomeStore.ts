@@ -107,11 +107,12 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       const { getAllMinions } = useWelcomeQueries()
       const minions = await getAllMinions();
       await this.createDefaultLocation();
-      if (minions?.length > 0) {
-        onboardingState = false
-      } else {
-        router.push('/welcome');
-      }
+      // if (minions?.length > 0) {
+      //   onboardingState = false
+      // } else {
+      //   router.push('/welcome');
+      // }
+      onboardingState = false
       this.showOnboarding = onboardingState
       setTimeout(() => {
         this.ready = true;
