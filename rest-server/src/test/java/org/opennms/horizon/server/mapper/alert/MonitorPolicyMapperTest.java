@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opennms.horizon.alerts.proto.*;
 import org.opennms.horizon.server.model.alerts.AlertCondition;
+import org.opennms.horizon.server.model.alerts.AlertEventDefinition;
 import org.opennms.horizon.server.model.alerts.MonitorPolicy;
 import org.opennms.horizon.server.model.alerts.PolicyRule;
 import org.opennms.horizon.alerts.proto.AlertConditionProto;
@@ -84,13 +85,22 @@ class MonitorPolicyMapperTest {
             .containsExactly(policyProto.getName(), policyProto.getMemo(), policyProto.getTagsList().size(), policyProto.getRulesList().size(),
                 policyProto.getNotifyByEmail(), policyProto.getNotifyByPagerDuty(), policyProto.getNotifyByWebhooks(), policyProto.getNotifyInstruction());
         assertThat(policy.getTags()).isEqualTo(policyProto.getTagsList()); //the order doesn't matter here
-        assertThat(policy.getRules().get(0))
+
+        PolicyRule policyRule = policy.getRules().get(0);
+        assertThat(policyRule)
             .extracting(PolicyRule::getName, PolicyRule::getComponentType, r -> r.getAlertConditions().size())
             .containsExactly("test-rule", ManagedObjectType.NODE.name(), 1);
-        assertThat(policy.getRules().get(0).getAlertConditions().get(0))
-            .extracting(AlertCondition::getTriggerEvent, AlertCondition::getCount, AlertCondition::getOvertime, AlertCondition::getOvertimeUnit,
+
+        AlertCondition alertCondition = policyRule.getAlertConditions().get(0);
+        assertThat(alertCondition)
+            .extracting(AlertCondition::getCount, AlertCondition::getOvertime, AlertCondition::getOvertimeUnit,
                 AlertCondition::getSeverity, AlertCondition::getClearEvent)
-            .containsExactly("SNMP Warm Start", 1, 0, OverTimeUnit.UNKNOWN_UNIT.name(), Severity.CRITICAL.name(), "Unknown Event");
+            .containsExactly(1, 0, OverTimeUnit.UNKNOWN_UNIT.name(), Severity.CRITICAL.name(), null);
+
+        AlertEventDefinition triggerEvent = alertCondition.getTriggerEvent();
+        assertThat(triggerEvent)
+            .extracting(AlertEventDefinition::getId, AlertEventDefinition::getName, AlertEventDefinition::getEventType)
+            .containsExactly(1L, "SNMP Warm Start", EventType.SNMP_TRAP);
     }
 
     @Test
