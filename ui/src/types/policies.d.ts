@@ -11,11 +11,7 @@ export interface Rule extends PolicyRule {
   alertConditions: Condition[]
 }
 
-interface IObjectKeys {
-  [key: string]: string | number
-}
-
-export interface ThresholdCondition extends IObjectKeys {
+export interface ThresholdCondition {
   id: number
   level: string
   percentage: number
@@ -27,5 +23,5 @@ export interface ThresholdCondition extends IObjectKeys {
   triggerEvent: AlertEventDefinition
 }
 
-export type EventCondition = AlertCondition & IObjectKeys
+export type EventCondition = AlertCondition
 export type Condition = ThresholdCondition | EventCondition
