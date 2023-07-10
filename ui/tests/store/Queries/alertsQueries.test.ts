@@ -1,35 +1,42 @@
-import { createTestingPinia } from '@pinia/testing'
 import { getAlertsList } from '../../fixture/alerts'
-import { useAlertsQueries } from '@/store/Queries/alertsQueries'
 import { TimeRange } from '@/types/graphql'
 import { AlertsFilters, Pagination } from '@/types/alerts'
+import { createPinia, setActivePinia } from 'pinia'
 
 describe('Alerts queries', () => {
   beforeEach(() => {
-    createTestingPinia()
+    setActivePinia(createPinia())
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.resetModules()
   })
 
   it('fetchAlerts sets expected store value', async () => {
     const expectedAlerts = getAlertsList()
+    const mockData = {
+      value: {
+        findAllAlerts: {
+          alerts: expectedAlerts,
+          totalAlerts: expectedAlerts.length
+        }
+      }
+    }
 
-    vi.mock('villus', () => ({
+    vi.doMock('villus', () => ({
       useQuery: vi.fn().mockImplementation(() => ({
-        data: {
-          value: {
-            findAllAlerts: expectedAlerts
-          }
-        },
+        data: mockData,
+        execute: vi.fn().mockResolvedValue(mockData),
         isFetching: {
           value: false
         }
       }))
     }))
 
+    const { useAlertsQueries } = await import('@/store/Queries/alertsQueries')
     const alertsQueries = useAlertsQueries()
+
     const alertsFilters: AlertsFilters = {
       nodeLabel: '', search: '', severities: [], sortAscending: false, sortBy: '', timeRange: TimeRange.All
     }
@@ -38,30 +45,35 @@ describe('Alerts queries', () => {
       pageSize: 10,
       total: 0
     }
+
     await alertsQueries.fetchAlerts(alertsFilters, pagination)
-    expect(alertsQueries.fetchAlertsData).toStrictEqual(expectedAlerts)
+    expect((alertsQueries.fetchAlertsData as any).alerts).toStrictEqual(expectedAlerts)
   })
 
   it('fetchCountAlerts sets expected store value', async () => {
-    const expectedResult = {
-      count: 0
+    const expectedCount = 10
+    const mockData = {
+      value: {
+        countAlerts: {
+          count: expectedCount
+        }
+      }
     }
 
-    vi.mock('villus', () => ({
+    vi.doMock('villus', () => ({
       useQuery: vi.fn().mockImplementation(() => ({
-        data: {
-          value: {
-            countAlerts: expectedResult
-          }
-        },
+        data: mockData,
+        execute: vi.fn().mockResolvedValue(mockData),
         isFetching: {
           value: false
         }
       }))
     }))
 
+    const { useAlertsQueries } = await import('@/store/Queries/alertsQueries')
     const alertsQueries = useAlertsQueries()
+
     await alertsQueries.fetchCountAlerts([], TimeRange.All)
-    expect(alertsQueries.fetchCountAlertsData).toStrictEqual(expectedResult)
+    expect(alertsQueries.fetchCountAlertsData).toStrictEqual(expectedCount)
   })
 })

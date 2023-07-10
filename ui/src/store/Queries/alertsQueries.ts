@@ -25,7 +25,7 @@ export const useAlertsQueries = defineStore('alertsQueries', () => {
 
     await execute()
 
-    fetchAlertsData.value = data.value?.findAllAlerts || []
+    fetchAlertsData.value = data.value?.findAllAlerts || {}
   }
 
   const fetchCountAlerts = async (severityFilters = [] as string[], timeRange = TimeRange.All) => {
