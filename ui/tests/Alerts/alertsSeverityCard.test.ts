@@ -18,7 +18,7 @@ describe('AlertsSeverityCard', () => {
     wrapper.unmount()
   })
 
-  test.only('Mount', () => {
+  test('Mount', () => {
     expect(wrapper).toBeTruthy()
   })
 
