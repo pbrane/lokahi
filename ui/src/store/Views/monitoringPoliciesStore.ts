@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { cloneDeep, findIndex } from 'lodash'
-import { Policy, Rule, Condition } from '@/types/policies'
+import { Policy, Rule, Condition, EventCondition, ThresholdCondition } from '@/types/policies'
 import { useMonitoringPoliciesMutations } from '../Mutations/monitoringPoliciesMutations'
 import { useMonitoringPoliciesQueries } from '../Queries/monitoringPoliciesQueries'
 import useSnackbar from '@/composables/useSnackbar'
@@ -30,34 +30,38 @@ const defaultPolicy: Policy = {
   rules: []
 }
 
-const getDefaultThresholdCondition = () => ({
-  id: new Date().getTime(),
-  level: ThresholdLevels.ABOVE,
-  percentage: 50,
-  forAny: 5,
-  durationUnit: TimeRangeUnit.Second,
-  duringLast: 60,
-  periodUnit: TimeRangeUnit.Second,
-  severity: Severity.Critical
-})
+function getDefaultThresholdCondition(): ThresholdCondition {
+  return {
+    id: new Date().getTime(),
+    level: ThresholdLevels.ABOVE,
+    percentage: 50,
+    forAny: 5,
+    durationUnit: TimeRangeUnit.Second,
+    duringLast: 60,
+    periodUnit: TimeRangeUnit.Second,
+    severity: Severity.Critical
+  }
+}
 
-const getDefaultEventCondition = () => ({
-  id: new Date().getTime(),
-  count: 1,
-  severity: Severity.Critical,
-  overtimeUnit: Unknowns.UNKNOWN_UNIT,
-  triggerEvent: null,
-  clearEvent: null
-})
+function getDefaultEventCondition(): EventCondition {
+  return {
+    id: new Date().getTime(),
+    count: 1,
+    severity: Severity.Critical,
+    overtimeUnit: Unknowns.UNKNOWN_UNIT
+  }
+}
 
-const getDefaultRule = () => ({
-  id: new Date().getTime(),
-  name: '',
-  componentType: ComponentType.NODE,
-  detectionMethod: DetectionMethodTypes.EVENT,
-  metricName: EventType.SnmpTrap,
-  alertConditions: [getDefaultEventCondition()]
-})
+function getDefaultRule(): Rule {
+  return {
+    id: new Date().getTime(),
+    name: '',
+    componentType: ComponentType.NODE,
+    detectionMethod: DetectionMethodTypes.EVENT,
+    metricName: EventType.SnmpTrap,
+    alertConditions: [getDefaultEventCondition()]
+  }
+}
 
 export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore', {
   state: (): TState => ({
@@ -102,8 +106,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       return this.selectedRule.alertConditions.push(getDefaultEventCondition())
     },
     updateCondition(id: string, condition: Condition) {
-
-      console.log("Emitting condition updatE)")
       this.selectedRule!.alertConditions.map((currentCondition) => {
         if (currentCondition.id === id) {
           return { ...currentCondition, ...condition }

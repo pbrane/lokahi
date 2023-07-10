@@ -20,7 +20,7 @@ export interface ThresholdCondition {
   duringLast: number
   periodUnit: string
   severity: string
-  triggerEvent: AlertEventDefinition
+  triggerEvent?: AlertEventDefinition
 }
 
 export type EventCondition = AlertCondition
