@@ -12,7 +12,7 @@
 
     <div class="mp-card-alert-row" v-for="(condition, index) in eventConditions" :key="index">
       <div class="subtitle">{{ conditionLetters[index] + '.' }}</div>
-      <div class="col subtitle double">{{ condition.triggerEvent.name }}</div>
+      <div class="col subtitle double">{{ condition.triggerEvent?.name }}</div>
       <div class="col half box">{{ condition.count }}</div>
       <div class="col half box">{{ condition.overtime || '&nbsp;' }}</div>
       <div class="col box double">
