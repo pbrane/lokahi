@@ -35,11 +35,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TriggerEvent extends BaseModel {
-    private String triggerEvent;
+public class AlertCondition extends BaseModel {
+    private String triggerEventType;
     private Integer count;
     private Integer overtime;
     private String overtimeUnit;
     private String severity;
-    private String clearEvent;
+    private String clearEventType;
 }

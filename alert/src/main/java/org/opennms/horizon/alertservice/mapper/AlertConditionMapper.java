@@ -26,16 +26,22 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.alertservice.grpc;
+package org.opennms.horizon.alertservice.mapper;
 
-import org.opennms.horizon.alerts.proto.AlertConfigurationServiceGrpc;
-import org.springframework.stereotype.Component;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.NullValueCheckStrategy;
+import org.opennms.horizon.alerts.proto.AlertConditionProto;
+import org.opennms.horizon.alertservice.db.entity.AlertCondition;
 
-/**
- * A temporary noop implementation of the service.
- *
- * Will evolve with the data model as necessary.
- */
-@Component
-public class AlertConfigurationGrpcService extends AlertConfigurationServiceGrpc.AlertConfigurationServiceImplBase {
+@Mapper(componentModel = "spring")
+public interface AlertConditionMapper {
+
+    @Mapping(target = "rule", ignore = true)
+    @Mapping(target = "alertDefinition", ignore = true)
+    AlertCondition protoToEntity(AlertConditionProto proto);
+
+    @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    AlertConditionProto entityToProto(AlertCondition event);
 }
