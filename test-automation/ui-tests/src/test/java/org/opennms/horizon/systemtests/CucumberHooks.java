@@ -59,7 +59,8 @@ public class CucumberHooks {
     private static final String LOCAL_MINION_GATEWAY_HOST_DEFAULT = "minion.onmshs.local";
     private static final String LOCAL_MINION_GATEWAY_HOST_PORT = "1443";
 
-    private static final String CLOUD_INSTANCE_URL_DEFAULT = "https://2e6975ac-12c0-47db-9213-3975e8dc6092.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
+    // for example: https://2e6975ac-12c0-47db-9213-3975e8dc6092.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com
+    private static final String CLOUD_INSTANCE_URL_DEFAULT = "";
     private static final String CLOUD_MINION_GATEWAY_HOST_PORT = "443";
     private static final String CLOUD_MINION_GATEWAY_HOST_DEFAULT = "minion.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
     private static final String ADMIN_DEFAULT_USERNAME = "admin";
@@ -88,9 +89,9 @@ public class CucumberHooks {
     }
 
     private static void loginToCloudInstance() {
-        OKTALoginPage.setUsername("brener.maxim@gmail.com");
+        OKTALoginPage.setUsername("");
         OKTALoginPage.clickNextBtn();
-        OKTALoginPage.setPassword("HelloIamGr00t!");
+        OKTALoginPage.setPassword("");
         OKTALoginPage.clickSubmitBtn();
     }
 
