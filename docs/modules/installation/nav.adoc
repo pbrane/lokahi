@@ -1,4 +1,4 @@
 
 .Installation
-* xref:installation:requirements.adoc[Before You Begin]
-* xref:installation:installation.adoc[Installation]
+* xref:installation:requirements.adoc[]
+* xref:installation:installation.adoc[]
