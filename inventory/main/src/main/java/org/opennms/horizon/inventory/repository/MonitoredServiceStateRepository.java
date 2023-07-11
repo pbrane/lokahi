@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -28,29 +28,14 @@
 
 package org.opennms.horizon.inventory.repository;
 
-import org.opennms.horizon.inventory.model.IpInterface;
-import org.opennms.horizon.inventory.model.MonitoredService;
-import org.opennms.horizon.inventory.model.MonitoredServiceType;
+import org.opennms.horizon.inventory.model.MonitoredServiceState;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MonitoredServiceRepository extends JpaRepository<MonitoredService, Long> {
-    List<MonitoredService> findByTenantId(String tenantId);
+public interface MonitoredServiceStateRepository extends JpaRepository<MonitoredServiceState, Long> {
 
-    @Query("SELECT ms " +
-        "FROM MonitoredService ms " +
-        "WHERE ms.tenantId = :tenantId " +
-        "AND ms.monitoredServiceType = :monitoredServiceType " +
-        "AND ms.ipInterface = :ipInterface")
-    Optional<MonitoredService> findByTenantIdTypeAndIpInterface(@Param("tenantId") String tenantId,
-                                                                @Param("monitoredServiceType") MonitoredServiceType monitoredServiceType,
-                                                                @Param("ipInterface") IpInterface ipInterface);
-
-    Optional<MonitoredService> findByIdAndTenantId(long id, String tenantId);
+    Optional<MonitoredServiceState> findByTenantIdAndMonitoredServiceId(String tenantId, long monitoredServiceId);
 }
