@@ -27,10 +27,7 @@
  *******************************************************************************/
 package org.opennms.horizon.systemtests.pages.cloud;
 
-import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.FileDownloadMode;
-import com.codeborne.selenide.Selenide;
-import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.*;
 import lombok.SneakyThrows;
 import org.junit.Assert;
 import testcontainers.DockerComposeMinionContainer;
@@ -38,6 +35,7 @@ import java.io.File;
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.*;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
 
 public class WelcomePage {
 
@@ -46,15 +44,11 @@ public class WelcomePage {
     private static final SelenideElement dockerRunCLTextField =  $(withText("GRPC_CLIENT_KEYSTORE_PASSWORD"));
     private static final SelenideElement minionStatusField =  $("[data-test='welcome-minion-status-txt']");
     private static final SelenideElement continueButton =  $("[data-id='welcome-slide-two-continue-button']");
-    private static final SelenideElement discoveryIPField =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[2]/div[2]/div[1]/div[2]/input"));
+    private static final SelenideElement discoveryIPField =  $$("[data-test='welcome-slide-three-ip-input']").get(1);
     private static final SelenideElement startDiscoveryButton =  $("[data-test='welcome-store-page-three-start-discovery-button']");
     private static final SelenideElement discoveryLoadingField =  $("[data-test='welcome-discovery-status-txt']");
-    private static final SelenideElement discoveryResultNodeIPField =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[3]/div[2]/div/div[1]/strong"));
-    //private static final SelenideElement discoveryResultNodeIPField =  $("data-test='welcome-discovery-status-nodeIP']");
-
-    private static final SelenideElement discoveryResultNodeStatusField =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[3]/div[2]/div/div[2]/div[1]/div"));
-    //private static final SelenideElement discoveryResultNodeStatusField =  $("[data-test='welcome-discovery-status-nodeStatus']");
-    private static final SelenideElement discoveryResultNodeICMPField =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[3]/div[2]/div/div[2]/div[2]/div"));
+    private static final SelenideElement discoveryResultNodeIPField =  $("[data-test='item-preview-meta-id']");
+     private static final ElementsCollection discoveryResultNodeStatusFields =  $$("[data-test='item-preview-status-id']");
     private static final SelenideElement discoveryFinalContinueButton =  $("[data-test='welcome-store-slide-three-continue-button']");
     public static void checkIsStartSetupButtonVisible() {
         startSetupButton.shouldBe(enabled);
@@ -122,8 +116,8 @@ public class WelcomePage {
         }
         catch (com.codeborne.selenide.ex.ElementNotFound e) {
             Assert.assertEquals(ip, discoveryResultNodeIPField.getText());
-            Assert.assertEquals("Minion status should be 'UP'", "UP", discoveryResultNodeStatusField.getText());
-            Assert.assertTrue("ICMP should be less then 500",500 >= Double.valueOf(discoveryResultNodeICMPField.getText()));
+            Assert.assertEquals("Minion status should be 'UP'", "UP", discoveryResultNodeStatusFields.get(0).getText());
+            Assert.assertTrue("ICMP should be less then 500",500 >= Double.valueOf(discoveryResultNodeStatusFields.get(1).getText()));
         }
     }
 
