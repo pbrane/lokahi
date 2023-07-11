@@ -64,7 +64,7 @@ public class WelcomePage {
     }
 
     @SneakyThrows
-    public static void downloadCertificateAndStartMinion(String minionID) {
+    public static void downloadCertificateAndStartMinion(String minionID, String dockerComposeFile) {
         Configuration.fileDownload = FileDownloadMode.FOLDER;
         File cert = downloadCertificateButton.shouldBe(enabled).download(60000);
         Assert.assertTrue(cert.exists());
@@ -83,7 +83,7 @@ public class WelcomePage {
         Assert.assertTrue (end > start && start > 0);
 
         String password = dockerCL.substring(start, end);
-        DockerComposeMinionContainer.createNewContainer("src/test/resources/docker-compose-cloud.yaml", cert, minionID, password);
+        DockerComposeMinionContainer.createNewContainer("src/test/resources/" + dockerComposeFile, cert, minionID, password);
     }
 
     public static void checkMinionConnection() {

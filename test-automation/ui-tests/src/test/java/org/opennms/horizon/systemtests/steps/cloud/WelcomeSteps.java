@@ -46,9 +46,9 @@ public class WelcomeSteps {
         WelcomePage.startWelcomeWizardSetup();
     }
 
-    @Then("click on 'Download' button to get certificate and password for minion {string}")
-    public static void downloadCertificate(String minionID) {
-        WelcomePage.downloadCertificateAndStartMinion(minionID);
+    @Then("click on 'Download' button to get certificate and password for minion {string} and start minion using {string}")
+    public static void downloadCertificate(String minionID, String dockerComposeFile) {
+        WelcomePage.downloadCertificateAndStartMinion(minionID, dockerComposeFile);
     }
 
     @Then("wizard shows that minion connected successfully")
@@ -105,4 +105,5 @@ public class WelcomeSteps {
     public void verifyMinionDeleted(String minionId) {
         LocationsPage.checkMinionDoesntExist(minionId);
     }
+
 }

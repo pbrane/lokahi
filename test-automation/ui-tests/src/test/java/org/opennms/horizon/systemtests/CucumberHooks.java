@@ -58,13 +58,16 @@ public class CucumberHooks {
     private static final String LOCAL_INSTANCE_URL_DEFAULT = "https://onmshs.local:1443";
     private static final String LOCAL_MINION_GATEWAY_HOST_DEFAULT = "minion.onmshs.local";
     private static final String LOCAL_MINION_GATEWAY_HOST_PORT = "1443";
-
-    // for example: https://2e6975ac-12c0-47db-9213-3975e8dc6092.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com
-    private static final String CLOUD_INSTANCE_URL_DEFAULT = "";
-    private static final String CLOUD_MINION_GATEWAY_HOST_PORT = "443";
-    private static final String CLOUD_MINION_GATEWAY_HOST_DEFAULT = "minion.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
     private static final String ADMIN_DEFAULT_USERNAME = "admin";
     private static final String ADMIN_DEFAULT_PASSWORD = "admin";
+    private static final String CLOUD_MINION_GATEWAY_HOST_PORT = "443";
+    private static final String CLOUD_MINION_GATEWAY_HOST_DEFAULT = "minion.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
+    // for example: https://2e6975ac-12c0-47db-9213-3975e8dc6092.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com
+    private static final String CLOUD_INSTANCE_URL_DEFAULT = "";
+    private static final String CLOUD_USERNAME = "";
+    private static final String CLOUD_PASSWORD = "";
+
+    private static final boolean cloudEnv = true;
 
     @Before("@cloud")
     public static void setUp() {
@@ -72,13 +75,19 @@ public class CucumberHooks {
             return;
         }
 
-        instanceUrl = CLOUD_INSTANCE_URL_DEFAULT;
-        gatewayPort = CLOUD_MINION_GATEWAY_HOST_PORT;
-        gatewayUrl = CLOUD_MINION_GATEWAY_HOST_DEFAULT;
-
-        Selenide.open(instanceUrl);
-        //loginToLocalInstance();
-        loginToCloudInstance();
+        if (cloudEnv) {
+            instanceUrl = CLOUD_INSTANCE_URL_DEFAULT;
+            gatewayPort = CLOUD_MINION_GATEWAY_HOST_PORT;
+            gatewayUrl = CLOUD_MINION_GATEWAY_HOST_DEFAULT;
+            Selenide.open(instanceUrl);
+            loginToCloudInstance();
+        } else {
+            instanceUrl = LOCAL_INSTANCE_URL_DEFAULT;
+            gatewayPort = LOCAL_MINION_GATEWAY_HOST_PORT;
+            gatewayUrl = LOCAL_MINION_GATEWAY_HOST_DEFAULT;
+            Selenide.open(instanceUrl);
+            loginToLocalInstance();
+        }
     }
 
     private static void loginToLocalInstance() {
@@ -89,9 +98,9 @@ public class CucumberHooks {
     }
 
     private static void loginToCloudInstance() {
-        OKTALoginPage.setUsername("");
+        OKTALoginPage.setUsername(CLOUD_USERNAME);
         OKTALoginPage.clickNextBtn();
-        OKTALoginPage.setPassword("");
+        OKTALoginPage.setPassword(CLOUD_PASSWORD);
         OKTALoginPage.clickSubmitBtn();
     }
 
