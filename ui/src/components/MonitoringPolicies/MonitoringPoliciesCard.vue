@@ -58,6 +58,7 @@
           :eventConditions="rule.alertConditions"
         />
 <!--    TODO: Bring this back when thresholding is implemented
+          https://opennms.atlassian.net/browse/HS-750
         <MonitoringPoliciesCardEventConditionTable
           v-if="rule.detectionMethod === DetectionMethodTypes.EVENT"
           :eventConditions="rule.alertConditions"

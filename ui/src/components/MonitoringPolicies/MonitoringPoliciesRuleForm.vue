@@ -81,7 +81,7 @@
               <MonitoringPoliciesThresholdCondition
                 v-for="(cond, index) in store.selectedRule!.alertConditions"
                 :key="cond.id"
-                :index="index as number"
+                :index="Number(index)"
                 :condition="(cond as ThresholdCondition)"
                 @updateCondition="(condition) => store.updateCondition(cond.id, condition)"
                 @deleteCondition="(id: string) => store.deleteCondition(id)"
@@ -95,7 +95,7 @@
                 :policy="store.selectedPolicy"
                 :rule="store.selectedRule"
                 :event-type="EventType.SnmpTrap"
-                :index="index as number"
+                :index="Number(index)"
                 @updateCondition="(condition) => store.updateCondition(cond.id, condition)"
                 @deleteCondition="(id: string) => store.deleteCondition(id)"
               />
@@ -140,6 +140,7 @@ const componentTypeOptions = [
 
 const detectionMethodOptions = [
   // { id: DetectionMethodTypes.THRESHOLD, name: 'Threshold' }, BE not ready yet
+  // TODO: https://opennms.atlassian.net/browse/HS-750
   { id: DetectionMethodTypes.EVENT, name: 'Event' }
 ]
 
@@ -152,6 +153,7 @@ const thresholdMetricsOptions = [
 const eventMetricsOptions = [
   { id: EventType.SnmpTrap, name: 'SNMP Trap' }
   // { id: EventType.Internal, name: 'Internal' } BE Not ready yet
+  // TODO: https://opennms.atlassian.net/browse/HS-1759
 ]
 
 const selectComponentType = (type: string) => (store.selectedRule!.componentType = type)
