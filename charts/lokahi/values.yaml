@@ -30,7 +30,7 @@ OpenNMS:
     PrivateRepoEnabled: false
     FlowsUrl: SOME-EXTERNAL-FLOW-SERVER:80
     FlowsTlsEnabled: false
-    CertificateManagerUrl: dev
+    CertificateManagerUrl: ""
   MetricsProcessor:
     ServiceName: opennms-metrics-processor
     Image: opennms/lokahi-metrics-processor
@@ -74,6 +74,7 @@ OpenNMS:
       nginx.ingress.kubernetes.io/proxy-body-size: 4m
       nginx.ingress.kubernetes.io/proxy-buffer-size: 6k
   Minion:
+    Enabled: false
     ServiceName: opennms-minion
     Image: opennms/lokahi-minion
     ImagePullPolicy: IfNotPresent
@@ -95,7 +96,7 @@ OpenNMS:
     ExtraMounts: []
     ExtraInitContainers: []
     GrpcConfig: {}
-    addTestLocation: false
+    addDefaultLocation: false
   MinionGateway:
     ServiceName: opennms-minion-gateway
     TlsSecretName: opennms-minion-gateway-certificate
@@ -125,6 +126,7 @@ OpenNMS:
       nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
       nginx.ingress.kubernetes.io/auth-url: "http://opennms-minion-certificate-verifier.default.svc.cluster.local:8080/certificate/debug"
       nginx.ingress.kubernetes.io/auth-response-headers: "tenant-id, location-id"
+      nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: true
       nginx.ingress.kubernetes.io/server-snippet: |
         grpc_read_timeout "1200s";
         grpc_send_timeout "1200s";
@@ -235,6 +237,7 @@ OpenNMS:
     ImagePullPolicy: IfNotPresent
     Replicas: 1
     Port: 8990
+    VolumeSize: 1Gi
     Resources:
       Limits:
         Cpu: "1"
@@ -257,6 +260,7 @@ OpenNMS:
         Cpu: 100m
         Memory: 250Mi
     PrivateRepoEnabled: false
+    CertificateManagerUrl: ""
 Postgres:
   Enabled: true
   ServiceName: postgres
