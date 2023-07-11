@@ -63,17 +63,24 @@ public class CucumberHooks {
     private static final String CLOUD_MINION_GATEWAY_HOST_PORT = "443";
     private static final String CLOUD_MINION_GATEWAY_HOST_DEFAULT = "minion.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
     // for example: https://2e6975ac-12c0-47db-9213-3975e8dc6092.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com
-    private static final String CLOUD_INSTANCE_URL_DEFAULT = "https://2e6975ac-12c0-47db-9213-3975e8dc6092.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
-    private static final String CLOUD_USERNAME = "brener.maxim@gmail.com";
-    private static final String CLOUD_PASSWORD = "HelloIamGr00t!";
+    private static final String CLOUD_INSTANCE_URL_DEFAULT = "";
+    private static final String CLOUD_USERNAME = "";
+    private static final String CLOUD_PASSWORD = "";
 
-    private static final boolean cloudEnv = true;
+    private static boolean cloudEnv;
+    private static final String IS_CLOUD_TESTING_TARGET = "IS_CLOUD_TESTING_TARGET";
 
     @Before("@cloud")
     public static void setUp() {
         if (Selenide.webdriver().driver().hasWebDriverStarted()) {
             return;
         }
+
+        String is_cloud_testing_target = System.getenv().get(IS_CLOUD_TESTING_TARGET);
+        if (is_cloud_testing_target != null){
+            cloudEnv = Boolean.valueOf(is_cloud_testing_target);
+        }
+
 
         if (cloudEnv) {
             instanceUrl = CLOUD_INSTANCE_URL_DEFAULT;
