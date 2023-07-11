@@ -50,10 +50,12 @@ public class WelcomePage {
     private static final SelenideElement startDiscoveryButton =  $("[data-test='welcome-store-page-three-start-discovery-button']");
     private static final SelenideElement discoveryLoadingField =  $("[data-test='welcome-discovery-status-txt']");
     private static final SelenideElement discoveryResultNodeIPField =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[3]/div[2]/div/div[1]/strong"));
-    private static final SelenideElement discoveryResultNodeStatusField =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[3]/div[2]/div/div[2]/div[1]/div"));
-    private static final SelenideElement discoveryResultNodeICMPField =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[3]/div[2]/div/div[2]/div[2]/div"));
-    private static final SelenideElement discoveryFinalContinueButton =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[4]/button[2]/span"));
+    //private static final SelenideElement discoveryResultNodeIPField =  $("data-test='welcome-discovery-status-nodeIP']");
 
+    private static final SelenideElement discoveryResultNodeStatusField =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[3]/div[2]/div/div[2]/div[1]/div"));
+    //private static final SelenideElement discoveryResultNodeStatusField =  $("[data-test='welcome-discovery-status-nodeStatus']");
+    private static final SelenideElement discoveryResultNodeICMPField =  $(byXpath("/html/body/div/div/div[3]/div/div/div/div[2]/div/div[4]/div/div[3]/div[2]/div/div[2]/div[2]/div"));
+    private static final SelenideElement discoveryFinalContinueButton =  $("[data-test='welcome-store-slide-three-continue-button']");
     public static void checkIsStartSetupButtonVisible() {
         startSetupButton.shouldBe(enabled);
     }

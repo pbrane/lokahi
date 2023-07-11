@@ -11,9 +11,7 @@ Feature: User can see use welcome wizard to connect local minion to the OpenNMS
     Then click on 'Start Discovery' button
     Then first node with IP "172.31.10.10" discovered successfully
     Then click on 'Continue' button to end the wizard
-
-  Scenario: Verify default location has new minion and we can delete that minion from default location created by welcome wizard
-    Given Navigate to the "locations" through the left panel
+    When Navigate to the "locations" through the left panel
     Then check "default" location exists
     Then click on location "default"
     Then check minion "minion_test_id_1" exists

@@ -33,7 +33,7 @@ import org.openqa.selenium.By;
 import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Selenide.$;
 
-public class OKTALoginPage {
+public class CloudInstanceLoginPage {
     private static final SelenideElement usernameField = $(By.id("idp-discovery-username"));
     private static final SelenideElement nextBtn = $(By.id("idp-discovery-submit"));
     private static final SelenideElement passwordField = $(By.id("okta-signin-password"));

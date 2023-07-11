@@ -33,7 +33,7 @@ import io.cucumber.java.After;
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.Before;
 import org.opennms.horizon.systemtests.pages.cloud.CloudLoginPage;
-import org.opennms.horizon.systemtests.pages.cloud.OKTALoginPage;
+import org.opennms.horizon.systemtests.pages.cloud.CloudInstanceLoginPage;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
 import testcontainers.DockerComposeMinionContainer;
@@ -63,9 +63,9 @@ public class CucumberHooks {
     private static final String CLOUD_MINION_GATEWAY_HOST_PORT = "443";
     private static final String CLOUD_MINION_GATEWAY_HOST_DEFAULT = "minion.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
     // for example: https://2e6975ac-12c0-47db-9213-3975e8dc6092.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com
-    private static final String CLOUD_INSTANCE_URL_DEFAULT = "";
-    private static final String CLOUD_USERNAME = "";
-    private static final String CLOUD_PASSWORD = "";
+    private static final String CLOUD_INSTANCE_URL_DEFAULT = "https://2e6975ac-12c0-47db-9213-3975e8dc6092.tnnt.onms-fb-dev.dev.nonprod.dataservice.opennms.com";
+    private static final String CLOUD_USERNAME = "brener.maxim@gmail.com";
+    private static final String CLOUD_PASSWORD = "HelloIamGr00t!";
 
     private static final boolean cloudEnv = true;
 
@@ -98,10 +98,10 @@ public class CucumberHooks {
     }
 
     private static void loginToCloudInstance() {
-        OKTALoginPage.setUsername(CLOUD_USERNAME);
-        OKTALoginPage.clickNextBtn();
-        OKTALoginPage.setPassword(CLOUD_PASSWORD);
-        OKTALoginPage.clickSubmitBtn();
+        CloudInstanceLoginPage.setUsername(CLOUD_USERNAME);
+        CloudInstanceLoginPage.clickNextBtn();
+        CloudInstanceLoginPage.setPassword(CLOUD_PASSWORD);
+        CloudInstanceLoginPage.clickSubmitBtn();
     }
 
     @After("@cloud")

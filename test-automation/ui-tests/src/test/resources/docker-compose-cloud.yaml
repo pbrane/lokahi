@@ -3,7 +3,7 @@ version: '3.5'
 
 services:
   minion-tenanta:
-    image: docker.io/opennms/lokahi-minion:latest
+    image: docker.io/opennms/lokahi-minion:bleeding
     environment:
       TZ: 'America/New_York'
       MINION_ID: ${MINION_ID}
@@ -16,7 +16,6 @@ services:
     ports:
       - '8181:8181/tcp'
       - '8101:8101/tcp'
-      - '1162:1162/udp'
       - "8877:8877/udp" # netflow5
       - "4729:4729/udp" # netflow9
       - "9999:9999/udp" # netflow
