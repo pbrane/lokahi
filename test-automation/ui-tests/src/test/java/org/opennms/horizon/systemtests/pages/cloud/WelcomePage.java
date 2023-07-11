@@ -32,8 +32,8 @@ import lombok.SneakyThrows;
 import org.junit.Assert;
 import testcontainers.DockerComposeMinionContainer;
 import java.io.File;
-import static com.codeborne.selenide.Condition.*;
-import static com.codeborne.selenide.Selectors.*;
+import static com.codeborne.selenide.Condition.enabled;
+import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
@@ -48,7 +48,7 @@ public class WelcomePage {
     private static final SelenideElement startDiscoveryButton =  $("[data-test='welcome-store-page-three-start-discovery-button']");
     private static final SelenideElement discoveryLoadingField =  $("[data-test='welcome-discovery-status-txt']");
     private static final SelenideElement discoveryResultNodeIPField =  $("[data-test='item-preview-meta-id']");
-     private static final ElementsCollection discoveryResultNodeStatusFields =  $$("[data-test='item-preview-status-id']");
+    private static final ElementsCollection discoveryResultNodeStatusFields =  $$("[data-test='item-preview-status-id']");
     private static final SelenideElement discoveryFinalContinueButton =  $("[data-test='welcome-store-slide-three-continue-button']");
     public static void checkIsStartSetupButtonVisible() {
         startSetupButton.shouldBe(enabled);
@@ -117,7 +117,7 @@ public class WelcomePage {
         catch (com.codeborne.selenide.ex.ElementNotFound e) {
             Assert.assertEquals(ip, discoveryResultNodeIPField.getText());
             Assert.assertEquals("Minion status should be 'UP'", "UP", discoveryResultNodeStatusFields.get(0).getText());
-            Assert.assertTrue("ICMP should be less then 500",500 >= Double.valueOf(discoveryResultNodeStatusFields.get(1).getText()));
+            Assert.assertTrue("ICMP should be less then 500", 500 >= Double.valueOf(discoveryResultNodeStatusFields.get(1).getText()));
         }
     }
 
