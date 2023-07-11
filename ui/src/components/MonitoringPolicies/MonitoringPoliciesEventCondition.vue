@@ -127,15 +127,18 @@ const severityList = [
 let clearEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 let triggerEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 
-alertEventDefinitionStore.listAlertEventDefinitions(props.eventType)
-  .then((result) => {
+onMounted(async () => {
+  try {
+    const result = await alertEventDefinitionStore.listAlertEventDefinitions(props.eventType)
+
     clearEventDefinitionOptions.value = result.value?.listAlertEventDefinitions || []
     triggerEventDefinitionOptions.value = result.value?.listAlertEventDefinitions || []
-  }).catch(() =>
+  } catch (err) {
     showSnackbar({
       msg: 'Failed to load selectable events.'
     })
-  )
+  }
+})
 
 </script>
 
