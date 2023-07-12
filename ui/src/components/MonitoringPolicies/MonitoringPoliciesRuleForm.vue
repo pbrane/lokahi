@@ -158,11 +158,11 @@ const eventMetricsOptions = [
 
 const selectComponentType = (type: string) => (store.selectedRule!.componentType = type)
 const selectMetric = (metric: string) => (store.selectedRule!.metricName = metric)
-const populateForm = (rule: Rule) => store.displayRuleForm(rule)
+const populateForm = async (rule: Rule) => await store.displayRuleForm(rule)
 
-const selectDetectionMethod = (method: string) => {
+const selectDetectionMethod = async (method: string) => {
   store.selectedRule!.detectionMethod = method
-  store.resetDefaultConditions()
+  await store.resetDefaultConditions()
 }
 </script>
 
