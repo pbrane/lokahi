@@ -112,7 +112,6 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       } else {
         router.push('/welcome');
       }
-      onboardingState = false
       this.showOnboarding = onboardingState
       setTimeout(() => {
         this.ready = true;
