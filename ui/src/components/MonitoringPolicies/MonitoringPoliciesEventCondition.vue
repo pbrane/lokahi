@@ -51,7 +51,7 @@
       <div class="text">&nbsp;</div>
       <BasicSelect
         :list="durationOptions"
-        @item-selected="(val: number) => {
+        @item-selected="(val: string) => {
           alertCondition.overtimeUnit = val
           $emit('updateCondition', alertCondition)
         }"
