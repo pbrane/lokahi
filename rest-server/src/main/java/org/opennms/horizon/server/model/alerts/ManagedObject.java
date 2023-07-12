@@ -30,6 +30,7 @@ package org.opennms.horizon.server.model.alerts;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.opennms.horizon.alerts.proto.ManagedObjectType;
 
 @Getter
 @Setter

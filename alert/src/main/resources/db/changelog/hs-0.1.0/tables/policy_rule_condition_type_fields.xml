@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="hs-0.1.0-policy-rule-event-fields" author="geraldhumphries">
+        <addColumn tableName="policy_rule">
+            <column name="detection_method" type="text"/>
+            <column name="event_type" type="text"/>
+            <column name="threshold_metric_name" type="text"/>
+        </addColumn>
+        <update tableName="policy_rule">
+            <!-- we can safely assume these defaults right now -->
+            <column name="detection_method" value="EVENT"/>
+            <column name="event_type" value="SNMP_TRAP"/>
+        </update>
+        <addNotNullConstraint tableName="policy_rule" columnName="detection_method" />
+    </changeSet>
+</databaseChangeLog>

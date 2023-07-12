@@ -120,7 +120,6 @@ public class GrpcAlertService {
 
     @GraphQLMutation
     public Mono<MonitorPolicy> createMonitorPolicy(MonitorPolicy policy, @GraphQLEnvironment ResolutionEnvironment env) {
-        String authHeader = headerUtil.getAuthHeader(env);
         var monitorPolicy = alertsClient.createMonitorPolicy(policy, headerUtil.getAuthHeader(env));
         return Mono.just(monitorPolicy);
     }
