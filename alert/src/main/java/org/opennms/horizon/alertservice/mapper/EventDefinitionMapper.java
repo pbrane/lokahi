@@ -30,6 +30,7 @@ package org.opennms.horizon.alertservice.mapper;
 
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import org.opennms.horizon.alerts.proto.AlertEventDefinitionProto;
 import org.opennms.horizon.alertservice.db.entity.EventDefinition;
@@ -37,5 +38,10 @@ import org.opennms.horizon.alertservice.db.entity.EventDefinition;
 @Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
     collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
 public interface EventDefinitionMapper {
+
+    @Mapping(source = "eventUei", target = "uei")
     AlertEventDefinitionProto entityToProto(EventDefinition entity);
+
+    @Mapping(source = "uei", target = "eventUei")
+    EventDefinition protoToEntity(AlertEventDefinitionProto entity);
 }
