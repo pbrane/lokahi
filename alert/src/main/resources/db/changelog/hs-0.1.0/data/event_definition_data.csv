@@ -5,3 +5,5 @@ id,event_uei,name,reduction_key,clear_key,event_type
 4,uei.opennms.org/generic/traps/SNMP_Link_Down,SNMP Link Down,%s:%s:%d,,SNMP_TRAP
 5,uei.opennms.org/generic/traps/SNMP_Link_Up,SNMP Link Up,%s:%s:%d,%s:uei.opennms.org/generic/traps/SNMP_Link_Down:%d,SNMP_TRAP
 6,uei.opennms.org/generic/traps/SNMP_EGP_Down,SNMP EGP Down,%s:%s:%d,,SNMP_TRAP
+7,uei.opennms.org/internal/node/serviceUnreachable,Device Unreachable,%s:%s:%d,,INTERNAL
+8,uei.opennms.org/internal/node/serviceRestored,Device Service Restored,%s:%s:%d,%s:uei.opennms.org/internal/node/serviceUnreachable:%d,INTERNAL
