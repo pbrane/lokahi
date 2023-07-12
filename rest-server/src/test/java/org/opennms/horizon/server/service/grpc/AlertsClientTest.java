@@ -46,14 +46,19 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
+import org.opennms.horizon.alerts.proto.AlertEventDefinitionServiceGrpc;
 import org.opennms.horizon.alerts.proto.AlertRequest;
 import org.opennms.horizon.alerts.proto.AlertResponse;
 import org.opennms.horizon.alerts.proto.AlertServiceGrpc;
 import org.opennms.horizon.alerts.proto.DeleteAlertResponse;
+import org.opennms.horizon.alerts.proto.EventType;
+import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsRequest;
+import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsResponse;
 import org.opennms.horizon.alerts.proto.ListAlertsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
 import org.opennms.horizon.server.mapper.alert.AlertEventDefinitionMapper;
 import org.opennms.horizon.server.mapper.alert.MonitorPolicyMapper;
+import org.opennms.horizon.server.model.alerts.AlertEventDefinition;
 import org.opennms.horizon.server.model.alerts.TimeRange;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 
@@ -77,6 +82,7 @@ public class AlertsClientTest {
     private static AlertsClient client;
     private static MockServerInterceptor mockInterceptor;
     private static AlertServiceGrpc.AlertServiceImplBase mockAlertService;
+    private static AlertEventDefinitionServiceGrpc.AlertEventDefinitionServiceImplBase mockAlertEventDefinitionService;
     private final String accessToken = "test-token";
 
     @BeforeAll
@@ -122,18 +128,28 @@ public class AlertsClientTest {
                 }
             }));
 
+        mockAlertEventDefinitionService = mock(AlertEventDefinitionServiceGrpc.AlertEventDefinitionServiceImplBase.class, delegatesTo(
+            new AlertEventDefinitionServiceGrpc.AlertEventDefinitionServiceImplBase() {
+                @Override
+                public void listAlertEventDefinitions(ListAlertEventDefinitionsRequest request, StreamObserver<ListAlertEventDefinitionsResponse> responseObserver) {
+                    responseObserver.onNext(ListAlertEventDefinitionsResponse.newBuilder().build());
+                    responseObserver.onCompleted();
+                }
+            }));
+
         grpcCleanUp.register(InProcessServerBuilder.forName("AlertsClientTest").intercept(mockInterceptor)
-            .addService(mockAlertService).directExecutor().build().start());
+            .addService(mockAlertService).addService(mockAlertEventDefinitionService).directExecutor().build().start());
         ManagedChannel channel = grpcCleanUp.register(InProcessChannelBuilder.forName("AlertsClientTest").directExecutor().build());
         monitorPolicyMapper = Mappers.getMapper(MonitorPolicyMapper.class);
+        alertEventDefinitionMapper = Mappers.getMapper(AlertEventDefinitionMapper.class);
         client = new AlertsClient(channel, 5000, monitorPolicyMapper, alertEventDefinitionMapper);
         client.initialStubs();
     }
 
     @AfterEach
     public void afterTest() {
-        verifyNoMoreInteractions(mockAlertService);
-        reset(mockAlertService);
+        verifyNoMoreInteractions(mockAlertService, mockAlertEventDefinitionService);
+        reset(mockAlertService, mockAlertEventDefinitionService);
         mockInterceptor.reset();
     }
 
@@ -145,6 +161,18 @@ public class AlertsClientTest {
         ListAlertsResponse result = client.listAlerts(5, 0, Collections.emptyList(), TimeRange.TODAY, "tenantId", true, "node", accessToken + methodName);
         assertThat(result.getAlertsList().isEmpty()).isTrue();
         verify(mockAlertService).listAlerts(captor.capture(), any());
+        assertThat(captor.getValue()).isNotNull();
+        assertThat(mockInterceptor.getAuthHeader()).isEqualTo(accessToken + methodName);
+    }
+
+    @Test
+    void testListAlertEventDefinitions() {
+        String methodName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        ArgumentCaptor<ListAlertEventDefinitionsRequest> captor = ArgumentCaptor.forClass(ListAlertEventDefinitionsRequest.class);
+        List<AlertEventDefinition> result = client.listAlertEventDefinitions(EventType.SNMP_TRAP, accessToken + methodName);
+        assertThat(result.isEmpty()).isTrue();
+        verify(mockAlertEventDefinitionService).listAlertEventDefinitions(captor.capture(), any());
         assertThat(captor.getValue()).isNotNull();
         assertThat(mockInterceptor.getAuthHeader()).isEqualTo(accessToken + methodName);
     }
