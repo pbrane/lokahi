@@ -19,6 +19,7 @@
         text-prop="name"
         v-model="alertCondition.triggerEvent"
         :disabled="policy.isDefault"
+        @update:modelValue="$emit('updateCondition', alertCondition)"
       />
     </div>
 
@@ -30,6 +31,7 @@
         v-model="alertCondition.count"
         type="number"
         :disabled="policy.isDefault"
+        @update:modelValue="$emit('updateCondition', alertCondition)"
       />
     </div>
 
@@ -41,6 +43,7 @@
         v-model="alertCondition.overtime"
         type="number"
         :disabled="policy.isDefault"
+        @update:modelValue="$emit('updateCondition', alertCondition)"
       />
     </div>
 
@@ -48,7 +51,10 @@
       <div class="text">&nbsp;</div>
       <BasicSelect
         :list="durationOptions"
-        @item-selected="(val: number) => alertCondition.overtimeUnit = val"
+        @item-selected="(val: number) => {
+          alertCondition.overtimeUnit = val
+          $emit('updateCondition', alertCondition)
+        }"
         :selectedId="alertCondition.overtimeUnit"
         :disabled="policy.isDefault"
       />
@@ -57,8 +63,11 @@
     <div class="inner-col">
       <div class="text">Severity</div>
       <BasicSelect
-        :list="severityList"
-        @item-selected="(val: string) => alertCondition.severity = val"
+        :list="severityOptions"
+        @item-selected="(val: string) => {
+          alertCondition.severity = val
+          $emit('updateCondition', alertCondition)
+        }"
         :selectedId="alertCondition.severity"
         :disabled="policy.isDefault"
       />
@@ -71,6 +80,7 @@
         hideLabel
         :options="clearEventDefinitionOptions"
         text-prop="name"
+        @update:modelValue="$emit('updateCondition', alertCondition)"
         v-model="alertCondition.clearEvent"
         :disabled="policy.isDefault"
         clear="Remove"
@@ -103,11 +113,6 @@ const alertEventDefinitionStore = useAlertEventDefinitionQueries()
 const emit = defineEmits(['updateCondition', 'deleteCondition'])
 
 const alertCondition = ref(props.condition)
-watch(alertCondition, (newCondition) => {
-  // FIXME: This watch isn't working
-  console.log('Emitting condition update')
-  return emit('updateCondition', newCondition)
-})
 
 const durationOptions = [
   { id: Unknowns.UNKNOWN_UNIT, name: '' },
@@ -116,7 +121,7 @@ const durationOptions = [
   { id: TimeRangeUnit.Hour, name: 'Hour(s)' }
 ]
 
-const severityList = [
+const severityOptions = [
   { id: Severity.Critical, name: 'Critical' },
   { id: Severity.Major, name: 'Major' },
   { id: Severity.Minor, name: 'Minor' },
