@@ -28,60 +28,39 @@
 
 package org.opennms.horizon.alertservice.db.entity;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.opennms.horizon.alerts.proto.EventType;
+
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.opennms.horizon.alerts.proto.AlertType;
-import org.opennms.horizon.alerts.proto.ManagedObjectType;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
-@Table(name="alert_definition")
+@Table(name="event_definition")
 @Getter
 @Setter
-public class AlertDefinition implements Serializable {
-
+@ToString
+@RequiredArgsConstructor
+public class EventDefinition implements Serializable {
     @Serial
-    private static final long serialVersionUID = 7825119801706458618L;
+    private static final long serialVersionUID = 7275548439687562161L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column (name = "tenant_id", nullable = false)
-    private String tenantId;
-
     @Column(length=256, nullable=false)
-    private String uei;
+    private String eventUei;
 
-    @Column(name = "reduction_key", nullable = false)
+    private String name;
+
     private String reductionKey;
 
-    @Column(name = "clear_key")
     private String clearKey;
 
-    @Column
     @Enumerated(EnumType.STRING)
-    private AlertType type;
-
-    @Column(name = "managed_object_type")
-    @Enumerated(EnumType.STRING)
-    private ManagedObjectType managedObjectType;
-
-    @Column(name = "alert_condition_id")
-    private Long alertConditionId;
+    private EventType eventType;
 }
