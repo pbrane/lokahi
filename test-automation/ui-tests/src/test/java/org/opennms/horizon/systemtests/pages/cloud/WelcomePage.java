@@ -47,7 +47,7 @@ public class WelcomePage {
     private static final SelenideElement discoveryIPField =  $$("[data-test='welcome-slide-three-ip-input']").get(1);
     private static final SelenideElement startDiscoveryButton =  $("[data-test='welcome-store-page-three-start-discovery-button']");
     private static final SelenideElement discoveryLoadingField =  $("[data-test='welcome-discovery-status-txt']");
-    private static final SelenideElement discoveryResultNodeIPField =  $("[data-test='item-preview-meta-id']");
+    private static final SelenideElement discoveryResultNodeNameField =  $("[data-test='item-preview-meta-id']");
     private static final ElementsCollection discoveryResultNodeStatusFields =  $$("[data-test='item-preview-status-id']");
     private static final SelenideElement discoveryFinalContinueButton =  $("[data-test='welcome-store-slide-three-continue-button']");
     public static void checkIsStartSetupButtonVisible() {
@@ -105,7 +105,7 @@ public class WelcomePage {
         startDiscoveryButton.shouldBe(enabled).click();
     }
 
-    public static void nodeDiscovered(String ip) {
+    public static void nodeDiscovered(String sysName) {
         try {
             for (int i = 0; i < 50; i++) {
                 Selenide.sleep(3000);
@@ -115,7 +115,7 @@ public class WelcomePage {
             }
         }
         catch (com.codeborne.selenide.ex.ElementNotFound e) {
-            Assert.assertEquals(ip, discoveryResultNodeIPField.getText());
+            Assert.assertEquals(sysName, discoveryResultNodeNameField.getText());
             Assert.assertEquals("Minion status should be 'UP'", "UP", discoveryResultNodeStatusFields.get(0).getText());
             Assert.assertTrue("ICMP should be less then 500", 500 >= Double.valueOf(discoveryResultNodeStatusFields.get(1).getText()));
         }

@@ -9,7 +9,7 @@ Feature: User can see use welcome wizard to connect local minion to the OpenNMS
     Then click on 'Continue' button
     Then enter IP "172.31.10.10" for discovery
     Then click on 'Start Discovery' button
-    Then first node with IP "172.31.10.10" discovered successfully
+    Then first node with system name "automated-testing-sysName" discovered successfully
     Then click on 'Continue' button to end the wizard
     When Navigate to the "locations" through the left panel
     Then check "default" location exists
