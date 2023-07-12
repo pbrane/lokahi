@@ -36,11 +36,15 @@ import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alerts.proto.EventType;
-import org.opennms.horizon.server.mapper.alert.AlertMapper;
 import org.opennms.horizon.server.mapper.TagMapper;
-import org.opennms.horizon.server.model.alerts.*;
-import org.opennms.horizon.server.model.inventory.tag.TagCreate;
-import org.opennms.horizon.server.model.inventory.tag.TagListMonitorPolicyAdd;
+import org.opennms.horizon.server.mapper.alert.AlertMapper;
+import org.opennms.horizon.server.model.alerts.AlertEventDefinition;
+import org.opennms.horizon.server.model.alerts.AlertResponse;
+import org.opennms.horizon.server.model.alerts.CountAlertResponse;
+import org.opennms.horizon.server.model.alerts.DeleteAlertResponse;
+import org.opennms.horizon.server.model.alerts.ListAlertResponse;
+import org.opennms.horizon.server.model.alerts.MonitorPolicy;
+import org.opennms.horizon.server.model.alerts.TimeRange;
 import org.opennms.horizon.server.service.grpc.AlertsClient;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
@@ -48,7 +52,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -119,8 +122,6 @@ public class GrpcAlertService {
     public Mono<MonitorPolicy> createMonitorPolicy(MonitorPolicy policy, @GraphQLEnvironment ResolutionEnvironment env) {
         String authHeader = headerUtil.getAuthHeader(env);
         var monitorPolicy = alertsClient.createMonitorPolicy(policy, headerUtil.getAuthHeader(env));
-        // TODO: Handle scenarios where one of the service is down
-        createTagsInInventory(authHeader, monitorPolicy.getId(), policy.getTags());
         return Mono.just(monitorPolicy);
     }
 
@@ -144,15 +145,4 @@ public class GrpcAlertService {
         return Flux.fromIterable(alertsClient.listAlertEventDefinitions(eventType, headerUtil.getAuthHeader(env)));
     }
 
-    private void createTagsInInventory(String authHeader, long monitoringPolicyId, List<String> policyTags) {
-        List<TagCreate> tags = new ArrayList<>();
-        policyTags.forEach(tag -> {
-            var tagCreate = new TagCreate();
-            tagCreate.setName(tag);
-            tags.add(tagCreate);
-        });
-        var monitoringPolicyAdd = new TagListMonitorPolicyAdd(monitoringPolicyId, tags);
-        var newTags = tagMapper.tagListAddToProtoCustom(monitoringPolicyAdd);
-        client.addTags(newTags, authHeader);
-    }
 }
