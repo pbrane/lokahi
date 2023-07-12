@@ -28,7 +28,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
-public class AlertEventProcessorTest {
+class AlertEventProcessorTest {
 
     @InjectMocks
     AlertEventProcessor processor;
@@ -52,7 +52,7 @@ public class AlertEventProcessorTest {
     TenantLookup tenantLookup;
 
     @Test
-    public void generateAlert() {
+    void generateAlert() {
         Event event = Event.newBuilder()
             .setTenantId("tenantA")
             .setUei("uei")
@@ -69,7 +69,7 @@ public class AlertEventProcessorTest {
         alertDefinition.setTenantId("tenantA");
         alertDefinition.setUei("uei");
         alertDefinition.setReductionKey("reduction");
-        alertDefinition.setAlertConditionId(alertCondition.getId());
+        alertDefinition.setAlertCondition(alertCondition);
 
         MonitorPolicy monitorPolicy = new MonitorPolicy();
         monitorPolicy.setId(1L);

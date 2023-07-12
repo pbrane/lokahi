@@ -30,13 +30,13 @@ package org.opennms.horizon.alertservice.db.entity;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import org.opennms.horizon.alerts.proto.AlertType;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,7 +44,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -62,7 +61,7 @@ public class AlertDefinition implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column (name = "tenant_id", nullable = false)
+    @Column(name = "tenant_id", nullable = false)
     private String tenantId;
 
     @Column(length=256, nullable=false)
@@ -82,6 +81,7 @@ public class AlertDefinition implements Serializable {
     @Enumerated(EnumType.STRING)
     private ManagedObjectType managedObjectType;
 
-    @Column(name = "alert_condition_id")
-    private Long alertConditionId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "alert_condition_id", referencedColumnName = "id")
+    private AlertCondition alertCondition;
 }

@@ -83,7 +83,6 @@ public class AlertCondition {
     @JoinColumn(name = "rule_id", referencedColumnName = "id")
     private PolicyRule rule;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id", referencedColumnName = "trigger_event_id")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "alertCondition")
     private AlertDefinition alertDefinition;
 }

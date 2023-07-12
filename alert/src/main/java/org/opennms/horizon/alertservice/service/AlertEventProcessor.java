@@ -100,13 +100,13 @@ public class AlertEventProcessor {
         return Optional.of(alertMapper.toProto(dbAlert));
     }
 
-    private @Nullable AlertData getAlertData(Event event, AlertDefinition alertDefinition) {
+    private AlertData getAlertData(Event event, AlertDefinition alertDefinition) {
         var reductionKey = String.format(alertDefinition.getReductionKey(), event.getTenantId(), event.getUei(), event.getNodeId());
         String clearKey = null;
         if (!Strings.isNullOrEmpty(alertDefinition.getClearKey())) {
             clearKey = String.format(alertDefinition.getClearKey(), event.getTenantId(), event.getNodeId());
         }
-        AlertCondition alertCondition = alertConditionRepository.getReferenceById(alertDefinition.getAlertConditionId());
+        AlertCondition alertCondition = alertDefinition.getAlertCondition();
         var tags = tagRepository.findByTenantIdAndNodeId(event.getTenantId(), event.getNodeId());
         List<MonitorPolicy> matchingPolicies = new ArrayList<>();
         tags.forEach(tag -> matchingPolicies.addAll(tag.getPolicies().stream().toList()));
