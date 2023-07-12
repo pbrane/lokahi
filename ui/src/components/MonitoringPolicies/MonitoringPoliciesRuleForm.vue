@@ -14,7 +14,7 @@
       </FeatherButton>
       <MonitoringPoliciesExistingItems
         title="Existing Rules"
-        :list="store.selectedPolicy.rules"
+        :list="store.selectedPolicy.rules as PolicyRule[]"
         :selectedItemId="store.selectedRule?.id"
         @selectExistingItem="populateForm"
       />
@@ -60,24 +60,37 @@
             />
           </div>
           <div class="col">
-            <div class="subtitle">
-              Event Metrics
-            </div>
-            <BasicSelect
-              :list="metricOptions"
-              @item-selected="selectMetric"
-              :selectedId="store.selectedRule.metricName"
-              :disabled="store.selectedPolicy.isDefault"
-            />
+            <template v-if="store.selectedRule?.detectionMethod === DetectionMethod.Threshold">
+              <div class="subtitle">
+                Metric
+              </div>
+              <BasicSelect
+                :list="thresholdMetricsOptions"
+                @item-selected="selectThresholdMetric"
+                :selectedId="store.selectedRule.thresholdMetricName"
+                :disabled="store.selectedPolicy.isDefault"
+              />
+            </template>
+            <template v-else-if="store.selectedRule?.detectionMethod === DetectionMethod.Event">
+              <div class="subtitle">
+                Event Type
+              </div>
+              <BasicSelect
+                :list="eventTypeOptions"
+                @item-selected="selectEventType"
+                :selectedId="store.selectedRule.eventType"
+                :disabled="store.selectedPolicy.isDefault"
+              />
+            </template>
           </div>
         </div>
         <div
           class="row"
-          v-if="store.selectedRule!.alertConditions.length"
+          v-if="store.selectedRule!.alertConditions?.length"
         >
           <div class="col">
             <div class="form-title">Set Alert Conditions</div>
-            <template v-if="store.selectedRule!.detectionMethod === DetectionMethodTypes.THRESHOLD">
+            <template v-if="store.selectedRule!.detectionMethod === DetectionMethod.Threshold">
               <MonitoringPoliciesThresholdCondition
                 v-for="(cond, index) in store.selectedRule!.alertConditions"
                 :key="cond.id"
@@ -91,11 +104,10 @@
               <MonitoringPoliciesEventCondition
                 v-for="(cond, index) in store.selectedRule!.alertConditions"
                 :key="cond.id"
-                :condition="(cond as EventCondition)"
-                :policy="store.selectedPolicy"
-                :rule="store.selectedRule"
-                :event-type="EventType.SnmpTrap"
+                :condition="(cond as AlertCondition)"
+                :event-type="store.selectedRule?.eventType"
                 :index="Number(index)"
+                :isDisabled="store.selectedPolicy?.isDefault === true"
                 @updateCondition="(condition) => store.updateCondition(cond.id, condition)"
                 @deleteCondition="(id: string) => store.deleteCondition(id)"
               />
@@ -104,7 +116,7 @@
               class="add-params"
               text
               @click="store.addNewCondition"
-              :disabled="store.selectedRule.alertConditions.length === 4 || store.selectedPolicy.isDefault"
+              :disabled="store.selectedRule.alertConditions?.length === 4 || store.selectedPolicy.isDefault"
             >
               Additional Conditions
             </FeatherButton>
@@ -117,31 +129,25 @@
 
 <script setup lang="ts">
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { EventCondition, Rule, ThresholdCondition } from '@/types/policies'
+import { ThresholdCondition } from '@/types/policies'
 import Add from '@featherds/icon/action/Add'
-import { ComponentType, DetectionMethodTypes, ThresholdMetrics } from './monitoringPolicies.constants'
-import { EventType } from '@/types/graphql'
+import { ThresholdMetrics } from './monitoringPolicies.constants'
+import { AlertCondition, DetectionMethod, EventType, ManagedObjectType, PolicyRule } from '@/types/graphql'
 
 const store = useMonitoringPoliciesStore()
 const addIcon = markRaw(Add)
 
-const metricOptions = computed(() => {
-  return store.selectedRule?.detectionMethod === DetectionMethodTypes.THRESHOLD
-    ? thresholdMetricsOptions
-    : eventMetricsOptions
-})
-
 const componentTypeOptions = [
-  { id: ComponentType.ANY, name: 'Any' },
-  { id: ComponentType.SNMP_INTERFACE, name: 'SNMP Interface' },
-  { id: ComponentType.SNMP_INTERFACE_LINK, name: 'SNMP Interface Link'},
-  { id: ComponentType.NODE, name: 'Node' }
+  { id: ManagedObjectType.Any, name: 'Any' },
+  { id: ManagedObjectType.SnmpInterface, name: 'SNMP Interface' },
+  { id: ManagedObjectType.SnmpInterfaceLink, name: 'SNMP Interface Link'},
+  { id: ManagedObjectType.Node, name: 'Node' }
 ]
 
 const detectionMethodOptions = [
-  // { id: DetectionMethodTypes.THRESHOLD, name: 'Threshold' }, BE not ready yet
+  // { id: DetectionMethod.Threshold, name: 'Threshold' }, BE not ready yet
   // TODO: https://opennms.atlassian.net/browse/HS-750
-  { id: DetectionMethodTypes.EVENT, name: 'Event' }
+  { id: DetectionMethod.Event, name: 'Event' }
 ]
 
 const thresholdMetricsOptions = [
@@ -150,17 +156,17 @@ const thresholdMetricsOptions = [
   { id: ThresholdMetrics.ERRORS, name: 'Errors' }
 ]
 
-const eventMetricsOptions = [
-  { id: EventType.SnmpTrap, name: 'SNMP Trap' }
-  // { id: EventType.Internal, name: 'Internal' } BE Not ready yet
-  // TODO: https://opennms.atlassian.net/browse/HS-1759
+const eventTypeOptions = [
+  { id: EventType.SnmpTrap, name: 'SNMP Trap' },
+  { id: EventType.Internal, name: 'Internal' }
 ]
 
-const selectComponentType = (type: string) => (store.selectedRule!.componentType = type)
-const selectMetric = (metric: string) => (store.selectedRule!.metricName = metric)
-const populateForm = async (rule: Rule) => await store.displayRuleForm(rule)
+const selectComponentType = (type: ManagedObjectType) => (store.selectedRule!.componentType = type)
+const selectThresholdMetric = (metric: string) => (store.selectedRule!.thresholdMetricName = metric)
+const selectEventType = (eventType: EventType) => (store.selectedRule!.eventType = eventType)
+const populateForm = async (rule: PolicyRule) => await store.displayRuleForm(rule)
 
-const selectDetectionMethod = async (method: string) => {
+const selectDetectionMethod = async (method: DetectionMethod) => {
   store.selectedRule!.detectionMethod = method
   await store.resetDefaultConditions()
 }

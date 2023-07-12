@@ -55,16 +55,16 @@
       <div v-if="ruleStates[rule.id]">
         <div class="alert-title">Alert Conditions</div>
         <MonitoringPoliciesCardEventConditionTable
-          :eventConditions="rule.alertConditions"
+          :eventConditions="rule.alertConditions as AlertCondition[]"
         />
 <!--    TODO: Bring this back when thresholding is implemented
           https://opennms.atlassian.net/browse/HS-750
         <MonitoringPoliciesCardEventConditionTable
-          v-if="rule.detectionMethod === DetectionMethodTypes.EVENT"
+          v-if="rule.detectionMethod === DetectionMethod.EVENT"
           :eventConditions="rule.alertConditions"
         />
         <MonitoringPoliciesCardThresholdConditionTable
-          v-else-if="rule.detectionMethod === DetectionMethodTypes.THRESHOLD"
+          v-else-if="rule.detectionMethod === DetectionMethod.THRESHOLD"
           :thresholdConditions="[]"
         />-->
       </div>
@@ -78,7 +78,7 @@ import ExpandLess from '@featherds/icon/navigation/ExpandLess'
 import ExpandMore from '@featherds/icon/navigation/ExpandMore'
 import ContentCopy from '@featherds/icon/action/ContentCopy'
 import Edit from '@featherds/icon/action/Edit'
-import { DetectionMethodTypes } from '@/components/MonitoringPolicies/monitoringPolicies.constants'
+import { AlertCondition } from '@/types/graphql'
 
 const icons = markRaw({
   ExpandLess,
@@ -96,7 +96,7 @@ const ruleStates = reactive<{ [x: string]: boolean }>({})
 const triggerRuleState = (ruleId: string) => (ruleStates[ruleId] = !ruleStates[ruleId])
 
 // set first rule alert conditions open by default
-onMounted(() => (ruleStates[props.policy.rules[0].id] = true))
+onMounted(() => (ruleStates[props.policy.rules?.[0].id] = true))
 </script>
 
 <style scoped lang="scss">

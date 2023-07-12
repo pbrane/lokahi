@@ -1,23 +1,29 @@
 import { defineStore } from 'pinia'
 import { cloneDeep, findIndex } from 'lodash'
-import { Condition, EventCondition, Policy, Rule, ThresholdCondition } from '@/types/policies'
+import { Condition, Policy, ThresholdCondition } from '@/types/policies'
 import { useMonitoringPoliciesMutations } from '../Mutations/monitoringPoliciesMutations'
 import { useMonitoringPoliciesQueries } from '../Queries/monitoringPoliciesQueries'
 import useSnackbar from '@/composables/useSnackbar'
 import {
-  ComponentType,
-  DetectionMethodTypes,
   ThresholdLevels,
   Unknowns
 } from '@/components/MonitoringPolicies/monitoringPolicies.constants'
-import { EventType, MonitorPolicy, Severity, TimeRangeUnit } from '@/types/graphql'
+import {
+  AlertCondition,
+  DetectionMethod,
+  EventType,
+  ManagedObjectType,
+  MonitorPolicy, PolicyRule,
+  Severity,
+  TimeRangeUnit
+} from '@/types/graphql'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
 
 const { showSnackbar } = useSnackbar()
 
 type TState = {
   selectedPolicy?: Policy
-  selectedRule?: Rule
+  selectedRule?: PolicyRule
   monitoringPolicies: MonitorPolicy[]
 }
 
@@ -44,7 +50,7 @@ function getDefaultThresholdCondition(): ThresholdCondition {
   }
 }
 
-async function getDefaultEventCondition(): Promise<EventCondition> {
+async function getDefaultEventCondition(): Promise<AlertCondition> {
   const alertEventDefinitionQueries = useAlertEventDefinitionQueries()
   const alertEventDefinitions =
     await alertEventDefinitionQueries.listAlertEventDefinitions(EventType.SnmpTrap)
@@ -61,13 +67,13 @@ async function getDefaultEventCondition(): Promise<EventCondition> {
   }
 }
 
-async function getDefaultRule(): Promise<Rule> {
+async function getDefaultRule(): Promise<PolicyRule> {
   return {
     id: new Date().getTime(),
     name: '',
-    componentType: ComponentType.NODE,
-    detectionMethod: DetectionMethodTypes.EVENT,
-    metricName: EventType.SnmpTrap,
+    componentType: ManagedObjectType.Node,
+    detectionMethod: DetectionMethod.Event,
+    eventType: EventType.SnmpTrap,
     alertConditions: [await getDefaultEventCondition()]
   }
 }
@@ -89,14 +95,14 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.selectedPolicy = policy ? cloneDeep(policy) : cloneDeep(defaultPolicy)
       this.selectedRule = undefined
     },
-    async displayRuleForm(rule?: Rule) {
+    async displayRuleForm(rule?: PolicyRule) {
       this.selectedRule = rule ? cloneDeep(rule) : await getDefaultRule()
     },
     async resetDefaultConditions() {
       if (!this.selectedRule) return
 
       // detection method THRESHOLD
-      if (this.selectedRule.detectionMethod===DetectionMethodTypes.THRESHOLD) {
+      if (this.selectedRule.detectionMethod === DetectionMethod.Threshold) {
         return (this.selectedRule.alertConditions = [getDefaultThresholdCondition()])
       }
 
@@ -107,15 +113,15 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       if (!this.selectedRule) return
 
       // detection method THRESHOLD
-      if (this.selectedRule.detectionMethod===DetectionMethodTypes.THRESHOLD) {
-        return this.selectedRule.alertConditions.push(getDefaultThresholdCondition())
+      if (this.selectedRule.detectionMethod === DetectionMethod.Threshold) {
+        return this.selectedRule.alertConditions?.push(getDefaultThresholdCondition())
       }
 
       // detection method EVENT
-      return this.selectedRule.alertConditions.push(await getDefaultEventCondition())
+      return this.selectedRule.alertConditions?.push(await getDefaultEventCondition())
     },
     updateCondition(id: string, condition: Condition) {
-      this.selectedRule!.alertConditions.map((currentCondition) => {
+      this.selectedRule!.alertConditions?.map((currentCondition: AlertCondition) => {
         if (currentCondition.id === id) {
           return { ...currentCondition, ...condition }
         }
@@ -123,17 +129,17 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       })
     },
     deleteCondition(id: string) {
-      this.selectedRule!.alertConditions = this.selectedRule!.alertConditions.filter((c) => c.id !== id)
+      this.selectedRule!.alertConditions = this.selectedRule!.alertConditions?.filter((c: AlertCondition) => c.id !== id)
     },
     async saveRule() {
       const existingItemIndex = findIndex(this.selectedPolicy!.rules, { id: this.selectedRule!.id })
 
       if (existingItemIndex!== -1) {
         // replace existing rule
-        this.selectedPolicy!.rules.splice(existingItemIndex, 1, this.selectedRule!)
+        this.selectedPolicy!.rules?.splice(existingItemIndex, 1, this.selectedRule!)
       } else {
         // add new rule
-        this.selectedPolicy!.rules.push(this.selectedRule!)
+        this.selectedPolicy!.rules?.push(this.selectedRule!)
       }
 
       this.selectedRule = await getDefaultRule()
@@ -144,13 +150,11 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
 
       // modify payload to comply with current BE format
       const policy = cloneDeep(this.selectedPolicy!)
-      policy.rules = policy.rules.map((rule) => {
-        rule.alertConditions = rule.alertConditions.map((condition) => {
+      policy.rules = policy.rules?.map((rule) => {
+        rule.alertConditions = rule.alertConditions?.map((condition) => {
           if (!policy.id) delete condition.id // don't send generated ids
           return condition
         })
-        delete rule.detectionMethod
-        delete rule.metricName
         if (!policy.id) delete rule.id // don't send generated ids
         return rule
       })
