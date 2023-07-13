@@ -62,6 +62,9 @@ class MonitorPolicyMapperTest {
         PolicyRuleProto rule = PolicyRuleProto.newBuilder()
             .setName("test-rule")
             .setComponentType(ManagedObjectType.NODE)
+            .setDetectionMethod(DetectionMethod.EVENT)
+            .setEventType(EventType.SNMP_TRAP)
+            .setThresholdMetricName("threshold-metric")
             .addSnmpEvents(alertCondition)
             .build();
         policyProto = MonitorPolicyProto.newBuilder()
@@ -88,8 +91,8 @@ class MonitorPolicyMapperTest {
 
         PolicyRule policyRule = policy.getRules().get(0);
         assertThat(policyRule)
-            .extracting(PolicyRule::getName, PolicyRule::getComponentType, r -> r.getAlertConditions().size())
-            .containsExactly("test-rule", ManagedObjectType.NODE.name(), 1);
+            .extracting(PolicyRule::getName, PolicyRule::getComponentType, PolicyRule::getDetectionMethod, PolicyRule::getEventType, PolicyRule::getThresholdMetricName, r -> r.getAlertConditions().size())
+            .containsExactly("test-rule", ManagedObjectType.NODE, DetectionMethod.EVENT, EventType.SNMP_TRAP, "threshold-metric", 1);
 
         AlertCondition alertCondition = policyRule.getAlertConditions().get(0);
         assertThat(alertCondition)
