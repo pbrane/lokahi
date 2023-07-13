@@ -172,7 +172,9 @@ public class AlertEventProcessor {
             // Existing alert found, update it
             alert = optionalAlert.get();
             alert.incrementCount();
-            alert.setLastEventId(event.getDatabaseId());
+            if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.DATABASE_ID_FIELD_NUMBER))) {
+                alert.setLastEventId(event.getDatabaseId());
+            }
             alert.setType(alertData.type());
             if (AlertType.CLEAR.equals(alert.getType())) {
                 // Set the severity to CLEARED when reducing alerts
