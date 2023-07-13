@@ -26,22 +26,41 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.server.model.alerts;
+package org.opennms.horizon.alertservice.db.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.opennms.horizon.alerts.proto.EventType;
 
+import java.io.Serial;
+import java.io.Serializable;
+
+@Entity
+@Table(name="event_definition")
 @Getter
-public enum ManagedObjectType {
-    UNDEFINED(0),
-    ANY(1),
-    NODE(2),
-    SNMP_INTERFACE(3),
-    SNMP_INTERFACE_LINK(4),
-    UNRECOGNIZED(5);
+@Setter
+@ToString
+@RequiredArgsConstructor
+public class EventDefinition implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 7275548439687562161L;
 
-    private final int value;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    ManagedObjectType(int value) {
-        this.value = value;
-    }
+    @Column(length=256, nullable=false)
+    private String eventUei;
+
+    private String name;
+
+    private String reductionKey;
+
+    private String clearKey;
+
+    @Enumerated(EnumType.STRING)
+    private EventType eventType;
 }

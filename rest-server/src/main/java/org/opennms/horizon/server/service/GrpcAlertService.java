@@ -35,8 +35,10 @@ import io.leangen.graphql.annotations.GraphQLQuery;
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import lombok.RequiredArgsConstructor;
-import org.opennms.horizon.server.mapper.AlertMapper;
+import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.server.mapper.TagMapper;
+import org.opennms.horizon.server.mapper.alert.AlertMapper;
+import org.opennms.horizon.server.model.alerts.AlertEventDefinition;
 import org.opennms.horizon.server.model.alerts.AlertResponse;
 import org.opennms.horizon.server.model.alerts.CountAlertResponse;
 import org.opennms.horizon.server.model.alerts.DeleteAlertResponse;
@@ -118,7 +120,6 @@ public class GrpcAlertService {
 
     @GraphQLMutation
     public Mono<MonitorPolicy> createMonitorPolicy(MonitorPolicy policy, @GraphQLEnvironment ResolutionEnvironment env) {
-        String authHeader = headerUtil.getAuthHeader(env);
         var monitorPolicy = alertsClient.createMonitorPolicy(policy, headerUtil.getAuthHeader(env));
         return Mono.just(monitorPolicy);
     }
@@ -136,6 +137,11 @@ public class GrpcAlertService {
     @GraphQLQuery
     public Mono<MonitorPolicy> getDefaultPolicy(@GraphQLEnvironment ResolutionEnvironment env) {
         return Mono.just(alertsClient.getDefaultPolicy(headerUtil.getAuthHeader(env)));
+    }
+
+    @GraphQLQuery
+    public Flux<AlertEventDefinition> listAlertEventDefinitions(EventType eventType, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(alertsClient.listAlertEventDefinitions(eventType, headerUtil.getAuthHeader(env)));
     }
 
 }

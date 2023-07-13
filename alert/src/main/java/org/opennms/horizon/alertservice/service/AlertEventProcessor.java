@@ -45,6 +45,7 @@ import org.opennms.horizon.alertservice.db.repository.TagRepository;
 import org.opennms.horizon.alertservice.db.repository.ThresholdedEventRepository;
 import org.opennms.horizon.alertservice.db.repository.AlertConditionRepository;
 import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
+import org.opennms.horizon.alertservice.mapper.AlertMapper;
 import org.opennms.horizon.events.proto.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +73,7 @@ public class AlertEventProcessor {
     private final AlertMapper alertMapper;
 
     private final AlertDefinitionRepository alertDefinitionRepository;
-    private final AlertConditionRepository alertConditionRepository;
+
     private final ThresholdedEventRepository thresholdedEventRepository;
 
     private final TagRepository tagRepository;
@@ -99,13 +100,13 @@ public class AlertEventProcessor {
         return Optional.of(alertMapper.toProto(dbAlert));
     }
 
-    private @Nullable AlertData getAlertData(Event event, AlertDefinition alertDefinition) {
+    private AlertData getAlertData(Event event, AlertDefinition alertDefinition) {
         var reductionKey = String.format(alertDefinition.getReductionKey(), event.getTenantId(), event.getUei(), event.getNodeId());
         String clearKey = null;
         if (!Strings.isNullOrEmpty(alertDefinition.getClearKey())) {
             clearKey = String.format(alertDefinition.getClearKey(), event.getTenantId(), event.getNodeId());
         }
-        AlertCondition alertCondition = alertConditionRepository.getReferenceById(alertDefinition.getAlertConditionId());
+        AlertCondition alertCondition = alertDefinition.getAlertCondition();
         var tags = tagRepository.findByTenantIdAndNodeId(event.getTenantId(), event.getNodeId());
         List<MonitorPolicy> matchingPolicies = new ArrayList<>();
         tags.forEach(tag -> matchingPolicies.addAll(tag.getPolicies().stream().toList()));
@@ -171,7 +172,16 @@ public class AlertEventProcessor {
             // Existing alert found, update it
             alert = optionalAlert.get();
             alert.incrementCount();
-            alert.setLastEventId(event.getDatabaseId());
+            if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.DATABASE_ID_FIELD_NUMBER))) {
+                alert.setLastEventId(event.getDatabaseId());
+            }
+
+            if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.PRODUCED_TIME_MS_FIELD_NUMBER))) {
+                alert.setLastEventTime(new Date(event.getProducedTimeMs()));
+            } else {
+                alert.setLastEventTime(new Date());
+            }
+
             alert.setType(alertData.type());
             if (AlertType.CLEAR.equals(alert.getType())) {
                 // Set the severity to CLEARED when reducing alerts
@@ -243,15 +253,27 @@ public class AlertEventProcessor {
         alert.setCounter(1L);
         alert.setDescription(event.getDescription());
         alert.setLogMessage(event.getLogMessage());
+
         if (event.getNodeId() > 0) {
             alert.setManagedObjectType(ManagedObjectType.NODE);
             alert.setManagedObjectInstance(Long.toString(event.getNodeId()));
         } else {
             alert.setManagedObjectType(ManagedObjectType.UNDEFINED);
         }
+
         // FIXME: We should be using the source time of the event and not the time at which it was produced
-        alert.setLastEventTime(new Date(event.getProducedTimeMs()));
-        alert.setLastEventId(event.getDatabaseId());
+        if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.PRODUCED_TIME_MS_FIELD_NUMBER))) {
+            alert.setFirstEventTime(new Date(event.getProducedTimeMs()));
+        } else {
+            alert.setFirstEventTime(new Date());
+        }
+
+        alert.setLastEventTime(alert.getFirstEventTime());
+
+        if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.DATABASE_ID_FIELD_NUMBER))) {
+            alert.setLastEventId(event.getDatabaseId());
+        }
+
         alert.setSeverity(alertData.alertCondition().getSeverity());
         alert.setEventUei(event.getUei());
         alert.setAlertCondition(alertData.alertCondition());

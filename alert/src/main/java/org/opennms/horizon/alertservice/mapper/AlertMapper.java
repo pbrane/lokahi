@@ -26,16 +26,37 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.server.mapper.alert;
+package org.opennms.horizon.alertservice.mapper;
 
+import java.util.Date;
+
+import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
-import org.opennms.horizon.server.model.alerts.AlertCondition;
-import org.opennms.horizon.alerts.proto.AlertConditionProto;
+import org.mapstruct.factory.Mappers;
+import org.opennms.horizon.alertservice.db.entity.Alert;
 
 @Mapper(componentModel = "spring",
-    nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, uses = { AlertEventDefinitionMapper.class })
-public interface AlertConditionMapper {
-    AlertCondition map(AlertConditionProto protoEvent);
-    AlertConditionProto map(AlertCondition event);
+    collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
+    nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+public interface AlertMapper {
+
+    AlertMapper INSTANCE = Mappers.getMapper( AlertMapper.class );
+
+
+    @Mapping(target = "databaseId", source = "id")
+    @Mapping(target = "uei", source = "eventUei")
+    @Mapping(target = "lastUpdateTimeMs", source = "lastEventTime")
+    @Mapping(target = "isAcknowledged", expression = "java(alert.getAcknowledgedByUser() != null ? true : false)")
+    @Mapping(target = "ackUser", source = "acknowledgedByUser")
+    @Mapping(target = "ackTimeMs", source = "acknowledgedAt")
+    @Mapping(target = "monitoringPolicyIdList", source = "monitoringPolicyId")
+    @Mapping(target = "label", source = "alertCondition.triggerEvent.name")
+    @Mapping(target = "nodeName", source = "nodeLabel")
+    org.opennms.horizon.alerts.proto.Alert toProto(Alert alert);
+
+    default long mapDateToLongMs(Date value) {
+        return value == null ? 0L : value.getTime();
+    }
 }

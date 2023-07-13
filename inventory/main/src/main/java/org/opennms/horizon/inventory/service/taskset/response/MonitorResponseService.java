@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.inventory.service.taskset.response;
 
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.events.proto.Event;
@@ -83,7 +84,7 @@ public class MonitorResponseService {
             monitoredServiceState.setServiceState(statusFromMonitor);
             serviceStateRepository.save(monitoredServiceState);
         }
-        if (statusFromMonitor != previousState) {
+        if (!Objects.equals(statusFromMonitor, previousState)) {
             // State changed, send event
             triggerEvent(tenantId, monitorResponse, statusFromMonitor);
         }
@@ -99,6 +100,7 @@ public class MonitorResponseService {
         eventBuilder.setIpAddress(monitorResponse.getIpAddress());
         eventBuilder.setTenantId(tenantId);
         eventBuilder.setNodeId(monitorResponse.getNodeId());
+        eventBuilder.setProducedTimeMs(monitorResponse.getTimestamp());
         var serviceNameParam = EventParameter.newBuilder().setName("serviceName")
             .setValue(monitorResponse.getMonitorType().name()).build();
         var serviceIdParam = EventParameter.newBuilder().setName("serviceId")

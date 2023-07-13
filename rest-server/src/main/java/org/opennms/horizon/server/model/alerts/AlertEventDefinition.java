@@ -26,31 +26,19 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.inventory.component;
+package org.opennms.horizon.server.model.alerts;
 
-import lombok.extern.slf4j.Slf4j;
-import org.opennms.horizon.events.proto.EventLog;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
+import lombok.Getter;
+import lombok.Setter;
+import org.opennms.horizon.alerts.proto.EventType;
 
-@Component
-@Slf4j
-@PropertySource("classpath:application.yml")
-public class InternalEventProducer {
-
-    private static final String DEFAULT_TOPIC = "internal-event";
-    @Value("${kafka.topics.internal-events:" + DEFAULT_TOPIC + "}")
-    private String eventTopic;
-    private final KafkaTemplate<String, byte[]> kafkaTemplate;
-
-    public InternalEventProducer(KafkaTemplate<String, byte[]> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
-
-    public void sendEvent(EventLog eventLog) {
-        log.info("Sending internal events {}", eventLog);
-        kafkaTemplate.send(eventTopic, eventLog.toByteArray());
-    }
+@Getter
+@Setter
+public class AlertEventDefinition {
+    private Long id;
+    private String uei;
+    private String name;
+    private String reductionKey;
+    private String clearKey;
+    private EventType eventType;
 }
