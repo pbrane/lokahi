@@ -30,9 +30,14 @@ package org.opennms.horizon.systemtests.pages.cloud;
 import com.codeborne.selenide.*;
 import lombok.SneakyThrows;
 import org.junit.Assert;
+import org.opennms.horizon.systemtests.utils.MinionStarter;
+import org.openqa.selenium.NoSuchElementException;
 import testcontainers.DockerComposeMinionContainer;
 import java.io.File;
+import java.time.Duration;
+
 import static com.codeborne.selenide.Condition.enabled;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
@@ -61,25 +66,7 @@ public class WelcomePage {
 
     @SneakyThrows
     public static void downloadCertificateAndStartMinion(String minionID, String dockerComposeFile) {
-        Configuration.fileDownload = FileDownloadMode.FOLDER;
-        File cert = downloadCertificateButton.shouldBe(enabled).download(60000);
-        Assert.assertTrue(cert.exists());
-
-        String dockerCL = null;
-        for (int i = 0; i < 10; i++) {
-            Selenide.sleep(3000);
-            dockerCL = dockerRunCLTextField.getText();
-            if (dockerCL.indexOf("GRPC_CLIENT_KEYSTORE_PASSWORD='") > 0) {
-                break;
-            }
-        }
-
-        int start = dockerCL.indexOf("GRPC_CLIENT_KEYSTORE_PASSWORD='") + "GRPC_CLIENT_KEYSTORE_PASSWORD='".length();
-        int end = dockerCL.indexOf("' -e MINION_ID=");
-        Assert.assertTrue (end > start && start > 0);
-
-        String password = dockerCL.substring(start, end);
-        DockerComposeMinionContainer.createNewContainer("src/test/resources/" + dockerComposeFile, cert, minionID, password);
+        MinionStarter.downloadCertificateAndStartMinion(minionID, dockerComposeFile, downloadCertificateButton, dockerRunCLTextField);
     }
 
     public static void checkMinionConnection() {
@@ -123,5 +110,9 @@ public class WelcomePage {
 
     public static void clickContinueToEndWizard() {
         discoveryFinalContinueButton.shouldBe(enabled).click();
+    }
+
+    public static void waitPageLoaded() {
+        startSetupButton.shouldBe(visible, Duration.ofSeconds(5));
     }
 }
