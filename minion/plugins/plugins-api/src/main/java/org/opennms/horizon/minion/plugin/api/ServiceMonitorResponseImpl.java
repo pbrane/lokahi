@@ -19,7 +19,8 @@ public class ServiceMonitorResponseImpl implements ServiceMonitorResponse {
     private long nodeId;
     private long monitoredServiceId;
 
-    private long timestamp;
+    @Builder.Default
+    private long timestamp = System.currentTimeMillis();
 
     public static ServiceMonitorResponse unknown() { return builder().status(Status.Unknown).build();}
     public static ServiceMonitorResponse down() { return builder().status(Status.Down).build();}

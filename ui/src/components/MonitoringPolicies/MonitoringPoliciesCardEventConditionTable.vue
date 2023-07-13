@@ -34,12 +34,12 @@
 </template>
 
 <script setup lang="ts">
-import { EventCondition } from '@/types/policies'
 import { conditionLetters, Unknowns } from './monitoringPolicies.constants'
 import { snakeToTitleCase } from '../utils'
+import { AlertCondition } from '@/types/graphql'
 
 defineProps<{
-  eventConditions: EventCondition[]
+  eventConditions: AlertCondition[]
 }>()
 </script>
 

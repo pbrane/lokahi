@@ -144,7 +144,6 @@ public class IcmpMonitor extends AbstractServiceMonitor {
                     .responseTime(responseTimeMillis)
                     .nodeId(nodeId)
                     .monitoredServiceId(monitoredServiceId)
-                    .timestamp(System.currentTimeMillis())
                     .ipAddress(inetAddress.getHostAddress())
                     .build()
             );

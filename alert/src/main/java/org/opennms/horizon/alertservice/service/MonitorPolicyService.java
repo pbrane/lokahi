@@ -257,8 +257,8 @@ public class MonitorPolicyService {
                 definition.setTenantId(condition.getTenantId());
                 definition.setReductionKey(condition.getTriggerEvent().getReductionKey());
                 definition.setType(getAlertTypeFromEventDefinition(condition.getTriggerEvent()));
-                definition.setAlertConditionId(condition.getId());
                 definition.setClearKey(condition.getTriggerEvent().getClearKey());
+                definition.setAlertCondition(condition);
                 definitionRepo.save(definition);
             });
     }

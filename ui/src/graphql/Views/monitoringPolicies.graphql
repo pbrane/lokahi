@@ -9,6 +9,9 @@ fragment MonitoringPolicyParts on MonitorPolicy {
     id
     name
     componentType
+    detectionMethod
+    eventType
+    thresholdMetricName
     alertConditions {
       id
       count

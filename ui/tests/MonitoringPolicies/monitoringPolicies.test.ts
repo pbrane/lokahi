@@ -2,8 +2,8 @@ import MonitoringPolicies from '@/containers/MonitoringPolicies.vue'
 import mount from 'tests/mountWithPiniaVillus'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
-import { ComponentType, Unknowns } from '@/components/MonitoringPolicies/monitoringPolicies.constants'
-import { EventType, MonitorPolicy, Severity } from '@/types/graphql'
+import { Unknowns } from '@/components/MonitoringPolicies/monitoringPolicies.constants'
+import { DetectionMethod, EventType, ManagedObjectType, MonitorPolicy, Severity } from '@/types/graphql'
 import featherInputFocusDirective from '@/directives/v-focus'
 import { buildFetchList } from '../utils'
 
@@ -17,7 +17,9 @@ const testingPayload: MonitorPolicy = {
   rules: [
     {
       name: 'Rule1',
-      componentType: ComponentType.NODE,
+      componentType: ManagedObjectType.Node,
+      detectionMethod: DetectionMethod.Event,
+      eventType: EventType.SnmpTrap,
       alertConditions: [
         {
           count: 1,
@@ -87,12 +89,12 @@ describe('Monitoring Policies', () => {
     const store = useMonitoringPoliciesStore()
     const saveRuleBtn = wrapper.get('[data-test="save-rule-btn"]')
 
-    expect(store.selectedPolicy!.rules.length).toBe(0)
+    expect(store.selectedPolicy!.rules?.length).toBe(0)
     await wrapper.get('[data-test="rule-name-input"] .feather-input').setValue('Rule1')
     await saveRuleBtn.trigger('click')
 
     expect(store.saveRule).toHaveBeenCalledTimes(1)
-    expect(store.selectedPolicy!.rules.length).toBe(1)
+    expect(store.selectedPolicy!.rules?.length).toBe(1)
   })
 
   test('Saving a new policy.', async () => {

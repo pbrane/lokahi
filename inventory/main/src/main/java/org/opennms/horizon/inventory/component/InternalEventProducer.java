@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:application.yml")
 public class InternalEventProducer {
 
-    private static final String DEFAULT_TOPIC = "internal-events";
+    private static final String DEFAULT_TOPIC = "internal-event";
     @Value("${kafka.topics.internal-events:" + DEFAULT_TOPIC + "}")
     private String eventTopic;
     private final KafkaTemplate<String, byte[]> kafkaTemplate;

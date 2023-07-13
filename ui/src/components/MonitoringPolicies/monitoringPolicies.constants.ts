@@ -1,17 +1,3 @@
-export enum DetectionMethodTypes {
-  THRESHOLD = 'THRESHOLD',
-  EVENT = 'EVENT'
-}
-
-export enum ComponentType {
-  ANY = 'ANY',
-  //CPU = 'CPU', FIXME: is this a valid type?
-  SNMP_INTERFACE = 'SNMP_INTERFACE',
-  SNMP_INTERFACE_LINK = 'SNMP_INTERFACE_LINK',
-  //STORAGE = 'STORAGE', FIXME: is this a valid type?
-  NODE = 'NODE'
-}
-
 export enum ThresholdMetrics {
   OVER_UTILIZATION = 'OVER_UTILIZATION',
   SATURATION = 'SATURATION',

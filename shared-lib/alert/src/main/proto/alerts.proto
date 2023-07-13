@@ -241,6 +241,14 @@ message PolicyRuleProto {
   string name = 3;
   ManagedObjectType componentType = 4;
   repeated AlertConditionProto snmpEvents = 5;
+  DetectionMethod detectionMethod = 6;
+  EventType eventType = 7;
+  string thresholdMetricName = 8;
+}
+
+enum DetectionMethod {
+  EVENT = 0;
+  THRESHOLD = 1;
 }
 
 message AlertConditionProto {

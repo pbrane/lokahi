@@ -2,7 +2,7 @@
   <div class="condition-title">
     <div class="subtitle">Condition {{ conditionLetters[index].toUpperCase() }}</div>
     <div
-      v-if="index !== 0 && !policy.isDefault"
+      v-if="index !== 0 && !isDisabled"
       class="delete"
       @click="$emit('deleteCondition', alertCondition.id)"
     >
@@ -18,7 +18,7 @@
         :options="triggerEventDefinitionOptions"
         text-prop="name"
         v-model="alertCondition.triggerEvent"
-        :disabled="policy.isDefault"
+        :disabled="isDisabled"
         @update:modelValue="$emit('updateCondition', alertCondition)"
       />
     </div>
@@ -30,7 +30,7 @@
         hideLabel
         v-model="alertCondition.count"
         type="number"
-        :disabled="policy.isDefault"
+        :disabled="isDisabled"
         @update:modelValue="$emit('updateCondition', alertCondition)"
       />
     </div>
@@ -42,7 +42,7 @@
         hideLabel
         v-model="alertCondition.overtime"
         type="number"
-        :disabled="policy.isDefault"
+        :disabled="isDisabled"
         @update:modelValue="$emit('updateCondition', alertCondition)"
       />
     </div>
@@ -56,7 +56,7 @@
           $emit('updateCondition', alertCondition)
         }"
         :selectedId="alertCondition.overtimeUnit"
-        :disabled="policy.isDefault"
+        :disabled="isDisabled"
       />
     </div>
 
@@ -69,7 +69,7 @@
           $emit('updateCondition', alertCondition)
         }"
         :selectedId="alertCondition.severity"
-        :disabled="policy.isDefault"
+        :disabled="isDisabled"
       />
     </div>
 
@@ -82,7 +82,7 @@
         text-prop="name"
         @update:modelValue="$emit('updateCondition', alertCondition)"
         v-model="alertCondition.clearEvent"
-        :disabled="policy.isDefault"
+        :disabled="isDisabled"
         clear="Remove"
       />
     </div>
@@ -90,9 +90,8 @@
 </template>
 
 <script lang="ts" setup>
-import {EventCondition, Policy, Rule} from '@/types/policies'
-import {conditionLetters, Unknowns} from './monitoringPolicies.constants'
-import { EventType, Severity, TimeRangeUnit } from '@/types/graphql'
+import { conditionLetters, Unknowns } from './monitoringPolicies.constants'
+import { AlertCondition, EventType, Severity, TimeRangeUnit } from '@/types/graphql'
 import { Ref } from 'vue'
 import { ISelectItemType } from '@featherds/select'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
@@ -101,10 +100,9 @@ import useSnackbar from '@/composables/useSnackbar'
 const { showSnackbar } = useSnackbar()
 
 const props = defineProps<{
-  condition: EventCondition
-  policy: Policy
-  rule: Rule
+  condition: AlertCondition
   eventType: EventType
+  isDisabled: boolean
   index: number
 }>()
 
@@ -126,24 +124,33 @@ const severityOptions = [
   { id: Severity.Major, name: 'Major' },
   { id: Severity.Minor, name: 'Minor' },
   { id: Severity.Warning, name: 'Warning' },
-  { id: Severity.Cleared, name: 'Cleared'}
+  { id: Severity.Cleared, name: 'Cleared' }
 ]
 
 let clearEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 let triggerEventDefinitionOptions: Ref<ISelectItemType[]> = ref([])
 
-onMounted(async () => {
+watch(() => props.eventType, async () => {
   try {
     const result = await alertEventDefinitionStore.listAlertEventDefinitions(props.eventType)
 
     clearEventDefinitionOptions.value = result.value?.listAlertEventDefinitions || []
     triggerEventDefinitionOptions.value = result.value?.listAlertEventDefinitions || []
+
+    if (alertCondition.value.triggerEvent?.eventType !== props.eventType) {
+      alertCondition.value.triggerEvent = triggerEventDefinitionOptions.value[0]
+    }
+
+    if (alertCondition.value.clearEvent && alertCondition.value.clearEvent.eventType !== props.eventType) {
+      alertCondition.value.clearEvent = clearEventDefinitionOptions.value[0]
+    }
+
   } catch (err) {
     showSnackbar({
       msg: 'Failed to load selectable events.'
     })
   }
-})
+}, { immediate: true })
 
 </script>
 

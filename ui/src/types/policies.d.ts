@@ -1,14 +1,7 @@
-import { MonitorPolicy, PolicyRule, AlertCondition, AlertEventDefinition } from './graphql'
+import { MonitorPolicy, AlertCondition, AlertEventDefinition } from './graphql'
 
 export interface Policy extends MonitorPolicy {
-  rules: Rule[]
   isDefault?: boolean
-}
-
-export interface Rule extends PolicyRule {
-  detectionMethod?: string
-  metricName?: string
-  alertConditions: Condition[]
 }
 
 export interface ThresholdCondition {
@@ -23,5 +16,4 @@ export interface ThresholdCondition {
   triggerEvent?: AlertEventDefinition
 }
 
-export type EventCondition = AlertCondition
-export type Condition = ThresholdCondition | EventCondition
+export type Condition = ThresholdCondition | AlertCondition
