@@ -9,19 +9,17 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alertservice.db.entity.Alert;
-import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
 import org.opennms.horizon.alertservice.db.entity.AlertCondition;
+import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
 import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
 import org.opennms.horizon.alertservice.db.entity.Tag;
+import org.opennms.horizon.alertservice.db.repository.AlertConditionRepository;
 import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
 import org.opennms.horizon.alertservice.db.repository.AlertRepository;
-import org.opennms.horizon.alertservice.db.repository.AlertConditionRepository;
 import org.opennms.horizon.alertservice.db.repository.TagRepository;
 import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
 import org.opennms.horizon.events.proto.Event;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,17 +72,13 @@ class AlertEventProcessorTest {
         MonitorPolicy monitorPolicy = new MonitorPolicy();
         monitorPolicy.setId(1L);
         monitorPolicy.setTenantId("tenantA");
-        var tag = new Tag();
-        tag.setPolicies(new HashSet<>(List.of(monitorPolicy)));
-        var tags = new ArrayList<Tag>();
-        tags.add(tag);
 
+        var tag = new Tag();
+        tag.getPolicies().add(monitorPolicy);
 
         Mockito.when(alertDefinitionRepository.findFirstByTenantIdAndUei(event.getTenantId(), event.getUei()))
             .thenReturn(Optional.of(alertDefinition));
-        Mockito.when(alertConditionRepository.getReferenceById(alertCondition.getId()))
-            .thenReturn(alertCondition);
-        Mockito.when(tagRepository.findByTenantIdAndNodeId(Mockito.anyString(), Mockito.anyLong())).thenReturn(tags);
+        Mockito.when(tagRepository.findByTenantIdAndNodeId(Mockito.anyString(), Mockito.anyLong())).thenReturn(List.of(tag));
 
         Alert alert = processor.addOrReduceEventAsAlert(event);
         assertEquals("tenantA", alert.getTenantId());

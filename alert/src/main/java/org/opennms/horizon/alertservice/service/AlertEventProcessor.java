@@ -73,7 +73,7 @@ public class AlertEventProcessor {
     private final AlertMapper alertMapper;
 
     private final AlertDefinitionRepository alertDefinitionRepository;
-    private final AlertConditionRepository alertConditionRepository;
+
     private final ThresholdedEventRepository thresholdedEventRepository;
 
     private final TagRepository tagRepository;
