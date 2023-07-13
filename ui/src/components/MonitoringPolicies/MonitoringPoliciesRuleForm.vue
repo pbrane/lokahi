@@ -100,7 +100,8 @@
                 @deleteCondition="(id: string) => store.deleteCondition(id)"
               />
             </template>
-            <template v-else>
+            <template v-else-if="store.selectedRule!.detectionMethod === DetectionMethod.Event
+                                 && store.selectedRule?.eventType">
               <MonitoringPoliciesEventCondition
                 v-for="(cond, index) in store.selectedRule!.alertConditions"
                 :key="cond.id"
