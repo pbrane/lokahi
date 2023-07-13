@@ -175,6 +175,13 @@ public class AlertEventProcessor {
             if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.DATABASE_ID_FIELD_NUMBER))) {
                 alert.setLastEventId(event.getDatabaseId());
             }
+
+            if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.PRODUCED_TIME_MS_FIELD_NUMBER))) {
+                alert.setLastEventTime(new Date(event.getProducedTimeMs()));
+            } else {
+                alert.setLastEventTime(new Date());
+            }
+
             alert.setType(alertData.type());
             if (AlertType.CLEAR.equals(alert.getType())) {
                 // Set the severity to CLEARED when reducing alerts
@@ -253,12 +260,15 @@ public class AlertEventProcessor {
         } else {
             alert.setManagedObjectType(ManagedObjectType.UNDEFINED);
         }
+
         // FIXME: We should be using the source time of the event and not the time at which it was produced
         if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.PRODUCED_TIME_MS_FIELD_NUMBER))) {
-            alert.setLastEventTime(new Date(event.getProducedTimeMs()));
+            alert.setFirstEventTime(new Date(event.getProducedTimeMs()));
         } else {
-            alert.setLastEventTime(new Date());
+            alert.setFirstEventTime(new Date());
         }
+
+        alert.setLastEventTime(alert.getFirstEventTime());
 
         if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.DATABASE_ID_FIELD_NUMBER))) {
             alert.setLastEventId(event.getDatabaseId());
