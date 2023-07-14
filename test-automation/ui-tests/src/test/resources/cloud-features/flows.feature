@@ -22,3 +22,6 @@ Feature: NetFlows basic function
     And wait until the 'Top 10 Applications' chart will reflect the received data
     Then click on 'Flows' link
     And sees chart for netflow data
+    Then click on 'Exporter' filter
+    And check if exporter "automated-testing-sysName" visible in the dropdown
+

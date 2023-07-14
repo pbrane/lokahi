@@ -28,8 +28,10 @@
 package org.opennms.horizon.systemtests.steps.cloud;
 
 import com.codeborne.selenide.Selenide;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import org.junit.Assert;
 import org.opennms.horizon.systemtests.pages.cloud.CloudFlowsPage;
 import org.opennms.horizon.systemtests.pages.cloud.DiscoveryPage;
 import org.opennms.horizon.systemtests.pages.cloud.InventoryPage;
@@ -50,7 +52,6 @@ public class CloudFlowsSteps {
     @Then("click on 'Exporter' filter")
     public void clickOn() {
         CloudFlowsPage.clickOnExporterInput();
-        CloudFlowsPage.checkDropdown();
     }
 
     @Given("No netflow data was sent")
@@ -82,12 +83,18 @@ public class CloudFlowsSteps {
     @Then("check node with system name {string} discovered successfully")
     public void checkNodeWithSystemNameDiscoveredSuccessfully(String nodeSysName) {
         InventoryPage.clickOnMonitoredNodesTab();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             Selenide.sleep(3_000);
             Selenide.refresh();
             if (InventoryPage.checkIfMonitoredNodeExist(nodeSysName)) {
                 break;
             }
         }
+        Assert.assertTrue(InventoryPage.checkIfMonitoredNodeExist(nodeSysName));
+    }
+
+    @And("check if exporter {string} visible in the dropdown")
+    public void checkIfExporterVisibleInTheDropdown(String exporterName) {
+        CloudFlowsPage.checkDropdown(exporterName);
     }
 }
