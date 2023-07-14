@@ -1,5 +1,6 @@
 
 = Manage Monitoring Policies
+:description: How to edit and delete a monitoring policy in OpenNMS Lōkahi/Cloud.
 
 You can edit and delete monitoring policies.
 
