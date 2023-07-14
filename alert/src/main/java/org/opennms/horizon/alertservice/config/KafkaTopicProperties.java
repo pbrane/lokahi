@@ -46,6 +46,8 @@ public class KafkaTopicProperties {
 
     private String monitoringPolicy;
 
+    private String internalEvent;
+
     private final CreateTopics createTopics = new CreateTopics();
 
     @Data

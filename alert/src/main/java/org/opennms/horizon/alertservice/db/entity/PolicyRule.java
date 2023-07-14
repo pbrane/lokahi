@@ -31,6 +31,8 @@ package org.opennms.horizon.alertservice.db.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opennms.horizon.alerts.proto.DetectionMethod;
+import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
 
 import jakarta.persistence.CascadeType;
@@ -57,15 +59,30 @@ public class PolicyRule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column (name = "tenant_id", nullable = false)
     private String tenantId;
+
     @Column(name = "rule_name")
     private String name;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "component_type")
     private ManagedObjectType componentType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "detection_method")
+    private DetectionMethod detectionMethod;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type")
+    private EventType eventType;
+
+    @Column(name = "threshold_metric_name")
+    private String thresholdMetricName;
+
     @OneToMany(mappedBy = "rule", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<TriggerEvent> triggerEvents = new ArrayList<>();
+    private List<AlertCondition> alertConditions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_id", referencedColumnName = "id")

@@ -19,6 +19,7 @@
       @update:modelValue="deboncedFn"
       :schema="locationV"
       ref="inputRef"
+      :disabled="disabled"
     ></FeatherAutocomplete>
 
     <!-- Locations selection -->
@@ -30,6 +31,7 @@
         <span>{{ selectedLocation.location }}</span>
         <template v-slot:icon
           ><FeatherIcon
+            v-if="!disabled"
             @click="removeLocation"
             :icon="Icons.Cancel"
         /></template>
@@ -64,7 +66,8 @@ const errMsgDisplay = ref('none') // for sub text css display
 const computedLocations = computed(() => discoveryQueries.locations)
 
 const props = defineProps<{
-  preLoadedlocation?: string
+  preLoadedlocation?: string,
+  disabled?: boolean
 }>()
 
 onMounted(() => discoveryQueries.getLocations())
@@ -146,13 +149,15 @@ const locationV = object().test({
   message: locationErrMsg
 })
 const handleErrDisplay = () => {
-  inputRef.value.handleInputBlur() // runs yup validate
+  if (inputRef.value) {
+    inputRef.value.handleInputBlur() // runs yup validate
 
-  nextTick(() => {
-    // add/remove the feather input subtext display
-    errMsgDisplay.value =
-      document.getElementById(inputRef.value.subTextId)?.children[0].innerHTML === locationErrMsg ? 'flex' : 'none'
-  })
+    nextTick(() => {
+      // add/remove the feather input subtext display
+      errMsgDisplay.value =
+        document.getElementById(inputRef.value.subTextId)?.children[0].innerHTML === locationErrMsg ? 'flex' : 'none'
+    })
+  }
 }
 </script>
 

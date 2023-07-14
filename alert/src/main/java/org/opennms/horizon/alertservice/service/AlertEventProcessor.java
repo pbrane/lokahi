@@ -36,20 +36,16 @@ import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertType;
-import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
-import org.opennms.horizon.alerts.proto.OverTimeUnit;
 import org.opennms.horizon.alerts.proto.Severity;
-import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
-import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
-import org.opennms.horizon.alertservice.db.entity.ThresholdedEvent;
-import org.opennms.horizon.alertservice.db.entity.TriggerEvent;
+import org.opennms.horizon.alertservice.db.entity.*;
 import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
 import org.opennms.horizon.alertservice.db.repository.AlertRepository;
-import org.opennms.horizon.alertservice.db.repository.MonitorPolicyRepository;
+import org.opennms.horizon.alertservice.db.repository.TagRepository;
 import org.opennms.horizon.alertservice.db.repository.ThresholdedEventRepository;
-import org.opennms.horizon.alertservice.db.repository.TriggerEventRepository;
+import org.opennms.horizon.alertservice.db.repository.AlertConditionRepository;
 import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
+import org.opennms.horizon.alertservice.mapper.AlertMapper;
 import org.opennms.horizon.events.proto.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,10 +73,10 @@ public class AlertEventProcessor {
     private final AlertMapper alertMapper;
 
     private final AlertDefinitionRepository alertDefinitionRepository;
-    private final TriggerEventRepository triggerEventRepository;
+
     private final ThresholdedEventRepository thresholdedEventRepository;
 
-    private final MonitorPolicyRepository monitorPolicyRepository;
+    private final TagRepository tagRepository;
 
     private final MeterRegistry registry;
 
@@ -104,23 +100,23 @@ public class AlertEventProcessor {
         return Optional.of(alertMapper.toProto(dbAlert));
     }
 
-    private @Nullable AlertData getAlertData(Event event, AlertDefinition alertDefinition) {
+    private AlertData getAlertData(Event event, AlertDefinition alertDefinition) {
         var reductionKey = String.format(alertDefinition.getReductionKey(), event.getTenantId(), event.getUei(), event.getNodeId());
         String clearKey = null;
         if (!Strings.isNullOrEmpty(alertDefinition.getClearKey())) {
             clearKey = String.format(alertDefinition.getClearKey(), event.getTenantId(), event.getNodeId());
         }
-        TriggerEvent triggerEvent = triggerEventRepository.getReferenceById(alertDefinition.getTriggerEventId());
-        // TODO HS-1485: An alert could match multiple monitoring policies, each having their own notifications.
-        Optional<MonitorPolicy> policy = monitorPolicyRepository.findMonitoringPolicyByTriggerEvent(triggerEvent.getId());
-        List<Long> policies = new ArrayList<>();
-        policy.ifPresent(monitorPolicy -> policies.add(monitorPolicy.getId()));
+        AlertCondition alertCondition = alertDefinition.getAlertCondition();
+        var tags = tagRepository.findByTenantIdAndNodeId(event.getTenantId(), event.getNodeId());
+        List<MonitorPolicy> matchingPolicies = new ArrayList<>();
+        tags.forEach(tag -> matchingPolicies.addAll(tag.getPolicies().stream().toList()));
+        var policies = matchingPolicies.stream().map(MonitorPolicy::getId).toList();
         return new AlertData(
             reductionKey,
             clearKey,
             alertDefinition.getType(),
             policies,
-            triggerEvent
+            alertCondition
         );
     }
 
@@ -176,13 +172,22 @@ public class AlertEventProcessor {
             // Existing alert found, update it
             alert = optionalAlert.get();
             alert.incrementCount();
-            alert.setLastEventId(event.getDatabaseId());
+            if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.DATABASE_ID_FIELD_NUMBER))) {
+                alert.setLastEventId(event.getDatabaseId());
+            }
+
+            if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.PRODUCED_TIME_MS_FIELD_NUMBER))) {
+                alert.setLastEventTime(new Date(event.getProducedTimeMs()));
+            } else {
+                alert.setLastEventTime(new Date());
+            }
+
             alert.setType(alertData.type());
             if (AlertType.CLEAR.equals(alert.getType())) {
                 // Set the severity to CLEARED when reducing alerts
                 alert.setSeverity(Severity.CLEARED);
             } else {
-                alert.setSeverity(alertData.triggerEvent().getSeverity());
+                alert.setSeverity(alertData.alertCondition().getSeverity());
             }
         }
         alert.setMonitoringPolicyId(alertData.monitoringPolicyId());
@@ -196,7 +201,7 @@ public class AlertEventProcessor {
         Date current = new Date();
 
         int currentCount = thresholdedEventRepository.countByReductionKeyAndTenantIdAndExpiryTimeGreaterThanEqual(alertData.reductionKey(), tenantId, current);
-        return alertData.triggerEvent().getCount() <= currentCount;
+        return alertData.alertCondition().getCount() <= currentCount;
     }
 
     private void saveThresholdEvent(String uei, AlertData alertData, Event event) {
@@ -216,13 +221,13 @@ public class AlertEventProcessor {
     private Date calculateExpiry(Date current, AlertData alertData, boolean future) {
         Instant curr = current.toInstant();
         Duration dur = Duration.ZERO;
-        if (alertData.triggerEvent().getOvertime() == 0) {
+        if (alertData.alertCondition().getOvertime() == 0) {
             dur = Duration.ofDays(365 * 1000);
         } else {
-            switch (alertData.triggerEvent().getOvertimeUnit()) {
-                case HOUR -> dur = Duration.ofHours(alertData.triggerEvent().getOvertime());
-                case MINUTE -> dur = Duration.ofMinutes(alertData.triggerEvent().getOvertime());
-                case SECOND -> dur = Duration.ofSeconds(alertData.triggerEvent().getOvertime());
+            switch (alertData.alertCondition().getOvertimeUnit()) {
+                case HOUR -> dur = Duration.ofHours(alertData.alertCondition().getOvertime());
+                case MINUTE -> dur = Duration.ofMinutes(alertData.alertCondition().getOvertime());
+                case SECOND -> dur = Duration.ofSeconds(alertData.alertCondition().getOvertime());
             }
         }
 
@@ -236,7 +241,7 @@ public class AlertEventProcessor {
     }
 
     private boolean isThresholding(AlertData alertData) {
-        return (alertData.triggerEvent().getCount() > 1 || alertData.triggerEvent().getOvertime() > 0);
+        return (alertData.alertCondition().getCount() > 1 || alertData.alertCondition().getOvertime() > 0);
     }
 
     private org.opennms.horizon.alertservice.db.entity.Alert createNewAlert(Event event, AlertData alertData) {
@@ -248,21 +253,33 @@ public class AlertEventProcessor {
         alert.setCounter(1L);
         alert.setDescription(event.getDescription());
         alert.setLogMessage(event.getLogMessage());
+
         if (event.getNodeId() > 0) {
             alert.setManagedObjectType(ManagedObjectType.NODE);
             alert.setManagedObjectInstance(Long.toString(event.getNodeId()));
         } else {
             alert.setManagedObjectType(ManagedObjectType.UNDEFINED);
         }
+
         // FIXME: We should be using the source time of the event and not the time at which it was produced
-        alert.setLastEventTime(new Date(event.getProducedTimeMs()));
-        alert.setLastEventId(event.getDatabaseId());
-        alert.setSeverity(alertData.triggerEvent().getSeverity());
+        if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.PRODUCED_TIME_MS_FIELD_NUMBER))) {
+            alert.setFirstEventTime(new Date(event.getProducedTimeMs()));
+        } else {
+            alert.setFirstEventTime(new Date());
+        }
+
+        alert.setLastEventTime(alert.getFirstEventTime());
+
+        if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.DATABASE_ID_FIELD_NUMBER))) {
+            alert.setLastEventId(event.getDatabaseId());
+        }
+
+        alert.setSeverity(alertData.alertCondition().getSeverity());
         alert.setEventUei(event.getUei());
-        alert.setTriggerEvent(alertData.triggerEvent());
+        alert.setAlertCondition(alertData.alertCondition());
         return alert;
     }
 
-    private record AlertData(String reductionKey, String clearKey, AlertType type, List<Long> monitoringPolicyId, TriggerEvent triggerEvent) {
+    private record AlertData(String reductionKey, String clearKey, AlertType type, List<Long> monitoringPolicyId, AlertCondition alertCondition) {
     }
 }

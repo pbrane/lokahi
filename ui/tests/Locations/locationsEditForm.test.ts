@@ -7,7 +7,10 @@ describe('LocationsEditForm', () => {
   beforeAll(() => {
     wrapper = mount({
       component: LocationsEditForm,
-      shallow: false
+      shallow: false,
+      props: {
+        id: 1
+      }
     })
   })
   afterAll(() => {
@@ -28,15 +31,16 @@ describe('LocationsEditForm', () => {
     expect(elem.exists()).toBeTruthy()
   })
 
-  test('Should have an input longitude', () => {
-    const elem = wrapper.get('[data-test="input-longitude"]')
-    expect(elem.exists()).toBeTruthy()
-  })
+  // Skipped until the map is ready, post-EAR. Tracked with HS-1801
+  // test('Should have an input longitude', () => {
+  //   const elem = wrapper.get('[data-test="input-longitude"]')
+  //   expect(elem.exists()).toBeTruthy()
+  // })
 
-  test('Should have an input latitude', () => {
-    const elem = wrapper.get('[data-test="input-latitude"]')
-    expect(elem.exists()).toBeTruthy()
-  })
+  // test('Should have an input latitude', () => {
+  //   const elem = wrapper.get('[data-test="input-latitude"]')
+  //   expect(elem.exists()).toBeTruthy()
+  // })
 
   test('Should have a regenrate key button', () => {
     const elem = wrapper.get('[data-test="revoke-btn"]')

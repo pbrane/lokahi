@@ -136,15 +136,6 @@ message EventMatch {
   string value = 2;
 }
 
-message AlertDefinition {
-  string uei = 1;
-  repeated EventMatch match = 2;
-  string reduction_key = 3;
-  string clear_key = 4;
-  AlertType type = 5;
-  ManagedObjectType managed_object_type = 6;
-}
-
 message ManagedObject {
   ManagedObjectType type = 1;
   ManagedObjectInstance instance = 2;
@@ -200,24 +191,6 @@ message CountAlertResponse {
   AlertError error = 2;
 }
 
-message ListAlertDefinitionsRequest {
-  // Optional. The maximum number of alerts to return in the response.
-  int32 page_size = 1;
-
-  // Optional. A pagination token returned from a previous call to `listAlerts`
-  // that indicates where this listing should continue from.
-  string page_token = 2;
-}
-
-message ListAlertDefinitionsResponse {
-  // A possibly paginated list of Alerts that are associated with the calling tenant.
-  repeated AlertDefinition definitions = 1;
-
-  // Optional. A pagination token returned from a previous call to `ListAlertDefinitions`
-  // that indicates where this listing should continue from.
-  string page_token = 2;
-}
-
 message AlertRequest {
   repeated uint64 alert_id = 1;
 }
@@ -247,14 +220,6 @@ service AlertService {
   rpc countAlerts(ListAlertsRequest) returns (CountAlertResponse) {};
 }
 
-service AlertConfigurationService {
-  rpc listAlertDefinitions(ListAlertDefinitionsRequest) returns (ListAlertDefinitionsResponse) {};
-  rpc getAlertDefinition(google.protobuf.UInt64Value) returns (AlertDefinition) {}
-  rpc insertAlertDefinition(AlertDefinition) returns (AlertDefinition) {}
-  rpc updateAlertDefinition(AlertDefinition) returns (AlertDefinition) {}
-  rpc removeAlertDefinition(google.protobuf.UInt64Value) returns (google.protobuf.BoolValue) {}
-}
-
 // Proto for Monitoring policy
 
 message MonitorPolicyProto {
@@ -275,18 +240,26 @@ message PolicyRuleProto {
   string tenantId = 2;
   string name = 3;
   ManagedObjectType componentType = 4;
-  repeated TriggerEventProto snmpEvents = 5;
+  repeated AlertConditionProto snmpEvents = 5;
+  DetectionMethod detectionMethod = 6;
+  EventType eventType = 7;
+  string thresholdMetricName = 8;
 }
 
-message TriggerEventProto {
+enum DetectionMethod {
+  EVENT = 0;
+  THRESHOLD = 1;
+}
+
+message AlertConditionProto {
   int64 id = 1;
   string tenantId = 2;
-  EventType triggerEvent = 3;
+  AlertEventDefinitionProto triggerEvent = 3;
   int32 count = 4;
   int32 overtime = 5;
   OverTimeUnit overtimeUnit = 6;
   Severity severity = 7;
-  EventType clearEvent = 8;
+  AlertEventDefinitionProto clearEvent = 8;
 }
 
 enum OverTimeUnit {
@@ -294,16 +267,6 @@ enum OverTimeUnit {
   SECOND = 1;
   MINUTE = 2;
   HOUR = 3;
-}
-
-enum EventType {
-  UNKNOWN_EVENT = 0;
-  SNMP_Cold_Start = 1;
-  SNMP_Warm_Start = 2;
-  SNMP_Authen_Failure = 3;
-  SNMP_Link_Down = 4;
-  SNMP_Link_Up = 5;
-  SNMP_EGP_Down = 6;
 }
 
 message MonitorPolicyList {
@@ -315,4 +278,30 @@ service MonitorPolicyService {
   rpc listPolicies(google.protobuf.Empty) returns(MonitorPolicyList);
   rpc getPolicyById(google.protobuf.Int64Value) returns(MonitorPolicyProto);
   rpc getDefaultPolicy(google.protobuf.Empty) returns(MonitorPolicyProto);
+}
+
+message AlertEventDefinitionProto {
+  int64 id = 1;
+  string uei = 2;
+  string name = 3;
+  string reductionKey = 4;
+  string clearKey = 5;
+  EventType eventType = 6;
+}
+
+enum EventType {
+  INTERNAL = 0;
+  SNMP_TRAP = 1;
+}
+
+message ListAlertEventDefinitionsRequest {
+  EventType eventType = 1;
+}
+
+message ListAlertEventDefinitionsResponse {
+  repeated AlertEventDefinitionProto alertEventDefinitions = 1;
+}
+
+service AlertEventDefinitionService {
+  rpc listAlertEventDefinitions(ListAlertEventDefinitionsRequest) returns(ListAlertEventDefinitionsResponse);
 }

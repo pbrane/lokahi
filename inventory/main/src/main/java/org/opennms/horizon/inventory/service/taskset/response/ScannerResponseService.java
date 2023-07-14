@@ -38,7 +38,6 @@ import org.opennms.horizon.azure.api.AzureScanResponse;
 import org.opennms.horizon.inventory.dto.ListTagsByEntityIdParamsDTO;
 import org.opennms.horizon.inventory.dto.MonitoredServiceDTO;
 import org.opennms.horizon.inventory.dto.MonitoredServiceTypeDTO;
-import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.TagCreateDTO;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
@@ -46,6 +45,7 @@ import org.opennms.horizon.inventory.dto.TagEntityIdDTO;
 import org.opennms.horizon.inventory.exception.EntityExistException;
 import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.model.IpInterface;
+import org.opennms.horizon.inventory.model.MonitoredService;
 import org.opennms.horizon.inventory.model.MonitoredServiceType;
 import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.model.SnmpInterface;
@@ -152,7 +152,6 @@ public class ScannerResponseService {
                     .setLocationId(String.valueOf(locationId))
                     .setManagementIp(pingResponse.getIpAddress())
                     .setLabel(pingResponse.getIpAddress())
-                    .setMonitoredState(MonitoredState.UNMONITORED)
                     .addAllTags(tags)
                     .build();
                 try {
@@ -193,7 +192,6 @@ public class ScannerResponseService {
                     NodeCreateDTO createDTO = NodeCreateDTO.newBuilder()
                         .setLocationId(String.valueOf(locationId))
                         .setLabel(nodeLabel)
-                        .setMonitoredState(MonitoredState.UNMONITORED)
                         .build();
 
                     node = nodeService.createNode(createDTO, ScanType.AZURE_SCAN, tenantId);
@@ -230,7 +228,7 @@ public class ScannerResponseService {
         if (nodeOpt.isPresent()) {
             Node node = nodeOpt.get();
             Map<Integer, SnmpInterface> ifIndexSNMPMap = new HashMap<>();
-            nodeService.updateNodeInfo(node, result.getNodeInfo(), MonitoredState.MONITORED);
+            nodeService.updateNodeInfo(node, result.getNodeInfo());
 
             for (SnmpInterfaceResult snmpIfResult : result.getSnmpInterfacesList()) {
                 SnmpInterface snmpInterface = snmpInterfaceService.createOrUpdateFromScanResult(tenantId, node, snmpIfResult);
@@ -259,11 +257,11 @@ public class ScannerResponseService {
             IpInterface ipInterface = ipInterfaceOpt.get();
 
             if (serviceResult.getStatus()) {
-                createMonitoredService(serviceResult, ipInterface);
+                var monitoredService = createMonitoredService(serviceResult, ipInterface);
                 // TODO: Combine Monitor type and Service type
                 MonitorType monitorType = MonitorType.valueOf(serviceResult.getService().name());
 
-                taskSetHandler.sendMonitorTask(locationId, monitorType, ipInterface, nodeId);
+                taskSetHandler.sendMonitorTask(locationId, monitorType, ipInterface, nodeId, monitoredService.getId());
                 taskSetHandler.sendCollectorTask(locationId, monitorType, ipInterface, nodeId);
 
             } else {
@@ -274,7 +272,7 @@ public class ScannerResponseService {
         }
     }
 
-    private void createMonitoredService(ServiceResult serviceResult, IpInterface ipInterface) {
+    private MonitoredService createMonitoredService(ServiceResult serviceResult, IpInterface ipInterface) {
         String tenantId = ipInterface.getTenantId();
 
         MonitoredServiceType monitoredServiceType =
@@ -288,6 +286,6 @@ public class ScannerResponseService {
             .setTenantId(tenantId)
             .build();
 
-        monitoredServiceService.createSingle(newMonitoredService, monitoredServiceType, ipInterface);
+        return monitoredServiceService.createSingle(newMonitoredService, monitoredServiceType, ipInterface);
     }
 }

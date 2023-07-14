@@ -49,10 +49,52 @@ export type Alert = {
   uei?: Maybe<Scalars['String']>;
 };
 
+export type AlertCondition = {
+  __typename?: 'AlertCondition';
+  clearEvent?: Maybe<AlertEventDefinition>;
+  count?: Maybe<Scalars['Int']>;
+  id?: Maybe<Scalars['Long']>;
+  overtime?: Maybe<Scalars['Int']>;
+  overtimeUnit?: Maybe<Scalars['String']>;
+  severity?: Maybe<Scalars['String']>;
+  tenantId?: Maybe<Scalars['String']>;
+  triggerEvent?: Maybe<AlertEventDefinition>;
+};
+
+export type AlertConditionInput = {
+  clearEvent?: InputMaybe<AlertEventDefinitionInput>;
+  count?: InputMaybe<Scalars['Int']>;
+  id?: InputMaybe<Scalars['Long']>;
+  overtime?: InputMaybe<Scalars['Int']>;
+  overtimeUnit?: InputMaybe<Scalars['String']>;
+  severity?: InputMaybe<Scalars['String']>;
+  tenantId?: InputMaybe<Scalars['String']>;
+  triggerEvent?: InputMaybe<AlertEventDefinitionInput>;
+};
+
 export type AlertError = {
   __typename?: 'AlertError';
   databaseId: Scalars['Long'];
   error?: Maybe<Scalars['String']>;
+};
+
+export type AlertEventDefinition = {
+  __typename?: 'AlertEventDefinition';
+  clearKey?: Maybe<Scalars['String']>;
+  eventType?: Maybe<EventType>;
+  id?: Maybe<Scalars['Long']>;
+  name?: Maybe<Scalars['String']>;
+  reductionKey?: Maybe<Scalars['String']>;
+  uei?: Maybe<Scalars['String']>;
+};
+
+export type AlertEventDefinitionInput = {
+  clearKey?: InputMaybe<Scalars['String']>;
+  eventType?: InputMaybe<EventType>;
+  id?: InputMaybe<Scalars['Long']>;
+  name?: InputMaybe<Scalars['String']>;
+  reductionKey?: InputMaybe<Scalars['String']>;
+  uei?: InputMaybe<Scalars['String']>;
 };
 
 export type AlertResponse = {
@@ -109,6 +151,12 @@ export type DeleteAlertResponse = {
   alertErrorList?: Maybe<Array<Maybe<AlertError>>>;
 };
 
+export enum DetectionMethod {
+  Event = 'EVENT',
+  Threshold = 'THRESHOLD',
+  Unrecognized = 'UNRECOGNIZED'
+}
+
 export type Event = {
   __typename?: 'Event';
   eventInfo?: Maybe<EventInfo>;
@@ -133,6 +181,12 @@ export type EventParameter = {
   type?: Maybe<Scalars['String']>;
   value?: Maybe<Scalars['String']>;
 };
+
+export enum EventType {
+  Internal = 'INTERNAL',
+  SnmpTrap = 'SNMP_TRAP',
+  Unrecognized = 'UNRECOGNIZED'
+}
 
 export type Exporter = {
   __typename?: 'Exporter';
@@ -294,6 +348,7 @@ export type Mutation = {
   discoveryByNodeIds?: Maybe<Scalars['Boolean']>;
   escalateAlert?: Maybe<AlertResponse>;
   removeTagsFromNodes?: Maybe<Scalars['Boolean']>;
+  revokeMinionCertificate?: Maybe<Scalars['Boolean']>;
   savePagerDutyConfig?: Maybe<Scalars['Boolean']>;
   togglePassiveDiscovery?: Maybe<PassiveDiscoveryToggle>;
   unacknowledgeAlert?: Maybe<AlertResponse>;
@@ -389,6 +444,12 @@ export type MutationEscalateAlertArgs = {
 /** Mutation root */
 export type MutationRemoveTagsFromNodesArgs = {
   tags?: InputMaybe<TagListNodesRemoveInput>;
+};
+
+
+/** Mutation root */
+export type MutationRevokeMinionCertificateArgs = {
+  locationId?: InputMaybe<Scalars['Long']>;
 };
 
 
@@ -501,19 +562,25 @@ export type PassiveDiscoveryUpsertInput = {
 
 export type PolicyRule = {
   __typename?: 'PolicyRule';
-  componentType?: Maybe<Scalars['String']>;
+  alertConditions?: Maybe<Array<Maybe<AlertCondition>>>;
+  componentType?: Maybe<ManagedObjectType>;
+  detectionMethod?: Maybe<DetectionMethod>;
+  eventType?: Maybe<EventType>;
   id?: Maybe<Scalars['Long']>;
   name?: Maybe<Scalars['String']>;
   tenantId?: Maybe<Scalars['String']>;
-  triggerEvents?: Maybe<Array<Maybe<TriggerEvent>>>;
+  thresholdMetricName?: Maybe<Scalars['String']>;
 };
 
 export type PolicyRuleInput = {
-  componentType?: InputMaybe<Scalars['String']>;
+  alertConditions?: InputMaybe<Array<InputMaybe<AlertConditionInput>>>;
+  componentType?: InputMaybe<ManagedObjectType>;
+  detectionMethod?: InputMaybe<DetectionMethod>;
+  eventType?: InputMaybe<EventType>;
   id?: InputMaybe<Scalars['Long']>;
   name?: InputMaybe<Scalars['String']>;
   tenantId?: InputMaybe<Scalars['String']>;
-  triggerEvents?: InputMaybe<Array<InputMaybe<TriggerEventInput>>>;
+  thresholdMetricName?: InputMaybe<Scalars['String']>;
 };
 
 /** Query root */
@@ -543,6 +610,7 @@ export type Query = {
   getMinionCertificate?: Maybe<CertificateResponse>;
   icmpActiveDiscoveryById?: Maybe<IcmpActiveDiscovery>;
   listActiveDiscovery?: Maybe<Array<Maybe<ActiveDiscovery>>>;
+  listAlertEventDefinitions?: Maybe<Array<Maybe<AlertEventDefinition>>>;
   listIcmpActiveDiscovery?: Maybe<Array<Maybe<IcmpActiveDiscovery>>>;
   listMonitoryPolicies?: Maybe<Array<Maybe<MonitorPolicy>>>;
   locationByName?: Maybe<MonitoringLocation>;
@@ -664,6 +732,12 @@ export type QueryGetMinionCertificateArgs = {
 /** Query root */
 export type QueryIcmpActiveDiscoveryByIdArgs = {
   id?: InputMaybe<Scalars['Long']>;
+};
+
+
+/** Query root */
+export type QueryListAlertEventDefinitionsArgs = {
+  eventType?: InputMaybe<EventType>;
 };
 
 
@@ -864,29 +938,6 @@ export type TrafficSummary = {
   label?: Maybe<Scalars['String']>;
 };
 
-export type TriggerEvent = {
-  __typename?: 'TriggerEvent';
-  clearEvent?: Maybe<Scalars['String']>;
-  count?: Maybe<Scalars['Int']>;
-  id?: Maybe<Scalars['Long']>;
-  overtime?: Maybe<Scalars['Int']>;
-  overtimeUnit?: Maybe<Scalars['String']>;
-  severity?: Maybe<Scalars['String']>;
-  tenantId?: Maybe<Scalars['String']>;
-  triggerEvent?: Maybe<Scalars['String']>;
-};
-
-export type TriggerEventInput = {
-  clearEvent?: InputMaybe<Scalars['String']>;
-  count?: InputMaybe<Scalars['Int']>;
-  id?: InputMaybe<Scalars['Long']>;
-  overtime?: InputMaybe<Scalars['Int']>;
-  overtimeUnit?: InputMaybe<Scalars['String']>;
-  severity?: InputMaybe<Scalars['String']>;
-  tenantId?: InputMaybe<Scalars['String']>;
-  triggerEvent?: InputMaybe<Scalars['String']>;
-};
-
 export type AcknowledgeAlertsMutationVariables = Exact<{
   ids?: InputMaybe<Array<InputMaybe<Scalars['Long']>> | InputMaybe<Scalars['Long']>>;
 }>;
@@ -1000,6 +1051,13 @@ export type DeleteLocationMutationVariables = Exact<{
 
 
 export type DeleteLocationMutation = { __typename?: 'Mutation', deleteLocation?: boolean };
+
+export type RevokeMinionCertificateMutationVariables = Exact<{
+  locationId: Scalars['Long'];
+}>;
+
+
+export type RevokeMinionCertificateMutation = { __typename?: 'Mutation', revokeMinionCertificate?: boolean };
 
 export type LocationsPartsFragment = { __typename?: 'Query', findAllLocations?: Array<{ __typename?: 'MonitoringLocation', id: any, location?: string, address?: string, longitude?: number, latitude?: number }> };
 
@@ -1118,6 +1176,13 @@ export type ListTagsByNodeIdsQueryVariables = Exact<{
 
 
 export type ListTagsByNodeIdsQuery = { __typename?: 'Query', tagsByNodeIds?: Array<{ __typename?: 'NodeTags', nodeId: any, tags?: Array<{ __typename?: 'Tag', id: any, name?: string }> }> };
+
+export type ListAlertEventDefinitionsQueryVariables = Exact<{
+  eventType?: InputMaybe<EventType>;
+}>;
+
+
+export type ListAlertEventDefinitionsQuery = { __typename?: 'Query', listAlertEventDefinitions?: Array<{ __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }> };
 
 export type NodesTablePartsFragment = { __typename?: 'Query', findAllNodes?: Array<{ __typename?: 'Node', id: any, nodeLabel?: string, tenantId?: string, createTime: any, monitoringLocationId: any, scanType?: string, ipInterfaces?: Array<{ __typename?: 'IpInterface', ipAddress?: string, snmpPrimary?: boolean }> }> };
 
@@ -1272,12 +1337,12 @@ export type NodesForMapQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type NodesForMapQuery = { __typename?: 'Query', findAllNodes?: Array<{ __typename?: 'Node', id: any, nodeLabel?: string }> };
 
-export type MonitoringPolicyPartsFragment = { __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: string, triggerEvents?: Array<{ __typename?: 'TriggerEvent', id?: any, count?: number, clearEvent?: string, overtime?: number, overtimeUnit?: string, severity?: string, triggerEvent?: string }> }> };
+export type MonitoringPolicyPartsFragment = { __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: ManagedObjectType, detectionMethod?: DetectionMethod, eventType?: EventType, thresholdMetricName?: string, alertConditions?: Array<{ __typename?: 'AlertCondition', id?: any, count?: number, overtime?: number, overtimeUnit?: string, severity?: string, clearEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, triggerEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType } }> }> };
 
 export type ListMonitoryPoliciesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListMonitoryPoliciesQuery = { __typename?: 'Query', listMonitoryPolicies?: Array<{ __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: string, triggerEvents?: Array<{ __typename?: 'TriggerEvent', id?: any, count?: number, clearEvent?: string, overtime?: number, overtimeUnit?: string, severity?: string, triggerEvent?: string }> }> }>, defaultPolicy?: { __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: string, triggerEvents?: Array<{ __typename?: 'TriggerEvent', id?: any, count?: number, clearEvent?: string, overtime?: number, overtimeUnit?: string, severity?: string, triggerEvent?: string }> }> } };
+export type ListMonitoryPoliciesQuery = { __typename?: 'Query', listMonitoryPolicies?: Array<{ __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: ManagedObjectType, detectionMethod?: DetectionMethod, eventType?: EventType, thresholdMetricName?: string, alertConditions?: Array<{ __typename?: 'AlertCondition', id?: any, count?: number, overtime?: number, overtimeUnit?: string, severity?: string, clearEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, triggerEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType } }> }> }>, defaultPolicy?: { __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: ManagedObjectType, detectionMethod?: DetectionMethod, eventType?: EventType, thresholdMetricName?: string, alertConditions?: Array<{ __typename?: 'AlertCondition', id?: any, count?: number, overtime?: number, overtimeUnit?: string, severity?: string, clearEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, triggerEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType } }> }> } };
 
 export type EventsByNodeIdPartsFragment = { __typename?: 'Query', events?: Array<{ __typename?: 'Event', id: number, uei?: string, nodeId: number, ipAddress?: string, producedTime: any }> };
 
@@ -1289,6 +1354,13 @@ export type ListNodeStatusQueryVariables = Exact<{
 
 
 export type ListNodeStatusQuery = { __typename?: 'Query', events?: Array<{ __typename?: 'Event', id: number, uei?: string, nodeId: number, ipAddress?: string, producedTime: any }>, node?: { __typename?: 'Node', id: any, nodeLabel?: string, objectId?: string, systemContact?: string, systemDescr?: string, systemLocation?: string, systemName?: string, scanType?: string, location?: { __typename?: 'MonitoringLocation', location?: string }, ipInterfaces?: Array<{ __typename?: 'IpInterface', id: any, hostname?: string, ipAddress?: string, netmask?: string, nodeId: any, snmpPrimary?: boolean }>, snmpInterfaces?: Array<{ __typename?: 'SnmpInterface', id: any, ifAdminStatus: number, ifAlias?: string, ifDescr?: string, ifIndex: number, ifName?: string, ifOperatorStatus: number, ifSpeed: any, ifType: number, ipAddress?: string, nodeId: any, physicalAddr?: string }> } };
+
+export type FindExportersForNodeStatusQueryVariables = Exact<{
+  requestCriteria: RequestCriteriaInput;
+}>;
+
+
+export type FindExportersForNodeStatusQuery = { __typename?: 'Query', findExporters?: Array<{ __typename?: 'Exporter', snmpInterface?: { __typename?: 'SnmpInterface', ifIndex: number, ifName?: string }, ipInterface?: { __typename?: 'IpInterface', id: any, ipAddress?: string } }> };
 
 export type FindLocationsForWelcomeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1329,7 +1401,7 @@ export const TagsPartsFragmentDoc = {"kind":"Document","definitions":[{"kind":"F
 export const TagsSearchPartsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TagsSearchParts"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Query"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"searchTerm"},"value":{"kind":"Variable","name":{"kind":"Name","value":"searchTerm"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"tenantId"}}]}}]}}]} as unknown as DocumentNode<TagsSearchPartsFragment, unknown>;
 export const NodesTablePartsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NodesTableParts"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Query"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"findAllNodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nodeLabel"}},{"kind":"Field","name":{"kind":"Name","value":"tenantId"}},{"kind":"Field","name":{"kind":"Name","value":"createTime"}},{"kind":"Field","name":{"kind":"Name","value":"monitoringLocationId"}},{"kind":"Field","name":{"kind":"Name","value":"ipInterfaces"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ipAddress"}},{"kind":"Field","name":{"kind":"Name","value":"snmpPrimary"}}]}},{"kind":"Field","name":{"kind":"Name","value":"scanType"}}]}}]}}]} as unknown as DocumentNode<NodesTablePartsFragment, unknown>;
 export const MinionsTablePartsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MinionsTableParts"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Query"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"findAllMinions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckedTime"}},{"kind":"Field","name":{"kind":"Name","value":"location"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"location"}}]}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"systemId"}}]}}]}}]} as unknown as DocumentNode<MinionsTablePartsFragment, unknown>;
-export const MonitoringPolicyPartsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MonitoringPolicyParts"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MonitorPolicy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"memo"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"notifyByEmail"}},{"kind":"Field","name":{"kind":"Name","value":"notifyByPagerDuty"}},{"kind":"Field","name":{"kind":"Name","value":"notifyByWebhooks"}},{"kind":"Field","name":{"kind":"Name","value":"rules"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"componentType"}},{"kind":"Field","name":{"kind":"Name","value":"triggerEvents"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"count"}},{"kind":"Field","name":{"kind":"Name","value":"clearEvent"}},{"kind":"Field","name":{"kind":"Name","value":"overtime"}},{"kind":"Field","name":{"kind":"Name","value":"overtimeUnit"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"triggerEvent"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"}}]}}]} as unknown as DocumentNode<MonitoringPolicyPartsFragment, unknown>;
+export const MonitoringPolicyPartsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MonitoringPolicyParts"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MonitorPolicy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"memo"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"notifyByEmail"}},{"kind":"Field","name":{"kind":"Name","value":"notifyByPagerDuty"}},{"kind":"Field","name":{"kind":"Name","value":"notifyByWebhooks"}},{"kind":"Field","name":{"kind":"Name","value":"rules"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"componentType"}},{"kind":"Field","name":{"kind":"Name","value":"detectionMethod"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdMetricName"}},{"kind":"Field","name":{"kind":"Name","value":"alertConditions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"count"}},{"kind":"Field","name":{"kind":"Name","value":"clearEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}}]}},{"kind":"Field","name":{"kind":"Name","value":"overtime"}},{"kind":"Field","name":{"kind":"Name","value":"overtimeUnit"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"triggerEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"}}]}}]} as unknown as DocumentNode<MonitoringPolicyPartsFragment, unknown>;
 export const EventsByNodeIdPartsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"EventsByNodeIdParts"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Query"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"events"},"name":{"kind":"Name","value":"findEventsByNodeId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"uei"}},{"kind":"Field","name":{"kind":"Name","value":"nodeId"}},{"kind":"Field","name":{"kind":"Name","value":"ipAddress"}},{"kind":"Field","name":{"kind":"Name","value":"producedTime"}}]}}]}}]} as unknown as DocumentNode<EventsByNodeIdPartsFragment, unknown>;
 export const NodeByIdPartsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NodeByIdParts"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Query"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"node"},"name":{"kind":"Name","value":"findNodeById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nodeLabel"}},{"kind":"Field","name":{"kind":"Name","value":"objectId"}},{"kind":"Field","name":{"kind":"Name","value":"systemContact"}},{"kind":"Field","name":{"kind":"Name","value":"systemDescr"}},{"kind":"Field","name":{"kind":"Name","value":"systemLocation"}},{"kind":"Field","name":{"kind":"Name","value":"systemName"}},{"kind":"Field","name":{"kind":"Name","value":"scanType"}},{"kind":"Field","name":{"kind":"Name","value":"location"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"location"}}]}},{"kind":"Field","name":{"kind":"Name","value":"ipInterfaces"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"hostname"}},{"kind":"Field","name":{"kind":"Name","value":"ipAddress"}},{"kind":"Field","name":{"kind":"Name","value":"netmask"}},{"kind":"Field","name":{"kind":"Name","value":"nodeId"}},{"kind":"Field","name":{"kind":"Name","value":"snmpPrimary"}}]}},{"kind":"Field","name":{"kind":"Name","value":"snmpInterfaces"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"ifAdminStatus"}},{"kind":"Field","name":{"kind":"Name","value":"ifAlias"}},{"kind":"Field","name":{"kind":"Name","value":"ifDescr"}},{"kind":"Field","name":{"kind":"Name","value":"ifIndex"}},{"kind":"Field","name":{"kind":"Name","value":"ifName"}},{"kind":"Field","name":{"kind":"Name","value":"ifOperatorStatus"}},{"kind":"Field","name":{"kind":"Name","value":"ifSpeed"}},{"kind":"Field","name":{"kind":"Name","value":"ifType"}},{"kind":"Field","name":{"kind":"Name","value":"ipAddress"}},{"kind":"Field","name":{"kind":"Name","value":"nodeId"}},{"kind":"Field","name":{"kind":"Name","value":"physicalAddr"}}]}}]}}]}}]} as unknown as DocumentNode<NodeByIdPartsFragment, unknown>;
 export const AcknowledgeAlertsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AcknowledgeAlerts"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ids"}},"type":{"kind":"ListType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Long"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"acknowledgeAlert"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"ids"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ids"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"alertList"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"acknowledged"}},{"kind":"Field","name":{"kind":"Name","value":"databaseId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"alertErrorList"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"databaseId"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]}}]}}]} as unknown as DocumentNode<AcknowledgeAlertsMutation, AcknowledgeAlertsMutationVariables>;
@@ -1347,6 +1419,7 @@ export const FindExportersDocument = {"kind":"Document","definitions":[{"kind":"
 export const CreateLocationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateLocation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"location"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MonitoringLocationCreateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createLocation"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"location"},"value":{"kind":"Variable","name":{"kind":"Name","value":"location"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"longitude"}},{"kind":"Field","name":{"kind":"Name","value":"latitude"}},{"kind":"Field","name":{"kind":"Name","value":"tenantId"}}]}}]}}]} as unknown as DocumentNode<CreateLocationMutation, CreateLocationMutationVariables>;
 export const UpdateLocationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateLocation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"location"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"MonitoringLocationUpdateInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateLocation"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"location"},"value":{"kind":"Variable","name":{"kind":"Name","value":"location"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"longitude"}},{"kind":"Field","name":{"kind":"Name","value":"latitude"}},{"kind":"Field","name":{"kind":"Name","value":"tenantId"}}]}}]}}]} as unknown as DocumentNode<UpdateLocationMutation, UpdateLocationMutationVariables>;
 export const DeleteLocationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteLocation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Long"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteLocation"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteLocationMutation, DeleteLocationMutationVariables>;
+export const RevokeMinionCertificateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"revokeMinionCertificate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Long"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"revokeMinionCertificate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locationId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locationId"}}}]}]}}]} as unknown as DocumentNode<RevokeMinionCertificateMutation, RevokeMinionCertificateMutationVariables>;
 export const LocationsListDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"LocationsList"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LocationsParts"}}]}},...LocationsPartsFragmentDoc.definitions]} as unknown as DocumentNode<LocationsListQuery, LocationsListQueryVariables>;
 export const SearchLocationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchLocation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"searchTerm"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchLocation"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"searchTerm"},"value":{"kind":"Variable","name":{"kind":"Name","value":"searchTerm"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"longitude"}},{"kind":"Field","name":{"kind":"Name","value":"latitude"}}]}}]}}]} as unknown as DocumentNode<SearchLocationQuery, SearchLocationQueryVariables>;
 export const GetMinionCertificateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getMinionCertificate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"location"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Long"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getMinionCertificate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locationId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"location"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"password"}},{"kind":"Field","name":{"kind":"Name","value":"certificate"}}]}}]}}]} as unknown as DocumentNode<GetMinionCertificateQuery, GetMinionCertificateQueryVariables>;
@@ -1361,6 +1434,7 @@ export const SavePagerDutyConfigDocument = {"kind":"Document","definitions":[{"k
 export const ListTagsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListTags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TagsParts"}}]}},...TagsPartsFragmentDoc.definitions]} as unknown as DocumentNode<ListTagsQuery, ListTagsQueryVariables>;
 export const ListTagsSearchDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListTagsSearch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"searchTerm"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TagsSearchParts"}}]}},...TagsSearchPartsFragmentDoc.definitions]} as unknown as DocumentNode<ListTagsSearchQuery, ListTagsSearchQueryVariables>;
 export const ListTagsByNodeIdsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListTagsByNodeIds"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"nodeIds"}},"type":{"kind":"ListType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Long"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tagsByNodeIds"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"nodeIds"},"value":{"kind":"Variable","name":{"kind":"Name","value":"nodeIds"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodeId"}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]} as unknown as DocumentNode<ListTagsByNodeIdsQuery, ListTagsByNodeIdsQueryVariables>;
+export const ListAlertEventDefinitionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListAlertEventDefinitions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"EventType"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listAlertEventDefinitions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"eventType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}}]}}]}}]} as unknown as DocumentNode<ListAlertEventDefinitionsQuery, ListAlertEventDefinitionsQueryVariables>;
 export const ListNodesForTableDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListNodesForTable"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"NodesTableParts"}}]}},...NodesTablePartsFragmentDoc.definitions]} as unknown as DocumentNode<ListNodesForTableQuery, ListNodesForTableQueryVariables>;
 export const ListMinionsForTableDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListMinionsForTable"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MinionsTableParts"}}]}},...MinionsTablePartsFragmentDoc.definitions]} as unknown as DocumentNode<ListMinionsForTableQuery, ListMinionsForTableQueryVariables>;
 export const ListMinionMetricsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListMinionMetrics"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"instance"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"monitor"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"timeRange"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"timeRangeUnit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"TimeRangeUnit"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MinionLatencyParts"}}]}},...MinionLatencyPartsFragmentDoc.definitions,...MetricPartsFragmentDoc.definitions]} as unknown as DocumentNode<ListMinionMetricsQuery, ListMinionMetricsQueryVariables>;
@@ -1383,6 +1457,7 @@ export const FindAllNodesByMonitoredStateDocument = {"kind":"Document","definiti
 export const NodesForMapDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NodesForMap"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"findAllNodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nodeLabel"}}]}}]}}]} as unknown as DocumentNode<NodesForMapQuery, NodesForMapQueryVariables>;
 export const ListMonitoryPoliciesDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListMonitoryPolicies"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listMonitoryPolicies"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MonitoringPolicyParts"}}]}},{"kind":"Field","name":{"kind":"Name","value":"defaultPolicy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MonitoringPolicyParts"}}]}}]}},...MonitoringPolicyPartsFragmentDoc.definitions]} as unknown as DocumentNode<ListMonitoryPoliciesQuery, ListMonitoryPoliciesQueryVariables>;
 export const ListNodeStatusDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListNodeStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Long"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"EventsByNodeIdParts"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"NodeByIdParts"}}]}},...EventsByNodeIdPartsFragmentDoc.definitions,...NodeByIdPartsFragmentDoc.definitions]} as unknown as DocumentNode<ListNodeStatusQuery, ListNodeStatusQueryVariables>;
+export const FindExportersForNodeStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"findExportersForNodeStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"requestCriteria"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"RequestCriteriaInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"findExporters"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"requestCriteria"},"value":{"kind":"Variable","name":{"kind":"Name","value":"requestCriteria"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"snmpInterface"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ifIndex"}},{"kind":"Field","name":{"kind":"Name","value":"ifName"}}]}},{"kind":"Field","name":{"kind":"Name","value":"ipInterface"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"ipAddress"}}]}}]}}]}}]} as unknown as DocumentNode<FindExportersForNodeStatusQuery, FindExportersForNodeStatusQueryVariables>;
 export const FindLocationsForWelcomeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"FindLocationsForWelcome"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"findAllLocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"location"}}]}}]}}]} as unknown as DocumentNode<FindLocationsForWelcomeQuery, FindLocationsForWelcomeQueryVariables>;
 export const FindDevicesForWelcomeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"FindDevicesForWelcome"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"findAllNodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nodeLabel"}},{"kind":"Field","name":{"kind":"Name","value":"createTime"}},{"kind":"Field","name":{"kind":"Name","value":"ipInterfaces"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nodeId"}},{"kind":"Field","name":{"kind":"Name","value":"ipAddress"}},{"kind":"Field","name":{"kind":"Name","value":"snmpPrimary"}}]}}]}}]}}]} as unknown as DocumentNode<FindDevicesForWelcomeQuery, FindDevicesForWelcomeQueryVariables>;
 export const FindMinionsForWelcomeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"FindMinionsForWelcome"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Long"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"findMinionsByLocationId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locationId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locationId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<FindMinionsForWelcomeQuery, FindMinionsForWelcomeQueryVariables>;

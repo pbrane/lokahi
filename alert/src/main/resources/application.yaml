@@ -49,6 +49,7 @@ kafka:
     alert: "alerts"
     monitoring-policy: "monitoring-policy"
     node-changed: "node"
+    internal-event: "internal-event"
     create-topics:
       enabled: true
       alert:

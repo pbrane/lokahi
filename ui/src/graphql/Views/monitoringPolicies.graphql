@@ -9,14 +9,25 @@ fragment MonitoringPolicyParts on MonitorPolicy {
     id
     name
     componentType
-    triggerEvents {
+    detectionMethod
+    eventType
+    thresholdMetricName
+    alertConditions {
       id
       count
-      clearEvent
+      clearEvent {
+        id
+        name
+        eventType
+      }
       overtime
       overtimeUnit
       severity
-      triggerEvent
+      triggerEvent {
+        id
+        name
+        eventType
+      }
     }
   }
   tags

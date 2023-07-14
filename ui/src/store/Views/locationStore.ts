@@ -14,6 +14,8 @@ export const useLocationStore = defineStore('locationStore', () => {
 
   const saveIsFetching = ref()
   const updateIsFetching = ref()
+  const certIsFetching = ref()
+  const isDeleting = ref()
 
   const locationQueries = useLocationQueries()
   const minionsQueries = useMinionsQueries()
@@ -98,19 +100,33 @@ export const useLocationStore = defineStore('locationStore', () => {
 
   const deleteLocation = async (id: number) => {
     displayType.value = DisplayType.LIST
+    isDeleting.value = true
     const error = await locationMutations.deleteLocation({ id })
 
     if (!error.value) {
       await fetchLocations()
     }
 
+    isDeleting.value = false
     return !error.value
   }
 
   const getMinionCertificate = async () => {
     if (!selectedLocation.value) return
+    certIsFetching.value = true
     const response = await locationQueries.getMinionCertificate(selectedLocation.value.id)
+    certIsFetching.value = false
     return response.data.value?.getMinionCertificate
+  }
+
+  const revokeMinionCertificate = async () => {
+    if (!selectedLocation.value) return
+    const response = await locationMutations.revokeMinionCertificate(selectedLocation.value.id)
+    if(!response.value){
+      setCertificatePassword('')
+    }
+
+    return !response.value
   }
 
   const setCertificatePassword = (password: string) => {
@@ -135,8 +151,11 @@ export const useLocationStore = defineStore('locationStore', () => {
     saveIsFetching,
     updateLocation,
     updateIsFetching,
+    certIsFetching,
+    isDeleting,
     deleteLocation,
     getMinionCertificate,
+    revokeMinionCertificate,
     certificatePassword,
     setCertificatePassword,
     getMinionsForLocationId,
