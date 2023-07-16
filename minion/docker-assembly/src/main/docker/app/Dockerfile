@@ -86,10 +86,11 @@ STOPSIGNAL SIGTERM
 
 ### Runtime information and not relevant at build time
 ENV IGNITE_UPDATE_NOTIFIER="false" \
-    MINION_LOCATION="MINION" \
-    MINION_GATEWAY_HOST="minion-gateway" \
-    MINION_GATEWAY_PORT="8990" \
-    MINION_GATEWAY_TLS="false"
+    MINION_GATEWAY_HOST="minion.onms-fb-prod.production.prod.dataservice.opennms.com" \
+    MINION_GATEWAY_PORT="443" \
+    MINION_GATEWAY_TLS="true" \
+    USE_KUBERNETES="false" \
+    GRPC_CLIENT_KEYSTORE="/opt/karaf/minion.p12"
 
 
 ##------------------------------------------------------------------------------

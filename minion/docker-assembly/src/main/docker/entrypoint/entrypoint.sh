@@ -8,7 +8,8 @@ trap 's=$?; echo >&2 "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
 if ! [[ -v GRPC_CLIENT_KEYSTORE ]]; then
 	echo "Required keystore file environment variable 'GRPC_CLIENT_KEYSTORE' not set." >&2
-	echo "Example docker argument to pass keystore file: -e GRPC_CLIENT_KEYSTORE=/opt/karaf/minion.p12" >&2
+	echo "This should always be set by the Dockerfile, so this error is unexpected." >&2
+	echo "Workaround: example docker argument to pass keystore file: -e GRPC_CLIENT_KEYSTORE=/opt/karaf/minion.p12" >&2
 	exit 1
 fi
 
