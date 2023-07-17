@@ -1,0 +1,44 @@
+
+= Manage Minions
+
+
+
+
+[[additional-minions-install]]
+== Install additional Minions
+
+As part of Minion installation, you will create a location, which defines where your Minion lives once you install it.
+We recommend choosing a descriptive name like `New-York-Office` or `Building-5` for easier identification.
+
+To install a Minion for Lōkahi or to add another Minion to your OpenNMS Cloud environment, follow these steps:
+
+. Log in to OpenNMS Lōkahi/Cloud.
+. Click *Locations* in the left navigation menu.
+. Select *+ Location*.
+. Type a *Location Name* in the field and click *Save*.
+
+The new location is saved.
+From the Locations list, you can view the location's details, see its associated Minions, and manage Minion security certificates.
+
+== Associate a Minion with a location
+
+Once you create a location you can install a Minion.
+
+. In the locations screen, click the location where you want to install a Minion.
+. Click the vertical ellipsis (`⋮`) and choose *Edit*.
+. In the area on the right of the screen, click *Download Certificate*.
+. Copy the certificate file to a permanent directory.
+. Copy the content in the *Unlock File Password*.
++
+NOTE: Make sure you store this password in a safe place.
+It unlocks the certificate password file.
+You will need it if you ever need to restart the Minion.
+. Open the certificate file.
+. When prompted, paste in the password.
+. Copy the Docker install command.
+. Paste the command in a terminal window.
+. Before running the command, replace the `PATH_TO_DOWNLOADED_FILE` with the full path to the certificate you downloaded.
+. Click *Save*.
+
+
+

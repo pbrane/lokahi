@@ -1,4 +1,12 @@
 
+[[glossary]]
 = Glossary
+:description: Glossary of terms for OpenNMS Cloud and Lōkahi, cloud-native network monitoring.
 
-Tags:
+
+== L
+
+location:: A location defines where your Minion lives once you install it (for example, `New-York-Office` or `Building-5`).
+
+== T
+Tags::

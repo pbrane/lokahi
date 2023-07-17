@@ -1,0 +1,78 @@
+
+= Minion Installation
+:description: How to install a Minion collector for OpenNMS Cloud and Lōkahi.
+
+To start monitoring, you need to install our Minion on your system.
+This lightweight, secure collector monitors and communicates with the devices on your network, shares collected data, and connects your network with <<minion-install-cloud, OpenNMS Cloud>> (cloud-hosted) or <<minion-install-lokahi, OpenNMS Lōkahi>> (self-hosted).
+
+Each Minion has its own unique security certificate.
+
+
+[[minion-requirements]]
+== Before You Begin
+
+Make sure your system meets the following minimum requirements:
+
+* CPU: 3GHz quad core x86_64 and above
+* RAM: 8GB (physical) and above
+* Storage (disk space): 100GB with SSD and above
+* Docker environment with Docker Compose (installation instructions: https://docs.docker.com/desktop/install/mac-install/[Mac], https://docs.docker.com/desktop/install/linux-install/[Linux], https://docs.docker.com/desktop/install/windows-install/[Windows])
+* Access to a terminal window
+* Network Time Protocol (NTP) installed and configured
+
+[[minion-install-lokahi]]
+== Install a Minion: OpenNMS Lōkahi (self-hosted)
+
+Before you begin, make sure you have xref:installation/installation.adoc[installed Lōkahi] and that your system meets the <<minion-requirements, minimum requirements>>.
+
+For information on how to install more Minions through the OpenNMS Cloud UI, see xref:operation/minions/introduction.adoc#additional-minions-install[Install additional Minions].
+
+//needs to be updated
+
+To install a Minion for Lōkahi, follow these steps:
+
+TBD
+
+[[minion-install-cloud]]
+== Install a Minion: OpenNMS Cloud (cloud-hosted)
+
+The first time you log in to OpenNMS Cloud, the onboarding wizard takes you through the steps to install a Minion.
+
+Before you begin, make sure that your system meets the <<minion-requirements, minimum requirements>>.
+
+This section describes the installation steps using the onboarding wizard.
+For information on how to install more Minions through the OpenNMS Cloud UI, see xref:operation/minions/introduction.adoc#additional-minions-install[Install additional Minions].
+
+To install a Minion through the onboarding wizard, follow these steps:
+
+. Create a directory where you will install your Minion (for example, `cloud-Minion` or `lokahi-Minion`).
+. Click the sign-in link you received in your welcome to OpenNMS Cloud email.
+. Click *Start Setup*.
+. Download the encrypted Minion certificate and copy it to the Minion directory.
++
+NOTE: Do not rename the file.
+. Copy the Docker install command.
+. Paste the command in a terminal window.
+. Before running the command, replace the `PATH_TO_DOWNLOADED_FILE` with the full path to the certificate you downloaded.
++
+NOTE: Remember to store your password, certificate, and Docker command securely.
+You need all three to run your Minion.
+. Run the edited command.
++
+The Minion installation begins.
+When we detect your Minion, a `Minion detected.` message appears.
+This could take up to 10 minutes.
+. Click *Continue*.
+. In the *Add Your First Device* screen, type a name for the discovery and the IP address of a single device you want to monitor.
+You cannot enter an IP address range.
++
+We try to detect your device, which can take about three minutes.
++
+When we detect the device, it appears in the *Device Preview* area.
+Note that the device is assigned to a location called `default`.
+Locations identify the place where you installed your Minion.
+
+. Click *Start Monitoring*.
+
+Refer to the xref:get-started/login.adoc[Getting Started] section for directions on what to do next.
+If you are using OpenNMS Cloud, you can also follow our interactive tours for guidance.
