@@ -275,21 +275,30 @@ jib_project(
 )
 
 ### Vue.js App ###
-#### UI ####
+#### UI - Production container ####
 docker_build(
     'opennms/lokahi-ui',
-    'ui',
-    target='development',
-    live_update=[
-        sync('./ui', '/app'),
-        run('yarn install', trigger=['./ui/package.json', './ui/yarn.lock']),
-    ],
+    'ui'
 )
 
 k8s_resource(
     'opennms-ui',
     new_name='vuejs-ui',
-    port_forwards=['17080:8080'],
+    labels=['vuejs-app'],
+)
+
+#### UI - Local development server ####
+serve_env={
+    'VITE_BASE_URL': 'https://onmshs.local:1443/api',
+    'VITE_KEYCLOAK_URL': 'https://onmshs.local:1443/auth'
+}
+local_resource(
+    'vuejs-ui:local',
+    cmd='yarn install',
+    dir='ui',
+    serve_cmd='yarn run dev',
+    serve_dir='ui',
+    serve_env=serve_env,
     labels=['vuejs-app'],
 )
 

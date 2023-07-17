@@ -37,7 +37,9 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-    IngressAnnotations: {}
+    IngressAnnotations:
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        add_header X-Content-Type-Options "nosniff";
   Minion:
     Enabled: true
     addDefaultLocation: true
