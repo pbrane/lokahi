@@ -95,7 +95,6 @@ OpenNMS:
     ExtraVolumes: []
     ExtraMounts: []
     ExtraInitContainers: []
-    GrpcConfig: {}
     addDefaultLocation: false
   MinionGateway:
     ServiceName: opennms-minion-gateway
