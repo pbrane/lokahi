@@ -39,7 +39,9 @@
 config.define_string("listen-on")
 config.define_string_list("values")
 config.define_string_list("args", args=True)
+config.define_bool("ui-devmode")
 cfg = config.parse()
+cfg_json = read_json('tilt_config.json', {})
 config.set_enabled_resources(cfg.get('args', []))
 
 secret_settings(disable_scrub=True)  ## TODO: update secret values so we can reenable scrub
@@ -275,33 +277,45 @@ jib_project(
 )
 
 ### Vue.js App ###
-#### UI - Production container ####
-docker_build(
-    'opennms/lokahi-ui',
-    'ui'
-)
+uiDevmode = cfg.get('ui-devmode', False)
 
-k8s_resource(
-    'opennms-ui',
-    new_name='vuejs-ui',
-    labels=['vuejs-app'],
-)
+cmd_button(name='toggle-ui-devmode',
+           argv=['sh', '-c', 'printenv CONFIG > tilt_config.json'],
+           env=[
+               'CONFIG={}'.format(encode_json(cfg_json | {'ui-devmode': not uiDevmode}))
+           ],
+           resource='vuejs-ui',
+           text='Toggle Dev Mode',
+           icon_name='code_off' if uiDevmode else 'code_block')
+
+#### UI - Production container ####
+if (uiDevmode):
+    serve_env={
+        'VITE_BASE_URL': 'https://onmshs.local:1443/api',
+        'VITE_KEYCLOAK_URL': 'https://onmshs.local:1443/auth'
+    }
+    local_resource(
+        'vuejs-ui',
+        cmd='yarn install',
+        dir='ui',
+        serve_cmd='yarn run dev',
+        serve_dir='ui',
+        serve_env=serve_env,
+        labels=['vuejs-app'],
+    )
+else:
+    docker_build(
+        'opennms/lokahi-ui',
+        'ui',
+    )
+
+    k8s_resource(
+        'opennms-ui',
+        new_name='vuejs-ui',
+        labels=['vuejs-app'],
+    )
 
 #### UI - Local development server ####
-serve_env={
-    'VITE_BASE_URL': 'https://onmshs.local:1443/api',
-    'VITE_KEYCLOAK_URL': 'https://onmshs.local:1443/auth'
-}
-local_resource(
-    'vuejs-ui:local',
-    cmd='yarn install',
-    dir='ui',
-    serve_cmd='yarn run dev',
-    serve_dir='ui',
-    serve_env=serve_env,
-    labels=['vuejs-app'],
-)
-
 #### BFF ####
 jib_project(
     'vuejs-bff',
