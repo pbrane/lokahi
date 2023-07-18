@@ -34,6 +34,7 @@ import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
 
+import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Condition.exist;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
@@ -48,7 +49,7 @@ public class InventoryPage {
     private static final ElementsCollection nodesList = $$("[class='cards']");
 
     public static void clickOnMonitoredNodesTab() {
-        monitoredNodesTab.shouldBe(Condition.visible, Condition.enabled).click();
+        monitoredNodesTab.shouldBe(Condition.visible, enabled).click();
     }
 
     public static boolean checkIfMonitoredNodeExist(String nodeSysName) {
@@ -73,4 +74,13 @@ public class InventoryPage {
         }
         statusCheck.should(exist);
     }
+
+    public static void deleteNode(String node) {
+        String deleteNodeButtonSearch = "//ul[@class='cards']/li[//li[@data-test='management-ip']/span/text()='" + node + "']//li[@data-test='delete']";
+        $(By.xpath(deleteNodeButtonSearch)).should(exist).shouldBe(enabled).click();
+
+        String deleteConfirm = "//button[@data-testid='save-btn']";
+        $(By.xpath(deleteConfirm)).should(exist).shouldBe(enabled).click();
+    }
+
 }

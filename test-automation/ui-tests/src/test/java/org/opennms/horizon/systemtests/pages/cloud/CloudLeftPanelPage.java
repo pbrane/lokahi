@@ -45,9 +45,17 @@ public class CloudLeftPanelPage {
     }
 
     public static void clickOnPanelSection(String section) {
-        $(String.format("[href='/%s']", section)).shouldBe(enabled).hover().click();
+        // "home" is special and is the root url
+        String url;
+        if (section.equals("home")) {
+            url = "[href='/']";
+        } else {
+            url = String.format("[href='/%s']", section);
+        }
+        $(url).shouldBe(enabled).hover().click();
 
         switch (section) {
+            case "home" -> $(By.xpath("//div[@data-test='page-headline'][text()='Insights Dashboard']")).should(exist);
             case "locations" -> $(By.xpath("//div[@class='locations-card-items']")).should(exist);
             case "discovery" -> $(By.xpath("//div[@class='card-my-discoveries']")).should(exist);
             case "inventory" ->

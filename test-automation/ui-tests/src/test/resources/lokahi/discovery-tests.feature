@@ -30,9 +30,8 @@
 Feature: User can discover devices
 
   Scenario: Discover a single device
-    Given Logged in with a minion "discovery2Minion"
     Given Start snmp node "node1"
     When Discovery "SingleDiscovery" for node "node1" is created to discover by IP
     Then Status of "node1" should be "UP"
-    Then delete used locations
+    Then delete node "node1"
 

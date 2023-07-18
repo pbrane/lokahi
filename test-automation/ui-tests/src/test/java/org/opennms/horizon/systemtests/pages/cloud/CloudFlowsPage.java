@@ -4,8 +4,8 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import org.junit.Assert;
 import java.time.Duration;
-import static com.codeborne.selenide.Condition.enabled;
-import static com.codeborne.selenide.Condition.visible;
+
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
 
@@ -14,12 +14,12 @@ public class CloudFlowsPage {
     private static final SelenideElement todayOption = $("#TODAY");
     private static final SelenideElement last24HoursOption = $("#LAST_24_HOURS");
     private static final SelenideElement last7DaysOption = $("#SEVEN_DAYS");
-    private static final SelenideElement noDataTxt = $x("//div[contains(@class, 'applications-charts')]/div[position()=2]");
+    private static final SelenideElement noDataTxt = $x("//div[@class='subtitle'][contains(text(), 'No applications data')]");
     private static final SelenideElement trafficChart = $("div.table-chart-container");
     private static final SelenideElement exporterInp = $("[data-ref-id='feather-autocomplete-input']");
 
     public static void verifyNoDataTitle() {
-        noDataTxt.shouldHave(Condition.text("No data"));
+        noDataTxt.should(exist);
     }
 
     public static void verifyChartVisibility() {

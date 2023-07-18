@@ -1,10 +1,9 @@
 @flows
 Feature: NetFlows basic function
 
-  @ignore
   Scenario: User sees empty 'Flows' chart before data was sent
     Given No netflow data was sent
-    And sees "No applications data was found in last 24 hours.." subtitle in the 'Top 10 Applications' chart
+    And sees "No applications data was found in last 24 hours" subtitle in the Top 10 Applications chart
     Then click on 'Flows' link
     And sees 'No Data' in the flows table
 

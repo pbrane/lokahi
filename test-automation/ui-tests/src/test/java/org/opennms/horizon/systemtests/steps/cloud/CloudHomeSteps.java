@@ -28,12 +28,15 @@
 package org.opennms.horizon.systemtests.steps.cloud;
 
 import com.codeborne.selenide.Selenide;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import org.opennms.horizon.systemtests.pages.cloud.CloudHomePage;
+import org.opennms.horizon.systemtests.pages.cloud.CloudLeftPanelPage;
 
 public class CloudHomeSteps {
-    @Then("sees {string} subtitle in the 'Top 10 Applications' chart")
+    @Then("sees {string} subtitle in the Top 10 Applications chart")
     public void verifyErrorMessage(String subtitle) {
+        CloudLeftPanelPage.clickOnPanelSection("home");
         CloudHomePage.verifyTop10ApplicationsSubtitle(subtitle);
     }
 
@@ -53,5 +56,4 @@ public class CloudHomeSteps {
     public void clickOnFlows() {
         CloudHomePage.clickOnFlowsLink();
     }
-
 }

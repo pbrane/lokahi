@@ -49,7 +49,7 @@ public class SetupSteps {
     }
 
     @Given("Logged in with a minion {string}")
-    public void loggedInWithANamedMinion(String minionName) {
+    public static void loggedInWithANamedMinion(String minionName) {
         login();
 
         if (LokahiWalkthrough.containsWalkthroughButton()) {
@@ -72,7 +72,7 @@ public class SetupSteps {
         }
     }
 
-    private static void login() {
+    public static void login() {
         try {
             Selenide.open(CucumberHooks.instanceUrl);
         } catch (Exception e) {

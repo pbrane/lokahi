@@ -144,4 +144,15 @@ public class DiscoverySteps {
 
         InventoryPage.verifyNodeStatus(status, ipaddress);
     }
+
+    @Then("delete node {string}")
+    public void deleteNode(String nodeName) {
+        GenericContainer<?> node = nodes.get(nodeName);
+        assertNotNull("Cannot find node to delete with name " + nodeName, node);
+
+        String ipaddress = getContainerIP(node);
+
+        CloudLeftPanelPage.clickOnPanelSection("inventory");
+        InventoryPage.deleteNode(ipaddress);
+    }
 }

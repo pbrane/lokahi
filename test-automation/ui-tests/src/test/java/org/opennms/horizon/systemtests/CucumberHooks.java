@@ -27,6 +27,7 @@ import com.codeborne.selenide.FileDownloadMode;
 import com.codeborne.selenide.Selenide;
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.BeforeAll;
+import org.opennms.horizon.systemtests.steps.SetupSteps;
 import org.testcontainers.containers.GenericContainer;
 import testcontainers.MinionContainer;
 
@@ -98,6 +99,8 @@ public class CucumberHooks {
         if (minionDockerTag == null) {
             minionDockerTag = "latest";
         }
+
+        SetupSteps.loggedInWithANamedMinion("testMinion");
     }
 
 
