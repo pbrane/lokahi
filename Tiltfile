@@ -190,11 +190,16 @@ def generate_certificate(secret_name, domain, ca_key_file_name, ca_cert_file_nam
     local('./install-local/generate-and-sign-certificate.sh "default" {} {} {} {}'.format(domain, secret_name, ca_key_file_name, ca_cert_file_name));
 
 def create_devmode_toggle_btn(resource_name, devmode_list, devmode_key):
+    # we should not mutate new_config so we need to work with a copy
+    new_config = {}
+    new_config.update(cfg)
+    new_config.update({'devmode': get_toggled_devmode_list(devmode_key, devmode_list)})
+
     cmd_button(
         name='toggle-{}-devmode'.format(resource_name),
         argv=['sh', '-c', 'printenv CONFIG > tilt_config.json'],
         env=[
-            'CONFIG={}'.format(encode_json(cfg | {'devmode': get_toggled_devmode_list(devmode_key, devmode_list)}))
+            'CONFIG={}'.format(encode_json(new_config))
         ],
         resource=resource_name,
         text='Toggle Dev Mode',
@@ -202,7 +207,7 @@ def create_devmode_toggle_btn(resource_name, devmode_list, devmode_key):
     )
 
 def get_toggled_devmode_list(resource_name, original_list):
-    # we should not mutate original_list so we need to work with a clone
+    # we should not mutate original_list so we need to work with a copy
     result = []
     result.extend(original_list)
 
