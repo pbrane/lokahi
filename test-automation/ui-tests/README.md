@@ -18,6 +18,7 @@ in the tests.
 - MINION_INGRESS_PORT - The port exposed by the minion ingress
 - MINION_INGRESS_OVERRIDE_AUTHORITY - The name to use for auth of the ingress connection,
 usually minion.onmshs.local when running locally using tilt.
+- MINION_DOCKER_TAG - The docker tag for the minion. Defaults to "latest".
 - INGRESS_BASE_URL - The URL for connecting to the UI of the system, often https://onmshs.local:1443 when
 running locally with tilt.
 - MINION_INGRESS_CA - The file containing the public cert of the minion ingress CA, often in lokahi/target/tmp/server-ca.crt

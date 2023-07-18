@@ -43,7 +43,6 @@ public class DockerComposeMinionContainer extends DockerComposeContainer<DockerC
                     .withStartupTimeout(Duration.ofMinutes(2))
             );
 
-        MinionSteps.minions
         dockerComposeMinionContainer.start();
     }
 

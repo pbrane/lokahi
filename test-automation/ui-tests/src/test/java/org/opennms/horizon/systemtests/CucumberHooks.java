@@ -52,7 +52,7 @@ public class CucumberHooks {
     public static String admin_username;
     public static String admin_password;
 
-    public static String minionDockerTag;
+    public static String minionDockerTag = "latest";
     public static boolean keycloakLogin = true;
 
     @BeforeAll
@@ -92,6 +92,11 @@ public class CucumberHooks {
         instanceUrl = System.getenv("INGRESS_BASE_URL");
         if (instanceUrl == null) {
             instanceUrl = "https://onmshs.local:" + gatewayPort;
+        }
+
+        minionDockerTag = System.getenv("MINION_DOCKER_TAG");
+        if (minionDockerTag == null) {
+            minionDockerTag = "latest";
         }
     }
 
