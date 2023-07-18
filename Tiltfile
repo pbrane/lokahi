@@ -324,7 +324,6 @@ k8s_resource(
     ],
 )
 
-#### UI - Local development server ####
 #### BFF ####
 jib_project(
     'vuejs-bff',
