@@ -39,7 +39,7 @@
 config.define_string('listen-on')
 config.define_string_list('values')
 config.define_string_list('args', args=True)
-config.define_bool('ui-devmode')
+config.define_string_list('devmode')
 cfg = config.parse()
 config.set_enabled_resources(cfg.get('args', []))
 
@@ -189,6 +189,18 @@ def load_certificate_authority(secret_name, name, key_file_name, cert_file_name)
 def generate_certificate(secret_name, domain, ca_key_file_name, ca_cert_file_name):
     local('./install-local/generate-and-sign-certificate.sh "default" {} {} {} {}'.format(domain, secret_name, ca_key_file_name, ca_cert_file_name));
 
+def get_toggled_devmode_list(resource_name, original_list=[]):
+    # we should not mutate original_list so we need to work with a clone
+    result = []
+    result.extend(original_list)
+
+    if (resource_name in original_list):
+        result.remove(resource_name)
+    else:
+        result.append(resource_name)
+
+    return result
+
 load_certificate_authority('root-ca-certificate', 'opennms-ca', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 generate_certificate('opennms-minion-gateway-certificate', 'minion.onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 generate_certificate('opennms-ui-certificate', 'onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
@@ -276,10 +288,10 @@ jib_project(
 )
 
 ### Vue.js App ###
-uiDevmode = cfg.get('ui-devmode', False)
+devmode_list = cfg.get('devmode', [])
 
 #### UI - Local development server ####
-if (uiDevmode):
+if ('ui' in devmode_list):
     serve_env={
         'VITE_BASE_URL': 'https://onmshs.local:1443/api',
         'VITE_KEYCLOAK_URL': 'https://onmshs.local:1443/auth'
@@ -301,11 +313,11 @@ cmd_button(
     name='toggle-ui-devmode',
     argv=['sh', '-c', 'printenv CONFIG > tilt_config.json'],
     env=[
-        'CONFIG={}'.format(encode_json(cfg | {'ui-devmode': not uiDevmode}))
+        'CONFIG={}'.format(encode_json(cfg | {'devmode': get_toggled_devmode_list('ui', devmode_list)}))
     ],
     resource='vuejs-ui:prod',
     text='Toggle Dev Mode',
-    icon_name='code_off' if uiDevmode else 'code_block'
+    icon_name='code_off' if 'ui' in devmode_list else 'code_block'
 )
 
 #### UI - Production container ####
@@ -318,7 +330,7 @@ k8s_resource(
     'opennms-ui',
     new_name='vuejs-ui:prod',
     labels=['vuejs-app'],
-    trigger_mode=TRIGGER_MODE_MANUAL if uiDevmode else TRIGGER_MODE_AUTO,
+    trigger_mode=TRIGGER_MODE_MANUAL if 'ui' in devmode_list else TRIGGER_MODE_AUTO,
     links=[
         link('https://onmshs.local:1443/', 'Web UI (prod container)')
     ],
