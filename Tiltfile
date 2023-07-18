@@ -36,12 +36,11 @@
 ## 35 = minion-certificate-verifier
 
 # Tilt config #
-config.define_string("listen-on")
-config.define_string_list("values")
-config.define_string_list("args", args=True)
-config.define_bool("ui-devmode")
+config.define_string('listen-on')
+config.define_string_list('values')
+config.define_string_list('args', args=True)
+config.define_bool('ui-devmode')
 cfg = config.parse()
-cfg_json = read_json('tilt_config.json', {})
 config.set_enabled_resources(cfg.get('args', []))
 
 secret_settings(disable_scrub=True)  ## TODO: update secret values so we can reenable scrub
@@ -63,7 +62,7 @@ cmd_button(name='reload-helm',
 
 # Give ourselves more time
 update_settings(k8s_upsert_timeout_secs=60)
-if os.getenv("CI"):
+if os.getenv('CI'):
     # Be a little bit more aggressive in CI
     update_settings(max_parallel_updates=4)
 
@@ -190,19 +189,19 @@ def load_certificate_authority(secret_name, name, key_file_name, cert_file_name)
 def generate_certificate(secret_name, domain, ca_key_file_name, ca_cert_file_name):
     local('./install-local/generate-and-sign-certificate.sh "default" {} {} {} {}'.format(domain, secret_name, ca_key_file_name, ca_cert_file_name));
 
-load_certificate_authority("root-ca-certificate", "opennms-ca", "target/tmp/server-ca.key", "target/tmp/server-ca.crt")
-generate_certificate("opennms-minion-gateway-certificate", "minion.onmshs.local", "target/tmp/server-ca.key", "target/tmp/server-ca.crt")
-generate_certificate("opennms-ui-certificate", "onmshs.local", "target/tmp/server-ca.key", "target/tmp/server-ca.crt")
-load_certificate_authority("client-root-ca-certificate", "client-ca", "target/tmp/client-ca.key", "target/tmp/client-ca.crt")
+load_certificate_authority('root-ca-certificate', 'opennms-ca', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
+generate_certificate('opennms-minion-gateway-certificate', 'minion.onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
+generate_certificate('opennms-ui-certificate', 'onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
+load_certificate_authority('client-root-ca-certificate', 'client-ca', 'target/tmp/client-ca.key', 'target/tmp/client-ca.crt')
 
 
 # Deployment #
 # https://github.com/jaegertracing/helm-charts/tree/main/charts/jaeger
-helm_remote('jaeger', version='0.71.0', repo_url='https://jaegertracing.github.io/helm-charts', values="tilt-jaeger-values.yaml")
+helm_remote('jaeger', version='0.71.0', repo_url='https://jaegertracing.github.io/helm-charts', values='tilt-jaeger-values.yaml')
 k8s_resource(
     'jaeger',
     labels=['0_useful'],
-    port_forwards=port_forward(16686, name="Jaeger UI"),
+    port_forwards=port_forward(16686, name='Jaeger UI'),
 )
 
 # Deployment #
@@ -230,7 +229,7 @@ helm_resource('ingress-nginx', 'ingress-nginx-repo/ingress-nginx',
 		'--values=tilt-ingress-nginx-values.yaml',
 		'--timeout=60s'
 	],
-	deps=["Tiltfile", "tilt-ingress-nginx-values.yaml"],
+	deps=['Tiltfile', 'tilt-ingress-nginx-values.yaml'],
 	resource_deps=[
 		'cert-manager',
 		'ingress-nginx-repo',
@@ -279,41 +278,51 @@ jib_project(
 ### Vue.js App ###
 uiDevmode = cfg.get('ui-devmode', False)
 
-cmd_button(name='toggle-ui-devmode',
-           argv=['sh', '-c', 'printenv CONFIG > tilt_config.json'],
-           env=[
-               'CONFIG={}'.format(encode_json(cfg_json | {'ui-devmode': not uiDevmode}))
-           ],
-           resource='vuejs-ui',
-           text='Toggle Dev Mode',
-           icon_name='code_off' if uiDevmode else 'code_block')
-
-#### UI - Production container ####
+#### UI - Local development server ####
 if (uiDevmode):
     serve_env={
         'VITE_BASE_URL': 'https://onmshs.local:1443/api',
         'VITE_KEYCLOAK_URL': 'https://onmshs.local:1443/auth'
     }
     local_resource(
-        'vuejs-ui',
+        'vuejs-ui:dev',
         cmd='yarn install',
         dir='ui',
         serve_cmd='yarn run dev',
         serve_dir='ui',
         serve_env=serve_env,
         labels=['vuejs-app'],
-    )
-else:
-    docker_build(
-        'opennms/lokahi-ui',
-        'ui',
+        links=[
+            link('http://onmshs.local:8080/', 'Web UI (dev server)')
+        ]
     )
 
-    k8s_resource(
-        'opennms-ui',
-        new_name='vuejs-ui',
-        labels=['vuejs-app'],
-    )
+cmd_button(
+    name='toggle-ui-devmode',
+    argv=['sh', '-c', 'printenv CONFIG > tilt_config.json'],
+    env=[
+        'CONFIG={}'.format(encode_json(cfg | {'ui-devmode': not uiDevmode}))
+    ],
+    resource='vuejs-ui:prod',
+    text='Toggle Dev Mode',
+    icon_name='code_off' if uiDevmode else 'code_block'
+)
+
+#### UI - Production container ####
+docker_build(
+    'opennms/lokahi-ui',
+    'ui',
+)
+
+k8s_resource(
+    'opennms-ui',
+    new_name='vuejs-ui:prod',
+    labels=['vuejs-app'],
+    trigger_mode=TRIGGER_MODE_MANUAL if uiDevmode else TRIGGER_MODE_AUTO,
+    links=[
+        link('https://onmshs.local:1443/', 'Web UI (prod container)')
+    ],
+)
 
 #### UI - Local development server ####
 #### BFF ####
@@ -490,7 +499,7 @@ k8s_resource(
 )
 
 ### Others ###
-listen_on = cfg.get('listen-on', "0.0.0.0")
+listen_on = cfg.get('listen-on', '0.0.0.0')
 k8s_resource(
     'ingress-nginx',
     labels=['0_useful'],
@@ -499,6 +508,6 @@ k8s_resource(
         port_forward(1443, 443, host=listen_on),
     ],
     links=[
-        link("https://onmshs.local:1443/", name="Web UI"),
+        link('https://onmshs.local:1443/', name='Web UI (prod container)'),
     ],
 )
