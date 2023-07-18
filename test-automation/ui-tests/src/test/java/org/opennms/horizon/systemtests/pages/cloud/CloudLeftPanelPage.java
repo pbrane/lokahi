@@ -28,26 +28,58 @@
 
 package org.opennms.horizon.systemtests.pages.cloud;
 
-
 import com.codeborne.selenide.SelenideElement;
-import java.time.Duration;
+import org.openqa.selenium.By;
+
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 
 public class CloudLeftPanelPage {
     private static final SelenideElement leftPanel = $(".app-aside");
+    private static final SelenideElement topRightBorder = $(By.xpath("//div[@class='right center-horiz'][1]"));
+    private static final SelenideElement leftPanelWide = $(By.xpath("//div[@class='feather-app-rail']"));
+    private static final SelenideElement leftPanelSmall = $(By.xpath("//div[@class='feather-app-rail narrow']"));
 
     public static void verifyLeftPanelIsDisplayed() {
         leftPanel.shouldBe(visible);
     }
 
     public static void clickOnPanelSection(String section) {
-        $("div.feather-app-rail").shouldBe(visible, Duration.ofSeconds(15)).hover().shouldNotHave(cssClass("narrow"));
-        SelenideElement menuOption = $(String.format("[href='/%s']", section)).shouldBe(enabled);
-        menuOption.click();
-        if (!"".equals(section)) {
-            menuOption.shouldHave(cssClass("selected"));
+        $(String.format("[href='/%s']", section)).shouldBe(enabled).hover().click();
+
+        switch (section) {
+            case "locations" -> $(By.xpath("//div[@class='locations-card-items']")).should(exist);
+            case "discovery" -> $(By.xpath("//div[@class='card-my-discoveries']")).should(exist);
+            case "inventory" ->
+                $(By.xpath("//div[@data-test='page-header'][contains(./text(), 'Network Inventory')]")).should(exist);
         }
-        $("div.right").click();
+
+        // Have to wait for the left border animation to fully stop before we can clear it.
+        int width = 0;
+        int previous = leftPanelWide.getSize().getWidth();
+        while (width != previous) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            width = previous;
+            previous = leftPanelWide.getSize().getWidth();
+        }
+        topRightBorder.click();
+
+        // Now wait for the left border to animate away before returning
+        leftPanelSmall.should(exist);
+        width = 0;
+        previous = leftPanelSmall.getSize().getWidth();
+        while (width != previous) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            width = previous;
+            previous = leftPanelSmall.getSize().getWidth();
+        }
     }
 }

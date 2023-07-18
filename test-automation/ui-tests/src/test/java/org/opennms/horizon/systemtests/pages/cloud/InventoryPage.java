@@ -25,14 +25,24 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
+
 package org.opennms.horizon.systemtests.pages.cloud;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import org.openqa.selenium.By;
+
+import static com.codeborne.selenide.Condition.exist;
+import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 public class InventoryPage {
+    public enum Status {
+        UP,
+        DOWN
+    }
 
     private static final SelenideElement monitoredNodesTab = $$("[data-ref-id='feather-tab']").get(0);
     private static final ElementsCollection nodesList = $$("[class='cards']");
@@ -42,6 +52,25 @@ public class InventoryPage {
     }
 
     public static boolean checkIfMonitoredNodeExist(String nodeSysName) {
-       return nodesList.findBy(Condition.text(nodeSysName)).isDisplayed();
+        return nodesList.findBy(Condition.text(nodeSysName)).isDisplayed();
+    }
+
+    public static void verifyNodeStatus(Status status, String nodename) {
+        // The inventory page doesn't refresh on its own. Need to periodically check and force a refresh
+        String itemStatusSearch = "//ul[@class='cards']/li[//li[@data-test='management-ip']/span/text()='" + nodename + "']//div[@title='Status']//span[text()='" + status + "']";
+        SelenideElement statusCheck = $(By.xpath(itemStatusSearch));
+        int iterations = 10;
+        while (!statusCheck.exists() && iterations>0) {
+            --iterations;
+            Selenide.refresh();
+            CloudLeftPanelPage.clickOnPanelSection("inventory");
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // Ignore and busy-loop it
+            }
+        }
+        statusCheck.should(exist);
     }
 }
