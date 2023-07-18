@@ -41,12 +41,12 @@ import static com.codeborne.selenide.Selectors.*;
 public class LocationsPage {
 
     private static final ElementsCollection locationNamesList = $$("[data-test='card']");
-    private static final ElementsCollection minionsList =  $$("[class='minions-card-wrapper']");
-    private static final SelenideElement addLocationButton =  $("[data-test='add-location-btn']");
-    private static final SelenideElement locationNameInputField =  $$("[data-test='input-name']").get(1);
-    private static final SelenideElement addLocationSaveButton =  $("[data-test='save-button']");
+    private static final ElementsCollection minionsList = $$("[class='minions-card-wrapper']");
+    private static final SelenideElement addLocationButton = $("[data-test='add-location-btn']");
+    private static final SelenideElement locationNameInputField = $$("[data-test='input-name']").get(1);
+    private static final SelenideElement addLocationSaveButton = $("[data-test='save-button']");
     private static final SelenideElement downloadCertificateButton = $("[data-test='download-btn']");
-    private static final SelenideElement dockerRunCLTextField =  $(withText("GRPC_CLIENT_KEYSTORE_PASSWORD"));
+    private static final SelenideElement dockerRunCLTextField = $(withText("GRPC_CLIENT_KEYSTORE_PASSWORD"));
 
     public static void clickOnLocation(String locationName) {
         locationNamesList.find(text(locationName)).shouldBe(visible, enabled).click();

@@ -46,15 +46,15 @@ public class WelcomePage {
 
     private static final SelenideElement startSetupButton = $("[data-test='welcome-slide-one-setup-button']");
     private static final SelenideElement downloadCertificateButton = $("[data-test='welcome-slide-two-download-button']");
-    private static final SelenideElement dockerRunCLTextField =  $(withText("GRPC_CLIENT_KEYSTORE_PASSWORD"));
-    private static final SelenideElement minionStatusField =  $("[data-test='welcome-minion-status-txt']");
-    private static final SelenideElement continueButton =  $("[data-id='welcome-slide-two-continue-button']");
-    private static final SelenideElement discoveryIPField =  $$("[data-test='welcome-slide-three-ip-input']").get(1);
-    private static final SelenideElement startDiscoveryButton =  $("[data-test='welcome-store-page-three-start-discovery-button']");
-    private static final SelenideElement discoveryLoadingField =  $("[data-test='welcome-discovery-status-txt']");
-    private static final SelenideElement discoveryResultNodeNameField =  $("[data-test='item-preview-meta-id']");
-    private static final ElementsCollection discoveryResultNodeStatusFields =  $$("[data-test='item-preview-status-id']");
-    private static final SelenideElement discoveryFinalContinueButton =  $("[data-test='welcome-store-slide-three-continue-button']");
+    private static final SelenideElement dockerRunCLTextField = $(withText("GRPC_CLIENT_KEYSTORE_PASSWORD"));
+    private static final SelenideElement minionStatusField = $("[data-test='welcome-minion-status-txt']");
+    private static final SelenideElement continueButton = $("[data-id='welcome-slide-two-continue-button']");
+    private static final SelenideElement discoveryIPField = $$("[data-test='welcome-slide-three-ip-input']").get(1);
+    private static final SelenideElement startDiscoveryButton = $("[data-test='welcome-store-page-three-start-discovery-button']");
+    private static final SelenideElement discoveryLoadingField = $("[data-test='welcome-discovery-status-txt']");
+    private static final SelenideElement discoveryResultNodeNameField = $("[data-test='item-preview-meta-id']");
+    private static final ElementsCollection discoveryResultNodeStatusFields = $$("[data-test='item-preview-status-id']");
+    private static final SelenideElement discoveryFinalContinueButton = $("[data-test='welcome-store-slide-three-continue-button']");
     public static void checkIsStartSetupButtonVisible() {
         startSetupButton.shouldBe(enabled);
     }

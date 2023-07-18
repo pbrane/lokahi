@@ -7,7 +7,7 @@ Feature: NetFlows basic function
     Then click on 'Flows' link
     And sees 'No Data' in the flows table
 
-  Scenario: User sees 'Top 10 Applications' chart after flows data came to the instance
+  Scenario: User sees flows data sent to the instance
     Given Navigate to the "locations" through the left panel
     Given location "Location Flow Testing" created
     Then click on 'Download Certificate' button, get certificate and password for minion "minion_test_id_2" and start minion using "docker-compose-cloud.yaml"

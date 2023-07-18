@@ -36,14 +36,15 @@ import static com.codeborne.selenide.Selenide.$$;
 
 public class DiscoveryPage {
 
-    private static final SelenideElement addDiscoveryButton =  $("[class='btn hover focus btn-primary has-icon']");
-    private static final SelenideElement SNMPRadioButton =  $("[class='radio hover focus']");
-    private static final SelenideElement discoveryNameInputField =  $("[class='feather-input']");
+    private static final SelenideElement addDiscoveryButton = $("[class='btn hover focus btn-primary has-icon']");
+    private static final SelenideElement SNMPRadioButton = $("[class='radio hover focus']");
+    private static final SelenideElement discoveryNameInputField = $("[class='feather-input']");
     private static final SelenideElement discoveryLocationNameInputField = $$("[class='feather-autocomplete-input']").get(1);
     private static final SelenideElement discoveryLocationNamesDropdown = $("[data-ref-id='feather-autocomplete-menu-container-dropdown']");
     private static final SelenideElement discoveryIPInputField = $("[id='contentEditable_1']");
     private static final SelenideElement saveDiscoveryButton = $("[type='submit']");
     private static final SelenideElement addAnotherDiscoveryButton = $("[class='btn hover focus btn-text has-icon']");
+
     public static void selectICMP_SNMP() {
         SNMPRadioButton.shouldBe(Condition.visible, Condition.enabled).click();
     }

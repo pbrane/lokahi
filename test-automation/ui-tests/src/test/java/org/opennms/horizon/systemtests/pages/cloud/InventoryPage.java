@@ -34,7 +34,7 @@ import static com.codeborne.selenide.Selenide.$$;
 
 public class InventoryPage {
 
-    private static final SelenideElement monitoredNodesTab =  $$("[data-ref-id='feather-tab']").get(0);
+    private static final SelenideElement monitoredNodesTab = $$("[data-ref-id='feather-tab']").get(0);
     private static final ElementsCollection nodesList = $$("[class='cards']");
 
     public static void clickOnMonitoredNodesTab() {
