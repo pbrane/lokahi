@@ -189,7 +189,19 @@ def load_certificate_authority(secret_name, name, key_file_name, cert_file_name)
 def generate_certificate(secret_name, domain, ca_key_file_name, ca_cert_file_name):
     local('./install-local/generate-and-sign-certificate.sh "default" {} {} {} {}'.format(domain, secret_name, ca_key_file_name, ca_cert_file_name));
 
-def get_toggled_devmode_list(resource_name, original_list=[]):
+def create_devmode_toggle_btn(resource_name, devmode_list, devmode_key):
+    cmd_button(
+        name='toggle-{}-devmode'.format(resource_name),
+        argv=['sh', '-c', 'printenv CONFIG > tilt_config.json'],
+        env=[
+            'CONFIG={}'.format(encode_json(cfg | {'devmode': get_toggled_devmode_list(devmode_key, devmode_list)}))
+        ],
+        resource=resource_name,
+        text='Toggle Dev Mode',
+        icon_name='code_off' if devmode_key in devmode_list else 'code_block'
+    )
+
+def get_toggled_devmode_list(resource_name, original_list):
     # we should not mutate original_list so we need to work with a clone
     result = []
     result.extend(original_list)
@@ -291,7 +303,8 @@ jib_project(
 devmode_list = cfg.get('devmode', [])
 
 #### UI - Local development server ####
-if ('ui' in devmode_list):
+uiDevmodeKey = 'ui'
+if (uiDevmodeKey in devmode_list):
     serve_env={
         'VITE_BASE_URL': 'https://onmshs.local:1443/api',
         'VITE_KEYCLOAK_URL': 'https://onmshs.local:1443/auth'
@@ -308,17 +321,7 @@ if ('ui' in devmode_list):
             link('http://onmshs.local:8080/', 'Web UI (dev server)')
         ]
     )
-
-cmd_button(
-    name='toggle-ui-devmode',
-    argv=['sh', '-c', 'printenv CONFIG > tilt_config.json'],
-    env=[
-        'CONFIG={}'.format(encode_json(cfg | {'devmode': get_toggled_devmode_list('ui', devmode_list)}))
-    ],
-    resource='vuejs-ui:prod',
-    text='Toggle Dev Mode',
-    icon_name='code_off' if 'ui' in devmode_list else 'code_block'
-)
+    create_devmode_toggle_btn('vuejs-ui:dev', devmode_list, uiDevmodeKey)
 
 #### UI - Production container ####
 docker_build(
@@ -330,11 +333,13 @@ k8s_resource(
     'opennms-ui',
     new_name='vuejs-ui:prod',
     labels=['vuejs-app'],
-    trigger_mode=TRIGGER_MODE_MANUAL if 'ui' in devmode_list else TRIGGER_MODE_AUTO,
+    trigger_mode=TRIGGER_MODE_MANUAL if uiDevmodeKey in devmode_list else TRIGGER_MODE_AUTO,
     links=[
         link('https://onmshs.local:1443/', 'Web UI (prod container)')
     ],
 )
+
+create_devmode_toggle_btn('vuejs-ui:prod', devmode_list, uiDevmodeKey)
 
 #### BFF ####
 jib_project(
