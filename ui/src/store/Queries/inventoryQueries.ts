@@ -10,19 +10,23 @@ import {
   FindAllNodesByTagsDocument,
   FindAllNodesByMonitoredStateDocument,
   NodeTags,
-  NodeLatencyMetricQuery
+  NodeLatencyMetricQuery, MonitoredState, FindAllNodesByNodeLabelSearchQueryVariables, FindAllNodesByTagsQueryVariables
 } from '@/types/graphql'
 import useSpinner from '@/composables/useSpinner'
-import { DetectedNode, Monitor, MonitoredStates, MonitoredNode, UnmonitoredNode, AZURE_SCAN } from '@/types'
+import { DetectedNode, Monitor, MonitoredNode, UnmonitoredNode, AZURE_SCAN } from '@/types'
 
 export const useInventoryQueries = defineStore('inventoryQueries', () => {
   const nodes = ref<MonitoredNode[]>([])
-  const state = ref(MonitoredStates.MONITORED)
+  const state = ref(MonitoredState.Monitored)
   const unmonitoredNodes = ref<UnmonitoredNode[]>([])
   const detectedNodes = ref<DetectedNode[]>([])
   const variables = reactive({ nodeIds: <number[]>[] })
-  const labelSearchVariables = reactive({ labelSearchTerm: '' })
-  const tagsVariables = reactive({ tags: <string[]>[] })
+  const labelSearchVariables = reactive<FindAllNodesByNodeLabelSearchQueryVariables>(
+    { labelSearchTerm: '', monitoredState: MonitoredState.Monitored }
+  )
+  const tagsVariables = reactive<FindAllNodesByTagsQueryVariables>(
+    { tags: <string[]>[], monitoredState: MonitoredState.Monitored }
+  )
   const metricsVariables = reactive({
     id: 0,
     instance: '',
@@ -42,7 +46,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     query: FindAllNodesByMonitoredStateDocument,
     fetchOnMount: false,
     cachePolicy: 'network-only',
-    variables: { monitoredState: MonitoredStates.MONITORED }
+    variables: { monitoredState: MonitoredState.Monitored }
   })
 
   // Get unmonitored nodes
@@ -54,7 +58,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     query: FindAllNodesByMonitoredStateDocument,
     fetchOnMount: false,
     cachePolicy: 'network-only',
-    variables: { monitoredState: MonitoredStates.UNMONITORED }
+    variables: { monitoredState: MonitoredState.Unmonitored }
   })
 
   // Get detected nodes
@@ -66,7 +70,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     query: FindAllNodesByMonitoredStateDocument,
     fetchOnMount: false,
     cachePolicy: 'network-only',
-    variables: { monitoredState: MonitoredStates.DETECTED }
+    variables: { monitoredState: MonitoredState.Detected }
   })
 
   // Get nodes by label - cannot yet filter by monitored state
@@ -81,8 +85,9 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     variables: labelSearchVariables
   })
 
-  const getNodesByLabel = (label: string) => {
+  const getNodesByLabel = (label: string, monitoredState: MonitoredState) => {
     labelSearchVariables.labelSearchTerm = label
+    labelSearchVariables.monitoredState = monitoredState
     filterNodesByLabel()
   }
 
@@ -98,8 +103,9 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     variables: tagsVariables
   })
 
-  const getNodesByTags = (tags: string[]) => {
+  const getNodesByTags = (tags: string[], monitoredState: MonitoredState) => {
     tagsVariables.tags = tags
+    tagsVariables.monitoredState = monitoredState
     filterNodesByTags()
   }
 
@@ -168,7 +174,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
           tagValue: []
         },
         isNodeOverlayChecked: false,
-        type: MonitoredStates.MONITORED
+        type: MonitoredState.Monitored
       }
 
       nodes.value.push(monitoredNode)
@@ -262,7 +268,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
             managementIpValue: snmpPrimaryIpAddress ?? ''
           },
           isNodeOverlayChecked: false,
-          type: MonitoredStates.UNMONITORED
+          type: MonitoredState.Unmonitored
         })
       })
     } else {
@@ -285,7 +291,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
             tagValue: tagsObj?.tags ?? []
           },
           isNodeOverlayChecked: false,
-          type: MonitoredStates.DETECTED
+          type: MonitoredState.Detected
         })
       })
     } else {
@@ -293,21 +299,21 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     }
   }
 
-  const fetchByState = async (stateIn: string) => {
-    if (stateIn === MonitoredStates.MONITORED) {
+  const fetchByState = async (stateIn: MonitoredState) => {
+    if (stateIn === MonitoredState.Monitored) {
       await getMonitoredNodes()
-      state.value = MonitoredStates.MONITORED;
-    } else if (stateIn === MonitoredStates.UNMONITORED) {
+      state.value = MonitoredState.Monitored
+    } else if (stateIn === MonitoredState.Unmonitored) {
       await getUnmonitoredNodes()
-      state.value = MonitoredStates.UNMONITORED;
-    } else if (stateIn === MonitoredStates.DETECTED) {
+      state.value = MonitoredState.Unmonitored
+    } else if (stateIn === MonitoredState.Detected) {
       await getDetectedNodes()
-      state.value = MonitoredStates.DETECTED;
+      state.value = MonitoredState.Detected
     }
   }
 
   const fetchByLastState = async () => {
-    await fetchByState(state.value);
+    await fetchByState(state.value)
   }
 
   return {
@@ -315,11 +321,11 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     unmonitoredNodes,
     detectedNodes,
     getTags,
-    getMonitoredNodes: () => fetchByState(MonitoredStates.MONITORED),
+    getMonitoredNodes: () => fetchByState(MonitoredState.Monitored),
     getNodesByLabel,
     getNodesByTags,
-    getUnmonitoredNodes: () => fetchByState(MonitoredStates.UNMONITORED),
-    getDetectedNodes: () => fetchByState(MonitoredStates.DETECTED),
+    getUnmonitoredNodes: () => fetchByState(MonitoredState.Unmonitored),
+    getDetectedNodes: () => fetchByState(MonitoredState.Detected),
     fetchByState,
     fetchByLastState,
     isFetching: monitoredNodesFetching || unmonitoredNodesFetching || detectedNodesFetching

@@ -43,7 +43,6 @@
 </template>
 
 <script lang="ts" setup>
-import { PropType } from 'vue'
 import Storage from '@material-design-icons/svg/outlined/storage.svg'
 import { IIcon, InventoryNode } from '@/types'
 import { useTagStore } from '@/store/Components/tagStore'
@@ -52,20 +51,14 @@ import { useInventoryQueries } from '@/store/Queries/inventoryQueries'
 import { useInventoryStore } from '@/store/Views/inventoryStore'
 import { ModalPrimary } from '@/types/modal'
 import useModal from '@/composables/useModal'
-import { Tag, TagListNodesRemoveInput } from '@/types/graphql'
+import { MonitoredState, Tag, TagListNodesRemoveInput } from '@/types/graphql'
 import { isMonitored } from './inventory.utils'
 
 // TODO: sort tabContent alpha (default)? to keep list display consistently in same order (e.g. page refresh)
-const props = defineProps({
-  tabContent: {
-    type: Object as PropType<InventoryNode[]>,
-    required: true
-  },
-  state: {
-    type: String,
-    required: true
-  }
-})
+const props = defineProps<{
+  tabContent: InventoryNode[],
+  state: MonitoredState
+}>()
 
 const availableTagsToDelete = ref(<Tag[]>[])
 const tagsForDeletion = ref([] as Tag[])

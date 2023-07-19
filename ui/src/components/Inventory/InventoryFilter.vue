@@ -6,7 +6,7 @@
         @update:modelValue="inventoryStore.setSearchType">
       </FeatherSelect>
       <FeatherAutocomplete v-if="inventoryStore.searchType.name === 'Tags'" type="multi"
-        :modelValue="inventoryStore.tagsSelected" @update:modelValue="searchNodesByTags"
+        :modelValue="inventoryStore.tagsSelected" @update:modelValue="inventoryStore.addSelectedTag"
         :results="tagQueries.tagsSearched" @search="tagQueries.getTagsSearch" class="inventory-auto" label="Search"
         :allow-new="false" textProp="name" render-type="multi" data-test="search-by-tags" ref="searchNodesByTagsRef" />
       <FeatherInput v-if="inventoryStore.searchType.name === 'Labels'" @update:model-value="searchNodesByLabel"
@@ -39,31 +39,19 @@ import { InventoryNode, fncArgVoid } from '@/types'
 import { useInventoryStore } from '@/store/Views/inventoryStore'
 import { useInventoryQueries } from '@/store/Queries/inventoryQueries'
 import { useTagQueries } from '@/store/Queries/tagQueries'
-import { Tag } from '@/types/graphql'
-import { FeatherDropdown, FeatherDropdownItem } from '@featherds/dropdown'
-import MenuIcon from "@featherds/icon/navigation/MoreHoriz";
-import { PropType } from 'vue'
+import { MonitoredState, Tag } from '@/types/graphql'
 import { FeatherButton } from '@featherds/button'
 import { useTagStore } from '@/store/Components/tagStore'
 const inventoryStore = useInventoryStore()
-const tagStore = useTagStore();
+const tagStore = useTagStore()
 const inventoryQueries = useInventoryQueries()
 const tagQueries = useTagQueries()
 
-defineProps({
-  onlyTags: {
-    type: Boolean,
-    default: false
-  },
-  state: {
-    type: String,
-    required: true
-  },
-  nodes: {
-    type: Object as PropType<InventoryNode[]>,
-    required: true
-  },
-})
+const props = withDefaults(defineProps<{
+  onlyTags?: boolean,
+  state: MonitoredState,
+  nodes: InventoryNode[],
+}>(), { onlyTags: false })
 
 const searchNodesByLabelRef = ref()
 
@@ -76,7 +64,7 @@ const icons = markRaw({
 const searchNodesByLabel: fncArgVoid = useDebounceFn((val: string | undefined) => {
 
   if (val === undefined) return
-  inventoryQueries.getNodesByLabel(val)
+  inventoryQueries.getNodesByLabel(val, props.state)
 })
 
 const searchNodesByTags: fncArgVoid = (tags: Tag[]) => {
@@ -87,7 +75,7 @@ const searchNodesByTags: fncArgVoid = (tags: Tag[]) => {
     return
   }
   const tagNames = tags.map((tag) => tag.name!)
-  inventoryQueries.getNodesByTags(tagNames)
+  inventoryQueries.getNodesByTags(tagNames, props.state)
 }
 </script>
 

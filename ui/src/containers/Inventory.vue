@@ -20,10 +20,10 @@
     </template>
     <!-- Monitored Nodes -->
     <FeatherTabPanel>
-      <InventoryFilter v-if="inventoryStore.monitoredFilterActive" :state="MonitoredStates.MONITORED"
+      <InventoryFilter v-if="inventoryStore.monitoredFilterActive" :state="MonitoredState.Monitored"
         :nodes="tabMonitoredContent" />
       <InventoryTabContent v-if="tabMonitoredContent.length" :tabContent="tabMonitoredContent"
-        :state="MonitoredStates.MONITORED" />
+        :state="MonitoredState.Monitored" />
       <EmptyList data-test="monitored-empty" v-if="!tabMonitoredContent.length" bg
         :content="{ msg: 'No monitored nodes. Add some on the Discovery page.', btn: { label: 'Visit Discovery Page', action: () => { $router.push('/discovery') } } }" />
       <FeatherSpinner v-if="inventoryQueries.isFetching" />
@@ -31,10 +31,10 @@
 
     <!-- Unmonitored Nodes -->
     <FeatherTabPanel>
-      <InventoryFilter v-if="inventoryStore.unmonitoredFilterActive" :state="MonitoredStates.UNMONITORED" onlyTags
+      <InventoryFilter v-if="inventoryStore.unmonitoredFilterActive" :state="MonitoredState.Unmonitored" onlyTags
         :nodes="tabUnmonitoredContent" />
       <InventoryTabContent v-if="tabUnmonitoredContent.length" :tabContent="tabUnmonitoredContent"
-        :state="MonitoredStates.UNMONITORED" />
+        :state="MonitoredState.Unmonitored" />
       <EmptyList data-test="unmonitored-empty" v-if="!tabUnmonitoredContent.length" bg
         :content="{ msg: 'No unmonitored nodes. Add some on the Discovery page.', btn: { label: 'Visit Discovery Page', action: () => { $router.push('/discovery') } } }" />
       <FeatherSpinner v-if="inventoryQueries.isFetching" />
@@ -42,10 +42,10 @@
 
     <!-- Detected Nodes -->
     <FeatherTabPanel>
-      <InventoryFilter v-if="inventoryStore.detectedFilterActive" :state="MonitoredStates.DETECTED" onlyTags
+      <InventoryFilter v-if="inventoryStore.detectedFilterActive" :state="MonitoredState.Detected" onlyTags
         :nodes="tabDetectedContent" />
       <InventoryTabContent v-if="tabDetectedContent.length" :tabContent="tabDetectedContent"
-        :state="MonitoredStates.DETECTED" />
+        :state="MonitoredState.Detected" />
       <EmptyList data-test="discovery-empty" v-if="!tabDetectedContent.length" bg
         :content="{ msg: 'No detected nodes. Add some on the Discovery page.', btn: { label: 'Visit Discovery Page', action: () => { $router.push('/discovery') } } }" />
       <FeatherSpinner v-if="inventoryQueries.isFetching" />
@@ -57,10 +57,11 @@
 import { FeatherTab, FeatherTabContainer, FeatherTabPanel } from '@featherds/tabs'
 import InventoryFilter from '@/components/Inventory/InventoryFilter.vue'
 import InventoryTabContent from '@/components/Inventory/InventoryTabContent.vue'
-import { MonitoredNode, UnmonitoredNode, DetectedNode, MonitoredStates } from '@/types'
+import { MonitoredNode, UnmonitoredNode, DetectedNode } from '@/types'
 import { useInventoryQueries } from '@/store/Queries/inventoryQueries'
 import { useInventoryStore } from '@/store/Views/inventoryStore'
 import { FeatherTextBadge, BadgeTypes } from '@featherds/badge'
+import { MonitoredState } from '@/types/graphql'
 
 const inventoryStore = useInventoryStore()
 const inventoryQueries = useInventoryQueries()
@@ -68,10 +69,10 @@ const tabMonitoredContent = computed((): MonitoredNode[] => inventoryQueries.nod
 const tabUnmonitoredContent = computed((): UnmonitoredNode[] => inventoryQueries.unmonitoredNodes)
 const tabDetectedContent = computed((): DetectedNode[] => inventoryQueries.detectedNodes)
 
-onMounted(async () => {
+onMounted(() => {
   inventoryQueries.getMonitoredNodes()
-  inventoryQueries.getUnmonitoredNodes();
-  inventoryQueries.getDetectedNodes();
+  inventoryQueries.getUnmonitoredNodes()
+  inventoryQueries.getDetectedNodes()
 })
 
 /**
@@ -81,10 +82,10 @@ onMounted(async () => {
  */
 watchEffect(() => {
   if (inventoryQueries.nodes.length > 0) {
-    inventoryStore.monitoredFilterActive = true;
+    inventoryStore.monitoredFilterActive = true
   }
   if (inventoryQueries.unmonitoredNodes.length > 0) {
-    inventoryStore.unmonitoredFilterActive = true;
+    inventoryStore.unmonitoredFilterActive = true
   }
   if (inventoryQueries.detectedNodes.length > 0) {
     inventoryStore.detectedFilterActive = true;
