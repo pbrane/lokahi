@@ -281,6 +281,28 @@ helm_resource('ingress-nginx', 'ingress-nginx-repo/ingress-nginx',
 	],
 )
 
+# Deployment #
+metricsServerDevmodeKey = 'metrics-server'
+create_devmode_toggle_btn(metricsServerDevmodeKey)
+if is_devmode_enabled(metricsServerDevmodeKey):
+    # https://gist.github.com/sanketsudake/a089e691286bf2189bfedf295222bd43?permalink_comment_id=4458547#gistcomment-4458547
+    helm_repo('metrics-server-repo', 'https://kubernetes-sigs.github.io/metrics-server/', labels=['z_dependencies'])
+    helm_resource('metrics-server', 'metrics-server-repo/metrics-server',
+        namespace='kube-system',
+        flags=[
+#            '--version=1.11.0',
+            '--set', 'args={--kubelet-insecure-tls}',
+        ],
+        resource_deps=[
+            'metrics-server-repo',
+        ],
+    )
+    k8s_resource(
+        'metrics-server',
+        labels=['z_dependencies'],
+    )
+    create_devmode_toggle_btn(metricsServerDevmodeKey, resource='metrics-server')
+
 k8s_yaml(
     helm(
         'charts/lokahi',
