@@ -16,6 +16,9 @@ Keycloak:
 Ingress:
   Enabled: false
 
+MailServer:
+  Enabled: true
+
 OpenNMS:
   global:
     openTelemetry:

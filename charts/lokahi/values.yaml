@@ -360,6 +360,7 @@ Kafka:
       Memory: 512Mi
   VolumeSize: 10Gi
 MailServer:
+  Enabled: false
   ServiceName: mail-server
   Image: mailhog/mailhog:v1.0.1
   ImagePullPolicy: IfNotPresent
