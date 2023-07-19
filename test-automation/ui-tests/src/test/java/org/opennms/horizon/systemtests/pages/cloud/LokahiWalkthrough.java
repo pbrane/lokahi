@@ -46,12 +46,10 @@ import java.util.regex.Matcher;
 
 public class LokahiWalkthrough {
     private static final SelenideElement startSetupBtn = $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']"));
-    private static final SelenideElement secondWalkthroughBtn = $(By.xpath("//button[@data-id='welcome-slide-two-continue-button']"));
-    private static final SelenideElement skipWalkthroughBtn = $(By.xpath("//button[@data-test='welcome-store-slide-three-skip-button']"));
-
     private static final SelenideElement downloadBundleBtn = $(By.xpath("//button[@data-test='welcome-slide-two-download-button']"));
     private static final SelenideElement dockerCmd = $(By.xpath("//div[@class='welcome-slide-table-body']/textarea"));
     private static final SelenideElement minionDetectedCheck = $(By.xpath("//div[text()='Minion detected.']"));
+
     public static boolean containsWalkthroughButton() {
         return startSetupBtn.exists();
     }

@@ -61,7 +61,7 @@ public class InventoryPage {
         String itemStatusSearch = "//ul[@class='cards']/li[//li[@data-test='management-ip']/span/text()='" + nodename + "']//div[@title='Status']//span[text()='" + status + "']";
         SelenideElement statusCheck = $(By.xpath(itemStatusSearch));
         int iterations = 10;
-        while (!statusCheck.exists() && iterations>0) {
+        while (!statusCheck.exists() && iterations > 0) {
             --iterations;
             Selenide.refresh();
             CloudLeftPanelPage.clickOnPanelSection("inventory");
