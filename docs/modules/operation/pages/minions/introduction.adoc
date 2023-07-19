@@ -1,0 +1,57 @@
+
+= Minion Management
+:description: Learn how to manage data collectors (Minions) in OpenNMS Cloud/Lōkahi, including how to add a location, review flows and events, and remove a location.
+
+A Minion is a lightweight, secure collector that monitors and communicates with the devices on your network, shares collected data, and connects your network with OpenNMS Cloud/Lōkahi.
+
+This section describes management tasks for installed Minions.
+If you have not yet installed at least one Minion, see <documentation> for instructions.
+
+Each Minion is associated with a location.
+A location defines a network area where you installed your Minion.
+With OpenNMS Cloud, you install your first Minion as part of the onboarding process.
+We create a location called "default" to associate with this Minion.
+
+Before you can add a Minion, you need to create a location.
+
+== Create a location
+A location defines the network area where you installed your Minion.
+
+Follow these steps to add a location:
+
+. Click *Locations* in the left navigation menu.
+. Click the *Location* button.
+. Type the location name in the field.
+. Click *Save*.
+
+The new location is saved.
+From the Locations list, you can edit the location (to add a Minion to it) or delete it.
+
+== Associate a Minion with a location
+To install a Minion on your system and associate it with a location, make sure your system meets the following requirements:
+
+
+To associate a Minion with a location, follow these steps:
+
+. Click *Locations* in the left navigation menu.
+. In the *Locations* list, click the vertical ellipsis (*⋮*) next to the location you want to add the Minion to.
+. Click *Edit*.
+. Click *
+
+== Review flows and events
+
+== Remove a location
+
+To remove a location, follow these steps:
+
+. Click *Locations* in the left navigation menu.
+. Find the location that you want to remove and select the *vertical ellipses* beside its name.
+. Choose *Delete* and confirm deletion.
+
+== Delete a Minion
+
+Follow these steps to delete a Minion:
+
+. Click the *gear* symbol at the top-right of the page and select *Minion/Appliance Management*.
+
+<the page is still in progress; will be updated later>

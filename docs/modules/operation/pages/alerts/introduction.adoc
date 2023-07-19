@@ -16,7 +16,7 @@ For information about severities, see xref:reference:severities.adoc[Alert Sever
 
 == Before you begin
 
-Before Lōkahi begins generating alerts, you must configure the following:
+Before OpenNMS begins generating alerts, you must configure the following:
 
 * Your xref:get-started/discovery/introduction.adoc[network discovery] settings.
 * (Optional) At least one monitoring policy.
