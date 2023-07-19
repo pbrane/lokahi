@@ -189,9 +189,6 @@ OpenNMS:
         Memory: 250Mi
     PrivateRepoEnabled: false
     kafkaSecretName: ~
-    mailFrom: noreply@opennms.com
-    smtpHost: mail-server
-    smtpPort: 1025
     retry:
       delay: 1000
       maxDelay: 60000
