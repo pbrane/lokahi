@@ -189,6 +189,13 @@ OpenNMS:
         Memory: 250Mi
     PrivateRepoEnabled: false
     kafkaSecretName: ~
+    retry:
+      delay: 1000
+      maxDelay: 60000
+      multiplier: 2
+      max: 10
+    acsConnectionSecretName: {} # the ACS connection string is expected in the 'connection-string' key
+
   Events:
     ServiceName: opennms-events
     Image: opennms/lokahi-events
@@ -360,6 +367,7 @@ Kafka:
       Memory: 512Mi
   VolumeSize: 10Gi
 MailServer:
+  Enabled: false
   ServiceName: mail-server
   Image: mailhog/mailhog:v1.0.1
   ImagePullPolicy: IfNotPresent
