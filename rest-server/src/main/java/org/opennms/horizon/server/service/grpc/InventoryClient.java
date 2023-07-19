@@ -160,17 +160,23 @@ public class InventoryClient {
     public List<NodeDTO> listNodesByNodeLabelSearch(String labelSearchTerm, MonitoredState monitoredState, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
-        NodeLabelSearchQuery query = NodeLabelSearchQuery.newBuilder().setSearchTerm(labelSearchTerm).build();
-        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listNodesByNodeLabel(query).getNodesList().stream()
-            .filter((nodeDTO -> monitoredState.equals(nodeDTO.getMonitoredState()))).toList();
+        NodeLabelSearchQuery query = NodeLabelSearchQuery.newBuilder()
+            .setSearchTerm(labelSearchTerm)
+            .setMonitoredState(monitoredState)
+            .build();
+        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+            .listNodesByNodeLabel(query).getNodesList();
     }
 
     public List<NodeDTO> listNodesByTags(List<String> tags, MonitoredState monitoredState, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
-        TagNameQuery query = TagNameQuery.newBuilder().addAllTags(tags).build();
-        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS).listNodesByTags(query).getNodesList().stream()
-            .filter((nodeDTO -> monitoredState.equals(nodeDTO.getMonitoredState()))).toList();
+        TagNameQuery query = TagNameQuery.newBuilder()
+            .addAllTags(tags)
+            .setMonitoredState(monitoredState)
+            .build();
+        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata)).withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+            .listNodesByTags(query).getNodesList();
     }
 
     public NodeDTO getNodeById(long id, String accessToken) {
