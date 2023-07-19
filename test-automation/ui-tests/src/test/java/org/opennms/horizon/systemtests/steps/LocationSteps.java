@@ -133,8 +133,6 @@ public class LocationSteps {
         LocationsPage.selectConfirmDeleteButton();
     }
 
-
-
     @Given("Location name {string}")
     public void locationName(String newName) {
         locationName = newName;

@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 public class CucumberHooks {
     public static final Map<String, MinionContainer> MINIONS = new HashMap<>(); // Location name -> Minion
 
-    public static final String KEYCLOAK_LOGIN = "KEYCLOAK_LOGIN";
+    private static final String KEYCLOAK_LOGIN = "KEYCLOAK_LOGIN";
     public static String instanceUrl;
     public static String gatewayHost;
     public static String gatewayPort;
@@ -50,8 +50,8 @@ public class CucumberHooks {
     private static final String ADMIN_DEFAULT_PASSWORD = "admin";
     public static String overrideAuthority;
 
-    public static String admin_username;
-    public static String admin_password;
+    public static String adminUsername;
+    public static String adminPassword;
 
     public static String minionDockerTag = "latest";
     public static boolean keycloakLogin = true;
@@ -67,13 +67,13 @@ public class CucumberHooks {
             keycloakLogin = Boolean.parseBoolean(keycloak);
         }
 
-        admin_username = System.getenv("KEYCLOAK_USERNAME");
-        if (admin_username == null) {
-            admin_username = ADMIN_DEFAULT_USERNAME;
+        adminUsername = System.getenv("KEYCLOAK_USERNAME");
+        if (adminUsername == null) {
+            adminUsername = ADMIN_DEFAULT_USERNAME;
         }
-        admin_password = System.getenv("KEYCLOAK_PASSWORD");
-        if (admin_password == null) {
-            admin_password = ADMIN_DEFAULT_PASSWORD;
+        adminPassword = System.getenv("KEYCLOAK_PASSWORD");
+        if (adminPassword == null) {
+            adminPassword = ADMIN_DEFAULT_PASSWORD;
         }
 
         gatewayHost = System.getenv("MINION_INGRESS");

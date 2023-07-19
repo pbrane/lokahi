@@ -60,8 +60,8 @@ public class CloudLoginPage {
 
     public static void login() {
         checkPageTitle();
-        setUsername(CucumberHooks.admin_username);
-        setPassword(CucumberHooks.admin_password);
+        setUsername(CucumberHooks.adminUsername);
+        setPassword(CucumberHooks.adminPassword);
         clickSignInBtn();
     }
 }

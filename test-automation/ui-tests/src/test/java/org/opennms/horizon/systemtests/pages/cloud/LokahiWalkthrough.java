@@ -60,12 +60,6 @@ public class LokahiWalkthrough {
         $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']|//div[@class='app-aside']")).should(exist);
     }
 
-    public static void skipWalkthrough() {
-        startSetupBtn.shouldBe(enabled).click();
-        secondWalkthroughBtn.shouldBe(enabled).click();
-        skipWalkthroughBtn.shouldBe(enabled).click();
-    }
-
     public static MinionContainer addMinionUsingWalkthrough(String minionName) {
         try {
             File bundle = downloadBundleBtn.shouldBe(enabled).download();

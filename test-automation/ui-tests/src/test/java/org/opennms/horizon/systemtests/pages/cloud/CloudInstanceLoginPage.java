@@ -57,9 +57,9 @@ public class CloudInstanceLoginPage {
     }
 
     public static void login() {
-        setUsername(CucumberHooks.admin_username);
+        setUsername(CucumberHooks.adminUsername);
         clickNextBtn();
-        setPassword(CucumberHooks.admin_password);
+        setPassword(CucumberHooks.adminPassword);
         clickSubmitBtn();
     }
 }
