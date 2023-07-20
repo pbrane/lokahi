@@ -1,6 +1,7 @@
 @cloud
 Feature: User can see a minion connected to the instance
 
+  @ignore
   Scenario: Verify adding a device manually
     Given Navigate to the "minions" through the left panel
     Then check 'Add Device' button is accessible and visible

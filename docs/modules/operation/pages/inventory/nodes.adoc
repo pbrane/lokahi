@@ -1,5 +1,6 @@
 
 = Manage Nodes
+:description: How to managed network inventory in OpenNMS Lōkahi/Cloud: add nodes to monitored category, create and add tags to a node, remove nodes from inventory.
 
 Node management involves assessing the nodes that OpenNMS Cloud has identified on your network and determining whether you want to monitor them.
 See xref:inventory/introduction.adoc[inventory management] for a detailed description of node categories (monitored, unmonitored, and detected).

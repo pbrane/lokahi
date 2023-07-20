@@ -1,5 +1,6 @@
 
 = Visualizations
+:description: Overview of the the types of vizualation available in OpenNMS Lōkahi/Cloud: insights dashboard, top 10 applications and talkers, total network traffic.
 
 The Insights Dashboard is the home page for your Horizon Stream instance.
 It displays statistics and visualizations that represent the current state of your monitored network.

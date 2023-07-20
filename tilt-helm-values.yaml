@@ -16,6 +16,9 @@ Keycloak:
 Ingress:
   Enabled: false
 
+MailServer:
+  Enabled: true
+
 OpenNMS:
   global:
     openTelemetry:
@@ -37,7 +40,8 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-    IngressAnnotations: ~
+    IngressAnnotations:
+      nginx.ingress.kubernetes.io/configuration-snippet: ~
   Minion:
     Enabled: true
     addDefaultLocation: true

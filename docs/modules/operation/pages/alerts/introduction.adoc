@@ -3,6 +3,7 @@
 :!sectids:
 
 = Alerts
+:description: Overview of alerts in OpenNMS Lōkahi/Cloud.
 
 Alerts represent potential and actual problems in your monitored network.
 Your environment's xref:get-started/policies/introduction.adoc[monitoring policies] define the conditions under which alerts are generated.

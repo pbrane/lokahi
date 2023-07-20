@@ -32,6 +32,7 @@ import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import org.junit.Assert;
 import org.opennms.horizon.systemtests.utils.MinionStarter;
+import org.openqa.selenium.By;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
@@ -41,12 +42,14 @@ import static com.codeborne.selenide.Selectors.*;
 public class LocationsPage {
 
     private static final ElementsCollection locationNamesList = $$("[data-test='card']");
-    private static final ElementsCollection minionsList = $$("[class='minions-card-wrapper']");
     private static final SelenideElement addLocationButton = $("[data-test='add-location-btn']");
     private static final SelenideElement locationNameInputField = $$("[data-test='input-name']").get(1);
     private static final SelenideElement addLocationSaveButton = $("[data-test='save-button']");
     private static final SelenideElement downloadCertificateButton = $("[data-test='download-btn']");
     private static final SelenideElement dockerRunCLTextField = $(withText("GRPC_CLIENT_KEYSTORE_PASSWORD"));
+    private static final ElementsCollection minionsList =  $$("[class='minions-card-wrapper']");
+    private static final SelenideElement confirmDeleteButton = $(By.xpath("//button[@data-test='delete-btn']"));
+
 
     public static void clickOnLocation(String locationName) {
         locationNamesList.find(text(locationName)).shouldBe(visible, enabled).click();
@@ -78,5 +81,41 @@ public class LocationsPage {
 
     public static void downloadCertificateAndStartMinion(String minionId, String dockerComposeFile) {
         MinionStarter.downloadCertificateAndStartMinion(minionId, dockerComposeFile, downloadCertificateButton, dockerRunCLTextField);
+    }
+
+    public static void selectConfirmDeleteButton() {
+        confirmDeleteButton.shouldBe(enabled).click();
+    }
+
+    public static boolean selectLocationMenuItem(String menuItemName, String locationName) {
+        String specificLocationSearch = "//div[@class='locations-card' or @class='locations-card selected'][.//div[@class='name']//span/text()='" + locationName + "']//button[@data-test='more-options-btn']";
+        SelenideElement locationMenu = $(By.xpath(specificLocationSearch));
+        if (locationMenu.exists()) {
+            // Location exists, time to hit edit
+            locationMenu.click();
+            SelenideElement menuItem = $(By.xpath("//div[@data-test='context-menu']/div[@class='feather-menu-dropdown']//a[span/text()='" + menuItemName + "'][1]"));
+            menuItem.should(exist).click();
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean selectLocationEditMenu(String locationName) {
+        return selectLocationMenuItem("Edit", locationName);
+    }
+
+    public static boolean selectLocationDeleteMenu(String locationName) {
+        return selectLocationMenuItem("Delete", locationName);
+    }
+
+    public static boolean selectLocation(String locationName) {
+        String specificLocationSearch = "//div[@class='locations-card' or @class='locations-card selected']//div[@class='name']//span[text()='" + locationName + "']";
+        SelenideElement location = $(By.xpath(specificLocationSearch));
+        if (location.exists()) {
+            // Location exists, time to hit edit
+            location.click();
+            return true;
+        }
+        return false;
     }
 }

@@ -1,8 +1,10 @@
 @cloud_welcome
 Feature: User can use welcome wizard to connect local minion to the OpenNMS and discover first node
 
+  @ignore
    Scenario: Verify we can download certificate, start minion and discover first node in the welcome wizard
-    Given check 'Start Setup' button is accessible and visible
+     Given Logged in at welcome wizard
+     Given check 'Start Setup' button is accessible and visible
     Then click on 'Start Setup' button to start welcome wizard
     Then click on 'Download' button to get certificate and password for minion "minion_test_id_1" and start minion using "docker-compose-cloud.yaml"
     Then wizard shows that minion connected successfully

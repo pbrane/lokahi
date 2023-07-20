@@ -42,6 +42,7 @@ config.define_string_list('args', args=True)
 config.define_string_list('devmode')
 cfg = config.parse()
 config.set_enabled_resources(cfg.get('args', []))
+devmode_list = cfg.get('devmode', [])
 
 secret_settings(disable_scrub=True)  ## TODO: update secret values so we can reenable scrub
 load('ext://uibutton', 'cmd_button', 'location')
@@ -189,21 +190,33 @@ def load_certificate_authority(secret_name, name, key_file_name, cert_file_name)
 def generate_certificate(secret_name, domain, ca_key_file_name, ca_cert_file_name):
     local('./install-local/generate-and-sign-certificate.sh "default" {} {} {} {}'.format(domain, secret_name, ca_key_file_name, ca_cert_file_name));
 
-def create_devmode_toggle_btn(resource_name, devmode_list, devmode_key):
+# If you don't specify a resource, the button will be added to the global nav (location.NAV).
+def create_devmode_toggle_btn(devmode_key, resource=None):
     # we should not mutate new_config so we need to work with a copy
     new_config = {}
     new_config.update(cfg)
     new_config.update({'devmode': get_toggled_devmode_list(devmode_key, devmode_list)})
 
+    if resource:
+        kvargs = {
+            'resource': resource,
+            'text': 'Toggle Dev Mode',
+            'name': 'toggle-resource-{}-devmode'.format(resource),
+        }
+    else:
+        kvargs = {
+            'location': location.NAV,
+            'text': 'Toggle Dev Mode - ' + devmode_key,
+            'name': 'toggle-global-{}-devmode'.format(devmode_key),
+        }
+
     cmd_button(
-        name='toggle-{}-devmode'.format(resource_name),
         argv=['sh', '-c', 'printenv CONFIG > tilt_config.json'],
         env=[
             'CONFIG={}'.format(encode_json(new_config))
         ],
-        resource=resource_name,
-        text='Toggle Dev Mode',
-        icon_name='code_off' if devmode_key in devmode_list else 'code_block'
+        icon_name='code_off' if is_devmode_enabled(devmode_key) else 'code_block',
+        **kvargs
     )
 
 def get_toggled_devmode_list(resource_name, original_list):
@@ -217,6 +230,9 @@ def get_toggled_devmode_list(resource_name, original_list):
         result.append(resource_name)
 
     return result
+
+def is_devmode_enabled(devmode_key):
+    return devmode_key in devmode_list;
 
 load_certificate_authority('root-ca-certificate', 'opennms-ca', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 generate_certificate('opennms-minion-gateway-certificate', 'minion.onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
@@ -265,6 +281,28 @@ helm_resource('ingress-nginx', 'ingress-nginx-repo/ingress-nginx',
 	],
 )
 
+# Deployment #
+metricsServerDevmodeKey = 'metrics-server'
+create_devmode_toggle_btn(metricsServerDevmodeKey)
+if is_devmode_enabled(metricsServerDevmodeKey):
+    # https://gist.github.com/sanketsudake/a089e691286bf2189bfedf295222bd43?permalink_comment_id=4458547#gistcomment-4458547
+    helm_repo('metrics-server-repo', 'https://kubernetes-sigs.github.io/metrics-server/', labels=['z_dependencies'])
+    helm_resource('metrics-server', 'metrics-server-repo/metrics-server',
+        namespace='kube-system',
+        flags=[
+#            '--version=1.11.0',
+            '--set', 'args={--kubelet-insecure-tls}',
+        ],
+        resource_deps=[
+            'metrics-server-repo',
+        ],
+    )
+    k8s_resource(
+        'metrics-server',
+        labels=['z_dependencies'],
+    )
+    create_devmode_toggle_btn(metricsServerDevmodeKey, resource='metrics-server')
+
 k8s_yaml(
     helm(
         'charts/lokahi',
@@ -305,11 +343,9 @@ jib_project(
 )
 
 ### Vue.js App ###
-devmode_list = cfg.get('devmode', [])
-
 #### UI - Local development server ####
 uiDevmodeKey = 'ui'
-if (uiDevmodeKey in devmode_list):
+if is_devmode_enabled(uiDevmodeKey):
     serve_env={
         'VITE_BASE_URL': 'https://onmshs.local:1443/api',
         'VITE_KEYCLOAK_URL': 'https://onmshs.local:1443/auth'
@@ -326,7 +362,7 @@ if (uiDevmodeKey in devmode_list):
             link('http://onmshs.local:8080/', 'Web UI (dev server)')
         ]
     )
-    create_devmode_toggle_btn('vuejs-ui:dev', devmode_list, uiDevmodeKey)
+    create_devmode_toggle_btn(uiDevmodeKey, resource='vuejs-ui:dev')
 
 #### UI - Production container ####
 docker_build(
@@ -338,13 +374,13 @@ k8s_resource(
     'opennms-ui',
     new_name='vuejs-ui:prod',
     labels=['vuejs-app'],
-    trigger_mode=TRIGGER_MODE_MANUAL if uiDevmodeKey in devmode_list else TRIGGER_MODE_AUTO,
+    trigger_mode=TRIGGER_MODE_MANUAL if is_devmode_enabled(uiDevmodeKey) else TRIGGER_MODE_AUTO,
     links=[
         link('https://onmshs.local:1443/', 'Web UI (prod container)')
     ],
 )
 
-create_devmode_toggle_btn('vuejs-ui:prod', devmode_list, uiDevmodeKey)
+create_devmode_toggle_btn(uiDevmodeKey, resource='vuejs-ui:prod')
 
 #### BFF ####
 jib_project(
