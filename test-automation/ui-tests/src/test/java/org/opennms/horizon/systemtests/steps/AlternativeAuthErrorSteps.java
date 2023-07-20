@@ -35,6 +35,5 @@ public class AlternativeAuthErrorSteps {
     @Then("see 'We are sorry...' error with access restriction for {string} user")
     public void verifyErrorMessage(String email) {
         AlternativeAuthErrorPage.verifyAuthError(email);
-        AlternativeAuthErrorPage.logout();
     }
 }

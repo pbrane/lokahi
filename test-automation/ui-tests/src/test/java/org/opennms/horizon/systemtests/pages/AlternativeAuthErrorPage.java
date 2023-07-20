@@ -44,9 +44,4 @@ public class AlternativeAuthErrorPage {
             text(String.format("User %s authenticated with identity provider okta does not exist. Please contact your administrator.", userEmail)), Duration.ofSeconds(30)
         );
     }
-
-    public static void logout() {
-        Selenide.open("https://opennms.oktapreview.com/login/signout"); // https://opennms.atlassian.net/browse/BTO-280
-        LoginPage.checkPageTitle();
-    }
 }
