@@ -101,8 +101,7 @@ public class DiscoverySteps {
     }
 
     private void discoverSingleNode(String discoveryName, String nodeName, String locationName, int port, String community) {
-        String ipaddress;
-        ipaddress = getIpaddress(nodeName);
+        String ipaddress = getIpaddress(nodeName);
 
         LeftPanelPage.clickOnPanelSection("discovery");
         ADD_DISCOVERY_BUTTON.shouldBe(enabled).click();
@@ -135,8 +134,7 @@ public class DiscoverySteps {
         GenericContainer<?> node = nodes.get(nodeName);
         assertNotNull("Cannot find node with name " + nodeName, node);
 
-        ipaddress = getContainerIP(node);
-        return ipaddress;
+        return getContainerIP(node);
     }
 
     @Then("Status of {string} should be {string}")

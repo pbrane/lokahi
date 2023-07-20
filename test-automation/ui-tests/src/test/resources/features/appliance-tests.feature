@@ -1,4 +1,4 @@
-@cloud
+@appliance
 Feature: User can see a minion connected to the instance
 
   @ignore
@@ -17,7 +17,7 @@ Feature: User can see a minion connected to the instance
     Then check "DEFAULT" minion in the list
     Then check the status of the minion is "UP"
     Then Is the 'delete' Minion button displayed? "FALSE"
-    When Stop running minion connected to the cloud instance
+    When Stop running minion
     Then wait for 2 heartbeats
     Then check the status of the minion is "DOWN"
     Then Is the 'delete' Minion button displayed? "TRUE"
@@ -27,7 +27,7 @@ Feature: User can see a minion connected to the instance
   @ignore
   Scenario: Create and run a new Minion
     Given Navigate to the "minions" through the left panel
-    When Run a minion "Automation Minion" as name, "Ottawa" as location and connect to the cloud instance
+    When Run a minion "Automation Minion" as name, "Ottawa" as location
     Then check "Automation Minion" minion in the list
     Then check the status of the minion is "UP"
 

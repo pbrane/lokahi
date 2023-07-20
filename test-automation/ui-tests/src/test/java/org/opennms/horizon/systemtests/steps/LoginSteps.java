@@ -33,7 +33,7 @@ import org.opennms.horizon.systemtests.pages.LoginPage;
 
 public class LoginSteps {
 
-    @Then("Cloud login page appears")
+    @Then("Login page appears")
     public void checkPopupIsVisible() {
         LoginPage.checkPageTitle();
     }
@@ -53,7 +53,7 @@ public class LoginSteps {
         LoginPage.clickSignInBtn();
     }
 
-    @Then("login to Cloud instance as {string} user")
+    @Then("login to instance as {string} user")
     public void loginAsUser(String user) {
         setEmail(user);
         setPassword();

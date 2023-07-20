@@ -73,25 +73,25 @@ public class FlowsSteps {
         LocationsPage.downloadCertificateAndStartMinion(minionId, dockerComposeFile);
     }
 
-    @Then("add SNMP discovery {string} for location {string} with IP {string}")
-    public void addDiscoveryForLocation(String discoveryName, String locationName, String ip) {
+    @Then("add SNMP discovery {string} for location {string} with node {string}")
+    public void addDiscoveryForLocation(String discoveryName, String locationName, String nodeName) {
         DiscoveryPage.clickAddDiscovery();
         DiscoveryPage.selectICMP_SNMP();
-        DiscoveryPage.createNewSnmpDiscovery(discoveryName, locationName, ip);
+        DiscoveryPage.createNewSnmpDiscovery(discoveryName, locationName, DiscoverySteps.getIpaddress(nodeName));
     }
 
-    @Then("check node with system name {string} discovered successfully")
-    public void checkNodeWithSystemNameDiscoveredSuccessfully(String nodeSysName) {
-        InventoryPage.clickOnMonitoredNodesTab();
-        for (int i = 0; i < 20; i++) {
-            Selenide.sleep(3_000);
-            Selenide.refresh();
-            if (InventoryPage.checkIfMonitoredNodeExist(nodeSysName)) {
-                break;
-            }
-        }
-        Assert.assertTrue(InventoryPage.checkIfMonitoredNodeExist(nodeSysName));
-    }
+//    @Then("check node {string} discovered successfully")
+//    public void checkNodeWithSystemNameDiscoveredSuccessfully(String nodeName) {
+//        InventoryPage.clickOnMonitoredNodesTab();
+//        for (int i = 0; i < 20; i++) {
+//            Selenide.sleep(3_000);
+//            Selenide.refresh();
+//            if (InventoryPage.checkIfMonitoredNodeExist(nodeSysName)) {
+//                break;
+//            }
+//        }
+//        Assert.assertTrue(InventoryPage.checkIfMonitoredNodeExist(nodeSysName));
+//    }
 
     @And("check if exporter {string} visible in the dropdown")
     public void checkIfExporterVisibleInTheDropdown(String exporterName) {
