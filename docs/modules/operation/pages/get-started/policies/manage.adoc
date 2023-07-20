@@ -1,6 +1,6 @@
 
 = Manage Monitoring Policies
-:description: How to edit and delete a monitoring policy in OpenNMS Lōkahi/Cloud.
+:description: Learn how to edit and delete a monitoring policy in OpenNMS Lōkahi/Cloud.
 
 You can edit monitoring policies.
 Currently, it is not possible to delete a monitoring policy.
