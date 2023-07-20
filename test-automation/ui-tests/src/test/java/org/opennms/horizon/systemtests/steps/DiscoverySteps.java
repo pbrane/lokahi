@@ -67,7 +67,7 @@ public class DiscoverySteps {
     private static final SelenideElement PORT_INPUT = $(By.xpath("//div[@class='udp-port-input']//div[@class='content-editable']"));
     private static final String SNMP_NODE_IMAGE_NAME = "polinux/snmpd:alpine";
 
-    private Map<String, GenericContainer> nodes = new HashMap<>();
+    private static Map<String, GenericContainer> nodes = new HashMap<>();
 
     @Given("Start snmp node {string}")
     public void startNode(String nodeName) throws IOException {
@@ -89,7 +89,7 @@ public class DiscoverySteps {
         discoverSingleNode(discoveryName, nodeName, LocationSteps.getLocationName(), 161, "public");
     }
 
-    private String getContainerIP(GenericContainer<?> container) {
+    private static String getContainerIP(GenericContainer<?> container) {
         NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
         Map<String, ContainerNetwork> networksMap = networkSettings.getNetworks();
         return networksMap.values().iterator().next().getIpAddress();
@@ -101,10 +101,8 @@ public class DiscoverySteps {
     }
 
     private void discoverSingleNode(String discoveryName, String nodeName, String locationName, int port, String community) {
-        GenericContainer<?> node = nodes.get(nodeName);
-        assertNotNull("Cannot find node with name " + nodeName, node);
-
-        String ipaddress = getContainerIP(node);
+        String ipaddress;
+        ipaddress = getIpaddress(nodeName);
 
         LeftPanelPage.clickOnPanelSection("discovery");
         ADD_DISCOVERY_BUTTON.shouldBe(enabled).click();
@@ -130,6 +128,15 @@ public class DiscoverySteps {
 
         SAVE_DISCOVERY_BUTTON.shouldBe(enabled).click();
         VIEW_DETECTED_NODES_BUTTON.should(exist).shouldBe(enabled).click();
+    }
+
+    public static String getIpaddress(String nodeName) {
+        String ipaddress;
+        GenericContainer<?> node = nodes.get(nodeName);
+        assertNotNull("Cannot find node with name " + nodeName, node);
+
+        ipaddress = getContainerIP(node);
+        return ipaddress;
     }
 
     @Then("Status of {string} should be {string}")

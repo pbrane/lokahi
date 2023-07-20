@@ -50,7 +50,6 @@ public class LocationsPage {
     private static final ElementsCollection minionsList =  $$("[class='minions-card-wrapper']");
     private static final SelenideElement confirmDeleteButton = $(By.xpath("//button[@data-test='delete-btn']"));
 
-
     public static void clickOnLocation(String locationName) {
         locationNamesList.find(text(locationName)).shouldBe(visible, enabled).click();
     }
@@ -63,9 +62,10 @@ public class LocationsPage {
         minionsList.find(text(minionId)).shouldBe(visible, enabled);
     }
 
-    public static void clickOnMinionDeleteButton(String minionId) {
+    public static void deleteMinion(String minionId) {
         minionsList.find(text(minionId)).$("[data-test='context-menu']").shouldBe(visible, enabled).click();
         minionsList.find(text(minionId)).$(withText("Delete")).shouldBe(visible, enabled).click();
+        confirmDeleteButton.should(exist).shouldBe(visible, enabled).click();
     }
 
     public static void checkMinionDoesntExist(String minionId) {

@@ -33,7 +33,7 @@ import io.cucumber.java.en.Given;
 import org.opennms.horizon.systemtests.CucumberHooks;
 import org.opennms.horizon.systemtests.pages.AlternativeLoginPage;
 import org.opennms.horizon.systemtests.pages.LoginPage;
-import org.opennms.horizon.systemtests.pages.LokahiWalkthrough;
+import org.opennms.horizon.systemtests.pages.WelcomePage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Network;
@@ -50,14 +50,14 @@ public class SetupSteps {
     public static void loggedInWithANamedMinion(String minionName) {
         login();
 
-        if (LokahiWalkthrough.containsWalkthroughButton()) {
+        if (WelcomePage.containsWalkthroughButton()) {
             String walkthroughMinionName = "default-minion";
             if (LocationSteps.isLocationNameDefault()) {
                 walkthroughMinionName = minionName;
             }
             // Need to add a default minion
-            LokahiWalkthrough.startSetup();
-            LokahiWalkthrough.addMinionUsingWalkthrough(walkthroughMinionName);
+            WelcomePage.startSetup();
+            WelcomePage.addMinionUsingWalkthrough(walkthroughMinionName);
             // Ensure we're at the main page once the minion is connected
             Selenide.open(CucumberHooks.instanceUrl);
 
@@ -83,14 +83,7 @@ public class SetupSteps {
             AlternativeLoginPage.login();
         }
 
-        LokahiWalkthrough.waitOnWalkthroughOrMain();
+        WelcomePage.waitOnWalkthroughOrMain();
     }
 
-    @Given("Logged in at welcome wizard")
-    public void loggedInAtWelcomeWizard() {
-        login();
-
-        // Force going to the welcome wizard just in case
-        Selenide.open(CucumberHooks.instanceUrl + "/welcome");
-    }
 }

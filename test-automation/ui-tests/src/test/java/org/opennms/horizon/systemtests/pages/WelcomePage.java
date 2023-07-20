@@ -30,43 +30,51 @@ package org.opennms.horizon.systemtests.pages;
 import com.codeborne.selenide.*;
 import lombok.SneakyThrows;
 import org.junit.Assert;
+import org.opennms.horizon.systemtests.steps.MinionSteps;
 import org.opennms.horizon.systemtests.utils.MinionStarter;
+import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import testcontainers.DockerComposeMinionContainer;
-import java.io.File;
-import java.time.Duration;
+import testcontainers.MinionContainer;
 
-import static com.codeborne.selenide.Condition.enabled;
-import static com.codeborne.selenide.Condition.visible;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.time.Duration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Condition.exist;
 import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 public class WelcomePage {
 
-    private static final SelenideElement startSetupButton = $("[data-test='welcome-slide-one-setup-button']");
     private static final SelenideElement downloadCertificateButton = $("[data-test='welcome-slide-two-download-button']");
     private static final SelenideElement dockerRunCLTextField = $(withText("GRPC_CLIENT_KEYSTORE_PASSWORD"));
     private static final SelenideElement minionStatusField = $("[data-test='welcome-minion-status-txt']");
     private static final SelenideElement continueButton = $("[data-id='welcome-slide-two-continue-button']");
     private static final SelenideElement discoveryIPField = $$("[data-test='welcome-slide-three-ip-input']").get(1);
     private static final SelenideElement startDiscoveryButton = $("[data-test='welcome-store-page-three-start-discovery-button']");
-    private static final SelenideElement discoveryLoadingField = $("[data-test='welcome-discovery-status-txt']");
-    private static final SelenideElement discoveryResultNodeNameField = $("[data-test='item-preview-meta-id']");
-    private static final ElementsCollection discoveryResultNodeStatusFields = $$("[data-test='item-preview-status-id']");
     private static final SelenideElement discoveryFinalContinueButton = $("[data-test='welcome-store-slide-three-continue-button']");
+
+    private static final SelenideElement startSetupBtn = $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']"));
+    private static final SelenideElement downloadBundleBtn = $(By.xpath("//button[@data-test='welcome-slide-two-download-button']"));
+    private static final SelenideElement dockerCmd = $(By.xpath("//div[@class='welcome-slide-table-body']/textarea"));
+    private static final SelenideElement minionDetectedCheck = $(By.xpath("//div[text()='Minion detected.']"));
+    private static final SelenideElement nodeDetectedCheck = $(By.xpath("//div[@data-test='item-preview-status-id'][text()='UP']"));
+    private static final SelenideElement discoveryResultLatencyCheck = $(By.xpath("//div[@data-test='item-preview-status-id'][.<=800]"));
+
     public static void checkIsStartSetupButtonVisible() {
-        startSetupButton.shouldBe(enabled);
+        startSetupBtn.shouldBe(enabled);
     }
 
     @SneakyThrows
     public static void startWelcomeWizardSetup() {
-        startSetupButton.shouldBe(enabled).click();
-    }
-
-    @SneakyThrows
-    public static void downloadCertificateAndStartMinion(String minionID, String dockerComposeFile) {
-        MinionStarter.downloadCertificateAndStartMinion(minionID, dockerComposeFile, downloadCertificateButton, dockerRunCLTextField);
+        startSetupBtn.shouldBe(enabled).click();
     }
 
     public static void checkMinionConnection() {
@@ -93,26 +101,48 @@ public class WelcomePage {
     }
 
     public static void nodeDiscovered(String sysName) {
-        try {
-            for (int i = 0; i < 50; i++) {
-                Selenide.sleep(3000);
-                if (!"Loading first discovery.".equals(discoveryLoadingField.getText())) {
-                    break;
-                }
-            }
-        }
-        catch (com.codeborne.selenide.ex.ElementNotFound e) {
-            Assert.assertEquals(sysName, discoveryResultNodeNameField.getText());
-            Assert.assertEquals("Minion status should be 'UP'", "UP", discoveryResultNodeStatusFields.get(0).getText());
-            Assert.assertTrue("ICMP should be less then 500", 500 >= Double.valueOf(discoveryResultNodeStatusFields.get(1).getText()));
-        }
+        nodeDetectedCheck.should(exist, Duration.ofMinutes(2));
+        discoveryResultLatencyCheck.should(exist);
     }
 
     public static void clickContinueToEndWizard() {
         discoveryFinalContinueButton.shouldBe(enabled).click();
     }
 
-    public static void waitPageLoaded() {
-        startSetupButton.shouldBe(visible, Duration.ofSeconds(5));
+    public static boolean containsWalkthroughButton() {
+        return startSetupBtn.exists();
+    }
+
+    public static void waitOnWalkthroughOrMain() {
+        $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']|//div[@class='app-aside']")).should(exist);
+    }
+
+    public static MinionContainer addMinionUsingWalkthrough(String minionName) {
+        try {
+            File bundle = downloadBundleBtn.shouldBe(enabled).download();
+            if (bundle.exists()) {
+                // Parse out the pwd for the bundle
+                String dockerText = dockerCmd.shouldBe(visible).getAttribute("value"); // getText doesn't work for textarea
+                assertNotNull("Should have docker start text with key", dockerText);
+                Pattern pattern = Pattern.compile("GRPC_CLIENT_KEYSTORE_PASSWORD='([a-z,0-9,-]*)'");
+                Matcher matcher = pattern.matcher(dockerText);
+
+                if (matcher.find()) {
+                    MinionContainer minion = MinionSteps.startMinion(bundle, matcher.group(1), minionName);
+                    // Minion startup and connect is slow - need a specific timeout here
+                    minionDetectedCheck.should(exist, Duration.ofSeconds(60));
+                    return minion;
+                }
+                fail("Unable to parse p12 password from docker string: " + dockerText);
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        fail("Failure downloading p12 bundle file");
+        return null;
+    }
+
+    public static void startSetup() {
+        startSetupBtn.shouldBe(enabled).click();
     }
 }
