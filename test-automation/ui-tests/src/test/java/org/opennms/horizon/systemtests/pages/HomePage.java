@@ -25,7 +25,7 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.pages;
 
 import com.codeborne.selenide.SelenideElement;
 
@@ -36,7 +36,7 @@ import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
 
-public class CloudHomePage {
+public class HomePage {
     private static final SelenideElement headerTxt = $("[data-test='page-headline']");
     private static final SelenideElement flowsCard = $x("//div[ @class='card' and .//div[text()='Top 10 Applications'] ]");
     private static final SelenideElement emptyFlowCard = $x("//div[ @class='card' and .//div[text()='Top 10 Applications'] ]//div[@class='empty']");
@@ -57,6 +57,6 @@ public class CloudHomePage {
 
     public static void clickOnFlowsLink() {
         flowsLink.shouldBe(enabled).click();
-        CloudFlowsPage.waitPageLoaded();
+        FlowsPage.waitPageLoaded();
     }
 }

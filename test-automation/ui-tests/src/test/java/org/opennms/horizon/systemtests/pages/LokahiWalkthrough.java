@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.pages;
 
 import com.codeborne.selenide.SelenideElement;
 import org.opennms.horizon.systemtests.steps.MinionSteps;

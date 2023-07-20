@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.pages;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
@@ -64,7 +64,7 @@ public class InventoryPage {
         while (!statusCheck.exists() && iterations > 0) {
             --iterations;
             Selenide.refresh();
-            CloudLeftPanelPage.clickOnPanelSection("inventory");
+            LeftPanelPage.clickOnPanelSection("inventory");
 
             try {
                 Thread.sleep(500);

@@ -26,30 +26,40 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.steps.cloud;
+package org.opennms.horizon.systemtests.pages;
 
-import io.cucumber.java.en.Then;
-import lombok.SneakyThrows;
+import com.codeborne.selenide.SelenideElement;
 import org.opennms.horizon.systemtests.CucumberHooks;
-import testcontainers.UpdGenContainer;
+import org.openqa.selenium.By;
+import static com.codeborne.selenide.Condition.enabled;
+import static com.codeborne.selenide.Selenide.$;
 
-import java.util.Arrays;
+public class AlternativeLoginPage {
+    private static final SelenideElement usernameField = $(By.id("idp-discovery-username"));
+    private static final SelenideElement nextBtn = $(By.id("idp-discovery-submit"));
+    private static final SelenideElement passwordField = $(By.id("okta-signin-password"));
+    private static final SelenideElement submitBtn = $(By.id("okta-signin-submit"));
 
-public class UdpGenSteps {
-    @SneakyThrows
-    @Then("send {int} packets of {string} traffic to {int} port")
-    public void generateNetflow9(Integer number, String flowType, Integer port) {
-        if (!Arrays.asList("netflow9", "netflow5", "ipfix").contains(flowType)) {
-            throw new RuntimeException("Do not support this type");
-        }
+    public static void setUsername(String username) {
+        usernameField.shouldBe(enabled).setValue(username);
+    }
 
-        try (
-            UpdGenContainer updGenContainer = new UpdGenContainer(
-                CucumberHooks.MINIONS.get(0).getUdpPortBinding(port),
-                flowType,
-                number)
-        ) {
-            updGenContainer.start();
-        }
+    public static void clickNextBtn() {
+        nextBtn.shouldBe(enabled).click();
+    }
+
+    public static void setPassword(String password) {
+        passwordField.shouldBe(enabled).setValue(password);
+    }
+
+    public static void clickSubmitBtn() {
+        submitBtn.shouldBe(enabled).click();
+    }
+
+    public static void login() {
+        setUsername(CucumberHooks.adminUsername);
+        clickNextBtn();
+        setPassword(CucumberHooks.adminPassword);
+        clickSubmitBtn();
     }
 }

@@ -26,10 +26,10 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.steps.cloud;
+package org.opennms.horizon.systemtests.steps;
 
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.ConfirmDeleteMinionPopup;
+import org.opennms.horizon.systemtests.pages.ConfirmDeleteMinionPopup;
 
 public class ConfirmDeleteMinionSteps {
     @Then("confirm the minion deletion")

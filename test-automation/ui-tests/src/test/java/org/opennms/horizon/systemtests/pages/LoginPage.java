@@ -26,27 +26,42 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.pages;
 
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import org.opennms.horizon.systemtests.CucumberHooks;
+import org.openqa.selenium.By;
 
-import java.time.Duration;
-
+import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
 
-public class CloudAuthErrorPage {
-    private final static SelenideElement errorMessage = $("#hs-content-wrapper");
+public class LoginPage {
+    private static final SelenideElement pageTitleTxt = $(By.id("hs-page-title"));
+    private static final SelenideElement userNameInp = $(By.id("username"));
+    private static final SelenideElement passwordInp = $(By.id("password"));
+    private static final SelenideElement submitBtn = $(By.id("hs-login"));
 
-    public static void verifyAuthError(String userEmail) {
-        errorMessage.shouldHave(
-            text(String.format("User %s authenticated with identity provider okta does not exist. Please contact your administrator.", userEmail)), Duration.ofSeconds(30)
-        );
+    public static void setUsername(String username) {
+        userNameInp.shouldBe(enabled).setValue(username);
     }
 
-    public static void logout() {
-        Selenide.open("https://opennms.oktapreview.com/login/signout"); // https://opennms.atlassian.net/browse/BTO-280
-        CloudLoginPage.checkPageTitle();
+    public static void setPassword(String password) {
+        passwordInp.shouldBe(enabled).setValue(password);
+    }
+
+    public static void clickSignInBtn() {
+        submitBtn.shouldBe(enabled).click();
+    }
+
+    public static void checkPageTitle() {
+        pageTitleTxt.shouldHave(text("Sign In"));
+    }
+
+    public static void login() {
+        checkPageTitle();
+        setUsername(CucumberHooks.adminUsername);
+        setPassword(CucumberHooks.adminPassword);
+        clickSignInBtn();
     }
 }

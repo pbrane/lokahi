@@ -25,33 +25,33 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-package org.opennms.horizon.systemtests.steps.cloud;
+package org.opennms.horizon.systemtests.steps;
 
 import com.codeborne.selenide.Selenide;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.junit.Assert;
-import org.opennms.horizon.systemtests.pages.cloud.CloudFlowsPage;
-import org.opennms.horizon.systemtests.pages.cloud.DiscoveryPage;
-import org.opennms.horizon.systemtests.pages.cloud.InventoryPage;
-import org.opennms.horizon.systemtests.pages.cloud.LocationsPage;
+import org.opennms.horizon.systemtests.pages.FlowsPage;
+import org.opennms.horizon.systemtests.pages.DiscoveryPage;
+import org.opennms.horizon.systemtests.pages.InventoryPage;
+import org.opennms.horizon.systemtests.pages.LocationsPage;
 
 
-public class CloudFlowsSteps {
+public class FlowsSteps {
     @Then("sees 'No Data' in the flows table")
     public void verifyNoData() {
-        CloudFlowsPage.verifyNoDataTitle();
+        FlowsPage.verifyNoDataTitle();
     }
 
     @Then("sees chart for netflow data")
     public void verifyChartVisibility() {
-        CloudFlowsPage.verifyChartVisibility();
+        FlowsPage.verifyChartVisibility();
     }
 
     @Then("click on 'Exporter' filter")
     public void clickOn() {
-        CloudFlowsPage.clickOnExporterInput();
+        FlowsPage.clickOnExporterInput();
     }
 
     @Given("No netflow data was sent")
@@ -95,6 +95,6 @@ public class CloudFlowsSteps {
 
     @And("check if exporter {string} visible in the dropdown")
     public void checkIfExporterVisibleInTheDropdown(String exporterName) {
-        CloudFlowsPage.checkDropdown(exporterName);
+        FlowsPage.checkDropdown(exporterName);
     }
 }

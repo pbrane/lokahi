@@ -26,11 +26,11 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.steps.cloud;
+package org.opennms.horizon.systemtests.steps;
 
 import com.codeborne.selenide.Selenide;
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.AppliancePage;
+import org.opennms.horizon.systemtests.pages.AppliancePage;
 import org.opennms.horizon.systemtests.utils.TestDataStorage;
 
 import static com.codeborne.selenide.Selectors.byText;

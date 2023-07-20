@@ -31,14 +31,12 @@ package org.opennms.horizon.systemtests.steps;
 import com.codeborne.selenide.Selenide;
 import io.cucumber.java.en.Given;
 import org.opennms.horizon.systemtests.CucumberHooks;
-import org.opennms.horizon.systemtests.pages.cloud.CloudInstanceLoginPage;
-import org.opennms.horizon.systemtests.pages.cloud.CloudLoginPage;
-import org.opennms.horizon.systemtests.pages.cloud.LokahiWalkthrough;
+import org.opennms.horizon.systemtests.pages.AlternativeLoginPage;
+import org.opennms.horizon.systemtests.pages.LoginPage;
+import org.opennms.horizon.systemtests.pages.LokahiWalkthrough;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Network;
-
-import static com.codeborne.selenide.Condition.enabled;
 
 public class SetupSteps {
     private static final Logger LOG = LoggerFactory.getLogger(SetupSteps.class);
@@ -80,9 +78,9 @@ public class SetupSteps {
         }
 
         if (CucumberHooks.keycloakLogin) {
-            CloudLoginPage.login();
+            LoginPage.login();
         } else {
-            CloudInstanceLoginPage.login();
+            AlternativeLoginPage.login();
         }
 
         LokahiWalkthrough.waitOnWalkthroughOrMain();

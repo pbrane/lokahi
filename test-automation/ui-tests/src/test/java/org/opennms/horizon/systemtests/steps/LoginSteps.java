@@ -26,31 +26,31 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.steps.cloud;
+package org.opennms.horizon.systemtests.steps;
 
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.CloudLoginPage;
+import org.opennms.horizon.systemtests.pages.LoginPage;
 
-public class CloudLoginSteps {
+public class LoginSteps {
 
     @Then("Cloud login page appears")
     public void checkPopupIsVisible() {
-        CloudLoginPage.checkPageTitle();
+        LoginPage.checkPageTitle();
     }
 
     @Then("set email address as {string}")
     public void setEmail(String email) {
-        CloudLoginPage.setUsername(email);
+        LoginPage.setUsername(email);
     }
 
     @Then("set password")
     public void setPassword() {
-        CloudLoginPage.setPassword("admin"); // TODO
+        LoginPage.setPassword("admin"); // TODO
     }
 
     @Then("click on 'Sign in' button")
     public void clickSignIn() {
-        CloudLoginPage.clickSignInBtn();
+        LoginPage.clickSignInBtn();
     }
 
     @Then("login to Cloud instance as {string} user")

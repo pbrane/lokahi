@@ -26,18 +26,15 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.steps;
 
-import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.SelenideElement;
+import io.cucumber.java.en.Then;
+import org.opennms.horizon.systemtests.pages.AlternativeAuthErrorPage;
 
-import static com.codeborne.selenide.Selenide.$;
-
-public class ConfirmDeleteMinionPopup {
-    private final static SelenideElement deleteBtn = $("[data-testid='save-btn']");
-
-    public static void clickDeleteBtn() {
-        deleteBtn.shouldBe(Condition.enabled).click();
+public class AuthErrorSteps {
+    @Then("see 'We are sorry...' error with access restriction for {string} user")
+    public void verifyErrorMessage(String email) {
+        AlternativeAuthErrorPage.verifyAuthError(email);
+        AlternativeAuthErrorPage.logout();
     }
-
 }

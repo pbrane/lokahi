@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-    features = {"src/test/resources/cloud-features", "src/test/resources/lokahi"},
+    features = {"src/test/resources/features"},
     plugin = {"pretty",
         "json:cucumber.reports/cucumber-report.json",
         "html:cucumber.reports/cucumber-report.html"},

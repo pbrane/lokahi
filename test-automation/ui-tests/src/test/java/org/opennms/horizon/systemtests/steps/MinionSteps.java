@@ -30,10 +30,9 @@ package org.opennms.horizon.systemtests.steps;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
-import org.opennms.horizon.systemtests.pages.cloud.CloudLeftPanelPage;
-import org.opennms.horizon.systemtests.pages.cloud.LocationsPage;
+import org.opennms.horizon.systemtests.pages.LeftPanelPage;
+import org.opennms.horizon.systemtests.pages.LocationsPage;
 import org.openqa.selenium.By;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import testcontainers.MinionContainer;
 
@@ -57,7 +56,7 @@ public class MinionSteps {
         SelenideElement minionStatus = $(By.xpath("//ul[@class='minions-list']/li[//div[@data-test='header-name']/text()='" + minionName.toUpperCase() + "']//div[@class='status']//span[text()='UP']"));
 
         // Make sure we're on the locations page with the right location selected
-        CloudLeftPanelPage.clickOnPanelSection("locations");
+        LeftPanelPage.clickOnPanelSection("locations");
         LocationsPage.selectLocation(LocationSteps.getLocationName());
 
         // The UI can take a very long time to reflect minion status updates. Might need to force refreshed to speed this up.

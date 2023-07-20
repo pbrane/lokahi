@@ -32,8 +32,8 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.CloudLeftPanelPage;
-import org.opennms.horizon.systemtests.pages.cloud.LocationsPage;
+import org.opennms.horizon.systemtests.pages.LeftPanelPage;
+import org.opennms.horizon.systemtests.pages.LocationsPage;
 import org.openqa.selenium.By;
 import testcontainers.MinionContainer;
 
@@ -63,7 +63,7 @@ public class LocationSteps {
 
 
     public static void addOrEditLocation() {
-        CloudLeftPanelPage.clickOnPanelSection("locations");
+        LeftPanelPage.clickOnPanelSection("locations");
 
         if (!LocationsPage.selectLocationEditMenu(locationName)) {
             // Add the location
@@ -110,7 +110,7 @@ public class LocationSteps {
 
     @Then("delete all locations")
     public void deleteAllLocations() {
-        CloudLeftPanelPage.clickOnPanelSection("locations");
+        LeftPanelPage.clickOnPanelSection("locations");
         while (true) {
             if (!firstMenu.exists()) {
                 // No locations left to delete
@@ -128,7 +128,7 @@ public class LocationSteps {
 
     @Then("delete used locations")
     public void deleteUsedLocations() {
-        CloudLeftPanelPage.clickOnPanelSection("locations");
+        LeftPanelPage.clickOnPanelSection("locations");
         LocationsPage.selectLocationDeleteMenu(locationName);
         LocationsPage.selectConfirmDeleteButton();
     }

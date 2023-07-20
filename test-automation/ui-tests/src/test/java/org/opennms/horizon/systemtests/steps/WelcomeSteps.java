@@ -25,14 +25,14 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-package org.opennms.horizon.systemtests.steps.cloud;
+package org.opennms.horizon.systemtests.steps;
 
 import com.codeborne.selenide.Selenide;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.LocationsPage;
-import org.opennms.horizon.systemtests.pages.cloud.LokahiWalkthrough;
-import org.opennms.horizon.systemtests.pages.cloud.WelcomePage;
+import org.opennms.horizon.systemtests.pages.LocationsPage;
+import org.opennms.horizon.systemtests.pages.LokahiWalkthrough;
+import org.opennms.horizon.systemtests.pages.WelcomePage;
 
 
 
