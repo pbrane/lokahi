@@ -31,14 +31,12 @@ package org.opennms.horizon.systemtests.steps;
 import com.codeborne.selenide.Selenide;
 import io.cucumber.java.en.Given;
 import org.opennms.horizon.systemtests.CucumberHooks;
-import org.opennms.horizon.systemtests.pages.cloud.CloudInstanceLoginPage;
-import org.opennms.horizon.systemtests.pages.cloud.CloudLoginPage;
-import org.opennms.horizon.systemtests.pages.cloud.LokahiWalkthrough;
+import org.opennms.horizon.systemtests.pages.AlternativeLoginPage;
+import org.opennms.horizon.systemtests.pages.LoginPage;
+import org.opennms.horizon.systemtests.pages.WelcomePage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Network;
-
-import static com.codeborne.selenide.Condition.enabled;
 
 public class SetupSteps {
     private static final Logger LOG = LoggerFactory.getLogger(SetupSteps.class);
@@ -52,14 +50,14 @@ public class SetupSteps {
     public static void loggedInWithANamedMinion(String minionName) {
         login();
 
-        if (LokahiWalkthrough.containsWalkthroughButton()) {
+        if (WelcomePage.containsWalkthroughButton()) {
             String walkthroughMinionName = "default-minion";
             if (LocationSteps.isLocationNameDefault()) {
                 walkthroughMinionName = minionName;
             }
             // Need to add a default minion
-            LokahiWalkthrough.startSetup();
-            LokahiWalkthrough.addMinionUsingWalkthrough(walkthroughMinionName);
+            WelcomePage.startSetup();
+            WelcomePage.addMinionUsingWalkthrough(walkthroughMinionName);
             // Ensure we're at the main page once the minion is connected
             Selenide.open(CucumberHooks.instanceUrl);
 
@@ -80,19 +78,12 @@ public class SetupSteps {
         }
 
         if (CucumberHooks.keycloakLogin) {
-            CloudLoginPage.login();
+            LoginPage.login();
         } else {
-            CloudInstanceLoginPage.login();
+            AlternativeLoginPage.login();
         }
 
-        LokahiWalkthrough.waitOnWalkthroughOrMain();
+        WelcomePage.waitOnWalkthroughOrMain();
     }
 
-    @Given("Logged in at welcome wizard")
-    public void loggedInAtWelcomeWizard() {
-        login();
-
-        // Force going to the welcome wizard just in case
-        Selenide.open(CucumberHooks.instanceUrl + "/welcome");
-    }
 }

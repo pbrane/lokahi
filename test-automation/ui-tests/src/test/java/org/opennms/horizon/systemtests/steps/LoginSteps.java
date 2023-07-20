@@ -26,18 +26,37 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.steps;
 
-import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.SelenideElement;
+import io.cucumber.java.en.Then;
+import org.opennms.horizon.systemtests.pages.LoginPage;
 
-import static com.codeborne.selenide.Selenide.$;
+public class LoginSteps {
 
-public class ConfirmDeleteMinionPopup {
-    private final static SelenideElement deleteBtn = $("[data-testid='save-btn']");
-
-    public static void clickDeleteBtn() {
-        deleteBtn.shouldBe(Condition.enabled).click();
+    @Then("Login page appears")
+    public void checkPopupIsVisible() {
+        LoginPage.checkPageTitle();
     }
 
+    @Then("set email address as {string}")
+    public void setEmail(String email) {
+        LoginPage.setUsername(email);
+    }
+
+    @Then("set password")
+    public void setPassword() {
+        LoginPage.setPassword("admin"); // TODO
+    }
+
+    @Then("click on 'Sign in' button")
+    public void clickSignIn() {
+        LoginPage.clickSignInBtn();
+    }
+
+    @Then("login to instance as {string} user")
+    public void loginAsUser(String user) {
+        setEmail(user);
+        setPassword();
+        clickSignIn();
+    }
 }

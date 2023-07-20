@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.pages;
 
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
@@ -34,7 +34,7 @@ import org.openqa.selenium.By;
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 
-public class CloudLeftPanelPage {
+public class LeftPanelPage {
     private static final SelenideElement leftPanel = $(".app-aside");
     private static final SelenideElement topRightBorder = $(By.xpath("//div[@class='right center-horiz'][1]"));
     private static final SelenideElement leftPanelWide = $(By.xpath("//div[@class='feather-app-rail']"));

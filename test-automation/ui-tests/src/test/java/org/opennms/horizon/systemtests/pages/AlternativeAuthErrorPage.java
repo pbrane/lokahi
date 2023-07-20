@@ -26,40 +26,22 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.pages;
 
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import org.opennms.horizon.systemtests.CucumberHooks;
-import org.openqa.selenium.By;
-import static com.codeborne.selenide.Condition.enabled;
+
+import java.time.Duration;
+
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
 
-public class CloudInstanceLoginPage {
-    private static final SelenideElement usernameField = $(By.id("idp-discovery-username"));
-    private static final SelenideElement nextBtn = $(By.id("idp-discovery-submit"));
-    private static final SelenideElement passwordField = $(By.id("okta-signin-password"));
-    private static final SelenideElement submitBtn = $(By.id("okta-signin-submit"));
+public class AlternativeAuthErrorPage {
+    private final static SelenideElement errorMessage = $("#hs-content-wrapper");
 
-    public static void setUsername(String username) {
-        usernameField.shouldBe(enabled).setValue(username);
-    }
-
-    public static void clickNextBtn() {
-        nextBtn.shouldBe(enabled).click();
-    }
-
-    public static void setPassword(String password) {
-        passwordField.shouldBe(enabled).setValue(password);
-    }
-
-    public static void clickSubmitBtn() {
-        submitBtn.shouldBe(enabled).click();
-    }
-
-    public static void login() {
-        setUsername(CucumberHooks.adminUsername);
-        clickNextBtn();
-        setPassword(CucumberHooks.adminPassword);
-        clickSubmitBtn();
+    public static void verifyAuthError(String userEmail) {
+        errorMessage.shouldHave(
+            text(String.format("User %s authenticated with identity provider okta does not exist. Please contact your administrator.", userEmail)), Duration.ofSeconds(30)
+        );
     }
 }

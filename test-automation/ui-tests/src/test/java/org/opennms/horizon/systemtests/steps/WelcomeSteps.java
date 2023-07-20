@@ -25,18 +25,23 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-package org.opennms.horizon.systemtests.steps.cloud;
+package org.opennms.horizon.systemtests.steps;
 
 import com.codeborne.selenide.Selenide;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.LocationsPage;
-import org.opennms.horizon.systemtests.pages.cloud.LokahiWalkthrough;
-import org.opennms.horizon.systemtests.pages.cloud.WelcomePage;
+import org.opennms.horizon.systemtests.CucumberHooks;
+import org.opennms.horizon.systemtests.pages.LocationsPage;
+import org.opennms.horizon.systemtests.pages.WelcomePage;
 
 
 
 public class WelcomeSteps {
+    @Given("Open the welcome wizard")
+    public void loggedInAtWelcomeWizard() {
+        // Force going to the welcome wizard just in case
+        Selenide.open(CucumberHooks.instanceUrl + "/welcome");
+    }
 
     @Given("check 'Start Setup' button is accessible and visible")
     public static void checkStartSetupButtonIsAccessibleAndVisible() {
@@ -50,7 +55,7 @@ public class WelcomeSteps {
 
     @Then("click on 'Download' button to get certificate and password for minion {string} and start minion using {string}")
     public static void downloadCertificate(String minionID, String dockerComposeFile) {
-        LokahiWalkthrough.addMinionUsingWalkthrough(minionID);
+        WelcomePage.addMinionUsingWalkthrough(minionID);
     }
 
     @Then("wizard shows that minion connected successfully")
@@ -63,9 +68,9 @@ public class WelcomeSteps {
         WelcomePage.continueToDiscovery();
     }
 
-    @Then("enter IP {string} for discovery")
-    public static void continueToDiscovery(String ip) {
-        WelcomePage.setIPForDiscovery(ip);
+    @Then("enter IP of {string} for discovery")
+    public static void continueToDiscovery(String nodeName) {
+        WelcomePage.setIPForDiscovery(DiscoverySteps.getIpaddress(nodeName));
     }
 
     @Then("click on 'Start Discovery' button")
@@ -100,7 +105,7 @@ public class WelcomeSteps {
 
     @Then("delete minion {string}")
     public void deleteMinion(String minionId) {
-        LocationsPage.clickOnMinionDeleteButton(minionId);
+        LocationsPage.deleteMinion(minionId);
     }
 
     @Then("verify minion {string} deleted")

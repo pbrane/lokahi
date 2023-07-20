@@ -25,21 +25,34 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
+package org.opennms.horizon.systemtests.steps;
 
-package org.opennms.horizon.systemtests.steps.cloud;
-
+import com.codeborne.selenide.Selenide;
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.CloudLeftPanelPage;
+import org.opennms.horizon.systemtests.pages.HomePage;
+import org.opennms.horizon.systemtests.pages.LeftPanelPage;
 
-public class CloudLeftPanelSteps {
-
-    @Then("Navigate to the {string} through the left panel")
-    public void clickOnLeftPanelSection(String section) {
-        CloudLeftPanelPage.clickOnPanelSection(section);
+public class HomeSteps {
+    @Then("sees {string} subtitle in the Top 10 Applications chart")
+    public void verifyErrorMessage(String subtitle) {
+        LeftPanelPage.clickOnPanelSection("home");
+        HomePage.verifyTop10ApplicationsSubtitle(subtitle);
     }
 
-    @Then("user sees the navigation panel for instance")
-    public void verifyLeftPanel() {
-        CloudLeftPanelPage.verifyLeftPanelIsDisplayed();
+    @Then("wait until the 'Top 10 Applications' chart will reflect the received data")
+    public void waitFlowsChart() {
+        for (int i = 0; i < 6; i++) {
+            Selenide.sleep(5_000);
+            Selenide.refresh();
+            if (HomePage.verifyTop10Applications()) {
+                break;
+            }
+        }
+        HomePage.verifyNoDataTop10ApplicationsState(false);
+    }
+
+    @Then("click on 'Flows' link")
+    public void clickOnFlows() {
+        HomePage.clickOnFlowsLink();
     }
 }

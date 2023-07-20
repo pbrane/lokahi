@@ -34,8 +34,8 @@ import com.github.dockerjava.api.model.NetworkSettings;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.opennms.horizon.systemtests.pages.cloud.CloudLeftPanelPage;
-import org.opennms.horizon.systemtests.pages.cloud.InventoryPage;
+import org.opennms.horizon.systemtests.pages.LeftPanelPage;
+import org.opennms.horizon.systemtests.pages.InventoryPage;
 import org.openqa.selenium.By;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,13 +61,13 @@ public class DiscoverySteps {
     private static final SelenideElement VIEW_DETECTED_NODES_BUTTON = $(By.xpath("//button[text()=' View Detected Nodes']"));
     private static final SelenideElement SNMP_DISCOVERY_RADIO_BUTTON = $(By.xpath("//div[@class='feather-radio'][./span/text()='ICMP/SNMP']"));
     private static final SelenideElement DISCOVERY_NAME_INPUT = $(By.xpath("//div[contains(@class, 'name-input')]//input"));
-    private static final SelenideElement LOCATION_NAME_INPUT = $(By.xpath("//div[@aria-label='Select a location']//textarea"));
+    private static final SelenideElement LOCATION_NAME_INPUT = $(By.xpath("//input[@placeholder='Search Locations']"));
     private static final SelenideElement IP_RANGE_INPUT = $(By.xpath("//div[@class='ip-input']//div[@class='content-editable']"));
     private static final SelenideElement COMMUNITY_STRING_INPUT = $(By.xpath("//div[@class='community-input']//div[@class='content-editable']"));
     private static final SelenideElement PORT_INPUT = $(By.xpath("//div[@class='udp-port-input']//div[@class='content-editable']"));
     private static final String SNMP_NODE_IMAGE_NAME = "polinux/snmpd:alpine";
 
-    private Map<String, GenericContainer> nodes = new HashMap<>();
+    private static Map<String, GenericContainer> nodes = new HashMap<>();
 
     @Given("Start snmp node {string}")
     public void startNode(String nodeName) throws IOException {
@@ -89,24 +89,21 @@ public class DiscoverySteps {
         discoverSingleNode(discoveryName, nodeName, LocationSteps.getLocationName(), 161, "public");
     }
 
-    private String getContainerIP(GenericContainer<?> container) {
+    private static String getContainerIP(GenericContainer<?> container) {
         NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
         Map<String, ContainerNetwork> networksMap = networkSettings.getNetworks();
         return networksMap.values().iterator().next().getIpAddress();
     }
 
     public boolean newDiscoveryCheckForLocation(String locationName) {
-        String search = "//div[contains(@class, 'locations-select')]//div[contains(@class, 'location-chip')]//span[text()='" + locationName + "']";
+        String search = "//div[@class='locations-select']//span[text()=' " + locationName + "']";
         return $(By.xpath(search)).exists();
     }
 
     private void discoverSingleNode(String discoveryName, String nodeName, String locationName, int port, String community) {
-        GenericContainer<?> node = nodes.get(nodeName);
-        assertNotNull("Cannot find node with name " + nodeName, node);
+        String ipaddress = getIpaddress(nodeName);
 
-        String ipaddress = getContainerIP(node);
-
-        CloudLeftPanelPage.clickOnPanelSection("discovery");
+        LeftPanelPage.clickOnPanelSection("discovery");
         ADD_DISCOVERY_BUTTON.shouldBe(enabled).click();
         SNMP_DISCOVERY_RADIO_BUTTON.shouldBe(enabled).click();
         DISCOVERY_NAME_INPUT.shouldBe(enabled).sendKeys(discoveryName);
@@ -116,7 +113,7 @@ public class DiscoverySteps {
             LOCATION_NAME_INPUT.shouldBe(enabled).sendKeys(locationName);
             LOCATION_NAME_INPUT.sendKeys("\n");
 
-            String specificListItemSearch = "//ul[@aria-label='Select a location']/li[//span/text()='" + locationName + "']";
+            String specificListItemSearch = "//ul[@aria-label='Select a location']/li[//span/text()=' " + locationName + "']";
             SelenideElement locationPopupListItem = $(By.xpath(specificListItemSearch));
             locationPopupListItem.should(exist, Duration.ofSeconds(20)).shouldBe(enabled).click();
         }
@@ -130,6 +127,14 @@ public class DiscoverySteps {
 
         SAVE_DISCOVERY_BUTTON.shouldBe(enabled).click();
         VIEW_DETECTED_NODES_BUTTON.should(exist).shouldBe(enabled).click();
+    }
+
+    public static String getIpaddress(String nodeName) {
+        String ipaddress;
+        GenericContainer<?> node = nodes.get(nodeName);
+        assertNotNull("Cannot find node with name " + nodeName, node);
+
+        return getContainerIP(node);
     }
 
     @Then("Status of {string} should be {string}")
@@ -152,7 +157,7 @@ public class DiscoverySteps {
 
         String ipaddress = getContainerIP(node);
 
-        CloudLeftPanelPage.clickOnPanelSection("inventory");
+        LeftPanelPage.clickOnPanelSection("inventory");
         InventoryPage.deleteNode(ipaddress);
     }
 }

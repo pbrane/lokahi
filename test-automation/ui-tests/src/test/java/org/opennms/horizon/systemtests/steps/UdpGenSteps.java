@@ -26,37 +26,30 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.steps.cloud;
+package org.opennms.horizon.systemtests.steps;
 
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.CloudLoginPage;
+import lombok.SneakyThrows;
+import org.opennms.horizon.systemtests.CucumberHooks;
+import testcontainers.UpdGenContainer;
 
-public class CloudLoginSteps {
+import java.util.Arrays;
 
-    @Then("Cloud login page appears")
-    public void checkPopupIsVisible() {
-        CloudLoginPage.checkPageTitle();
-    }
+public class UdpGenSteps {
+    @SneakyThrows
+    @Then("send {int} packets of {string} traffic to {int} port")
+    public void generateNetflow9(Integer number, String flowType, Integer port) {
+        if (!Arrays.asList("netflow9", "netflow5", "ipfix").contains(flowType)) {
+            throw new RuntimeException("Do not support this type");
+        }
 
-    @Then("set email address as {string}")
-    public void setEmail(String email) {
-        CloudLoginPage.setUsername(email);
-    }
-
-    @Then("set password")
-    public void setPassword() {
-        CloudLoginPage.setPassword("admin"); // TODO
-    }
-
-    @Then("click on 'Sign in' button")
-    public void clickSignIn() {
-        CloudLoginPage.clickSignInBtn();
-    }
-
-    @Then("login to Cloud instance as {string} user")
-    public void loginAsUser(String user) {
-        setEmail(user);
-        setPassword();
-        clickSignIn();
+        try (
+            UpdGenContainer updGenContainer = new UpdGenContainer(
+                CucumberHooks.MINIONS.get(0).getUdpPortBinding(port),
+                flowType,
+                number)
+        ) {
+            updGenContainer.start();
+        }
     }
 }

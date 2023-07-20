@@ -26,15 +26,14 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.steps.cloud;
+package org.opennms.horizon.systemtests.steps;
 
 import io.cucumber.java.en.Then;
-import org.opennms.horizon.systemtests.pages.cloud.CloudAuthErrorPage;
+import org.opennms.horizon.systemtests.pages.AlternativeAuthErrorPage;
 
-public class CloudAuthErrorSteps {
+public class AlternativeAuthErrorSteps {
     @Then("see 'We are sorry...' error with access restriction for {string} user")
     public void verifyErrorMessage(String email) {
-        CloudAuthErrorPage.verifyAuthError(email);
-        CloudAuthErrorPage.logout();
+        AlternativeAuthErrorPage.verifyAuthError(email);
     }
 }

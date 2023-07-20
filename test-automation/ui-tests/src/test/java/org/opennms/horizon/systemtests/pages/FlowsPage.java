@@ -1,6 +1,5 @@
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.pages;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import org.junit.Assert;
 import java.time.Duration;
@@ -9,7 +8,7 @@ import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
 
-public class CloudFlowsPage {
+public class FlowsPage {
     private static final SelenideElement headerTxt = $("[data-test='flows-page-header']");
     private static final SelenideElement todayOption = $("#TODAY");
     private static final SelenideElement last24HoursOption = $("#LAST_24_HOURS");

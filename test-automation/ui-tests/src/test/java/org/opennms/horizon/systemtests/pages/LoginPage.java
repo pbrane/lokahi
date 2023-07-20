@@ -26,7 +26,7 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.systemtests.pages.cloud;
+package org.opennms.horizon.systemtests.pages;
 
 import com.codeborne.selenide.SelenideElement;
 import org.opennms.horizon.systemtests.CucumberHooks;
@@ -36,7 +36,7 @@ import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
 
-public class CloudLoginPage {
+public class LoginPage {
     private static final SelenideElement pageTitleTxt = $(By.id("hs-page-title"));
     private static final SelenideElement userNameInp = $(By.id("username"));
     private static final SelenideElement passwordInp = $(By.id("password"));
