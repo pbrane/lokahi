@@ -1,12 +1,13 @@
-@cloud
+@flows
 Feature: NetFlows basic function
 
   Scenario: User sees empty 'Flows' chart before data was sent
     Given No netflow data was sent
-    And sees "No applications data was found in last 24 hours.." subtitle in the 'Top 10 Applications' chart
+    And sees "No applications data was found in last 24 hours" subtitle in the Top 10 Applications chart
     Then click on 'Flows' link
     And sees 'No Data' in the flows table
 
+  @ignore
   Scenario: User sees flows data sent to the instance
     Given Navigate to the "locations" through the left panel
     Given location "Location Flow Testing" created

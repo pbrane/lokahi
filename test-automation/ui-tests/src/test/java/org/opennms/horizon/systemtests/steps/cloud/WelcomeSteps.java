@@ -31,6 +31,7 @@ import com.codeborne.selenide.Selenide;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.opennms.horizon.systemtests.pages.cloud.LocationsPage;
+import org.opennms.horizon.systemtests.pages.cloud.LokahiWalkthrough;
 import org.opennms.horizon.systemtests.pages.cloud.WelcomePage;
 
 
@@ -49,7 +50,7 @@ public class WelcomeSteps {
 
     @Then("click on 'Download' button to get certificate and password for minion {string} and start minion using {string}")
     public static void downloadCertificate(String minionID, String dockerComposeFile) {
-        WelcomePage.downloadCertificateAndStartMinion(minionID, dockerComposeFile);
+        LokahiWalkthrough.addMinionUsingWalkthrough(minionID);
     }
 
     @Then("wizard shows that minion connected successfully")

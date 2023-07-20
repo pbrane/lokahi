@@ -29,6 +29,7 @@
 package org.opennms.horizon.systemtests.pages.cloud;
 
 import com.codeborne.selenide.SelenideElement;
+import org.opennms.horizon.systemtests.CucumberHooks;
 import org.openqa.selenium.By;
 import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Selenide.$;
@@ -53,5 +54,12 @@ public class CloudInstanceLoginPage {
 
     public static void clickSubmitBtn() {
         submitBtn.shouldBe(enabled).click();
+    }
+
+    public static void login() {
+        setUsername(CucumberHooks.adminUsername);
+        clickNextBtn();
+        setPassword(CucumberHooks.adminPassword);
+        clickSubmitBtn();
     }
 }
