@@ -24,7 +24,7 @@ By default, the page displays alerts that occurred within the last 24 hours.
 === Clear filters
 
 To clear any filters on your alerts, click *Clear All Filters*.
-All alerts are displayed in the alerts list.
+The alerts list displays all alerts.
 
 == Acknowledge an alert
 
