@@ -1,5 +1,6 @@
 
 = Manage Discoveries
+:description: How to manage network inventory with OpenNMS Lōkahi/Cloud.
 
 You can edit passive discoveries.
 

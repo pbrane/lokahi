@@ -1,5 +1,6 @@
 
 = Create a Monitoring Policy
+:description: How to create a monitoring policy in OpenNMS Lōkahi/Cloud to define a set of rules for monitoring nodes and taking action under certain conditions.
 
 A monitoring policy uses tags and rules to customize the type of monitoring data that you collect and the notifications you receive about that data.
 

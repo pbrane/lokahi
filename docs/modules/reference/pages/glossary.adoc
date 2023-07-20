@@ -1,4 +1,5 @@
 
 = Glossary
+:description: Glossary of terms related to OpenNMS Lōkahi/Cloud.
 
 Tags:
