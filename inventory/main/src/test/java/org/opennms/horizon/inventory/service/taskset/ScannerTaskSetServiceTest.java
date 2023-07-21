@@ -26,13 +26,16 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.inventory.service.taskset.publiser;
+package org.opennms.horizon.inventory.service.taskset;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -41,8 +44,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.service.SnmpConfigService;
-import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetPublisher;
+import org.opennms.icmp.contract.PingSweepRequest;
 import org.opennms.node.scan.contract.NodeScanRequest;
 import org.opennms.taskset.contract.TaskDefinition;
 
@@ -114,5 +117,21 @@ public class ScannerTaskSetServiceTest {
         NodeDTO node = nodeBuilder.build();
         service.sendNodeScannerTask(List.of(node), locationId, tenantId);
         verifyNoInteractions(mockPublisher);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "192.168.34.0/24, 192.168.34.0, 192.168.34.255",
+        "192.168.45.1-192.168.45.254, 192.168.45.1, 192.168.45.254",
+        "192.168.2.45, 192.168.2.45, 192.168.2.45"
+    })
+    void testIpAddressParsing(String ipAddressNotation, String begin, String end) throws InvalidProtocolBufferException {
+
+        var optional = service.createDiscoveryTask(List.of(ipAddressNotation),
+            locationId, 1);
+        Assertions.assertTrue(optional.isPresent());
+        var ipRanges = optional.get().getConfiguration().unpack(PingSweepRequest.class);
+        Assertions.assertEquals(begin, ipRanges.getIpRange(0).getBegin());
+        Assertions.assertEquals(end, ipRanges.getIpRange(0).getEnd());
     }
 }
