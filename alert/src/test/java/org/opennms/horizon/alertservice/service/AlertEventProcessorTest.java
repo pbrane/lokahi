@@ -43,6 +43,9 @@ public class AlertEventProcessorTest {
     AlertConditionRepository alertConditionRepository;
 
     @Mock
+    ReductionKeyService reductionKeyService;
+
+    @Mock
     MeterRegistry registry;
 
     @Mock

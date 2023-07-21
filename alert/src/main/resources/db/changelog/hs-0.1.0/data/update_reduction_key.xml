@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ This file is part of OpenNMS(R).
+  ~
+  ~ Copyright (C) 2023 The OpenNMS Group, Inc.
+  ~ OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
+  ~
+  ~ OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
+  ~
+  ~ OpenNMS(R) is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as published
+  ~ by the Free Software Foundation, either version 3 of the License,
+  ~ or (at your option) any later version.
+  ~
+  ~ OpenNMS(R) is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with OpenNMS(R).  If not, see:
+  ~      http://www.gnu.org/licenses/
+  ~
+  ~ For more information contact:
+  ~     OpenNMS(R) Licensing <license@opennms.org>
+  ~     http://www.opennms.org/
+  ~     http://www.opennms.com/
+  -->
+
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+    <changeSet id="add-alert-condition-id-to-reduction-key" author="vserrago">
+        <update tableName="event_definition">
+            <column
+                name="reduction_key"
+                value="%s:%s:%d:%d"/>
+            <where>
+                reduction_key = '%s:%s:%d'
+            </where>
+        </update>
+        <update tableName="alert_definition">
+            <column
+                name="reduction_key"
+                valueComputed="alert_definition.reduction_key || ':%d'"/>
+            <where>
+                reduction_key similar to '[^:]+:[^:]:+[^:]+'
+            </where>
+        </update>
+
+        <!--        TODO: Fix-->
+        <!--        <update tableName="alert">-->
+        <!--            <column-->
+        <!--                name="reduction_key"-->
+        <!--                valueComputed="alert.reduction_key || ':' || alert.trigger_event_id"/>-->
+        <!--            <where>-->
+        <!--                reduction_key similar to '[^:]+:[^:]:+[^:]+'-->
+        <!--            </where>-->
+        <!--        </update>-->
+    </changeSet>
+</databaseChangeLog>
