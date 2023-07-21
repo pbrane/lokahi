@@ -112,7 +112,7 @@ public class AlertEventProcessor {
         if (alertDefinitions.isEmpty()) {
             // No alert definition matching, no alert to create
             eventsWithoutAlertDataCounter.increment();
-            return null;
+            return Collections.emptyList();
         }
 
         List<org.opennms.horizon.alertservice.db.entity.Alert> alerts = alertDefinitions.stream()

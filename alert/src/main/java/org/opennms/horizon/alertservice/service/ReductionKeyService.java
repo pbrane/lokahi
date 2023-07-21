@@ -48,7 +48,7 @@ public class ReductionKeyService {
             event.getTenantId(),
             event.getUei(),
             event.getNodeId(),
-            alertDefinition.getAlertCondition().getId()
+            alertDefinition.getAlertCondition().getRule().getPolicy().getId()
         );
     }
 
@@ -60,6 +60,7 @@ public class ReductionKeyService {
             alertDefinition.getClearKey(),
             event.getTenantId(),
             event.getNodeId()
-        );
+            // TODO: DB migration
+        ).concat(":" + alertDefinition.getAlertCondition().getRule().getPolicy().getId());
     }
 }
