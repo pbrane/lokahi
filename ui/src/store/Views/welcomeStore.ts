@@ -114,7 +114,6 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       let onboardingState = true
       const { getAllMinions } = useWelcomeQueries()
       const minions = await getAllMinions();
-      await this.createDefaultLocation();
       if (minions?.length > 0) {
         onboardingState = false
       } else {
@@ -243,6 +242,11 @@ export const useWelcomeStore = defineStore('welcomeStore', {
     },
     nextSlide() {
       this.slide = this.slide + 1
+      if (this.slide === 2) {
+        if (this.firstLocation.id === -1) {
+          this.createDefaultLocation();
+        }
+      }
       if (this.slide !== 2) {
         this.stopMinionErrorTimeout()
       }
