@@ -6,8 +6,8 @@
   <FeatherTabContainer class="tab-container" data-test="tab-container">
     <template v-slot:tabs>
       <FeatherTab @click="inventoryQueries.getMonitoredNodes">Monitored Nodes
-        <FeatherTextBadge :type="BadgeTypes.info" v-if="inventoryQueries.nodes.length > 0">{{
-          inventoryQueries.nodes.length }}</FeatherTextBadge>
+        <FeatherTextBadge :type="BadgeTypes.info" v-if="inventoryQueries.monitoredNodes.length > 0">{{
+          inventoryQueries.monitoredNodes.length }}</FeatherTextBadge>
       </FeatherTab>
       <FeatherTab @click="inventoryQueries.getUnmonitoredNodes">Unmonitored Nodes
         <FeatherTextBadge :type="BadgeTypes.info" v-if="inventoryQueries.unmonitoredNodes.length > 0">{{
@@ -65,7 +65,7 @@ import { MonitoredState } from '@/types/graphql'
 
 const inventoryStore = useInventoryStore()
 const inventoryQueries = useInventoryQueries()
-const tabMonitoredContent = computed((): MonitoredNode[] => inventoryQueries.nodes)
+const tabMonitoredContent = computed((): MonitoredNode[] => inventoryQueries.monitoredNodes)
 const tabUnmonitoredContent = computed((): UnmonitoredNode[] => inventoryQueries.unmonitoredNodes)
 const tabDetectedContent = computed((): DetectedNode[] => inventoryQueries.detectedNodes)
 
@@ -81,7 +81,7 @@ onMounted(() => {
  * was hidden on zero results, which meant hidden when no search results.
  */
 watchEffect(() => {
-  if (inventoryQueries.nodes.length > 0) {
+  if (inventoryQueries.monitoredNodes.length > 0) {
     inventoryStore.monitoredFilterActive = true
   }
   if (inventoryQueries.unmonitoredNodes.length > 0) {

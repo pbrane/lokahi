@@ -14,7 +14,6 @@
       </FeatherInput>
     </li>
     <li class="push-right">
-
       <InventoryTagManagerCtrl class="tag-manager" data-test="tag-manager-ctrl" />
     </li>
 
@@ -27,7 +26,7 @@
       Select All
     </FeatherButton>
     <FeatherButton data-test="clear-selection" text
-      v-if="inventoryStore.nodesSelected.length > 0 && inventoryStore.isTagManagerOpen" @click="inventoryStore.clearAll">
+      v-if="inventoryStore.nodesSelected.length > 0 && inventoryStore.isTagManagerOpen" @click="inventoryStore.clearSelectedNodes">
       Clear Selection
     </FeatherButton>
   </div>

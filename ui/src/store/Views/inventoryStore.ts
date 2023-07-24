@@ -21,11 +21,11 @@ export const useInventoryStore = defineStore('inventoryStore', {
       this.isTagManagerOpen = !this.isTagManagerOpen
 
       if (!this.isTagManagerOpen) {
-        this.tagsSelected = [];
-        this.isEditMode = false;
-        const tagStore = useTagStore();
-        tagStore.tagsSelected = [];
-        tagStore.setTagEditMode(false);
+        this.tagsSelected = []
+        this.isEditMode = false
+        const tagStore = useTagStore()
+        tagStore.tagsSelected = []
+        tagStore.setTagEditMode(false)
       }
     },
     toggleFilter() {
@@ -35,7 +35,7 @@ export const useInventoryStore = defineStore('inventoryStore', {
       this.isEditMode = !this.isEditMode
     },
     addSelectedTag(beep: Tag[]) {
-      this.tagsSelected = beep;
+      this.tagsSelected = beep
     },
     resetNodeEditMode() {
       this.isEditMode = false
@@ -50,11 +50,11 @@ export const useInventoryStore = defineStore('inventoryStore', {
     selectAll(allNodes: InventoryNode[]) {
       this.nodesSelected = [...allNodes]
     },
-    clearAll() {
-      this.nodesSelected = [];
+    clearSelectedNodes() {
+      this.nodesSelected = []
     },
     setSearchType(searchType: { id: number, name: string }) {
-      this.searchType = searchType;
+      this.searchType = searchType
     },
     resetSelectedNode() {
       this.nodesSelected = []
