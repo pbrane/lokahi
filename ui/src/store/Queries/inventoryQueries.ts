@@ -1,19 +1,22 @@
 import { useQuery } from 'villus'
 import { defineStore } from 'pinia'
 import {
-  NodeLatencyMetricDocument,
-  TsResult,
-  TimeRangeUnit,
-  ListTagsByNodeIdsDocument,
-  FindAllNodesByNodeLabelSearchDocument,
-  Node,
-  FindAllNodesByTagsDocument,
   FindAllNodesByMonitoredStateDocument,
+  FindAllNodesByNodeLabelSearchDocument,
+  FindAllNodesByNodeLabelSearchQueryVariables,
+  FindAllNodesByTagsDocument,
+  FindAllNodesByTagsQueryVariables,
+  ListTagsByNodeIdsDocument,
+  MonitoredState,
+  Node,
+  NodeLatencyMetricDocument,
+  NodeLatencyMetricQuery,
   NodeTags,
-  NodeLatencyMetricQuery, MonitoredState, FindAllNodesByNodeLabelSearchQueryVariables, FindAllNodesByTagsQueryVariables
+  TimeRangeUnit,
+  TsResult
 } from '@/types/graphql'
 import useSpinner from '@/composables/useSpinner'
-import { DetectedNode, Monitor, MonitoredNode, UnmonitoredNode, AZURE_SCAN } from '@/types'
+import { AZURE_SCAN, DetectedNode, InventoryNode, Monitor, MonitoredNode, UnmonitoredNode } from '@/types'
 
 export const useInventoryQueries = defineStore('inventoryQueries', () => {
   const selectedState = ref(MonitoredState.Monitored)
@@ -34,7 +37,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     cachePolicy: 'network-only',
     variables: { monitoredState: MonitoredState.Monitored }
   })
-  onGetMonitoredNodes((data) => formatMonitoredNodes(data.findAllNodesByMonitoredState ?? []))
+  onGetMonitoredNodes((data) => formatNodes(data.findAllNodesByMonitoredState ?? [], MonitoredState.Monitored))
   watchEffect(() => (monitoredNodesFetching.value ? startSpinner() : stopSpinner()))
 
   // Get unmonitored nodes
@@ -48,7 +51,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     cachePolicy: 'network-only',
     variables: { monitoredState: MonitoredState.Unmonitored }
   })
-  onGetUnmonitoredNodes((data) => formatUnmonitoredNodes(data.findAllNodesByMonitoredState ?? []))
+  onGetUnmonitoredNodes((data) => formatNodes(data.findAllNodesByMonitoredState ?? [], MonitoredState.Unmonitored))
   watchEffect(() => (unmonitoredNodesFetching.value ? startSpinner() : stopSpinner()))
 
   // Get detected nodes
@@ -62,7 +65,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     cachePolicy: 'network-only',
     variables: { monitoredState: MonitoredState.Detected }
   })
-  onGetDetectedNodes((data) => formatDetectedNodes(data.findAllNodesByMonitoredState ?? []))
+  onGetDetectedNodes((data) => formatNodes(data.findAllNodesByMonitoredState ?? [], MonitoredState.Detected))
   watchEffect(() => (detectedNodesFetching.value ? startSpinner() : stopSpinner()))
 
   // Get nodes by label
@@ -70,7 +73,6 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     { labelSearchTerm: '', monitoredState: MonitoredState.Monitored }
   )
   const {
-    onData: onFilteredByLabelData,
     isFetching: filteredNodesByLabelFetching,
     execute: filterNodesByLabel
   } = useQuery({
@@ -79,13 +81,15 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     fetchOnMount: false,
     variables: labelSearchVariables
   })
-  onFilteredByLabelData((data) => formatMonitoredNodes(data.findAllNodesByNodeLabelSearch ?? []))
   watchEffect(() => (filteredNodesByLabelFetching.value ? startSpinner() : stopSpinner()))
 
-  const getNodesByLabel = (label: string, monitoredState: MonitoredState) => {
+  const getNodesByLabel = async (label: string, monitoredState: MonitoredState) => {
     labelSearchVariables.labelSearchTerm = label
     labelSearchVariables.monitoredState = monitoredState
-    filterNodesByLabel()
+    const result = await filterNodesByLabel()
+    if (result.data) {
+      await formatNodes(result.data.findAllNodesByNodeLabelSearch ?? [], labelSearchVariables.monitoredState)
+    }
   }
 
   // Get nodes by tags
@@ -93,7 +97,6 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     { tags: <string[]>[], monitoredState: MonitoredState.Monitored }
   )
   const {
-    onData: onFilteredByTagsData,
     isFetching: filteredNodesByTagsFetching,
     execute: filterNodesByTags
   } = useQuery({
@@ -102,28 +105,28 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     fetchOnMount: false,
     variables: filterNodesByTagsVariables
   })
-  onFilteredByTagsData((data) => formatMonitoredNodes(data.findAllNodesByTags ?? []))
   watchEffect(() => (filteredNodesByTagsFetching.value ? startSpinner() : stopSpinner()))
 
-  const getNodesByTags = (tags: string[], monitoredState: MonitoredState) => {
+  const getNodesByTags = async (tags: string[], monitoredState: MonitoredState) => {
     filterNodesByTagsVariables.tags = tags
     filterNodesByTagsVariables.monitoredState = monitoredState
-    filterNodesByTags()
+    const result = await filterNodesByTags()
+    if (result.data) {
+      await formatNodes(result.data.findAllNodesByTags ?? [], filterNodesByTagsVariables.monitoredState)
+    }
   }
 
   // Get tags for nodes
   const listTagsByNodeIdsVariables = reactive({ nodeIds: <number[]>[] })
   const {
     data: tagData,
-    execute: getTags,
-    onData: onTagsData
+    execute: getTags
   } = useQuery({
     query: ListTagsByNodeIdsDocument,
     cachePolicy: 'network-only',
     fetchOnMount: false,
     variables: listTagsByNodeIdsVariables
   })
-  onTagsData((data) => monitoredNodes.value = addTagsToMonitoredNodes(data.tagsByNodeIds ?? [], monitoredNodes.value))
 
   // Get metrics for nodes
   const metricsVariables = reactive({
@@ -133,13 +136,25 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     timeRange: 1,
     timeRangeUnit: TimeRangeUnit.Minute
   })
-  const { onData: onMetricsData, execute: getMetrics } = useQuery({
+  const { execute: getMetrics } = useQuery({
     query: NodeLatencyMetricDocument,
     cachePolicy: 'network-only',
     fetchOnMount: false,
     variables: metricsVariables
   })
-  onMetricsData((data) => monitoredNodes.value = addMetricsToMonitoredNodes(data, monitoredNodes.value))
+
+  const formatNodes = async (data: Partial<Node>[], monitoredState: MonitoredState) => {
+    switch (monitoredState) {
+      case MonitoredState.Detected:
+        return await formatDetectedNodes(data)
+      case MonitoredState.Monitored:
+        return await formatMonitoredNodes(data)
+      case MonitoredState.Unmonitored:
+        return await formatUnmonitoredNodes(data)
+      default:
+        return data
+    }
+  }
 
   // sets the initial monitored node object and then calls for tags and metrics
   const formatMonitoredNodes = async (data: Partial<Node>[]) => {
@@ -178,7 +193,8 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
   // may be used to get tags for monitored/unmonitored/detected nodes
   const getTagsForData = async (data: Partial<Node>[]) => {
     listTagsByNodeIdsVariables.nodeIds = data.map((node) => node.id)
-    await getTags()
+    const tagResult = await getTags()
+    monitoredNodes.value = addTagsToNodes(tagResult.data?.tagsByNodeIds ?? [], monitoredNodes.value) as MonitoredNode[]
   }
 
   // may only be used for monitored nodes
@@ -189,12 +205,15 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
 
       metricsVariables.id = node.id
       metricsVariables.instance = instance
-      await getMetrics()
+      const metricsResult = await getMetrics()
+      if (metricsResult.data) {
+        monitoredNodes.value = addMetricsToMonitoredNodes(metricsResult.data, monitoredNodes.value)
+      }
     }
   }
 
   // callback after getTags call complete
-  const addTagsToMonitoredNodes = (tags: NodeTags[], nodeList: MonitoredNode[]) => {
+  const addTagsToNodes = (tags: NodeTags[], nodeList: InventoryNode[]) => {
     return nodeList.map((node) => {
       tags.forEach((tag) => {
         if (node.id === tag.nodeId) {
