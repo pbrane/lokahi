@@ -5,50 +5,56 @@
 
   <FeatherTabContainer class="tab-container" data-test="tab-container">
     <template v-slot:tabs>
-      <FeatherTab @click="inventoryQueries.getMonitoredNodes">Monitored Nodes
-        <FeatherTextBadge :type="BadgeTypes.info" v-if="inventoryQueries.monitoredNodes.length > 0">{{
-          inventoryQueries.monitoredNodes.length }}</FeatherTextBadge>
+      <FeatherTab @click="changeToTab(MonitoredState.Monitored)">Monitored Nodes
+        <FeatherTextBadge :type="BadgeTypes.info" v-if="inventoryQueries.monitoredNodes.length > 0">
+          {{ inventoryQueries.monitoredNodes.length }}
+        </FeatherTextBadge>
       </FeatherTab>
-      <FeatherTab @click="inventoryQueries.getUnmonitoredNodes">Unmonitored Nodes
-        <FeatherTextBadge :type="BadgeTypes.info" v-if="inventoryQueries.unmonitoredNodes.length > 0">{{
-          inventoryQueries.unmonitoredNodes.length }}</FeatherTextBadge>
+      <FeatherTab @click="changeToTab(MonitoredState.Unmonitored)">Unmonitored Nodes
+        <FeatherTextBadge :type="BadgeTypes.info" v-if="inventoryQueries.unmonitoredNodes.length > 0">
+          {{ inventoryQueries.unmonitoredNodes.length }}
+        </FeatherTextBadge>
       </FeatherTab>
-      <FeatherTab @click="inventoryQueries.getDetectedNodes">Detected Nodes
-        <FeatherTextBadge :type="BadgeTypes.info" v-if="inventoryQueries.detectedNodes.length > 0">{{
-          inventoryQueries.detectedNodes.length }}</FeatherTextBadge>
+      <FeatherTab @click="changeToTab(MonitoredState.Detected)">Detected Nodes
+        <FeatherTextBadge :type="BadgeTypes.info" v-if="inventoryQueries.detectedNodes.length > 0">
+          {{ inventoryQueries.detectedNodes.length }}
+        </FeatherTextBadge>
       </FeatherTab>
     </template>
     <!-- Monitored Nodes -->
     <FeatherTabPanel>
-      <InventoryFilter v-if="inventoryStore.monitoredFilterActive" :state="MonitoredState.Monitored"
-        :nodes="tabMonitoredContent" />
-      <InventoryTabContent v-if="tabMonitoredContent.length" :tabContent="tabMonitoredContent"
-        :state="MonitoredState.Monitored" />
-      <EmptyList data-test="monitored-empty" v-if="!tabMonitoredContent.length" bg
-        :content="{ msg: 'No monitored nodes. Add some on the Discovery page.', btn: { label: 'Visit Discovery Page', action: () => { $router.push('/discovery') } } }" />
+      <InventoryFilter v-if="inventoryStore.monitoredFilterActive" :nodes="tabMonitoredContent" />
       <FeatherSpinner v-if="inventoryQueries.isFetching" />
+      <template v-else>
+        <InventoryTabContent v-if="tabMonitoredContent.length" :tabContent="tabMonitoredContent"
+          :state="MonitoredState.Monitored" />
+        <EmptyList data-test="monitored-empty" v-if="!tabMonitoredContent.length" bg
+          :content="{ msg: 'No monitored nodes. Add some on the Discovery page.', btn: { label: 'Visit Discovery Page', action: () => { $router.push('/discovery') } } }" />
+      </template>
     </FeatherTabPanel>
 
     <!-- Unmonitored Nodes -->
     <FeatherTabPanel>
-      <InventoryFilter v-if="inventoryStore.unmonitoredFilterActive" :state="MonitoredState.Unmonitored" onlyTags
-        :nodes="tabUnmonitoredContent" />
-      <InventoryTabContent v-if="tabUnmonitoredContent.length" :tabContent="tabUnmonitoredContent"
-        :state="MonitoredState.Unmonitored" />
-      <EmptyList data-test="unmonitored-empty" v-if="!tabUnmonitoredContent.length" bg
-        :content="{ msg: 'No unmonitored nodes. Add some on the Discovery page.', btn: { label: 'Visit Discovery Page', action: () => { $router.push('/discovery') } } }" />
+      <InventoryFilter v-if="inventoryStore.unmonitoredFilterActive" onlyTags :nodes="tabUnmonitoredContent" />
       <FeatherSpinner v-if="inventoryQueries.isFetching" />
+      <template v-else>
+        <InventoryTabContent v-if="tabUnmonitoredContent.length" :tabContent="tabUnmonitoredContent"
+          :state="MonitoredState.Unmonitored" />
+        <EmptyList data-test="unmonitored-empty" v-if="!tabUnmonitoredContent.length" bg
+          :content="{ msg: 'No unmonitored nodes. Add some on the Discovery page.', btn: { label: 'Visit Discovery Page', action: () => { $router.push('/discovery') } } }" />
+      </template>
     </FeatherTabPanel>
 
     <!-- Detected Nodes -->
     <FeatherTabPanel>
-      <InventoryFilter v-if="inventoryStore.detectedFilterActive" :state="MonitoredState.Detected" onlyTags
-        :nodes="tabDetectedContent" />
-      <InventoryTabContent v-if="tabDetectedContent.length" :tabContent="tabDetectedContent"
-        :state="MonitoredState.Detected" />
-      <EmptyList data-test="discovery-empty" v-if="!tabDetectedContent.length" bg
-        :content="{ msg: 'No detected nodes. Add some on the Discovery page.', btn: { label: 'Visit Discovery Page', action: () => { $router.push('/discovery') } } }" />
+      <InventoryFilter v-if="inventoryStore.detectedFilterActive" onlyTags :nodes="tabDetectedContent" />
       <FeatherSpinner v-if="inventoryQueries.isFetching" />
+      <template v-else>
+        <InventoryTabContent v-if="tabDetectedContent.length" :tabContent="tabDetectedContent"
+          :state="MonitoredState.Detected" />
+        <EmptyList data-test="discovery-empty" v-if="!tabDetectedContent.length" bg
+          :content="{ msg: 'No detected nodes. Add some on the Discovery page.', btn: { label: 'Visit Discovery Page', action: () => { $router.push('/discovery') } } }" />
+      </template>
     </FeatherTabPanel>
   </FeatherTabContainer>
 </template>
@@ -74,6 +80,11 @@ onMounted(() => {
   inventoryQueries.getUnmonitoredNodes()
   inventoryQueries.getDetectedNodes()
 })
+
+const changeToTab = (monitoredState: MonitoredState) => {
+  inventoryStore.selectedMonitoredState = monitoredState
+  inventoryQueries.fetchByState(inventoryStore.selectedMonitoredState)
+}
 
 /**
  * If at any point, a tab of content is more than zero, 

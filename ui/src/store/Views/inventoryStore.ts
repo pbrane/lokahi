@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { InventoryNode } from '@/types/inventory'
-import { Tag } from '@/types/graphql'
+import { MonitoredState, Tag } from '@/types/graphql'
 import { useTagStore } from '../Components/tagStore'
 
 export const useInventoryStore = defineStore('inventoryStore', {
@@ -12,7 +12,12 @@ export const useInventoryStore = defineStore('inventoryStore', {
     unmonitoredFilterActive: false,
     detectedFilterActive: false,
     nodesSelected: [] as InventoryNode[],
-    searchType: { id: 1, name: 'Labels' },
+    selectedMonitoredState: MonitoredState.Monitored,
+    searchVariables: {
+      searchType: { id: 1, name: 'Labels' },
+      labelSearchTerm: '',
+      tags: []
+    },
     tagsSelected: [] as Tag[],
     isEditMode: false
   }),
@@ -53,8 +58,12 @@ export const useInventoryStore = defineStore('inventoryStore', {
     clearSelectedNodes() {
       this.nodesSelected = []
     },
-    setSearchType(searchType: { id: number, name: string }) {
-      this.searchType = searchType
+    resetSearch() {
+      this.searchVariables = {
+        searchType: { id: 1, name: 'Labels' },
+        labelSearchTerm: '',
+        tags: []
+      }
     },
     resetSelectedNode() {
       this.nodesSelected = []
