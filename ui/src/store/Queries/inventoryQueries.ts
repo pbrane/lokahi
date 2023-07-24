@@ -17,6 +17,7 @@ import {
 } from '@/types/graphql'
 import useSpinner from '@/composables/useSpinner'
 import { AZURE_SCAN, DetectedNode, InventoryNode, Monitor, MonitoredNode, UnmonitoredNode } from '@/types'
+import { Chip } from '@/types/metric'
 
 export const useInventoryQueries = defineStore('inventoryQueries', () => {
   const selectedState = ref(MonitoredState.Monitored)
@@ -37,7 +38,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     cachePolicy: 'network-only',
     variables: { monitoredState: MonitoredState.Monitored }
   })
-  onGetMonitoredNodes((data) => formatNodes(data.findAllNodesByMonitoredState ?? [], MonitoredState.Monitored))
+  onGetMonitoredNodes((data) => formatMonitoredNodes(data.findAllNodesByMonitoredState ?? []))
   watchEffect(() => (monitoredNodesFetching.value ? startSpinner() : stopSpinner()))
 
   // Get unmonitored nodes
@@ -51,7 +52,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     cachePolicy: 'network-only',
     variables: { monitoredState: MonitoredState.Unmonitored }
   })
-  onGetUnmonitoredNodes((data) => formatNodes(data.findAllNodesByMonitoredState ?? [], MonitoredState.Unmonitored))
+  onGetUnmonitoredNodes((data) => formatUnmonitoredNodes(data.findAllNodesByMonitoredState ?? []))
   watchEffect(() => (unmonitoredNodesFetching.value ? startSpinner() : stopSpinner()))
 
   // Get detected nodes
@@ -65,7 +66,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     cachePolicy: 'network-only',
     variables: { monitoredState: MonitoredState.Detected }
   })
-  onGetDetectedNodes((data) => formatNodes(data.findAllNodesByMonitoredState ?? [], MonitoredState.Detected))
+  onGetDetectedNodes((data) => formatDetectedNodes(data.findAllNodesByMonitoredState ?? []))
   watchEffect(() => (detectedNodesFetching.value ? startSpinner() : stopSpinner()))
 
   // Get nodes by label
@@ -119,7 +120,6 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
   // Get tags for nodes
   const listTagsByNodeIdsVariables = reactive({ nodeIds: <number[]>[] })
   const {
-    data: tagData,
     execute: getTags
   } = useQuery({
     query: ListTagsByNodeIdsDocument,
@@ -159,9 +159,17 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
   // sets the initial monitored node object and then calls for tags and metrics
   const formatMonitoredNodes = async (data: Partial<Node>[]) => {
     if (data.length) {
-      monitoredNodes.value = mapMonitoredNodes(data)
-      await getTagsForData(data)
-      await getMetricsForData(data)
+      const nodes: MonitoredNode[] = mapMonitoredNodes(data)
+
+      const tagResult = await getTagsForData(data)
+      addTagsToNodes(tagResult.data?.tagsByNodeIds ?? [], nodes)
+
+      const metricsResults = (await getMetricsForData(data))
+        .filter((result) => result.data)
+        .map((result) => result.data as NodeLatencyMetricQuery)
+      addMetricsToMonitoredNodes(metricsResults, nodes)
+
+      monitoredNodes.value = nodes
     } else {
       monitoredNodes.value = []
     }
@@ -193,23 +201,22 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
   // may be used to get tags for monitored/unmonitored/detected nodes
   const getTagsForData = async (data: Partial<Node>[]) => {
     listTagsByNodeIdsVariables.nodeIds = data.map((node) => node.id)
-    const tagResult = await getTags()
-    monitoredNodes.value = addTagsToNodes(tagResult.data?.tagsByNodeIds ?? [], monitoredNodes.value) as MonitoredNode[]
+    return await getTags()
   }
 
   // may only be used for monitored nodes
   const getMetricsForData = async (data: Partial<Node>[]) => {
+    const promises = []
     for (const node of data) {
       const { ipAddress: snmpPrimaryIpAddress } = node.ipInterfaces?.filter((x) => x.snmpPrimary)[0] ?? {}
       const instance = node.scanType === AZURE_SCAN ? `azure-node-${node.id}` : snmpPrimaryIpAddress!
 
       metricsVariables.id = node.id
       metricsVariables.instance = instance
-      const metricsResult = await getMetrics()
-      if (metricsResult.data) {
-        monitoredNodes.value = addMetricsToMonitoredNodes(metricsResult.data, monitoredNodes.value)
-      }
+      promises.push(getMetrics())
     }
+
+    return await Promise.all(promises)
   }
 
   // callback after getTags call complete
@@ -225,37 +232,42 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     })
   }
 
-  // callback after getMetrics call complete
-  const addMetricsToMonitoredNodes = (data: NodeLatencyMetricQuery, monitoredNodes: MonitoredNode[]) => {
-    const latency = data.nodeLatency
-    const status = data.nodeStatus
+  const addMetricsToMonitoredNodes = (results: NodeLatencyMetricQuery[], monitoredNodes: MonitoredNode[]) => {
+    const nodeIdMap: Map<number, Chip[]> = new Map()
 
-    const nodeId = latency?.data?.result?.[0]?.metric?.node_id || status?.id
+    results.forEach((data) => {
+      const latency = data.nodeLatency
+      const status = data.nodeStatus
+      const nodeId = latency?.data?.result?.[0]?.metric?.node_id || status?.id
 
-    if (!nodeId) {
-      console.warn('Cannot obtain metrics: No node id')
-      return monitoredNodes
-    }
+      if (!nodeId) {
+        console.warn('Cannot obtain metrics: No node id')
+        return
+      }
 
-    const nodeLatency = latency?.data?.result as TsResult[]
-    const latenciesValues = [...nodeLatency][0]?.values as number[][]
-    const latencyValue = latenciesValues?.length ? latenciesValues[latenciesValues.length - 1][1] : undefined
+      const nodeLatency = latency?.data?.result as TsResult[]
+      const latenciesValues = [...nodeLatency][0]?.values as number[][]
+      const latencyValue = latenciesValues?.length ? latenciesValues[latenciesValues.length - 1][1] : undefined
+
+      nodeIdMap.set(Number(nodeId), [
+        {
+          type: 'latency',
+          label: 'Latency',
+          value: latencyValue,
+          status: ''
+        },
+        {
+          type: 'status',
+          label: 'Status',
+          status: status?.status ?? ''
+        }
+      ])
+    })
 
     return monitoredNodes.map((node) => {
-      if (node.id === Number(nodeId)) {
-        node.metrics = [
-          {
-            type: 'latency',
-            label: 'Latency',
-            value: latencyValue,
-            status: ''
-          },
-          {
-            type: 'status',
-            label: 'Status',
-            status: status?.status ?? ''
-          }
-        ]
+      const metrics = nodeIdMap.get(node.id)
+      if (metrics) {
+        node.metrics = metrics
       }
 
       return node
@@ -265,13 +277,12 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
   const formatUnmonitoredNodes = async (data: Partial<Node>[]) => {
 
     if (data.length) {
-
-      await getTagsForData(data)
+      const tagResult = await getTagsForData(data)
 
       unmonitoredNodes.value = []
       data.forEach(({ id, nodeLabel, location, ipInterfaces }) => {
         const { ipAddress: snmpPrimaryIpAddress } = ipInterfaces?.filter((x) => x.snmpPrimary)[0] ?? {}
-        const tagsObj = tagData.value?.tagsByNodeIds?.filter((item) => item.nodeId === id)[0]
+        const tagsObj = tagResult.data?.tagsByNodeIds?.filter((item) => item.nodeId === id)[0]
         unmonitoredNodes.value.push({
           id: id,
           label: nodeLabel!,
@@ -290,12 +301,11 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
   }
 
   const formatDetectedNodes = async (data: Partial<Node>[]) => {
-
     if (data.length) {
-      await getTagsForData(data)
+      const tagResult = await getTagsForData(data)
       detectedNodes.value = []
       data.forEach(({ id, nodeLabel, location }) => {
-        const tagsObj = tagData.value?.tagsByNodeIds?.filter((item) => item.nodeId === id)[0]
+        const tagsObj = tagResult.data?.tagsByNodeIds?.filter((item) => item.nodeId === id)[0]
         detectedNodes.value.push({
           id: id,
           label: nodeLabel!,

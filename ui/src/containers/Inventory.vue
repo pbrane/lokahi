@@ -88,7 +88,7 @@ watchEffect(() => {
     inventoryStore.unmonitoredFilterActive = true
   }
   if (inventoryQueries.detectedNodes.length > 0) {
-    inventoryStore.detectedFilterActive = true;
+    inventoryStore.detectedFilterActive = true
   }
 })
 
