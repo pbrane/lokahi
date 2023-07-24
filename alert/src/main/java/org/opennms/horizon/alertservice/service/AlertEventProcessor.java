@@ -117,8 +117,9 @@ public class AlertEventProcessor {
 
         List<org.opennms.horizon.alertservice.db.entity.Alert> alerts = alertDefinitions.stream()
             .map(alertDefinition -> getAlertData(event, alertDefinition))
-            .map(alertData -> createOrUpdateAlerts(event, alertData))
-            .flatMap(List::stream)
+            .map(alertData -> createOrUpdateAlert(event, alertData))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
             .toList();
 
         // FIXME: If the alert is going to be delete immediately, should we even bother creating it?
@@ -143,24 +144,20 @@ public class AlertEventProcessor {
         );
     }
 
-    private List<org.opennms.horizon.alertservice.db.entity.Alert> createOrUpdateAlerts(Event event, AlertData alertData) {
-        List<org.opennms.horizon.alertservice.db.entity.Alert> alerts = new ArrayList<>();
+    private Optional<org.opennms.horizon.alertservice.db.entity.Alert> createOrUpdateAlert(Event event, AlertData alertData) {
+        Optional<org.opennms.horizon.alertservice.db.entity.Alert> queryResult = Optional.empty();
         if (alertData.clearKey() != null) {
-            // If a clearKey is set, determine if there are existing alerts, and reduce
-            alerts = tenantLookup.lookupTenantId(Context.current())
-                .map(tenantId -> alertRepository.findByReductionKeyStartingWithAndTenantId(alertData.clearKey(), tenantId))
-                .orElse(Collections.emptyList());
-            if (alerts.isEmpty()) {
+            // If a clearKey is set, determine if there is an existing alert, and reduce onto that one
+            queryResult = tenantLookup.lookupTenantId(Context.current())
+                .flatMap(tenantId -> alertRepository.findByReductionKeyAndTenantId(alertData.clearKey(), tenantId));
+            if (queryResult.isEmpty()) {
                 LOG.debug("No existing alert found with clear key: {}. This is possibly an out-of-order event: {}", alertData.clearKey(), event);
             }
         }
-        if (alerts.isEmpty()) {
-            // If we didn't find existing alerts to reduce to with the clearKey, the lookup by reductionKey
-            alerts = tenantLookup.lookupTenantId(Context.current()).stream()
-                .map(tenantId -> alertRepository.findByReductionKeyAndTenantId(alertData.reductionKey(), tenantId))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .toList();
+        if (queryResult.isEmpty()) {
+            // If we didn't find an existing alert to reduce to with the clearKey, the lookup by reductionKey
+            queryResult = tenantLookup.lookupTenantId(Context.current())
+                .flatMap(tenantId -> alertRepository.findByReductionKeyAndTenantId(alertData.reductionKey(), tenantId));
         }
 
         boolean thresholdMet;
@@ -175,15 +172,13 @@ public class AlertEventProcessor {
             thresholdMet = true;
         }
 
-        if (alerts.isEmpty() && thresholdMet) {
-            // No existing alert found, create a new one
-            var alert = createNewAlert(event, alertData);
-            alert.setMonitoringPolicyId(alertData.monitoringPolicyId());
-            return List.of(alert);
+        if (queryResult.isEmpty() && thresholdMet) {
+            var newAlert = createNewAlert(event, alertData);
+            newAlert.setMonitoringPolicyId(alertData.monitoringPolicyId());
+            return Optional.of(newAlert);
         }
 
-        // Existing alert found, update it
-        alerts.forEach(alert -> {
+        queryResult.ifPresent(alert -> {
             alert.incrementCount();
             if (event.hasField(Event.getDescriptor().findFieldByNumber(Event.DATABASE_ID_FIELD_NUMBER))) {
                 alert.setLastEventId(event.getDatabaseId());
@@ -205,7 +200,7 @@ public class AlertEventProcessor {
             alert.setMonitoringPolicyId(alertData.monitoringPolicyId());
         });
 
-        return alerts;
+        return queryResult;
     }
 
     private boolean isThresholdMet(AlertData alertData, String tenantId) {

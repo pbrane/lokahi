@@ -59,8 +59,8 @@ public class ReductionKeyService {
         return String.format(
             alertDefinition.getClearKey(),
             event.getTenantId(),
-            event.getNodeId()
-            // TODO: DB migration
-        ).concat(":" + alertDefinition.getAlertCondition().getRule().getPolicy().getId());
+            event.getNodeId(),
+            alertDefinition.getAlertCondition().getRule().getPolicy().getId()
+        );
     }
 }
