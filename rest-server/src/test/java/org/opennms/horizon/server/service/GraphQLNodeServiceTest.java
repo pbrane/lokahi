@@ -146,7 +146,7 @@ class GraphQLNodeServiceTest {
         doReturn(Arrays.asList(nodeDTO1, nodeDTO2, nodeDTO3))
             .when(mockClient).listNodesByNodeLabelSearch(any(), any(), any());
         String request = "query {\n" +
-            "    findAllNodesByNodeLabelSearch(labelSearchTerm: \"test-search-term\") {\n" +
+            "    findAllNodesByNodeLabelSearch(labelSearchTerm: \"test-search-term\", monitoredState: MONITORED) {\n" +
             "       id, " +
             "       tenantId, " +
             "       nodeLabel, " +
@@ -172,7 +172,7 @@ class GraphQLNodeServiceTest {
         doReturn(Arrays.asList(nodeDTO1, nodeDTO2, nodeDTO3))
             .when(mockClient).listNodesByTags(any(), any(), any());
         String request = "query { " +
-            "    findAllNodesByTags(tags: [\"tag1\"]) { " +
+            "    findAllNodesByTags(tags: [\"tag1\"], monitoredState: MONITORED) { " +
             "       id, " +
             "       tenantId, " +
             "       nodeLabel, " +
