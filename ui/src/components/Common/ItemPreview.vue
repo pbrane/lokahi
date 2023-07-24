@@ -23,7 +23,7 @@
       <div>
         <FeatherSpinner />
       </div>
-      <div data-test="welcome-discovery-status-txt">Loading first discovery. This can take up to 3 minutes.</div>
+      <div data-test="welcome-discovery-status-txt">{{ loadingCopy }}</div>
     </div>
   </div>
 </template>
@@ -32,6 +32,7 @@ import { ItemPreviewProps } from './commonTypes'
 
 withDefaults(defineProps<ItemPreviewProps>(), {
   loading: false,
+  loadingCopy: '',
   title: '',
   itemTitle: '',
   itemSubtitle: '',
