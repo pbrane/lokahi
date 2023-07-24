@@ -62,7 +62,8 @@ To remove tags from a node, follow these steps:
 == Remove nodes you do not want to monitor
 
 Note that removing a node from monitoring removes it only until the next time a discovery runs that contains the same tags as the deleted node or if the node matches an existing monitoring policy.
-If you do not want the node to appear again, you need to tag it and use the tag in a monitoring policy that excludes nodes with that tag.
+If you do not want the node to appear again the next time the discovery runs, you can update the discovery to skip over nodes that you do not want to monitor. 
+After modifying the discovery, you can delete the node.
 
 //how do we prevent a deleted node from being discovered again the next time the discovery runs? Is the suggestion above correct?
 
