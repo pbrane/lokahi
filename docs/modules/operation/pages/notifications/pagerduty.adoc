@@ -4,7 +4,7 @@
 = Set up Notifications through PagerDuty
 :description: Learn how to set up notifications through PagerDuty for OpenNMS Lōkahi/Cloud.
 
-Instead of using the Lōkahi/Cloud UI to view notifications, you can receive them as they occur via PagerDuty.
+In addition to using the Lōkahi/Cloud UI to view notifications, you may want to enable PagerDuty integration.
 
 . Log in to https://www.pagerduty.com/[PagerDuty].
 +
