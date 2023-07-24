@@ -44,3 +44,10 @@ You may want to to xref:get-started/policies/create.adoc[create a new monitoring
 . When a notification that matches the monitoring policy occurs, a new incident in PagerDuty will also be created.
 
 image::notifications/pd-open-incidents.png["PagerDuty page displaying open incidents.", 600]
+
+== Disable PagerDuty notifications
+
+To disable PagerDuty notifications, follow these steps:
+
+. Log in to Lōkahi/Cloud, and click *Minions>Outbound Notification*.
+. Type a space in the integration key field to create a blank line and click *Save*.
