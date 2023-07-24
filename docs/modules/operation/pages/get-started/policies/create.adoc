@@ -17,8 +17,8 @@ To create a monitoring policy, follow these steps:
 . Add xref:inventory/nodes.adoc#tag-create[tags] to include in the policy.
 .. Select an existing tag from the drop-down list, or type a name and click *New* to create a tag.
 +
-The policy will apply to any nodes that have the same tags.
-. To add a rule to the policy, click *New Rule*.
+This policy will apply to any nodes that have the same tags.
+. To add a rule to the policy, click *New Rule*, near the bottom of the page.
 +
 A rule specifies the conditions under which OpenNMS generates alerts.
 Rules are available only with the policy in which they were created.
@@ -29,4 +29,4 @@ Rules are available only with the policy in which they were created.
 . Click *Save Rule*.
 . Click *Save Policy*.
 
-// Are there guidelines around conflicts with rules? Does saving a rule save the policy (not clear from prototype).
+// Are there guidelines around conflicts with rules? 

@@ -40,9 +40,11 @@ To create a tag, follow these steps:
 . Click *Inventory* in the left navigation menu.
 . Click on the node tab that displays the nodes you want to tag.
 . Click *Tag Manager*.
-. In the *Search/Add tags* field, type a name for the tag and click on the word when it appears in the drop-down list.
+. In the *Search Tags* field, type a name for the tag and click on the word when it appears in the drop-down list.
 +
-The tag appears on the right and all nodes listed are highlighted.
+Tags that already exist will appear in the drop-down list.
++
+The tag appears on the right and all nodes listed are available to add tags to.
 It also becomes available in the drop-down list for selection in subsequent node tagging.
 . (optional) Repeat to create more tags.
 . Click the checkbox on each node that you want to add the tag or tags to or click *Select All*.

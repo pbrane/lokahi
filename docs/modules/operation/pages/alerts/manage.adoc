@@ -8,7 +8,7 @@ You can manage your network's alerts on the *Alerts Table* page.
 == Search
 
 You can search for specific text in alerts.
-To do so, type your search term in the *Search Alerts* box and press *Enter*.
+To do so, type your search term in the *Search Alerts* box.
 
 == Filter
 
@@ -33,9 +33,9 @@ To acknowledge an alert, find the alert that you want to acknowledge and select 
 An alert is acknowledged when the symbol is green with a white check.
 An alert is unacknowledged when the symbol is white with a green outline and check.
 
-== Resolve an alert
+// Resolve an alert topic
 
-<steps to resolve an alert>
+//<steps to resolve an alert>
 
 == Test affected node
 
@@ -46,4 +46,4 @@ Follow these steps to test a node affected by an alert:
 . Select *Run Test*.
 The node's status (*Degraded*, *Success*, and so on) is displayed.
 
-<these instructions will be updated in the future, when the process is closer to finalized>
+// <these instructions will be updated in the future, when the process is closer to finalized>
