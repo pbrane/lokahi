@@ -25,7 +25,7 @@ const app = createApp(App)
       url: keycloakConfig.url,
       clientId: keycloakConfig.clientId
     },
-    onReady: async (kc: Keycloak) => {
+    onReady: (kc: Keycloak) => {
       setKeycloak(kc)
       const gqlClient = getGqlClient(kc)
       app.use(gqlClient)
@@ -36,10 +36,11 @@ const app = createApp(App)
       //  VueJS's `createRouter` function interferes with the routing Keycloak does as part of its auth process.
       //  Keycloak needs to be fully initialized before the router is imported.
       //  Other components should prefer `const router = useRouter()`, importing `@/router` can cause this to regress.
-      const router = await import('./router')
-      app.use(router.default)
-
-      app.mount('#app')
+      import('./router')
+        .then((router) => {
+          app.use(router.default)
+          app.mount('#app')
+        })
     }
   })
   .directive('date', dateFormatDirective)
