@@ -6,7 +6,6 @@ import {
   Node
 } from '@/types/graphql'
 import { createAndDownloadBlobFile } from '@/components/utils'
-import router from '@/router'
 import { ItemPreviewProps } from '@/components/Common/commonTypes'
 import { useLocationMutations } from '../Mutations/locationMutations'
 import { useDiscoveryMutations } from '../Mutations/discoveryMutations'
@@ -16,6 +15,8 @@ import { validationErrorsToStringRecord } from '@/services/validationService'
 import useMinionCmd from '@/composables/useMinionCmd'
 import { ComputedRef } from 'vue'
 import { useWelcomeQueries } from '../Queries/welcomeQueries'
+
+const router = useRouter()
 
 interface WelcomeStoreState {
   copied: boolean
