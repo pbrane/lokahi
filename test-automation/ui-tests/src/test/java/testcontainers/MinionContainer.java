@@ -73,7 +73,6 @@ public class MinionContainer extends GenericContainer<MinionContainer> {
             .withEnv("GRPC_CLIENT_KEYSTORE", "/opt/karaf/minion.p12")
             .withEnv("GRPC_CLIENT_KEYSTORE_PASSWORD", bundlePwd)
             .withCopyFileToContainer(MountableFile.forHostPath(certBundle.getPath()), "/opt/karaf/minion.p12")
-            .withEnv("GRPC_CLIENT_OVERRIDE_AUTHORITY", CucumberHooks.overrideAuthority)
             .withLabel("label", minionId)
 
             .waitingFor(
@@ -99,9 +98,13 @@ public class MinionContainer extends GenericContainer<MinionContainer> {
             .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(3)));
 
         String ca = System.getenv("MINION_INGRESS_CA");
-        if (ca != null) {
+        if (ca != null && !ca.isBlank()) {
             withCopyFileToContainer(MountableFile.forHostPath(ca), "/opt/karaf/ca.crt")
             .withEnv("GRPC_CLIENT_TRUSTSTORE", "/opt/karaf/ca.crt");
+        }
+
+        if (CucumberHooks.overrideAuthority != null && !CucumberHooks.overrideAuthority.isBlank()) {
+            withEnv("GRPC_CLIENT_OVERRIDE_AUTHORITY", CucumberHooks.overrideAuthority);
         }
 
         // expose UDP ports here

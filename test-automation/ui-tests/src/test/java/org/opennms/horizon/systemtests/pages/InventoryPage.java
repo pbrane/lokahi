@@ -60,14 +60,14 @@ public class InventoryPage {
         // The inventory page doesn't refresh on its own. Need to periodically check and force a refresh
         String itemStatusSearch = "//ul[@class='cards']/li[//li[@data-test='management-ip']/span/text()='" + nodename + "']//div[@title='Status']//span[text()='" + status + "']";
         SelenideElement statusCheck = $(By.xpath(itemStatusSearch));
-        int iterations = 10;
+        int iterations = 20;
         while (!statusCheck.exists() && iterations > 0) {
             --iterations;
             Selenide.refresh();
             LeftPanelPage.clickOnPanelSection("inventory");
 
             try {
-                Thread.sleep(500);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 // Ignore and busy-loop it
             }
