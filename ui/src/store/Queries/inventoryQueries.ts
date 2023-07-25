@@ -35,7 +35,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     cachePolicy: 'network-only',
     variables: { monitoredState: MonitoredState.Monitored }
   })
-  onGetMonitoredNodes((data) => formatMonitoredNodes(data.findAllNodesByMonitoredState ?? []))
+  onGetMonitoredNodes(async (data) => monitoredNodes.value = await formatMonitoredNodes(data.findAllNodesByMonitoredState ?? []))
 
   // Get unmonitored nodes
   const {
@@ -48,7 +48,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     cachePolicy: 'network-only',
     variables: { monitoredState: MonitoredState.Unmonitored }
   })
-  onGetUnmonitoredNodes((data) => formatUnmonitoredNodes(data.findAllNodesByMonitoredState ?? []))
+  onGetUnmonitoredNodes(async (data) => unmonitoredNodes.value = await formatUnmonitoredNodes(data.findAllNodesByMonitoredState ?? []))
 
   // Get detected nodes
   const {
@@ -61,7 +61,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     cachePolicy: 'network-only',
     variables: { monitoredState: MonitoredState.Detected }
   })
-  onGetDetectedNodes((data) => formatDetectedNodes(data.findAllNodesByMonitoredState ?? []))
+  onGetDetectedNodes(async (data) => detectedNodes.value = await formatDetectedNodes(data.findAllNodesByMonitoredState ?? []))
 
   // Get nodes by label
   const labelSearchVariables = reactive<FindAllNodesByNodeLabelSearchQueryVariables>(
@@ -82,7 +82,8 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     labelSearchVariables.monitoredState = monitoredState
     const result = await filterNodesByLabel()
     if (result.data) {
-      await formatNodes(result.data.findAllNodesByNodeLabelSearch ?? [], labelSearchVariables.monitoredState)
+      const searchResults = await formatNodes(result.data.findAllNodesByNodeLabelSearch ?? [], labelSearchVariables.monitoredState)
+      setByState(monitoredState, searchResults)
     }
   }
 
@@ -105,7 +106,8 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     filterNodesByTagsVariables.monitoredState = monitoredState
     const result = await filterNodesByTags()
     if (result.data) {
-      await formatNodes(result.data.findAllNodesByTags ?? [], filterNodesByTagsVariables.monitoredState)
+      const searchResults = await formatNodes(result.data.findAllNodesByTags ?? [], filterNodesByTagsVariables.monitoredState)
+      setByState(monitoredState, searchResults)
     }
   }
 
@@ -148,7 +150,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
       case MonitoredState.Unmonitored:
         return await formatUnmonitoredNodes(data)
       default:
-        return data
+        return []
     }
   }
 
@@ -165,9 +167,9 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
         .map((result) => result.data as NodeLatencyMetricQuery)
       addMetricsToMonitoredNodes(metricsResults, nodes)
 
-      monitoredNodes.value = nodes
+      return nodes
     } else {
-      monitoredNodes.value = []
+      return []
     }
   }
 
@@ -270,16 +272,14 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     })
   }
 
-  const formatUnmonitoredNodes = async (data: Partial<Node>[]) => {
-
+  const formatUnmonitoredNodes = async (data: Partial<Node>[]): Promise<UnmonitoredNode[]> => {
     if (data.length) {
       const tagResult = await getTagsForData(data)
 
-      unmonitoredNodes.value = []
-      data.forEach(({ id, nodeLabel, location, ipInterfaces }) => {
+      return data.map(({ id, nodeLabel, location, ipInterfaces }) => {
         const { ipAddress: snmpPrimaryIpAddress } = ipInterfaces?.filter((x) => x.snmpPrimary)[0] ?? {}
         const tagsObj = tagResult.data?.tagsByNodeIds?.filter((item) => item.nodeId === id)[0]
-        unmonitoredNodes.value.push({
+        return {
           id: id,
           label: nodeLabel!,
           anchor: {
@@ -289,20 +289,20 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
           },
           isNodeOverlayChecked: false,
           type: MonitoredState.Unmonitored
-        })
+        }
       })
     } else {
-      unmonitoredNodes.value = []
+      return []
     }
   }
 
-  const formatDetectedNodes = async (data: Partial<Node>[]) => {
+  const formatDetectedNodes = async (data: Partial<Node>[]): Promise<DetectedNode[]> => {
     if (data.length) {
       const tagResult = await getTagsForData(data)
-      detectedNodes.value = []
-      data.forEach(({ id, nodeLabel, location }) => {
+
+      return data.map(({ id, nodeLabel, location }) => {
         const tagsObj = tagResult.data?.tagsByNodeIds?.filter((item) => item.nodeId === id)[0]
-        detectedNodes.value.push({
+        return {
           id: id,
           label: nodeLabel!,
           anchor: {
@@ -311,10 +311,10 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
           },
           isNodeOverlayChecked: false,
           type: MonitoredState.Detected
-        })
+        }
       })
     } else {
-      detectedNodes.value = []
+      return []
     }
   }
 
@@ -333,6 +333,16 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
 
   const fetchByLastState = async () => {
     await fetchByState(selectedState.value)
+  }
+
+  const setByState = (stateIn: MonitoredState, nodes: InventoryNode[]) => {
+    if (stateIn === MonitoredState.Monitored) {
+      monitoredNodes.value = nodes as MonitoredNode[]
+    } else if (stateIn === MonitoredState.Unmonitored) {
+      unmonitoredNodes.value = nodes as UnmonitoredNode[]
+    } else if (stateIn === MonitoredState.Detected) {
+      detectedNodes.value = nodes as DetectedNode[]
+    }
   }
 
   return {
