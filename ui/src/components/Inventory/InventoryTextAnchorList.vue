@@ -33,7 +33,8 @@
 
 <script lang="ts" setup>
 import { Anchor } from '@/types/inventory'
-import router from '@/router'
+
+const router = useRouter()
 
 defineProps<{
   anchor: Anchor
