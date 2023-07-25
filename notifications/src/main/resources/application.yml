@@ -48,3 +48,10 @@ horizon:
     admin-username: admin
     admin-password: admin
     client-id: admin-cli
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+

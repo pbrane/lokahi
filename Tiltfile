@@ -370,6 +370,7 @@ docker_build(
     'opennms/lokahi-ui',
     'ui',
 )
+#target='production', # To simulate production for debugging pipeline issues.
 
 k8s_resource(
     'opennms-ui',
