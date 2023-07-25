@@ -3,7 +3,6 @@ import { Tag } from '@/types/graphql'
 import { useInventoryStore } from '../Views/inventoryStore'
 import { useNodeMutations } from '../Mutations/nodeMutations'
 import { useInventoryQueries } from '../Queries/inventoryQueries'
-import { useTagQueries } from '../Queries/tagQueries'
 
 export const useTagStore = defineStore('tagStore', () => {
   const tagSelected = ref<Tag>();
