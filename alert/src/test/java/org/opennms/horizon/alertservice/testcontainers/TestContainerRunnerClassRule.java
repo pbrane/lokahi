@@ -104,6 +104,8 @@ public class TestContainerRunnerClassRule extends ExternalResource {
             .withNetworkAliases("postgres")
             .withEnv("POSTGRESS_CLIENT_PORT", String.valueOf(PostgreSQLContainer.POSTGRESQL_PORT))
             .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("POSTGRES"));
+        // DEBUGGING: uncomment to interact/view DB
+        //postgreSQLContainer.getPortBindings().add("5432:5432");
     }
 
     private void startKafkaContainer() {
