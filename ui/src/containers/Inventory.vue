@@ -83,6 +83,7 @@ onMounted(() => {
 
 const changeToTab = (monitoredState: MonitoredState) => {
   inventoryStore.selectedMonitoredState = monitoredState
+  inventoryStore.resetSearch()
   inventoryQueries.fetchByState(inventoryStore.selectedMonitoredState)
 }
 
