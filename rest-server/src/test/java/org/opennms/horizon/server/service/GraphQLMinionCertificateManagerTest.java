@@ -29,6 +29,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -138,6 +139,30 @@ class GraphQLMinionCertificateManagerTest {
             .expectBody()
             .jsonPath("$.data.revokeMinionCertificate").isBoolean();
         verify(mockClient,  times(1)).revokeCertificate(TENANT_ID, LOCATION_ID, accessToken);
+        verify(mockHeaderUtil, times(1)).extractTenant(any(ResolutionEnvironment.class));
+        verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
+    }
+
+    @Test
+    void testRevokeMinionCertificateForInvalidLocation() throws JSONException {
+        when(mockClient.getMinionCert(TENANT_ID, INVALID_LOCATION_ID, accessToken)).thenReturn(
+            GetMinionCertificateResponse.newBuilder().setCertificate(ByteString.copyFromUtf8("pkcs12-here")).setPassword("passw0rd").build()
+        );
+        String request = """
+            mutation {
+              revokeMinionCertificate(locationId: %s)
+            }""".formatted(INVALID_LOCATION_ID);
+        webClient.post()
+            .uri(GRAPHQL_PATH)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createPayload(request))
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.data.revokeMinionCertificate").isEmpty()
+            .jsonPath("$.errors").isNotEmpty();
+        verifyNoInteractions(mockClient);
         verify(mockHeaderUtil, times(1)).extractTenant(any(ResolutionEnvironment.class));
         verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
     }
