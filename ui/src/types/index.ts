@@ -65,7 +65,6 @@ export interface TagSelectItem {
   name: string
   id?: string
   _text?: string
-  tenantId?: string
 }
 
 export interface ContextMenuItem {
