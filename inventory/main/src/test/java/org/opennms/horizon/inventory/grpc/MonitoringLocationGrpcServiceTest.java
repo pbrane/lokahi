@@ -16,14 +16,15 @@ import org.opennms.horizon.inventory.dto.IdList;
 import org.opennms.horizon.inventory.dto.MonitoringLocationCreateDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationList;
+import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.service.MonitoringLocationService;
-import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyLong;
@@ -61,11 +62,15 @@ class MonitoringLocationGrpcServiceTest {
     @Captor
     private ArgumentCaptor<BoolValue> deleteResponseCaptor;
 
+    private static final Long INVALID_LOCATION_ID = 404L;
+
+    private static final String TENANT_ID = "tenantId";
+
     @Test
     void testListLocations() {
         Empty request = Empty.getDefaultInstance();
         List<MonitoringLocationDTO> expectedLocations = new ArrayList<>();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
         when(service.findByTenantId(anyString())).thenReturn(expectedLocations);
 
         grpcService.listLocations(request, listResponseObserver);
@@ -80,7 +85,7 @@ class MonitoringLocationGrpcServiceTest {
     void testGetLocationByName() {
         StringValue locationName = StringValue.newBuilder().setValue("locationName").build();
         MonitoringLocationDTO expectedLocation = MonitoringLocationDTO.newBuilder().build();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
         when(service.findByLocationAndTenantId(anyString(), anyString())).thenReturn(Optional.of(expectedLocation));
 
         grpcService.getLocationByName(locationName, getResponseObserver);
@@ -95,7 +100,7 @@ class MonitoringLocationGrpcServiceTest {
     void testGetLocationById() {
         Int64Value request = Int64Value.newBuilder().setValue(1L).build();
         MonitoringLocationDTO expectedLocation = MonitoringLocationDTO.newBuilder().build();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
         when(service.getByIdAndTenantId(anyLong(), anyString())).thenReturn(Optional.of(expectedLocation));
 
         grpcService.getLocationById(request, getResponseObserver);
@@ -124,7 +129,7 @@ class MonitoringLocationGrpcServiceTest {
     void testSearchLocations() {
         StringValue request = StringValue.newBuilder().setValue("searchString").build();
         List<MonitoringLocationDTO> expectedLocations = new ArrayList<>();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
         when(service.searchLocationsByTenantId(anyString(), anyString())).thenReturn(expectedLocations);
 
         grpcService.searchLocations(request, listResponseObserver);
@@ -136,10 +141,10 @@ class MonitoringLocationGrpcServiceTest {
     }
 
     @Test
-    void testCreateLocation() {
+    void testCreateLocation() throws LocationNotFoundException {
         MonitoringLocationCreateDTO request = MonitoringLocationCreateDTO.newBuilder().build();
         MonitoringLocationDTO expectedLocation = MonitoringLocationDTO.newBuilder().build();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
         when(service.upsert(any())).thenReturn(expectedLocation);
 
         grpcService.createLocation(request, getResponseObserver);
@@ -151,9 +156,9 @@ class MonitoringLocationGrpcServiceTest {
     }
 
     @Test
-    void testCreateLocationException() {
+    void testCreateLocationException() throws LocationNotFoundException {
         MonitoringLocationCreateDTO request = MonitoringLocationCreateDTO.newBuilder().build();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
         when(service.upsert(any())).thenThrow(new RuntimeException("test exception"));
 
         grpcService.createLocation(request, getResponseObserver);
@@ -164,10 +169,10 @@ class MonitoringLocationGrpcServiceTest {
     }
 
     @Test
-    void testUpdateLocation() {
+    void testUpdateLocation() throws LocationNotFoundException {
         MonitoringLocationDTO request = MonitoringLocationDTO.newBuilder().build();
         MonitoringLocationDTO expectedLocation = MonitoringLocationDTO.newBuilder().build();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
         when(service.upsert(any())).thenReturn(expectedLocation);
 
         grpcService.updateLocation(request, getResponseObserver);
@@ -179,9 +184,9 @@ class MonitoringLocationGrpcServiceTest {
     }
 
     @Test
-    void testUpdateLocationException() {
+    void testUpdateLocationException() throws LocationNotFoundException {
         MonitoringLocationDTO request = MonitoringLocationDTO.newBuilder().build();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
         when(service.upsert(any())).thenThrow(new RuntimeException("test exception"));
 
         grpcService.updateLocation(request, getResponseObserver);
@@ -192,9 +197,24 @@ class MonitoringLocationGrpcServiceTest {
     }
 
     @Test
+    void testUpdateInvalidLocationException() throws LocationNotFoundException {
+        MonitoringLocationDTO request = MonitoringLocationDTO.newBuilder().setId(INVALID_LOCATION_ID).build();
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
+
+        when(service.upsert(argThat((dto) -> INVALID_LOCATION_ID.equals(dto.getId()))))
+            .thenThrow(new LocationNotFoundException("test exception"));
+
+        grpcService.updateLocation(request, getResponseObserver);
+
+        ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
+        verify(getResponseObserver).onError(throwableCaptor.capture());
+        assertEquals("NOT_FOUND: Location not found with with ID " + INVALID_LOCATION_ID, throwableCaptor.getValue().getMessage());
+    }
+
+    @Test
     void testDeleteLocation() {
         Int64Value request = Int64Value.newBuilder().setValue(1L).build();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
 
         grpcService.deleteLocation(request, deleteResponseObserver);
 
@@ -205,9 +225,10 @@ class MonitoringLocationGrpcServiceTest {
     }
 
     @Test
-    void testDeleteLocationException() {
+    void testDeleteLocationException() throws LocationNotFoundException {
         Int64Value request = Int64Value.newBuilder().setValue(1L).build();
-        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of("tenantId"));
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
+
         doThrow(new RuntimeException("test exception")).when(service).delete(any(), any());
 
         grpcService.deleteLocation(request, deleteResponseObserver);
@@ -215,5 +236,19 @@ class MonitoringLocationGrpcServiceTest {
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(deleteResponseObserver).onError(throwableCaptor.capture());
         assertEquals("INTERNAL: Error while deleting location with ID 1", throwableCaptor.getValue().getMessage());
+    }
+
+    @Test
+    void testDeleteInvalidLocationException() throws LocationNotFoundException {
+        Int64Value request =  Int64Value.newBuilder().setValue(INVALID_LOCATION_ID).build();
+        when(tenantLookup.lookupTenantId(any())).thenReturn(Optional.of(TENANT_ID));
+
+        doThrow(new LocationNotFoundException("test exception")).when(service).delete(INVALID_LOCATION_ID, TENANT_ID);
+
+        grpcService.deleteLocation(request, deleteResponseObserver);
+
+        ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
+        verify(deleteResponseObserver).onError(throwableCaptor.capture());
+        assertEquals("NOT_FOUND: Location not found with with ID " + INVALID_LOCATION_ID, throwableCaptor.getValue().getMessage());
     }
 }

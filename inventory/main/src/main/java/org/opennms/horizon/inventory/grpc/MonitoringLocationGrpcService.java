@@ -44,6 +44,7 @@ import org.opennms.horizon.inventory.dto.MonitoringLocationCreateDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationList;
 import org.opennms.horizon.inventory.dto.MonitoringLocationServiceGrpc;
+import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.service.MonitoringLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +141,12 @@ public class MonitoringLocationGrpcService extends MonitoringLocationServiceGrpc
                 try {
                     responseObserver.onNext(service.upsert(MonitoringLocationDTO.newBuilder(request).setTenantId(tenantId).build()));
                     responseObserver.onCompleted();
+                } catch (LocationNotFoundException e) {
+                    LOG.warn("Location not found when updating : {}", request.getId());
+                    Status status = Status.newBuilder()
+                        .setCode(Code.NOT_FOUND_VALUE)
+                        .setMessage("Location not found with with ID " + request.getId()).build();
+                    responseObserver.onError(StatusProto.toStatusRuntimeException(status));
                 } catch (Exception e) {
                     LOG.error("Error while updating location with ID {}", request.getId(), e);
                     Status status = Status.newBuilder()
@@ -158,8 +165,14 @@ public class MonitoringLocationGrpcService extends MonitoringLocationServiceGrpc
                     service.delete(request.getValue(), tenantId);
                     responseObserver.onNext(BoolValue.of(true));
                     responseObserver.onCompleted();
+                } catch (LocationNotFoundException e) {
+                    LOG.warn("Location not found when deleting : {}", request.getValue());
+                    Status status = Status.newBuilder()
+                        .setCode(Code.NOT_FOUND_VALUE)
+                        .setMessage("Location not found with with ID " + request.getValue()).build();
+                    responseObserver.onError(StatusProto.toStatusRuntimeException(status));
                 } catch (Exception e) {
-                    LOG.error("Error while deleting location with ID {}", request.getValue(), e);
+                    LOG.error("Error while deleting location with ID : {}", request.getValue(), e);
                     Status status = Status.newBuilder()
                         .setCode(Code.INTERNAL_VALUE)
                         .setMessage("Error while deleting location with ID " + request.getValue()).build();

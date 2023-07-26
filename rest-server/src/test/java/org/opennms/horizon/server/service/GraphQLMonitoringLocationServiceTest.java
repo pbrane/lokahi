@@ -1,5 +1,8 @@
 package org.opennms.horizon.server.service;
 
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import io.grpc.protobuf.StatusProto;
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,8 +28,11 @@ import java.util.Collections;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -43,6 +49,7 @@ class GraphQLMonitoringLocationServiceTest {
     private ServerHeaderUtil mockHeaderUtil;
 
     private final String accessToken = "test-token-12345";
+    private static final Long INVALID_LOCATION_ID = 404L;
     private MonitoringLocationDTO location1, location2;
 
     @BeforeEach
@@ -50,6 +57,14 @@ class GraphQLMonitoringLocationServiceTest {
         location1 = getLocationDTO("tenant1", "LOC1", 1L, "address1");
         location2 = getLocationDTO("tenant2", "LOC2", 2L, "address2");
         doReturn(accessToken).when(mockHeaderUtil).getAuthHeader(any(ResolutionEnvironment.class));
+
+        var status = Status.newBuilder()
+            .setCode(Code.NOT_FOUND_VALUE)
+            .setMessage("Given location doesn't exist.").build();
+        var exception = StatusProto.toStatusRuntimeException(status);
+
+        doThrow(exception).when(mockClient).deleteLocation(INVALID_LOCATION_ID, accessToken);
+        doThrow(exception).when(mockClient).getLocationById(INVALID_LOCATION_ID, accessToken);
     }
 
     @AfterEach
@@ -220,6 +235,28 @@ class GraphQLMonitoringLocationServiceTest {
         verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
         verify(mockHeaderUtil, times(1)).extractTenant(any(ResolutionEnvironment.class));
         verify(mockCertificateClient).revokeCertificate(any(), eq(1L), eq(accessToken));
+    }
+
+    @Test
+    void testDeleteNonExistentLocation() throws JSONException {
+        String request = """
+            mutation {
+                deleteLocation(id: %s)
+            }""".formatted(INVALID_LOCATION_ID);
+        webClient.post()
+            .uri(GRAPHQL_PATH)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createPayload(request))
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.data.deleteLocation").isEmpty()
+            .jsonPath("$.errors").isNotEmpty();
+        verify(mockClient, times(1)).deleteLocation(INVALID_LOCATION_ID, accessToken);
+        verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
+        verify(mockHeaderUtil, times(1)).extractTenant(any(ResolutionEnvironment.class));
+        verifyNoInteractions(mockCertificateClient);
     }
 
     private static MonitoringLocationDTO getLocationToUpdate() {
