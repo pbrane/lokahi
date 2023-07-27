@@ -60,3 +60,9 @@ keycloak:
 
 datachoices:
   interval-ms: 30000
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true

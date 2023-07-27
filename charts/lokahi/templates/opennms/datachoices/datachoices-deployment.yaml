@@ -74,12 +74,32 @@ spec:
               name: spring-boot-env
           ports:
             - name: http
-              containerPort: {{ .Values.OpenNMS.DataChoices.Port }}
+              containerPort: 8080
             - name: grpc
-              containerPort: {{ .Values.OpenNMS.DataChoices.GrpcPort }}
+              containerPort: 6565
           volumeMounts:
             - name: spring-boot-app-config-volume
               mountPath: "/app/config"
+          livenessProbe:
+            httpGet:
+              path: "/actuator/health/liveness"
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 20
+            timeoutSeconds: 1
+            periodSeconds: 2
+            successThreshold: 1
+            failureThreshold: 150
+          readinessProbe:
+            httpGet:
+              path: "/actuator/health/readiness"
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 20
+            timeoutSeconds: 1
+            periodSeconds: 2
+            successThreshold: 1
+            failureThreshold: 250
       {{- if .Values.OpenNMS.DataChoices.PrivateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials

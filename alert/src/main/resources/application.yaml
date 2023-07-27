@@ -25,13 +25,6 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
 
-management:
-  endpoints:
-    web:
-      base-path: "/"
-      exposure:
-        include: "*"
-
 keycloak:
   realm: opennms
   base-url: http://onms-keycloak:8080/auth
@@ -59,3 +52,17 @@ kafka:
       node-changed:
         name: "node"
         partitions: 1 # topic relies on there being a single partition for ordering
+
+management:
+  endpoints:
+    web:
+      base-path: "/"
+      # The pipeline fails without this. 
+      path-mapping:
+        health: "actuator/health"
+        # With the basepath set to /, need to specify the path-mapping.
+      exposure:
+        include: "*"
+    health:
+      probes:
+        enabled: true

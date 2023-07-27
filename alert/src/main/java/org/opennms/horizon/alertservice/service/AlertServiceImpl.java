@@ -28,9 +28,7 @@
 
 package org.opennms.horizon.alertservice.service;
 
-import java.util.Date;
-import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alertservice.api.AlertLifecycleListener;
@@ -45,7 +43,8 @@ import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Date;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -156,7 +155,7 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public void removeListener(AlertLifecycleListener listener) {
-        alertListenerRegistry.addListener(listener);
+        alertListenerRegistry.removeListener(listener);
     }
 
     @Override

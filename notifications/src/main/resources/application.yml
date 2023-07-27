@@ -4,9 +4,6 @@ spring:
 
   mail:
     template: alert.html.vm
-    from: noreply@opennms.com
-    host: mail-server
-    port: 1025
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -51,3 +48,10 @@ horizon:
     admin-username: admin
     admin-password: admin
     client-id: admin-cli
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+

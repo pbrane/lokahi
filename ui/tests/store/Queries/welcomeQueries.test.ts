@@ -25,7 +25,7 @@ describe('Welcome Queries', () => {
 
         const welcomeStore = useWelcomeStore()
         await welcomeStore.init();
-        expect(welcomeStore.firstLocation).toStrictEqual({ id: 1, location: 'default' })
+        expect(welcomeStore.firstLocation).toStrictEqual({ id: -1, location: '' })
     })
 
     it('get all welcome minions', async () => {
@@ -78,7 +78,6 @@ describe('Welcome Queries', () => {
             detail: {
                 id: 1,
                 nodeLabel: '192.168.1.1',
-                tenantId: 'opennms-prime',
                 createTime: dateN,
                 monitoringLocationId: 1,
                 ipInterfaces: [{ ipAddress: '192.168.1.1', snmpPrimary: true }], scanType: 'DISCOVERY_SCAN'

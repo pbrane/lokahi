@@ -13,10 +13,19 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
   }
 
   const fetchExporters = async (id: number) => {
+    // flows can be queried up to last 7 days.
+    const now = new Date()
+    const startTime = now.setDate(now.getDate() - 7)
+    const endTime = Date.now()
+
     const payload: RequestCriteriaInput = {
       exporter: [{
         nodeId: id
-      }]
+      }],
+      timeRange: {
+        startTime,
+        endTime
+      }
     }
     const data = await nodeStatusQueries.fetchExporters(payload)
     exporters.value = data.value?.findExporters || []
