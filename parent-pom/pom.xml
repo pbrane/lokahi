@@ -127,9 +127,8 @@
         <snmp4j.agent.version>2.5.3</snmp4j.agent.version>
         <spring.version>6.0.4</spring.version>
         <servicemix.spring.version>5.3.14_1</servicemix.spring.version>
-        <spring-boot.version>3.0.1</spring-boot.version>
-        <spring-security.version>6.0.1</spring-security.version>
-        <spring-kafka.version>3.0.1</spring-kafka.version>
+        <spring-boot.version>3.1.2</spring-boot.version>
+        <spring-security.version>6.1.2</spring-security.version>
         <sonar-maven.version>3.9.1.2184</sonar-maven.version>
         <swagger.version>2.1.1</swagger.version>
         <lombok.version>1.18.24</lombok.version>
@@ -865,6 +864,12 @@
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
+                <artifactId>mockito-inline</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
                 <artifactId>mockito-junit-jupiter</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
@@ -1088,6 +1093,16 @@
                             <!-- Make sure to use the hash of the manifest list (multi-arch) vs the hash of a particular manifest (single-arch) when updating
                                  See https://github.com/docker/roadmap/issues/262#issuecomment-1161515179 for an example on how to do this -->
                             <image>eclipse-temurin:17-jre@sha256:c61c6a48364d05ea89504489aecddd8af8c32dba6df2257da4131fe244284f50</image>
+                            <platforms>
+                                <platform>
+                                    <os>linux</os>
+                                    <architecture>amd64</architecture>
+                                </platform>
+                                <platform>
+                                    <os>linux</os>
+                                    <architecture>arm64</architecture>
+                                </platform>
+                            </platforms>
                         </from>
                         <!--suppress MavenModelInspection -->
                         <skip>${application.docker.skip}</skip>
