@@ -105,11 +105,15 @@ public class CucumberHooks {
 
     @AfterAll
     public static void tearDown() {
-        Selenide.open(instanceUrl);
-
         Stream<MinionContainer> aDefault = MINIONS.values().stream().dropWhile(container -> !container.minionId.startsWith(MINION_PREFIX));
 
         aDefault.forEach(GenericContainer::stop);
 
+        // Give a couple seconds as sometimes the UI cleanup calls are still in progress in the background
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
