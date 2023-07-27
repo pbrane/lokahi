@@ -7,14 +7,16 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class IpConfigurationProps {
-    @SerializedName("privateIPAddress")
+public class AzureBaseModel {
+    @SerializedName("id")
     @Expose
-    private String privateIPAddress;
-    @SerializedName("publicIPAddress")
+    private String id;
+
+    @SerializedName("name")
     @Expose
-    private PublicIPAddress publicIPAddress;
-    @SerializedName("primary")
+    private String name;
+
+    @SerializedName("etag")
     @Expose
-    private boolean primary;
+    private String etag;
 }

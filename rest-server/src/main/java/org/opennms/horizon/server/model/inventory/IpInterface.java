@@ -40,4 +40,6 @@ public class IpInterface {
     private Boolean snmpPrimary;
     private String hostname;
     private String netmask;
+    // must be object to generate optional field for graphql
+    private Long azureInterfaceId;
 }

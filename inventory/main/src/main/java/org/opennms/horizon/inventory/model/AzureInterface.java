@@ -28,8 +28,6 @@
 
 package org.opennms.horizon.inventory.model;
 
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -38,22 +36,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
 @Entity
-public class IpInterface {
+public class AzureInterface {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -66,39 +60,22 @@ public class IpInterface {
     @JoinColumn(name = "node_id", referencedColumnName = "id")
     private Node node;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="snmp_interface_id", referencedColumnName = "id")
-    private SnmpInterface snmpInterface;
-
-    @Column(name = "snmp_interface_id", insertable = false, updatable = false)
-    private Long snmpInterfaceId;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="azure_interface_id", referencedColumnName = "id")
-    private AzureInterface azureInterface;
-
-    @Column(name = "azure_interface_id", insertable = false, updatable = false)
-    private Long azureInterfaceId;
-
     @Column(name = "node_id", insertable = false, updatable = false)
     private long nodeId;
 
     @NotNull
-    @Column(name = "ip_address", columnDefinition = "inet")
-    private InetAddress ipAddress;
+    @Column(name = "interface_name")
+    private String interfaceName;
 
-    @OneToMany(mappedBy = "ipInterface", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<MonitoredService> monitoredServices = new ArrayList<>();
+    @Column(name = "private_ip_id")
+    private String privateIpId;
 
-    @Column(name = "snmp_primary")
-    private Boolean snmpPrimary;
+    @Column(name = "public_ip_address", columnDefinition = "inet")
+    private InetAddress publicIpAddress;
 
-    @Column(name = "ip_hostname")
-    private String hostname;
+    @Column(name = "public_ip_id")
+    private String publicIpId;
 
-    @Column(name = "netmask")
-    private String netmask;
-
-    @Column(name = "if_index")
-    private int ifIndex;
+    @Column(name = "location")
+    private String location;
 }

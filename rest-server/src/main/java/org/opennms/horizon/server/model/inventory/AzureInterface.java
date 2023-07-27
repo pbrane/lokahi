@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -25,23 +25,21 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-syntax = "proto3";
 
-import "google/protobuf/any.proto";
+package org.opennms.horizon.server.model.inventory;
 
-package opennms.inventory;
-option java_multiple_files = true;
-option java_package = "org.opennms.horizon.inventory.dto";
+import lombok.Getter;
+import lombok.Setter;
 
-message IpInterfaceDTO {
-  int64 id = 1;
-  string tenant_id = 2;
-  int64 node_id = 3;
-  string ip_address = 4;
-  bool snmp_primary = 5;
-  string hostname = 6;
-  string netmask = 7;
-  int64 snmpInterfaceId = 8;
-  int64 if_index = 9;
-  int64 azureInterfaceId = 10;
+@Getter
+@Setter
+public class AzureInterface {
+    private long id;
+    private long nodeId;
+    private String tenantId;
+    private String interfaceName;
+    private String privateIpId;
+    private String publicIpAddress;
+    private String publicIpId;
+    private String location;
 }

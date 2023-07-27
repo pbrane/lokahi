@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -25,23 +25,29 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-syntax = "proto3";
+package org.opennms.horizon.inventory.mapper;
 
-import "google/protobuf/any.proto";
+import org.apache.commons.lang3.StringUtils;
+import org.mapstruct.Mapper;
+import org.opennms.horizon.shared.utils.InetAddressUtils;
 
-package opennms.inventory;
-option java_multiple_files = true;
-option java_package = "org.opennms.horizon.inventory.dto";
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+@Mapper(componentModel = "spring")
+public interface IpAddressMapper {
+    default InetAddress map(String value) throws UnknownHostException {
+        if(StringUtils.isNotEmpty(value)) {
+            return InetAddressUtils.getInetAddress(value);
+        } else {
+            return null;
+        }
+    }
 
-message IpInterfaceDTO {
-  int64 id = 1;
-  string tenant_id = 2;
-  int64 node_id = 3;
-  string ip_address = 4;
-  bool snmp_primary = 5;
-  string hostname = 6;
-  string netmask = 7;
-  int64 snmpInterfaceId = 8;
-  int64 if_index = 9;
-  int64 azureInterfaceId = 10;
+    default String map(InetAddress value) {
+        if (value != null) {
+            return InetAddressUtils.toIpAddrString(value);
+        } else {
+            return null;
+        }
+    }
 }

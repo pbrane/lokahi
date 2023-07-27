@@ -33,15 +33,13 @@ package opennms.inventory;
 option java_multiple_files = true;
 option java_package = "org.opennms.horizon.inventory.dto";
 
-message IpInterfaceDTO {
+message AzureInterfaceDTO {
   int64 id = 1;
   string tenant_id = 2;
-  int64 node_id = 3;
-  string ip_address = 4;
-  bool snmp_primary = 5;
-  string hostname = 6;
-  string netmask = 7;
-  int64 snmpInterfaceId = 8;
-  int64 if_index = 9;
-  int64 azureInterfaceId = 10;
+  string interface_name = 4;
+  string private_ip_id = 5;
+  string public_ip_address = 6;
+  string public_ip_id = 7;
+  string location = 8;
+  int64 node_id = 9;
 }
