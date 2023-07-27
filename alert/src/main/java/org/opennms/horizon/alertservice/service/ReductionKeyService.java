@@ -26,20 +26,41 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.alertservice.db.repository;
+package org.opennms.horizon.alertservice.service;
 
+import com.google.common.base.Strings;
+import jakarta.annotation.Nullable;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.opennms.horizon.events.proto.Event;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+@Service
+@RequiredArgsConstructor
+public class ReductionKeyService {
 
-@Repository
-public interface AlertDefinitionRepository extends JpaRepository<AlertDefinition, Long> {
-    Optional<AlertDefinition> findFirstByTenantIdAndUei(String tenantId, String uei);
+    public String renderReductionKey(
+        @NonNull Event event, @NonNull AlertDefinition alertDefinition
+    ) {
+        return String.format(
+            alertDefinition.getReductionKey(),
+            event.getTenantId(),
+            event.getUei(),
+            event.getNodeId(),
+            alertDefinition.getAlertCondition().getRule().getPolicy().getId()
+        );
+    }
 
-    Optional<AlertDefinition> findFirstByAlertConditionId(Long id);
-
-    List<AlertDefinition> findByTenantIdAndUei(String tenantId, String uei);
+    public @Nullable String renderClearKey(Event event, AlertDefinition alertDefinition) {
+        if (Strings.isNullOrEmpty(alertDefinition.getClearKey())) {
+            return null;
+        }
+        return String.format(
+            alertDefinition.getClearKey(),
+            event.getTenantId(),
+            event.getNodeId(),
+            alertDefinition.getAlertCondition().getRule().getPolicy().getId()
+        );
+    }
 }
