@@ -62,10 +62,22 @@ public class NotificationService {
 
     @WithTenant(tenantIdArg = 0, tenantIdArgInternalMethod = "getTenantId", tenantIdArgInternalClass = "org.opennms.horizon.alerts.proto.Alert")
     public void postNotification(Alert alert) {
+        if (alert.getMonitoringPolicyIdList().isEmpty()) {
+            log.info("Alert has no associated monitoring policies, dropping alert[id: {}, tenant: {}]",
+                alert.getDatabaseId(), alert.getTenantId());
+            return;
+        }
+
         List<MonitoringPolicy> dbPolicies = monitoringPolicyRepository.findByTenantIdAndIdIn(
             alert.getTenantId(),
             alert.getMonitoringPolicyIdList()
         );
+
+        if (dbPolicies.isEmpty()) {
+            log.warn("Associated policies {} not found, dropping alert[id: {}, tenant: {}]",
+                alert.getMonitoringPolicyIdList(), alert.getDatabaseId(), alert.getTenantId());
+            return;
+        }
 
         boolean notifyPagerDuty = false;
         boolean notifyEmail = false;
@@ -85,25 +97,23 @@ public class NotificationService {
             try {
                 pagerDutyAPI.postNotification(alert);
             } catch (NotificationException e) {
-                log.warn("Unable to send alert to PagerDuty: {}", alert, e);
+                log.warn("Unable to send alert[id: {}, tenant: {}] to PagerDuty:",
+                    alert.getDatabaseId(), alert.getTenantId(), e);
             }
         }
         if (notifyEmail) {
             try {
-                for (String emailAddress: keyCloakAPI.getTenantEmailAddresses(alert.getTenantId())) {
+                for (String emailAddress : keyCloakAPI.getTenantEmailAddresses(alert.getTenantId())) {
                     emailAPI.sendEmail(
                         emailAddress,
                         String.format("%s severity alert", StringUtils.capitalize(alert.getSeverity().getValueDescriptor().getName())),
                         velocity.populateTemplate(emailAddress, alert)
                     );
                 }
-            }catch (NotificationException e) {
-                log.warn("Unable to send alert to Email: {}", alert, e);
+            } catch (NotificationException e) {
+                log.warn("Unable to send alert[id: {}, tenant: {}] to Email:",
+                    alert.getDatabaseId(), alert.getTenantId(), e);
             }
-        }
-
-        if (dbPolicies.isEmpty()) {
-            log.debug("No monitoring policy found, dropping alert: {}", alert);
         }
     }
 
