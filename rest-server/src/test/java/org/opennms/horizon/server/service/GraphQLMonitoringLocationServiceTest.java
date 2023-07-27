@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -59,12 +60,11 @@ class GraphQLMonitoringLocationServiceTest {
 
     @Test
     void testFindLocation() throws JSONException {
-        doReturn(Arrays.asList(location1, location2)).when(mockClient).listLocations(accessToken);
+        doReturn(Collections.singletonList(location1)).when(mockClient).listLocations(accessToken);
         String request = """
             query {
                 findAllLocations {
                     location
-                    tenantId
                 }
             }""";
         webClient.post()
@@ -76,10 +76,7 @@ class GraphQLMonitoringLocationServiceTest {
             .expectStatus().isOk()
             .expectBody()
             .jsonPath("$.data.findAllLocations").isArray()
-            .jsonPath("$.data.findAllLocations[0].location").isEqualTo("LOC1")
-            .jsonPath("$.data.findAllLocations[0].tenantId").isEqualTo("tenant1")
-            .jsonPath("$.data.findAllLocations[1].location").isEqualTo("LOC2")
-            .jsonPath("$.data.findAllLocations[1].tenantId").isEqualTo("tenant2");
+            .jsonPath("$.data.findAllLocations[0].location").isEqualTo("LOC1");
         verify(mockClient).listLocations(accessToken);
         verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
     }
@@ -91,7 +88,6 @@ class GraphQLMonitoringLocationServiceTest {
             query {
                 findLocationById(id: 1) {
                     location
-                    tenantId
                 }
             }""";
         webClient.post()
@@ -102,20 +98,18 @@ class GraphQLMonitoringLocationServiceTest {
             .exchange()
             .expectStatus().isOk()
             .expectBody()
-            .jsonPath("$.data.findLocationById.location").isEqualTo("LOC1")
-            .jsonPath("$.data.findLocationById.tenantId").isEqualTo("tenant1");
+            .jsonPath("$.data.findLocationById.location").isEqualTo("LOC1");
         verify(mockClient).getLocationById(1, accessToken);
         verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
     }
 
     @Test
     void testSearchLocation() throws JSONException {
-        doReturn(Arrays.asList(location1, location2)).when(mockClient).searchLocations("LOC", accessToken);
+        doReturn(Collections.singletonList(location1)).when(mockClient).searchLocations("LOC", accessToken);
         String request = """
             query {
                 searchLocation(searchTerm: "LOC") {
                     location
-                    tenantId
                 }
             }""";
         webClient.post()
@@ -127,10 +121,7 @@ class GraphQLMonitoringLocationServiceTest {
             .expectStatus().isOk()
             .expectBody()
             .jsonPath("$.data.searchLocation").isArray()
-            .jsonPath("$.data.searchLocation[0].location").isEqualTo("LOC1")
-            .jsonPath("$.data.searchLocation[0].tenantId").isEqualTo("tenant1")
-            .jsonPath("$.data.searchLocation[1].location").isEqualTo("LOC2")
-            .jsonPath("$.data.searchLocation[1].tenantId").isEqualTo("tenant2");
+            .jsonPath("$.data.searchLocation[0].location").isEqualTo("LOC1");
         verify(mockClient).searchLocations("LOC", accessToken);
         verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
     }
@@ -150,7 +141,6 @@ class GraphQLMonitoringLocationServiceTest {
                 }) {
                     id
                     location
-                    tenantId
                     latitude
                     longitude
                     address
@@ -166,7 +156,6 @@ class GraphQLMonitoringLocationServiceTest {
             .expectStatus().isOk()
             .expectBody()
             .jsonPath("$.data.createLocation.location").isEqualTo("LOC1")
-            .jsonPath("$.data.createLocation.tenantId").isEqualTo("tenant1")
             .jsonPath("$.data.createLocation.address").isEqualTo("address create")
             .jsonPath("$.data.createLocation.latitude").isEqualTo(1.0)
             .jsonPath("$.data.createLocation.longitude").isEqualTo(2.0);
@@ -189,7 +178,6 @@ class GraphQLMonitoringLocationServiceTest {
                 }) {
                     id
                     location
-                    tenantId
                     latitude
                     longitude
                     address
@@ -205,7 +193,6 @@ class GraphQLMonitoringLocationServiceTest {
             .expectBody()
             .jsonPath("$.data.updateLocation.location").isEqualTo("LOC2")
             .jsonPath("$.data.updateLocation.id").isEqualTo(2)
-            .jsonPath("$.data.updateLocation.tenantId").isEqualTo("tenant2")
             .jsonPath("$.data.updateLocation.address").isEqualTo("address2")
             .jsonPath("$.data.updateLocation.latitude").isEqualTo(1.0)
             .jsonPath("$.data.updateLocation.longitude").isEqualTo(2.0);
