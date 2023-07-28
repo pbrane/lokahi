@@ -165,7 +165,7 @@ class MonitoringLocationGrpcServiceTest {
 
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(getResponseObserver).onError(throwableCaptor.capture());
-        assertEquals("INTERNAL: Error while creating location with name " + request.getLocation(), throwableCaptor.getValue().getMessage());
+        assertEquals("INTERNAL: test exception", throwableCaptor.getValue().getMessage());
     }
 
     @Test
@@ -193,7 +193,7 @@ class MonitoringLocationGrpcServiceTest {
 
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(getResponseObserver).onError(throwableCaptor.capture());
-        assertEquals("INTERNAL: Error while updating location with ID 0", throwableCaptor.getValue().getMessage());
+        assertEquals("INTERNAL: test exception", throwableCaptor.getValue().getMessage());
     }
 
     @Test
@@ -208,7 +208,7 @@ class MonitoringLocationGrpcServiceTest {
 
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(getResponseObserver).onError(throwableCaptor.capture());
-        assertEquals("NOT_FOUND: Location not found with with ID " + INVALID_LOCATION_ID, throwableCaptor.getValue().getMessage());
+        assertEquals("NOT_FOUND: test exception", throwableCaptor.getValue().getMessage());
     }
 
     @Test
@@ -235,7 +235,7 @@ class MonitoringLocationGrpcServiceTest {
 
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(deleteResponseObserver).onError(throwableCaptor.capture());
-        assertEquals("INTERNAL: Error while deleting location with ID 1", throwableCaptor.getValue().getMessage());
+        assertEquals("INTERNAL: test exception", throwableCaptor.getValue().getMessage());
     }
 
     @Test
@@ -249,6 +249,6 @@ class MonitoringLocationGrpcServiceTest {
 
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(deleteResponseObserver).onError(throwableCaptor.capture());
-        assertEquals("NOT_FOUND: Location not found with with ID " + INVALID_LOCATION_ID, throwableCaptor.getValue().getMessage());
+        assertEquals("NOT_FOUND: test exception", throwableCaptor.getValue().getMessage());
     }
 }

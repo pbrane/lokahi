@@ -36,12 +36,8 @@ public class GrpcMinionCertificateManager {
             var location = monitoringLocation.getId();
             CertificateResponse minionCert = mapper.protoToCertificateResponse(client.getMinionCert(tenantId, location, authHeader));
             return Mono.just(minionCert);
-        } catch (StatusRuntimeException e) {
-            if (e.getStatus().getCode().equals(Status.Code.NOT_FOUND)) {
-                return Mono.error(new LocationNotFoundException(locationId));
-            }
-            // fallback to generic exception
-            return Mono.error(new GraphQLException("Exception while fetching Minion certificate for location id " + locationId));
+        } catch (Exception e) {
+            return handleException(e, "Error while fetching Minion certificate for location id " + locationId);
         }
     }
 
@@ -53,15 +49,18 @@ public class GrpcMinionCertificateManager {
             var monitoringLocation = inventoryClient.getLocationById(locationId, authHeader);
             client.revokeCertificate(tenantId, monitoringLocation.getId(), authHeader);
             return Mono.just(true);
-        } catch (StatusRuntimeException e) {
-            if (e.getStatus().getCode().equals(Status.Code.NOT_FOUND)) {
-                return Mono.error(new LocationNotFoundException(locationId));
-            }
-            // fallback to generic exception
-            return Mono.error(new GraphQLException("Exception while fetching Minion certificate for location id " + locationId));
         } catch (Exception e) {
-            // fallback to generic exception
-            return Mono.error(new GraphQLException("Exception while fetching Minion certificate for location id " + locationId));
+            return handleException(e, "Error while revoking Minion certificate for location id " + locationId);
         }
+    }
+
+    private <T> Mono<T> handleException(Exception e, String message) {
+        if (e instanceof StatusRuntimeException statusRuntimeException
+            && statusRuntimeException.getStatus().getCode().equals(Status.Code.NOT_FOUND)) {
+            return Mono.error(new GraphQLException(e.getMessage()));
+        }
+
+        // fallback to generic exception
+        return Mono.error(new GraphQLException(message));
     }
 }

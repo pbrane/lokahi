@@ -85,7 +85,7 @@ public class MonitoringLocationService {
     public MonitoringLocationDTO upsert(MonitoringLocationDTO dto) throws LocationNotFoundException {
         if (dto.hasField(MonitoringLocationDTO.getDescriptor().findFieldByNumber(MonitoringLocationDTO.ID_FIELD_NUMBER))
             && modelRepo.findByIdAndTenantId(dto.getId(), dto.getTenantId()).isEmpty()) {
-            throw new LocationNotFoundException("Location not found " + dto.getId());
+            throw new LocationNotFoundException("Location not found with ID " + dto.getId());
         }
 
         MonitoringLocation model = mapper.dtoToModel(dto);
@@ -94,7 +94,7 @@ public class MonitoringLocationService {
 
     public void delete(Long id, String tenantId) throws LocationNotFoundException {
         MonitoringLocation monitoringLocation = modelRepo.findByIdAndTenantId(id, tenantId)
-            .orElseThrow(() -> new LocationNotFoundException("Location not found " + id));
+            .orElseThrow(() -> new LocationNotFoundException("Location not found with ID " + id));
         modelRepo.delete(monitoringLocation);
         var systems = monitoringSystemRepository.findByMonitoringLocationIdAndTenantId(id, tenantId);
         if (!systems.isEmpty()) {

@@ -101,11 +101,17 @@ public class GrpcLocationService {  // TODO: rename to GraphQL...Service; there 
             certificateManagerClient.revokeCertificate(tenantId, id, accessToken);
             return Mono.just(status);
         } catch (StatusRuntimeException e) {
-            if (e.getStatus().getCode().equals(Status.Code.NOT_FOUND)) {
-                return Mono.error(new LocationNotFoundException(id));
-            }
-            // fallback to generic exception
-            return Mono.error(new GraphQLException("Exception while fetching Minion certificate for location id " + id));
+            return handleException(e, "Error while fetching Minion certificate for location id " + id);
         }
+    }
+
+    private <T> Mono<T> handleException(Exception e, String message) {
+        if (e instanceof StatusRuntimeException statusRuntimeException
+            && statusRuntimeException.getStatus().getCode().equals(Status.Code.NOT_FOUND)) {
+            return Mono.error(new GraphQLException(e.getMessage()));
+        }
+
+        // fallback to generic exception
+        return Mono.error(new GraphQLException(message));
     }
 }

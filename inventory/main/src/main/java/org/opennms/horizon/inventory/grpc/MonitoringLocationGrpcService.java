@@ -126,9 +126,7 @@ public class MonitoringLocationGrpcService extends MonitoringLocationServiceGrpc
                     responseObserver.onCompleted();
                 } catch (Exception e) {
                     LOG.error("Error while creating location with name {}", request.getLocation(), e);
-                    Status status = Status.newBuilder()
-                        .setCode(Code.INTERNAL_VALUE)
-                        .setMessage("Error while creating location with name " + request.getLocation()).build();
+                    Status status = handleException(e);
                     responseObserver.onError(StatusProto.toStatusRuntimeException(status));
                 }
             });
@@ -141,17 +139,9 @@ public class MonitoringLocationGrpcService extends MonitoringLocationServiceGrpc
                 try {
                     responseObserver.onNext(service.upsert(MonitoringLocationDTO.newBuilder(request).setTenantId(tenantId).build()));
                     responseObserver.onCompleted();
-                } catch (LocationNotFoundException e) {
-                    LOG.warn("Location not found when updating : {}", request.getId());
-                    Status status = Status.newBuilder()
-                        .setCode(Code.NOT_FOUND_VALUE)
-                        .setMessage("Location not found with with ID " + request.getId()).build();
-                    responseObserver.onError(StatusProto.toStatusRuntimeException(status));
                 } catch (Exception e) {
-                    LOG.error("Error while updating location with ID {}", request.getId(), e);
-                    Status status = Status.newBuilder()
-                        .setCode(Code.INTERNAL_VALUE)
-                        .setMessage("Error while updating location with ID " + request.getId()).build();
+                    LOG.error("Error while updating location with ID : {}", request.getId(), e);
+                    Status status = handleException(e);
                     responseObserver.onError(StatusProto.toStatusRuntimeException(status));
                 }
             });
@@ -165,17 +155,9 @@ public class MonitoringLocationGrpcService extends MonitoringLocationServiceGrpc
                     service.delete(request.getValue(), tenantId);
                     responseObserver.onNext(BoolValue.of(true));
                     responseObserver.onCompleted();
-                } catch (LocationNotFoundException e) {
-                    LOG.warn("Location not found when deleting : {}", request.getValue());
-                    Status status = Status.newBuilder()
-                        .setCode(Code.NOT_FOUND_VALUE)
-                        .setMessage("Location not found with with ID " + request.getValue()).build();
-                    responseObserver.onError(StatusProto.toStatusRuntimeException(status));
                 } catch (Exception e) {
                     LOG.error("Error while deleting location with ID : {}", request.getValue(), e);
-                    Status status = Status.newBuilder()
-                        .setCode(Code.INTERNAL_VALUE)
-                        .setMessage("Error while deleting location with ID " + request.getValue()).build();
+                    Status status = handleException(e);
                     responseObserver.onError(StatusProto.toStatusRuntimeException(status));
                 }
             });
@@ -187,6 +169,18 @@ public class MonitoringLocationGrpcService extends MonitoringLocationServiceGrpc
             .setAddress(request.getAddress())
             .setGeoLocation(request.getGeoLocation())
             .setTenantId(tenantId).build();
+    }
+
+    private Status handleException(Throwable e) {
+        if (e instanceof LocationNotFoundException) {
+            return Status.newBuilder()
+                .setCode(Code.NOT_FOUND_VALUE)
+                .setMessage(e.getMessage()).build();
+        } else {
+            return Status.newBuilder()
+                .setCode(Code.INTERNAL_VALUE)
+                .setMessage(e.getMessage()).build();
+        }
     }
 }
 
