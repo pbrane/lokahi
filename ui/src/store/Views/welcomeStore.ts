@@ -6,7 +6,6 @@ import {
   Node
 } from '@/types/graphql'
 import { createAndDownloadBlobFile } from '@/components/utils'
-import router from '@/router'
 import { ItemPreviewProps } from '@/components/Common/commonTypes'
 import { useLocationMutations } from '../Mutations/locationMutations'
 import { useDiscoveryMutations } from '../Mutations/discoveryMutations'
@@ -117,6 +116,8 @@ export const useWelcomeStore = defineStore('welcomeStore', {
       if (minions?.length > 0) {
         onboardingState = false
       } else {
+        // Import router dynamically, see https://opennms.atlassian.net/browse/HS-1654
+        const router = (await import('@/router')).default
         router.push('/welcome');
       }
       this.showOnboarding = onboardingState
@@ -296,9 +297,11 @@ export const useWelcomeStore = defineStore('welcomeStore', {
           !!metric.toString()
       });
     },
-    skipSlideThree() {
+    async skipSlideThree() {
       this.stopMinionErrorTimeout();
       this.stopDiscoveryErrorTimeout();
+      // Import router dynamically, see https://opennms.atlassian.net/browse/HS-1654
+      const router = (await import('@/router')).default
       router.push('Dashboard')
     },
     async startDiscovery() {

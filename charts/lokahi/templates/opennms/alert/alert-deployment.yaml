@@ -16,6 +16,9 @@ spec:
         appdomain: opennms
         app: {{ .Values.OpenNMS.Alert.ServiceName }}
       annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
         # roll the deployment when the Spring boot environment variable configmap changes
         checksum/spring-boot-env-configmap: {{ include (print $.Template.BasePath "/opennms/spring-boot-env-configmap.yaml") . | sha256sum }}
         kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.Alert.ServiceName }}"
@@ -71,12 +74,32 @@ spec:
           {{- include "kafkaSecretFrom" .Values.OpenNMS.Alert | indent 10 }}
           ports:
             - name: http
-              containerPort: {{ .Values.OpenNMS.Alert.Port }}
+              containerPort: 8080
             - name: grpc
-              containerPort: {{ .Values.OpenNMS.Alert.GrpcPort }}
+              containerPort: 6565
           volumeMounts:
             - name: spring-boot-app-config-volume
               mountPath: "/app/config"
+          livenessProbe:
+            httpGet:
+              path: "/actuator/health/liveness"
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 20
+            timeoutSeconds: 1
+            periodSeconds: 2
+            successThreshold: 1
+            failureThreshold: 150
+          readinessProbe:
+            httpGet:
+              path: "/actuator/health/readiness"
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 20
+            timeoutSeconds: 1
+            periodSeconds: 2
+            successThreshold: 1
+            failureThreshold: 250
       {{- if .Values.OpenNMS.Alert.PrivateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials

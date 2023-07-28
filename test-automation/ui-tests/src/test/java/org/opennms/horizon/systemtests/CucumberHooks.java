@@ -56,6 +56,8 @@ public class CucumberHooks {
     public static String minionDockerTag = "latest";
     public static boolean keycloakLogin = true;
 
+    public static String defaultMinionName = "testMinion";
+
     @BeforeAll
     public static void setUp() {
         Configuration.fileDownload = FileDownloadMode.FOLDER;
@@ -87,9 +89,6 @@ public class CucumberHooks {
         }
 
         overrideAuthority = System.getenv("MINION_INGRESS_OVERRIDE_AUTHORITY");
-        if (overrideAuthority == null) {
-            overrideAuthority = "minion.onmshs.local";
-        }
         instanceUrl = System.getenv("INGRESS_BASE_URL");
         if (instanceUrl == null) {
             instanceUrl = "https://onmshs.local:" + gatewayPort;
@@ -100,7 +99,7 @@ public class CucumberHooks {
             minionDockerTag = "latest";
         }
 
-        SetupSteps.loggedInWithANamedMinion("testMinion");
+        SetupSteps.loggedInWithANamedMinion(defaultMinionName);
     }
 
 

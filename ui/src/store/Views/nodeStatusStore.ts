@@ -13,10 +13,19 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
   }
 
   const fetchExporters = async (id: number) => {
+    // flows can be queried up to last 7 days.
+    const now = new Date()
+    const startTime = now.setDate(now.getDate() - 7)
+    const endTime = Date.now()
+
     const payload: RequestCriteriaInput = {
       exporter: [{
         nodeId: id
-      }]
+      }],
+      timeRange: {
+        startTime,
+        endTime
+      }
     }
     const data = await nodeStatusQueries.fetchExporters(payload)
     exporters.value = data.value?.findExporters || []
@@ -27,6 +36,10 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
   const node = computed(() => {
     const node = nodeStatusQueries.fetchedData.node
 
+    const azureInterfaces = new Map(node.azureInterfaces?.map((azureInterface) => {
+      return [azureInterface.id, azureInterface]
+    }))
+
     const snmpInterfaces = node.snmpInterfaces?.map((snmpInterface) => {
       for (const exporter of exporters.value) {
         if (exporter.snmpInterface?.ifIndex === snmpInterface.ifIndex) {
@@ -36,7 +49,7 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
       return { ...snmpInterface, exporter: {} }
     }) || []
 
-    return { ...node, snmpInterfaces }
+    return { ...node, snmpInterfaces, azureInterfaces }
   })
 
   return {
