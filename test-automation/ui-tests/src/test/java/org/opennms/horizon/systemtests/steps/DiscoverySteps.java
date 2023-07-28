@@ -155,21 +155,19 @@ public class DiscoverySteps {
     }
 
     private String getContainerIPs(String nodeNames) {
-        String ips = "";
+        StringBuilder ips = new StringBuilder();
         String[] nodeNameArray = nodeNames.split(",");
-        for (int i = 0; i < nodeNameArray.length; i++) {
-            String nodeName = nodeNameArray[i].trim();
+        for (String nodeNameFromArray : nodeNameArray) {
+            String nodeName = nodeNameFromArray.trim();
             GenericContainer container = nodes.get(nodeName);
             assertNotNull("Must have a container for node " + nodeName, container);
-            if (! ips.isEmpty()) {
-                ips += ", " + getContainerIP(container);
-            } else {
-                ips += getContainerIP(container);
+            if (!ips.isEmpty()) {
+                ips.append(", ");
             }
+            ips.append(getContainerIP(container));
         }
-        return ips;
+        return ips.toString();
     }
-
 
     private String calculateIPRanges(Collection<GenericContainer> nodes) {
         int firstAddr = 0;
@@ -226,8 +224,6 @@ public class DiscoverySteps {
             throw new RuntimeException("Test error converting string ip '" + stringAddr + "' to properly formatted inet addr");
         }
     }
-
-
 
     private static String getContainerIP(GenericContainer<?> container) {
         NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
