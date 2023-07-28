@@ -50,13 +50,3 @@ To acknowledge or clear an alert, follow these steps:
 
 An acknowledged alert has a green check mark beside its date.
 An unacknowledged alert has a grey checkmark.
-
-// is this feature still available? I don't see it.
-== Test affected node
-
-Follow these steps to test a node affected by an alert:
-
-. Find the alert whose affected node you want to test.
-. Click the *Expand* symbol to show the alert's details.
-. Select *Run Test*.
-The node's status (*Degraded*, *Success*, and so on) is displayed.
