@@ -92,28 +92,34 @@ public class NotificationService {
         }
 
         if (notifyPagerDuty) {
-            // Wrap in a try/catch, we don't want a failure to notify via PagerDuty to prevent us from sending an
-            // email notification, etc.
-            try {
-                pagerDutyAPI.postNotification(alert);
-            } catch (NotificationException e) {
-                log.warn("Unable to send alert[id: {}, tenant: {}] to PagerDuty:",
-                    alert.getDatabaseId(), alert.getTenantId(), e);
-            }
+            postPagerDutyNotification(alert);
         }
         if (notifyEmail) {
-            try {
-                for (String emailAddress : keyCloakAPI.getTenantEmailAddresses(alert.getTenantId())) {
-                    emailAPI.sendEmail(
-                        emailAddress,
-                        String.format("%s severity alert", StringUtils.capitalize(alert.getSeverity().getValueDescriptor().getName())),
-                        velocity.populateTemplate(emailAddress, alert)
-                    );
-                }
-            } catch (NotificationException e) {
-                log.warn("Unable to send alert[id: {}, tenant: {}] to Email:",
-                    alert.getDatabaseId(), alert.getTenantId(), e);
+            postEmailNotification(alert);
+        }
+    }
+
+    private void postPagerDutyNotification(Alert alert) {
+        try {
+            pagerDutyAPI.postNotification(alert);
+        } catch (NotificationException e) {
+            log.warn("Unable to send alert[id: {}, tenant: {}] to PagerDuty:",
+                alert.getDatabaseId(), alert.getTenantId(), e);
+        }
+    }
+
+    private void postEmailNotification(Alert alert) {
+        try {
+            for (String emailAddress : keyCloakAPI.getTenantEmailAddresses(alert.getTenantId())) {
+                String subject = String.format("%s severity alert",
+                    StringUtils.capitalize(alert.getSeverity().getValueDescriptor().getName()));
+                String htmlBody = velocity.populateTemplate(emailAddress, alert);
+
+                emailAPI.sendEmail(emailAddress, subject, htmlBody);
             }
+        } catch (NotificationException e) {
+            log.warn("Unable to send alert[id: {}, tenant: {}] to Email:",
+                alert.getDatabaseId(), alert.getTenantId(), e);
         }
     }
 
