@@ -8,7 +8,7 @@ The page displays alerts, categorized by xref:reference:severities.adoc[severity
 
 == Search
 
-You can search for specific text in alerts.
+You can search alerts by name or IP address.
 To do so, type your search term in the *Search Alerts* box.
 Note that the search works only with the full name or IP address associated with the alert.
 It will not search for partial terms.
@@ -17,12 +17,12 @@ For example, if an alert occurred 7 days earlier, but you search for it in the *
 
 == Filter
 
-You can filter alerts by severity and by time span.
+You can filter alerts by severity and time range.
 
-To filter alerts by severity, click the plus sign beside the severity (for example, *Major*) that has alarms.
+To filter alerts by severity, at the top of the screen click the plus sign beside the severity (for example, *Major*) that has alerts.
 The associated alerts are displayed.
 
-To filter alerts by time span, select an option from the time filter settings (for example, *7D*).
+To filter alerts by time range, select an option from the time filter settings (for example, *7D*).
 The alerts that occurred over the specified time period are displayed.
 By default, the page displays alerts that occurred within the last 24 hours.
 
@@ -48,10 +48,8 @@ To acknowledge or clear an alert, follow these steps:
 . Place a check in the checkbox beside each alert you want to acknowledge or clear.
 . Beside the *Select All* field, click *Acknowledge* or *Clear*.
 
-An acknowledged alert has a green symbol with a green with a white check
-
-An alert is acknowledged when the symbol next to its date is green with a white check.
-An alert is unacknowledged when the symbol next to its date is white with a green outline and check.
+An acknowledged alert has a green check mark beside its date.
+An unacknowledged alert has a grey checkmark.
 
 // is this feature still available? I don't see it.
 == Test affected node
