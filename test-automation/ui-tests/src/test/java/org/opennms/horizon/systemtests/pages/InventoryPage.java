@@ -65,14 +65,15 @@ public class InventoryPage {
         int iterations = 20;
         while (!statusCheck.exists() && iterations > 0) {
             --iterations;
-            Selenide.refresh();
-            LeftPanelPage.clickOnPanelSection("inventory");
-
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 // Ignore and busy-loop it
             }
+
+            Selenide.refresh();
+
+            LeftPanelPage.clickOnPanelSection("inventory");
         }
         statusCheck.should(exist);
     }

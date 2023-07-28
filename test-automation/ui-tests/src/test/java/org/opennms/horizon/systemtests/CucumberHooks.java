@@ -25,8 +25,11 @@ package org.opennms.horizon.systemtests;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.FileDownloadMode;
 import com.codeborne.selenide.Selenide;
+import io.cucumber.java.After;
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.BeforeAll;
+import org.opennms.horizon.systemtests.steps.DiscoverySteps;
+import org.opennms.horizon.systemtests.steps.MinionSteps;
 import org.opennms.horizon.systemtests.steps.SetupSteps;
 import org.testcontainers.containers.GenericContainer;
 import testcontainers.MinionContainer;
@@ -102,6 +105,10 @@ public class CucumberHooks {
         SetupSteps.loggedInWithANamedMinion(defaultMinionName);
     }
 
+    @After
+    public static void cleanupIndividualTests() {
+        DiscoverySteps.cleanup();
+    }
 
     @AfterAll
     public static void tearDown() {

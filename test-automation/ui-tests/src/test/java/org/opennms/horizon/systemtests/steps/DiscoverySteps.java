@@ -71,6 +71,13 @@ public class DiscoverySteps {
 
     private static Map<String, GenericContainer> nodes = new HashMap<>();
 
+    public static void cleanup() {
+        for (GenericContainer nodeContainer : nodes.values()) {
+            nodeContainer.stop();
+        }
+        nodes.clear();
+    }
+
     @Given("Start snmp node {string}")
     public void startNode(String nodeName) throws IOException {
         startSnmpNode(nodeName, "");
