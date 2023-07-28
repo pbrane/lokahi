@@ -34,6 +34,7 @@ import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
 
+import javax.swing.text.Element;
 import java.time.Duration;
 
 import static com.codeborne.selenide.Condition.enabled;
@@ -50,8 +51,9 @@ public class InventoryPage {
     private static final SelenideElement firstSnmpInterfaceInTable = $(By.xpath("//table[@aria-label='SNMP Interfaces Table']/tbody/tr[1]"));
 
     private static final ElementsCollection nodesList = $$("[class='cards']");
-
-
+    private static final SelenideElement firstNodeDeleteButton = $(By.xpath("//ul[@class='cards']//li[@data-test='delete'][1]"));
+    private static final SelenideElement deleteConfirmButton = $(By.xpath("//button[@data-testid='save-btn']"));
+    private static final ElementsCollection inventoryCards = $$(By.xpath("//ul[@class='cards']/li"));
     public static boolean checkIfMonitoredNodeExist(String nodeSysName) {
         return nodesList.findBy(Condition.text(nodeSysName)).isDisplayed();
     }
@@ -60,21 +62,21 @@ public class InventoryPage {
         LeftPanelPage.clickOnPanelSection("inventory");
 
         // The inventory page doesn't refresh on its own. Need to periodically check and force a refresh
-        String itemStatusSearch = "//ul[@class='cards']/li[.//li[@data-test='management-ip']/span/text()='" + nodeManagementIp + "']//div[@title='Status']//span[text()='" + status + "']";
+        String itemStatusSearch = "//ul[@class='cards']/li[.//li[@data-test='management-ip']/span/text()='" + nodeManagementIp + "']//span[text()='" + status + "']";
         SelenideElement statusCheck = $(By.xpath(itemStatusSearch));
         int iterations = 20;
-        while (!statusCheck.exists() && iterations > 0) {
-            --iterations;
+        boolean exists = false;
+
+        while (!exists && iterations > 0) {
             try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                // Ignore and busy-loop it
+                statusCheck.should(exist, Duration.ofSeconds(4));
+                iterations = 0;
+            } catch (com.codeborne.selenide.ex.ElementNotFound e) {
+                --iterations;
+                Selenide.refresh();
             }
-
-            Selenide.refresh();
-
-            LeftPanelPage.clickOnPanelSection("inventory");
         }
+
         statusCheck.should(exist);
     }
 
@@ -94,13 +96,22 @@ public class InventoryPage {
         String deleteNodeButtonSearch = "//ul[@class='cards']/li[.//li[@data-test='management-ip']/span/text()='" + nodeManagementIp + "']//li[@data-test='delete']";
         $(By.xpath(deleteNodeButtonSearch)).should(exist).shouldBe(enabled).click();
 
-        String deleteConfirm = "//button[@data-testid='save-btn']";
-        $(By.xpath(deleteConfirm)).should(exist).shouldBe(enabled).click();
+        deleteConfirmButton.should(exist).shouldBe(enabled).click();
     }
 
-    public static void verifyNodeContainsSnmpInterfaces(String nodeIp) {
+    public static void deleteAllNodes() {
         LeftPanelPage.clickOnPanelSection("inventory");
 
+        int nodeCount = inventoryCards.size();
+        while (nodeCount > 0) {
+            --nodeCount;
+            firstNodeDeleteButton.shouldBe(enabled).hover().click();
+            deleteConfirmButton.should(exist).shouldBe(enabled).click();
+        }
+    }
+
+
+    public static void verifyNodeContainsSnmpInterfaces(String nodeIp) {
         String nodeEventsAlarmsButton = "//ul[@class='cards']/li[.//li[@data-test='management-ip']/span/text()='" + nodeIp + "']//li[@data-test='warning']";
         $(By.xpath(nodeEventsAlarmsButton)).should(exist).shouldBe(enabled).click();
 
