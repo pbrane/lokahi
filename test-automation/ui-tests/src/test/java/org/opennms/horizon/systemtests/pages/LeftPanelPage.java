@@ -93,7 +93,6 @@ public class LeftPanelPage {
         int maxRetries = 5;
         while (! leftPanelSmall.exists() && maxRetries > 0) {
             --maxRetries;
-            System.out.println("******Re-clicking to clear panel");
             $(url).shouldBe(enabled).hover().click();
             topRightBorder.hover().click();
             try {
