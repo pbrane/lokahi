@@ -38,7 +38,6 @@ import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.server.exception.GraphQLException;
-import org.opennms.horizon.server.exception.LocationNotFoundException;
 import org.opennms.horizon.server.mapper.MonitoringLocationMapper;
 import org.opennms.horizon.server.model.inventory.MonitoringLocation;
 import org.opennms.horizon.server.model.inventory.MonitoringLocationCreate;

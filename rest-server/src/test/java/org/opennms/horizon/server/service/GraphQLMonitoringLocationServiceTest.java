@@ -259,6 +259,34 @@ class GraphQLMonitoringLocationServiceTest {
         verifyNoInteractions(mockCertificateClient);
     }
 
+    @Test
+    void testDeleteLocationError() throws JSONException {
+        var status = Status.newBuilder()
+            .setCode(Code.INTERNAL_VALUE)
+            .setMessage("Test exception").build();
+        var exception = StatusProto.toStatusRuntimeException(status);
+        doThrow(exception).when(mockClient).deleteLocation(INVALID_LOCATION_ID, accessToken);
+
+        String request = """
+            mutation {
+                deleteLocation(id: %s)
+            }""".formatted(INVALID_LOCATION_ID);
+        webClient.post()
+            .uri(GRAPHQL_PATH)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createPayload(request))
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.data.deleteLocation").isEmpty()
+            .jsonPath("$.errors").isNotEmpty();
+        verify(mockClient, times(1)).deleteLocation(INVALID_LOCATION_ID, accessToken);
+        verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
+        verify(mockHeaderUtil, times(1)).extractTenant(any(ResolutionEnvironment.class));
+        verifyNoInteractions(mockCertificateClient);
+    }
+
     private static MonitoringLocationDTO getLocationToUpdate() {
         return MonitoringLocationDTO.newBuilder()
             .setId(1)

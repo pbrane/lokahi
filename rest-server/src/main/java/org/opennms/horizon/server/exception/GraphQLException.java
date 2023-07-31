@@ -34,12 +34,6 @@ public class GraphQLException extends Exception {
     @Serial
     private static final long serialVersionUID = -4543741752174882855L;
 
-    private static final String DEFAULT_MESSAGE = "Internal server error";
-
-    public GraphQLException() {
-        this(DEFAULT_MESSAGE);
-    }
-
     public GraphQLException(String message) {
         super(message);
     }
