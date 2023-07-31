@@ -127,8 +127,6 @@ OpenNMS:
         client_body_timeout "1200s";
     PrivateRepoEnabled: false
     kafkaSecretName: ~
-
-
   Inventory:
     ServiceName: opennms-inventory
     Image: opennms/lokahi-inventory
@@ -187,7 +185,6 @@ OpenNMS:
       multiplier: 2
       max: 10
     acsConnectionSecretName: {} # the ACS connection string is expected in the 'connection-string' key
-
   Events:
     ServiceName: opennms-events
     Image: opennms/lokahi-events
@@ -286,12 +283,12 @@ Keycloak:
   DbName: "horizon_stream"
   DbHost: "postgres"
   Resources:
-      Limits:
-        Cpu: "1"
-        Memory: 2Gi
-      Requests:
-        Cpu: "1"
-        Memory: 1Gi
+    Limits:
+      Cpu: "1"
+      Memory: 2Gi
+    Requests:
+      Cpu: "1"
+      Memory: 1Gi
   AdminUsername: admin
   AdminPassword: notset
   RealmName: opennms
