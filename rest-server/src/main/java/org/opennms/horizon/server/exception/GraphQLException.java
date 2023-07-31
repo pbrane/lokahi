@@ -30,11 +30,11 @@ package org.opennms.horizon.server.exception;
 
 import java.io.Serial;
 
-public class LocationNotFoundException extends Exception{
+public class GraphQLException extends Exception {
     @Serial
     private static final long serialVersionUID = -4543741752174882855L;
 
-    public LocationNotFoundException(String message) {
+    public GraphQLException(String message) {
         super(message);
     }
 }
