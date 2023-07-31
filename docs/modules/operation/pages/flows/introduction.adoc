@@ -1,0 +1,41 @@
+
+= Flows
+:description: Learn about flows data in OpenNMS Lōkahi/Cloud.
+
+Flows are summaries of network traffic sent by network devices (switches, routers, and so on).
+This information includes, but is not limited to, source and destination addresses, source and destination ports, octet count, and duration of activity.
+Collecting and analyzing flows data provides a picture of network usage and helps to diagnose issues.
+Persisting flows for long-term storage can aid in forensic analysis.
+
+== View flows data
+
+By default, OpenNMS Cloud/Lōkahi displays the following flows data:
+
+* Total network traffic
+* Top 10 applications
+* Top 10 talkers
+
+You can see visualizations of this flows data on the Insights Dashboard and on the Flows page.
+
+For more information on data visualization, see xref:operation:visualizations/introduction.adoc[].
+
+== Configure flows data
+
+By default, the flows page displays graphs showing the top 10 applications for the network devices that you are monitoring.
+You can filter items like time period or type of traffic to customize the information displayed.
+
+Note that you can also download the data or refresh it by clicking the respective symbols on the page.
+
+To configure flows data, follow these steps:
+
+. On the Insights Dashboard page, click *Quick Actions>View Flows* or click the *flows* link on the Top 10 Applications graph.
+. On the Flows page, specify the following information:
+.. Time period (current calendar day, last 24 hours, last 7 days)
+.. Exporters (devices configured to export flow reports)
+.. Applications (monitored protocols)
+.. Chart type (table or line)
+.. Traffic type (total, inbound, or outbound)
+. Click the refresh symbol to update the display.
+. Click the download symbol to download the flows data.
+
+

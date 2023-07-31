@@ -14,10 +14,11 @@ The Insights Dashboard displays the following statistics and visualizations:
 * *Top 10 Applications:* A graph displaying the top 10 most used applications in your monitored network over the selected time period.
 * *Top 10 Talkers:* A graph displaying the top 10 most active applications in your monitored network over the selected time period.
 
-You can download PDF versions of the Total Network Traffic, Top 10 Applications, and Top 10 Talkers graphs by clicking the *Download* symbol at the top-right of each widget. <this behaviour hasn't been solidified yet; update this line as design is furthered>
+You can download PDF versions of the Total Network Traffic, Top 10 Applications, and Top 10 Talkers graphs by clicking the *Download* symbol at the top-right of each widget.
+
+//<this behaviour hasn't been solidified yet; update this line as design is furthered>
 To refresh the data in a widget, click the associated *Refresh* symbol.
 
-You can modify the time period for which statistics are displayed using the selector at the top of the page.
 By default, information is shown for the last 24 hours.
 
 == Shortcuts
@@ -28,4 +29,4 @@ The Insights Dashboard includes shortcuts for the following functions through th
 * *Add Monitoring Policy:* Define a new xref:get-started/policies/create.adoc[monitoring policy].
 * *View Flows:* View visualizations of flows data collected from your monitored network.
 
-You can also view inventory by clicking the *inventory* link on the Total Network Traffic graph.
+You can also view inventory by clicking the *inventory* link on the Total Network Traffic graph, and view flows by clicking the *flows* link on the Top 10 Applications graph.
