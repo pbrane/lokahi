@@ -21,11 +21,11 @@ OpenNMS:
     Replicas: 1
     Resources:
       Limits:
-        Cpu: "2"
-        Memory: 2Gi
+        Cpu: "1"
+        Memory: 2Gi # MaxRAMPercentage=50,avg-usage=245MB
       Requests:
         Cpu: "1"
-        Memory: 1Gi
+        Memory: 2Gi
     PrivateRepoEnabled: false
     FlowsUrl: SOME-EXTERNAL-FLOW-SERVER:80
     FlowsTlsEnabled: false
@@ -37,11 +37,11 @@ OpenNMS:
     Replicas: 1
     Resources:
       Limits:
-        Cpu: "1"
-        Memory: 512Mi
+        Cpu: "2"
+        Memory: 4Gi # MaxRAMPercentage=50,avg-usage=400MB
       Requests:
-        Cpu: 250m
-        Memory: 256Mi
+        Cpu: "1"
+        Memory: 2Gi
     PrivateRepoEnabled: false
     FlowIngestorUrl: SOME-EXTERNAL-FLOW-SERVER:80
     FlowTlsEnabled: false
@@ -57,10 +57,10 @@ OpenNMS:
     Resources:
       Limits:
         Cpu: "1"
-        Memory: 500Mi
+        Memory: 512Mi
       Requests:
         Cpu: 100m
-        Memory: 250Mi
+        Memory: 256Mi
     PrivateRepoEnabled: false
     IngressAnnotations:
       nginx.ingress.kubernetes.io/configuration-snippet: |
@@ -86,11 +86,11 @@ OpenNMS:
     NetflowListenerPort: 9999
     Resources:
       Limits:
-        Cpu: "1"
-        Memory: 500Mi
+        Cpu: "2"
+        Memory: 4Gi
       Requests:
-        Cpu: 100m
-        Memory: 250Mi
+        Cpu: "1"
+        Memory: 2Gi
     ExtraVolumes: []
     ExtraMounts: []
     ExtraInitContainers: []
@@ -110,7 +110,7 @@ OpenNMS:
     Resources:
       Limits:
         Cpu: "2"
-        Memory: 4Gi
+        Memory: 4Gi # MaxRAMPercentage=50,avg-usage=480MB
       Requests:
         Cpu: "1"
         Memory: 2Gi
@@ -139,11 +139,11 @@ OpenNMS:
     DbHost: "postgres"
     Resources:
       Limits:
-        Cpu: "1"
-        Memory: 500Mi
+        Cpu: "2"
+        Memory: 4Gi # MaxRAMPercentage=50,avg-usage=620MB
       Requests:
-        Cpu: 100m
-        Memory: 250Mi
+        Cpu: "1"
+        Memory: 2Gi
     EncryptionKey: ~
     PrivateRepoEnabled: false
     kafkaSecretName: ~
@@ -157,11 +157,11 @@ OpenNMS:
     DbHost: "postgres"
     Resources:
       Limits:
-        Cpu: "1"
-        Memory: 500Mi
+        Cpu: "2"
+        Memory: 4Gi # MaxRAMPercentage=50,avg-usage=480MB
       Requests:
-        Cpu: 100m
-        Memory: 250Mi
+        Cpu: "1"
+        Memory: 2Gi
     PrivateRepoEnabled: false
     kafkaSecretName: ~
   Notification:
@@ -174,11 +174,11 @@ OpenNMS:
     DbHost: "postgres"
     Resources:
       Limits:
-        Cpu: "1"
-        Memory: 500Mi
+        Cpu: "2"
+        Memory: 4Gi # MaxRAMPercentage=50,avg-usage=450MB
       Requests:
-        Cpu: 100m
-        Memory: 250Mi
+        Cpu: "1"
+        Memory: 2Gi
     PrivateRepoEnabled: false
     kafkaSecretName: ~
     retry:
@@ -198,11 +198,11 @@ OpenNMS:
     DbHost: "postgres"
     Resources:
       Limits:
-        Cpu: "1"
-        Memory: 500Mi
+        Cpu: "2"
+        Memory: 4Gi # MaxRAMPercentage=50,avg-usage=550MB
       Requests:
-        Cpu: 100m
-        Memory: 250Mi
+        Cpu: "1"
+        Memory: 2Gi
     PrivateRepoEnabled: false
   DataChoices:
     ServiceName: opennms-datachoices
@@ -215,10 +215,10 @@ OpenNMS:
     Resources:
       Limits:
         Cpu: "1"
-        Memory: 500Mi
+        Memory: 1Gi
       Requests:
-        Cpu: 100m
-        Memory: 250Mi
+        Cpu: "1"
+        Memory: 1Gi
     PrivateRepoEnabled: false
   MinionCertificateManager:
     Enabled: false
@@ -232,10 +232,10 @@ OpenNMS:
     Resources:
       Limits:
         Cpu: "1"
-        Memory: 500Mi
+        Memory: 1Gi
       Requests:
-        Cpu: 100m
-        Memory: 250Mi
+        Cpu: "1"
+        Memory: 1Gi
     PrivateRepoEnabled: false
   MinionCertificateVerifier:
     ServiceName: opennms-minion-certificate-verifier
@@ -245,10 +245,10 @@ OpenNMS:
     Resources:
       Limits:
         Cpu: "1"
-        Memory: 500Mi
+        Memory: 1Gi # MaxRAMPercentage=50,avg-usage=245MB
       Requests:
-        Cpu: 100m
-        Memory: 250Mi
+        Cpu: "1"
+        Memory: 1Gi
     PrivateRepoEnabled: false
     CertificateManagerUrl: ""
 Postgres:
@@ -286,12 +286,12 @@ Keycloak:
   DbName: "horizon_stream"
   DbHost: "postgres"
   Resources:
-    Limits:
-      Cpu: "1"
-      Memory: 1000Mi
-    Requests:
-      Cpu: 100m
-      Memory: 500Mi
+      Limits:
+        Cpu: "1"
+        Memory: 2Gi
+      Requests:
+        Cpu: "1"
+        Memory: 1Gi
   AdminUsername: admin
   AdminPassword: notset
   RealmName: opennms
