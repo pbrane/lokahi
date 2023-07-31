@@ -210,9 +210,11 @@ class MonitoringLocationServiceTest {
         long id = 1L;
         MonitoringLocationDTO monitoringLocationDTO = MonitoringLocationDTO.newBuilder()
             .setId(id)
+            .setTenantId(TENANT_ID)
             .build();
         MonitoringLocation monitoringLocation = new MonitoringLocation();
         monitoringLocation.setId(id);
+        monitoringLocation.setTenantId(TENANT_ID);
         when(mapper.dtoToModel(any(MonitoringLocationDTO.class))).thenReturn(monitoringLocation);
         when(modelRepo.findByIdAndTenantId(id, TENANT_ID)).thenReturn(Optional.of(monitoringLocation));
         when(modelRepo.save(monitoringLocation)).thenReturn(monitoringLocation);
@@ -232,8 +234,10 @@ class MonitoringLocationServiceTest {
     void testUpsertWithoutId() throws LocationNotFoundException {
         // Mock data
         MonitoringLocationDTO monitoringLocationDTO = MonitoringLocationDTO.newBuilder()
+            .setTenantId(TENANT_ID)
             .build();
         MonitoringLocation monitoringLocation = new MonitoringLocation();
+        monitoringLocation.setTenantId(TENANT_ID);
         when(mapper.dtoToModel(any(MonitoringLocationDTO.class))).thenReturn(monitoringLocation);
         when(modelRepo.save(monitoringLocation)).thenReturn(monitoringLocation);
         when(mapper.modelToDTO(any(MonitoringLocation.class))).thenReturn(monitoringLocationDTO);
@@ -253,6 +257,7 @@ class MonitoringLocationServiceTest {
         // Mock data
         MonitoringLocationDTO monitoringLocationDTO = MonitoringLocationDTO.newBuilder()
             .setId(INVALID_LOCATION_ID)
+            .setTenantId(TENANT_ID)
             .build();
         when(modelRepo.findByIdAndTenantId(INVALID_LOCATION_ID, TENANT_ID)).thenReturn(Optional.empty());
 
