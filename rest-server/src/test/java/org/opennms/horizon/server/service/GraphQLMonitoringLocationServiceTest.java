@@ -119,6 +119,28 @@ class GraphQLMonitoringLocationServiceTest {
     }
 
     @Test
+    void testGetLocationByName() throws JSONException {
+        doReturn(location1).when(mockClient).getLocationByName("LOC1", accessToken);
+        String request = """
+            query {
+                locationByName(locationName: "LOC1") {
+                    location
+                }
+            }""";
+        webClient.post()
+            .uri(GRAPHQL_PATH)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createPayload(request))
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.data.locationByName.location").isEqualTo("LOC1");
+        verify(mockClient).getLocationByName("LOC1", accessToken);
+        verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
+    }
+
+    @Test
     void testSearchLocation() throws JSONException {
         doReturn(Collections.singletonList(location1)).when(mockClient).searchLocations("LOC", accessToken);
         String request = """
