@@ -33,10 +33,6 @@ public class InventoryRuntimeException extends RuntimeException {
         super(message);
     }
 
-    public InventoryRuntimeException(Throwable t) {
-        super(t);
-    }
-
     public InventoryRuntimeException(String message, Throwable t) {
         super(message, t);
     }

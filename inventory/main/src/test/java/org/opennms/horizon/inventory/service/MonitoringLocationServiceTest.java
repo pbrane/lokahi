@@ -42,6 +42,7 @@ import org.opennms.horizon.inventory.model.MonitoringSystem;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.MonitoringSystemRepository;
 
+import javax.xml.stream.Location;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -202,6 +203,66 @@ class MonitoringLocationServiceTest {
         verify(modelRepo, times(1)).findByLocationContainingIgnoreCaseAndTenantId(TENANT_ID, search);
         verify(mapper, times(3)).modelToDTO(any(MonitoringLocation.class));
     }
+
+    @Test
+    void testUpsertWithExistingId() throws LocationNotFoundException {
+        // Mock data
+        long id = 1L;
+        MonitoringLocationDTO monitoringLocationDTO = MonitoringLocationDTO.newBuilder()
+            .setId(id)
+            .build();
+        MonitoringLocation monitoringLocation = new MonitoringLocation();
+        monitoringLocation.setId(id);
+        when(mapper.dtoToModel(any(MonitoringLocationDTO.class))).thenReturn(monitoringLocation);
+        when(modelRepo.findByIdAndTenantId(id, TENANT_ID)).thenReturn(Optional.of(monitoringLocation));
+        when(modelRepo.save(monitoringLocation)).thenReturn(monitoringLocation);
+        when(mapper.modelToDTO(any(MonitoringLocation.class))).thenReturn(monitoringLocationDTO);
+
+        // Test
+        MonitoringLocationDTO result = monitoringLocationService.upsert(monitoringLocationDTO);
+
+        // Assertions
+        assertNotNull(result);
+        verify(mapper, times(1)).dtoToModel(any(MonitoringLocationDTO.class));
+        verify(modelRepo, times(1)).save(monitoringLocation);
+        verify(mapper, times(1)).modelToDTO(any(MonitoringLocation.class));
+    }
+
+    @Test
+    void testUpsertWithoutId() throws LocationNotFoundException {
+        // Mock data
+        MonitoringLocationDTO monitoringLocationDTO = MonitoringLocationDTO.newBuilder()
+            .build();
+        MonitoringLocation monitoringLocation = new MonitoringLocation();
+        when(mapper.dtoToModel(any(MonitoringLocationDTO.class))).thenReturn(monitoringLocation);
+        when(modelRepo.save(monitoringLocation)).thenReturn(monitoringLocation);
+        when(mapper.modelToDTO(any(MonitoringLocation.class))).thenReturn(monitoringLocationDTO);
+
+        // Test
+        MonitoringLocationDTO result = monitoringLocationService.upsert(monitoringLocationDTO);
+
+        // Assertions
+        assertNotNull(result);
+        verify(mapper, times(1)).dtoToModel(any(MonitoringLocationDTO.class));
+        verify(modelRepo, times(1)).save(monitoringLocation);
+        verify(mapper, times(1)).modelToDTO(any(MonitoringLocation.class));
+    }
+
+    @Test
+    void testUpsertWithInvalidId() {
+        // Mock data
+        MonitoringLocationDTO monitoringLocationDTO = MonitoringLocationDTO.newBuilder()
+            .setId(INVALID_LOCATION_ID)
+            .build();
+        when(modelRepo.findByIdAndTenantId(INVALID_LOCATION_ID, TENANT_ID)).thenReturn(Optional.empty());
+
+        // Test
+        assertThrows(LocationNotFoundException.class, () -> monitoringLocationService.upsert(monitoringLocationDTO));
+
+        // Assertions
+        verify(modelRepo, never()).save(any());
+    }
+
 
     @Test
     void testUpsertAddressIsNull() throws LocationNotFoundException {
