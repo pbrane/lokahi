@@ -38,4 +38,6 @@ To configure flows data, follow these steps:
 . Click the refresh symbol to update the display.
 . Click the download symbol to download the flows data.
 
+// How do the exporter and application fields get populated? Where does that info come from? I can't select anything right now.
+
 
