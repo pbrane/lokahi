@@ -79,8 +79,8 @@ public class NotificationService {
             return;
         }
 
-        boolean notifyPagerDuty = false;
         boolean notifyEmail = false;
+        boolean notifyPagerDuty = false;
 
         for (MonitoringPolicy policy : dbPolicies) {
             if (policy.isNotifyByPagerDuty()) {
@@ -90,6 +90,8 @@ public class NotificationService {
                 notifyEmail = true;
             }
         }
+        log.info("Alert[id: {}] monitoring policy ids: {}, notifyPagerDuty: {}, notifyEmail: {}",
+            alert.getDatabaseId(), alert.getMonitoringPolicyIdList(), notifyPagerDuty, notifyEmail);
 
         if (notifyPagerDuty) {
             postPagerDutyNotification(alert);
@@ -100,6 +102,8 @@ public class NotificationService {
     }
 
     private void postPagerDutyNotification(Alert alert) {
+        log.info("Sending alert[id: {}, tenant: {}] to PagerDuty",
+            alert.getDatabaseId(), alert.getTenantId());
         try {
             pagerDutyAPI.postNotification(alert);
         } catch (NotificationException e) {
@@ -110,7 +114,11 @@ public class NotificationService {
 
     private void postEmailNotification(Alert alert) {
         try {
-            for (String emailAddress : keyCloakAPI.getTenantEmailAddresses(alert.getTenantId())) {
+            List<String> addresses = keyCloakAPI.getTenantEmailAddresses(alert.getTenantId());
+            log.info("Emailing alert[id: {}, tenant: {}] to {} addresses",
+                alert.getDatabaseId(), alert.getTenantId(), addresses.size());
+
+            for (String emailAddress : addresses) {
                 String subject = String.format("%s severity alert",
                     StringUtils.capitalize(alert.getSeverity().getValueDescriptor().getName()));
                 String htmlBody = velocity.populateTemplate(emailAddress, alert);
