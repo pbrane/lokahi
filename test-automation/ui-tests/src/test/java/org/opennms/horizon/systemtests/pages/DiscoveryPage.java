@@ -51,15 +51,15 @@ public class DiscoveryPage {
     private static final SelenideElement discoveryIPInputField = $("[id='contentEditable_1']");
     private static final SelenideElement saveDiscoveryButton = $("[type='submit']");
     private static final SelenideElement addAnotherDiscoveryButton = $("[class='btn hover focus btn-text has-icon']");
-    private static final SelenideElement ADD_DISCOVERY_BUTTON = $(By.xpath("//div[@class='add-btn']/button"));
-    private static final SelenideElement SAVE_DISCOVERY_BUTTON = $(By.xpath("//button[text()='Save discovery']"));
-    private static final SelenideElement SNMP_DISCOVERY_RADIO_BUTTON = $(By.xpath("//div[@class='feather-radio'][./span/text()='ICMP/SNMP']"));
-    private static final SelenideElement DISCOVERY_NAME_INPUT = $(By.xpath("//div[contains(@class, 'name-input')]//input"));
-    private static final SelenideElement LOCATION_NAME_INPUT = $(By.xpath("//input[@placeholder='Search Locations']"));
-    private static final SelenideElement IP_RANGE_INPUT = $(By.xpath("//div[@class='ip-input']//div[@class='content-editable']"));
-    private static final SelenideElement COMMUNITY_STRING_INPUT = $(By.xpath("//div[@class='community-input']//div[@class='content-editable']"));
-    private static final SelenideElement PORT_INPUT = $(By.xpath("//div[@class='udp-port-input']//div[@class='content-editable']"));
-    private static final SelenideElement VIEW_DETECTED_NODES_BUTTON = $(By.xpath("//button[text()=' View Detected Nodes']"));
+    private static final SelenideElement ADD_DISCOVERY_BUTTON = $(By.xpath("//button[@data-test='addDiscoveryBtn']"));
+    private static final SelenideElement SAVE_DISCOVERY_BUTTON = $(By.xpath("//button[@data-test='btn-submit']"));
+    private static final SelenideElement SNMP_DISCOVERY_RADIO_BUTTON = $(By.xpath("//div[@data-test='discoveryICMP']"));
+    private static final SelenideElement DISCOVERY_NAME_INPUT = $(By.xpath("//div[@data-test='discoveryNameInput']//input"));
+    private static final SelenideElement LOCATION_NAME_INPUT = $(By.xpath("//input[@data-test='locationsInput']"));
+    private static final SelenideElement IP_RANGE_INPUT = $(By.xpath("//div[@data-test='ipAddressInput']//div[@class='content-editable']"));
+    private static final SelenideElement COMMUNITY_STRING_INPUT = $(By.xpath("//div[@data-test='communityInput']//div[@class='content-editable']"));
+    private static final SelenideElement PORT_INPUT = $(By.xpath("//div[@data-test='portInput']//div[@class='content-editable']"));
+    private static final SelenideElement VIEW_DETECTED_NODES_BUTTON = $(By.xpath("//button[@data-test='viewDetectedNodesButton']"));
 
     public static void selectICMP_SNMP() {
         SNMPRadioButton.shouldBe(Condition.visible, Condition.enabled).click();
