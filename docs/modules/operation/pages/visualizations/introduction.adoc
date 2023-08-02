@@ -15,10 +15,6 @@ The Insights Dashboard displays the following statistics and visualizations:
 * *Top 10 Applications:* A graph displaying the top 10 most used applications in your monitored network over the selected time period.
 * *Top 10 Talkers:* A graph displaying the top 10 most active applications in your monitored network over the selected time period.
 
-//doesn't look like one can do this for ear?
-You can download PDF versions of the Total Network Traffic, Top 10 Applications, and Top 10 Talkers graphs by clicking the *Download* symbol at the top-right of each graph.
-To refresh the data in a graph, click the associated *Refresh* symbol.
-
 By default, information is shown for the last 24 hours.
 
 == View flows data on a per node basis
