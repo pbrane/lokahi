@@ -17,9 +17,9 @@ The Insights Dashboard displays the following statistics and visualizations:
 
 By default, information is shown for the last 24 hours.
 
-== View flows data on a per node basis
+== View data on a per-node basis
 
-You can view node-specific flows data through the Inventory page:
+If you are using SNMP, you can view rate of traffic observed on a given interface through the Inventory page on a per-node basis:
 
 . Choose *Inventory* in the left navigation menu.
 . Click the *Events/Alarms* symbol on the node whose flows data you want to see.
