@@ -152,20 +152,33 @@ public class SnmpMonitor extends AbstractServiceMonitor {
 
             future =
                 snmpHelper.getAsync(agentConfig, new SnmpObjId[]{ snmpObjectId })
-                    .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand, startTimestamp, svc.getNodeId()))
-                    .completeOnTimeout(this.createTimeoutResponse(finalHostAddress), agentConfig.getTimeout(), TimeUnit.MILLISECONDS)
-                    .exceptionally(thrown -> this.createExceptionResponse(thrown, finalHostAddress));
+                    .thenApply(result -> processSnmpResponse(result, finalHostAddress, snmpObjectId, operator, operand,
+                        startTimestamp, svc.getNodeId(), svc.getMonitorServiceId()))
+                    .completeOnTimeout(this.createTimeoutResponse(finalHostAddress, svc.getMonitorServiceId(), svc.getNodeId()), agentConfig.getTimeout(), TimeUnit.MILLISECONDS)
+                    .exceptionally(thrown -> this.createExceptionResponse(thrown, finalHostAddress, svc.getMonitorServiceId(), svc.getNodeId()));
 
             return future;
         } catch (NumberFormatException e) {
             LOG.debug("Number operator used in a non-number evaluation", e);
-            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder().reason(e.getMessage()).status(Status.Unknown).build());
+            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder()
+                .reason(e.getMessage())
+                .nodeId(svc.getNodeId())
+                .monitoredServiceId(svc.getMonitorServiceId())
+                .status(Status.Unknown).build());
         } catch (IllegalArgumentException e) {
             LOG.debug("Invalid SNMP Criteria", e);
-            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder().reason(e.getMessage()).status(Status.Unknown).build());
+            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder()
+                .reason(e.getMessage())
+                .nodeId(svc.getNodeId())
+                .monitoredServiceId(svc.getMonitorServiceId())
+                .status(Status.Unknown).build());
         } catch (Throwable t) {
             LOG.debug("Unexpected exception during SNMP poll of interface {}", hostAddress, t);
-            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder().reason(t.getMessage()).status(Status.Unknown).build());
+            return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder()
+                .reason(t.getMessage())
+                .nodeId(svc.getNodeId())
+                .monitoredServiceId(svc.getMonitorServiceId())
+                .status(Status.Unknown).build());
         }
     }
 
@@ -191,15 +204,15 @@ public class SnmpMonitor extends AbstractServiceMonitor {
         return (String) msg.getField(fieldDescriptor);
     }
 
-    private ServiceMonitorResponse
-    processSnmpResponse(
+    private ServiceMonitorResponse processSnmpResponse(
         SnmpValue[] result,
         String hostAddress,
         SnmpObjId oid,
         String operator,
         String operand,
         long startTimestamp,
-        long nodeId) {
+        long nodeId,
+        long monitorServiceId) {
         long endTimestamp = System.nanoTime();
         long elapsedTimeNs = ( endTimestamp - startTimestamp );
         double elapsedTimeMs = (double) elapsedTimeNs / NANOSECOND_PER_MILLISECOND;
@@ -209,8 +222,8 @@ public class SnmpMonitor extends AbstractServiceMonitor {
             .status(Status.Unknown)
             .responseTime(elapsedTimeMs)
             .ipAddress(hostAddress)
-            .timestamp(System.currentTimeMillis())
-            .nodeId(nodeId);
+            .nodeId(nodeId)
+            .monitoredServiceId(monitorServiceId);
 
         Map<String, Number> metrics = new HashMap<>();
 
@@ -247,21 +260,19 @@ public class SnmpMonitor extends AbstractServiceMonitor {
 
 
     // NOTE: this is called at call-setup time, not after the timeout.
-    private ServiceMonitorResponse createTimeoutResponse(String hostAddress) {
-        ServiceMonitorResponse response =
-            ServiceMonitorResponseImpl.builder()
+    private ServiceMonitorResponse createTimeoutResponse(String hostAddress, long monitoredServiceId, long nodeId) {
+       return ServiceMonitorResponseImpl.builder()
                 .monitorType(MonitorType.SNMP)
                 .status(Status.Unknown)
                 .ipAddress(hostAddress)
                 .reason("timeout")
                 .responseTime(-1)
-                .build()
-            ;
-
-        return response;
+                .monitoredServiceId(monitoredServiceId)
+                .nodeId(nodeId)
+                .build();
     }
 
-    private ServiceMonitorResponse createExceptionResponse(Throwable thrown, String hostAddress) {
+    private ServiceMonitorResponse createExceptionResponse(Throwable thrown, String hostAddress, long monitoredServiceId, long nodeId) {
         LOG.debug("SNMP poll failed", thrown);
 
         ServiceMonitorResponse response =
@@ -270,6 +281,8 @@ public class SnmpMonitor extends AbstractServiceMonitor {
                 .status(Status.Unknown)
                 .ipAddress(hostAddress)
                 .reason(thrown.getMessage())
+                .monitoredServiceId(monitoredServiceId)
+                .nodeId(nodeId)
                 .build()
             ;
 

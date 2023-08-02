@@ -8,6 +8,7 @@
 
 # For local dev and sample envs, a place to put required dependencies, secrets,
 # or test data that we do not want to push to repo.
+tilt_config.json
 dev/tmp
 local-sample/tmp
 
@@ -39,3 +40,9 @@ java/bin/
 *.iml
 idea/
 *.log
+
+# Antora artifacts
+build/
+public/
+node_modules
+

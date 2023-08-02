@@ -1,0 +1,17 @@
+:imagesdir: ../assets/images
+:!sectids:
+
+= Requirements
+:description: See the requirements to set up OpenNMS Lōkahi, an open source network monitoring project designed for cloud-native deployments.
+
+OpenNMS Lōkahi uses PostgreSQL as a relational database for its inventory and configuration, and big data systems such as Cortex and Elasticsearch for persistence of historical monitoring data.
+
+Our current goal is that you can develop and run Lōkahi on a development system on the following platforms:
+
+* Linux x86 (`x86_64-unknown-linux-gnu`)
+* Darwin x86 (`x86_64-apple-darwin`)
+* Darwin arm (1aarch64-apple-darwin1)
+
+Lōkahi requires a Kubernetes-compatible infrastructure for deploying the application.
+
+For installation instructions, see the https://github.com/OpenNMS-Cloud/lokahi/wiki/Getting-Started---Admin[administrator's getting started guide] in the project's wiki on GitHub.

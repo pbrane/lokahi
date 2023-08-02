@@ -13,6 +13,7 @@
       class="name"
       :schema="nameV"
       data-test="azure-name-input"
+      :disabled="isDisabled"
     />
 
     <div class="row">
@@ -22,6 +23,7 @@
         class="column"
         :schema="clientIdV"
         data-test="azure-client-input"
+        :disabled="isDisabled"
       />
       <FeatherProtectedInput
         v-model="store.azure.clientSecret"
@@ -29,6 +31,7 @@
         class="column"
         :schema="clientSecretV"
         data-test="azure-secret-input"
+        :disabled="isDisabled"
       />
     </div>
 
@@ -39,6 +42,7 @@
         class="column"
         :schema="subIdV"
         data-test="azure-sub-input"
+        :disabled="isDisabled"
       />
       <FeatherInput
         v-model="store.azure.directoryId"
@@ -46,14 +50,14 @@
         class="column"
         :schema="dirIdV"
         data-test="azure-dir-input"
+        :disabled="isDisabled"
       />
     </div>
 
-    <DiscoveryLocationsAutocomplete
-      @locationSelected="selectLocation"
-      class="locations"
-      type="single"
-    />
+    <div class="locations">
+      <DiscoveryLocationsAutocomplete :disabled="isDisabled" />
+    </div>
+    
     <BasicAutocomplete
       class="tags"
       @items-selected="tagsSelectedListener"
@@ -62,6 +66,7 @@
       :label="Common.tagsInput"
       ref="tagsAutocompleteRef"
       :preselectedItems="tags"
+      :disabled="isDisabled"
     />
 
     <div class="buttons">
@@ -87,7 +92,7 @@
 <script setup lang="ts">
 import { useDiscoveryStore } from '@/store/Views/discoveryStore'
 import { Azure, Common } from './discovery.text'
-import { AzureActiveDiscovery, MonitoringLocation } from '@/types/graphql'
+import { AzureActiveDiscovery } from '@/types/graphql'
 import { useDiscoveryQueries } from '@/store/Queries/discoveryQueries'
 import { useTagQueries } from '@/store/Queries/tagQueries'
 import { useDiscoveryMutations } from '@/store/Mutations/discoveryMutations'
@@ -106,6 +111,8 @@ const props = defineProps<{
   discovery: AzureActiveDiscovery | null
 }>()
 
+const isDisabled = computed(() => Boolean(props.discovery))
+
 const tags = computed(() => (props.discovery?.id ? discoveryQueries.tagsByActiveDiscoveryId : []))
 
 onMounted(() => {
@@ -117,14 +124,11 @@ onMounted(() => {
   }
 })
 
-const selectLocation = (location: MonitoringLocation) => location && store.selectLocation(location, true)
-
 const tagsAutocompleteRef = ref()
 const tagsSelectedListener = (tags: Record<string, string>[]) => {
   const tagsSelected = tags.map((tag) => {
     delete tag._text
     delete tag.id
-    delete tag.tenantId
     return tag
   })
   store.selectTags(tagsSelected)
@@ -179,10 +183,6 @@ onMounted(() => store.clearAzureForm())
   .buttons {
     flex-direction: row;
     align-self: flex-end;
-  }
-
-  .locations {
-    margin-bottom: var(variables.$spacing-l);
   }
 
   @include mediaQueriesMixins.screen-md {

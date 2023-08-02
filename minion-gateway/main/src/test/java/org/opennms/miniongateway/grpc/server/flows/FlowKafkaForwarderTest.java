@@ -1,0 +1,102 @@
+/*******************************************************************************
+ * This file is part of OpenNMS(R).
+ *
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
+ *
+ * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
+ *
+ * OpenNMS(R) is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * OpenNMS(R) is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OpenNMS(R).  If not, see:
+ *      http://www.gnu.org/licenses/
+ *
+ * For more information contact:
+ *     OpenNMS(R) Licensing <license@opennms.org>
+ *     http://www.opennms.org/
+ *     http://www.opennms.com/
+ *******************************************************************************/
+
+package org.opennms.miniongateway.grpc.server.flows;
+
+import com.google.protobuf.Message;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.opennms.horizon.flows.document.FlowDocument;
+import org.opennms.horizon.flows.document.FlowDocumentLog;
+import org.opennms.horizon.flows.document.TenantLocationSpecificFlowDocumentLog;
+import org.opennms.horizon.shared.flows.mapper.TenantLocationSpecificFlowDocumentLogMapper;
+import org.opennms.horizon.shared.grpc.common.LocationServerInterceptor;
+import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
+import org.opennms.horizon.shared.grpc.interceptor.MeteringServerInterceptor;
+import org.opennms.miniongateway.grpc.server.flows.FlowApplicationConfig;
+import org.opennms.miniongateway.grpc.server.flows.FlowKafkaForwarder;
+import org.opennms.miniongateway.grpc.server.kafka.SinkMessageKafkaPublisher;
+import org.opennms.miniongateway.grpc.server.kafka.SinkMessageKafkaPublisherFactory;
+import org.opennms.miniongateway.grpc.server.kafka.SinkMessageMapper;
+import org.springframework.kafka.core.KafkaTemplate;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
+public class FlowKafkaForwarderTest {
+    private final String kafkaTopic = "kafkaTopic";
+
+    @Mock
+    private SinkMessageKafkaPublisherFactory publisherFactory;
+    @Mock
+    private TenantLocationSpecificFlowDocumentLogMapper mapper;
+    @Mock
+    private SinkMessageKafkaPublisher<Message, Message> publisher;
+
+    private FlowKafkaForwarder flowKafkaForwarder;
+
+    private MeterRegistry meterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+
+    @Before
+    public void setUp() {
+        when(publisherFactory.create(any(SinkMessageMapper.class), eq(kafkaTopic))).thenReturn(publisher);
+        flowKafkaForwarder = new FlowKafkaForwarder(publisherFactory, mapper, kafkaTopic, meterRegistry);
+    }
+
+    @Test
+    public void testForward() {
+        var message = FlowDocumentLog.newBuilder()
+            .setSystemId("systemId")
+            .addMessage(FlowDocument.newBuilder()
+                .setSrcAddress("127.0.0.1"))
+            .addMessage(FlowDocument.newBuilder()
+                .setSrcAddress("0.0.0.0"))
+            .build();
+
+        flowKafkaForwarder.handleMessage(message);
+        Mockito.verify(publisher).send(message);
+        var flowCounter = meterRegistry.counter(FlowKafkaForwarder.class.getName(),
+            MeteringServerInterceptor.SERVICE_TAG_NAME, FlowKafkaForwarder.FLOW_DOCUMENT_TAG);
+        var flowLogCounter = meterRegistry.counter(FlowKafkaForwarder.class.getName(),
+            MeteringServerInterceptor.SERVICE_TAG_NAME, FlowKafkaForwarder.FLOW_DOCUMENT_LOG_TAG);
+        Assert.assertEquals(message.getMessageCount(), (int) flowCounter.count());
+        Assert.assertEquals(1, (int) flowLogCounter.count());
+    }
+}

@@ -1,44 +1,19 @@
 <template>
-  <PrimaryModal
-    :visible="isVisible"
-    hideTitle
-    :minWidth="385"
-  >
-    <template #content
-      ><div class="modal-content">
+  <PrimaryModal :visible="isVisible" hideTitle :minWidth="385">
+    <template #content>
+      <div class="modal-content">
         <div class="header">
           <div class="title">{{ interfaceName }}</div>
-          <FeatherIcon
-            :icon="Close"
-            class="pointer"
-            @click="closeModal"
-          />
+          <FeatherIcon :icon="Close" class="pointer" @click="closeModal" />
         </div>
         <div class="metrics">
-          <LineGraph
-            :graph="bitsInOut"
-            @has-data="displayEmptyMsgIfNoData"
-          />
-          <LineGraph
-            v-if="!isAzure"
-            :graph="bandwidthInOut"
-            @has-data="displayEmptyMsgIfNoData"
-          />
-          <LineGraph
-            v-if="!isAzure"
-            :graph="nodeLatency"
-            @has-data="displayEmptyMsgIfNoData"
-          />
-          <LineGraph
-            v-if="!isAzure"
-            :graph="errorsInOut"
-            @has-data="displayEmptyMsgIfNoData"
-          />
+          <LineGraph :graph="bitsInOut" type="bytes" @has-data="displayEmptyMsgIfNoData" />
+          <LineGraph v-if="isAzureAndHasPublicIP" type="bytes" :graph="publicInterfaceByteCount" @has-data="displayEmptyMsgIfNoData" />
+          <LineGraph v-if="!isAzure" type="percentage" :graph="bandwidthInOut" @has-data="displayEmptyMsgIfNoData" />
+          <LineGraph v-if="!isAzure" :graph="nodeLatency" @has-data="displayEmptyMsgIfNoData" />
+          <LineGraph v-if="!isAzure" :graph="errorsInOut" @has-data="displayEmptyMsgIfNoData" />
         </div>
-        <div
-          v-if="!hasMetricData"
-          class="empty"
-        >
+        <div v-if="!hasMetricData" class="empty">
           Currently no data available.
         </div>
       </div>
@@ -47,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { TimeRangeUnit } from '@/types/graphql'
+import { TimeRangeUnit, AzureInterface } from '@/types/graphql'
 import useModal from '@/composables/useModal'
 import Close from '@featherds/icon/navigation/Cancel'
 import { GraphProps } from '@/types/graphs'
@@ -60,7 +35,9 @@ const interfaceName = ref()
 const instance = ref()
 const ifName = ref()
 const hasMetricData = ref(false)
+const azureInterface = ref({} as AzureInterface)
 const isAzure = ref(false)
+const isAzureAndHasPublicIP = ref(false)
 
 const bandwidthInOut = computed<GraphProps>(() => {
   return {
@@ -76,15 +53,34 @@ const bandwidthInOut = computed<GraphProps>(() => {
 })
 
 const bitsInOut = computed<GraphProps>(() => {
+  const bitsInOutProperties =  {
+      label: 'Bits Inbound / Outbound',
+      metrics: ['network_in_bits', 'network_out_bits'],
+      monitor: 'SNMP',
+      nodeId: route.params.id as string,
+      instance: instance.value,
+      timeRange: 10,
+      timeRangeUnit: TimeRangeUnit.Minute,
+      ifName: ifName.value
+  }
+
+  if(isAzure.value) {
+    bitsInOutProperties.monitor = 'AZURE'
+    bitsInOutProperties.label = 'Interface Bytes Inbound / Outbound'
+    bitsInOutProperties.metrics = ['bytes_received_rate', 'bytes_sent_rate']
+  }
+  return bitsInOutProperties
+})
+
+const publicInterfaceByteCount = computed<GraphProps>(() => {
   return {
-    label: 'Bits Inbound / Outbound',
-    metrics: ['network_in_bits', 'network_out_bits'],
-    monitor: 'SNMP',
-    nodeId: route.params.id as string,
-    instance: instance.value,
-    timeRange: 10,
-    timeRangeUnit: TimeRangeUnit.Minute,
-    ifName: ifName.value
+      label: 'Bytes Count',
+      metrics: ['bytes_received'],
+      monitor: 'AZURE',
+      nodeId: route.params.id as string,
+      instance: 'publicIPAddresses/' + azureInterface.value?.publicIpId,
+      timeRange: 10,
+      timeRangeUnit: TimeRangeUnit.Minute
   }
 })
 
@@ -114,10 +110,11 @@ const errorsInOut = computed<GraphProps>(() => {
   }
 })
 
-const openAzureMetrics = (inst: string) => {
+const openAzureMetrics = (inst: AzureInterface) => {
   isAzure.value = true // azure nodes can only display bytes in/out
-  interfaceName.value = inst
-  instance.value = inst
+  instance.value = 'networkInterfaces/' + inst?.interfaceName
+  azureInterface.value = inst
+  isAzureAndHasPublicIP.value = isAzure.value && azureInterface.value.publicIpId != ''
   openModal()
 }
 
@@ -144,32 +141,39 @@ defineExpose({ openAzureMetrics, setIfNameAndOpenModal })
 .modal-content {
   max-width: 785px;
 }
+
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   @include typography.headline3;
 }
+
 .metrics {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
   width: 100%;
+
   @include mediaQueriesMixins.screen-md {
     flex-direction: row;
   }
-  > div {
+
+  >div {
     margin-top: var(variables.$spacing-l);
     margin-right: 0;
     display: flex;
+
     @include mediaQueriesMixins.screen-md {
       margin-right: var(variables.$spacing-l);
     }
   }
-  > div:nth-child(2n) {
+
+  >div:nth-child(2n) {
     margin-right: 0;
   }
 }
+
 .empty {
   margin-top: var(variables.$spacing-xl);
 }

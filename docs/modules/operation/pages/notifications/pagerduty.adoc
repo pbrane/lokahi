@@ -1,0 +1,53 @@
+
+:imagesdir: ../assets/images
+
+= Set up Notifications through PagerDuty
+:description: Learn how to set up notifications through PagerDuty for OpenNMS Lōkahi/Cloud.
+
+In addition to using the Lōkahi/Cloud UI to view notifications, you may want to enable PagerDuty integration.
+
+. Log in to https://www.pagerduty.com/[PagerDuty].
++
+If you do not already have an account, create one.
+. Click on *Services*.
+. Click the *New Service* button on the top right.
+. Enter a name and optional description for this new integration; for example, `Events API v2`.
++
+image::notifications/pd-integration.png["PagerDuty add integration page. Events API v2 selected.", 500]
+
+. Specify the escalation policy.
++
+image::notifications/pd-escalation.png["PagerDuty set escalation page. Generate a new escalation policy selected.", 500]
+
+. Configure the reduce noise settings.
++
+image::notifications/pd-reduce-noise.png["PagerDuty set reduce noise page. Intelligent grouping selected.", 500]
+
+. Select the `Events API v2` integration option from the list.
++
+image::notifications/pd-integration-select.png["PagerDuty integrations page. Events API V2 selected.", 500]
+
+. Click *Create Service* at the bottom of the page.
++
+The integration details page appears:
++
+image::notifications/pd-integration-details.png["PagerDuty integration details page. Integration Key field highlighted.", 500]
+. Copy the integration key.
+. In Lōkahi/Cloud, click *Minions>Outbound Notification*.
+. Paste your integration key into the field and click *Save*.
+. Select *Monitoring Policies* in the left navigation menu.
+. Make sure you have a monitoring policy with notifications configured via PagerDuty.
++
+NOTE: You cannot edit the default monitoring policy, which has email and PagerDuty notifications on by default.
+You may want to to xref:get-started/policies/create.adoc[create a new monitoring policy].
+
+. When a notification that matches the monitoring policy occurs, a new incident in PagerDuty will also be created.
+
+image::notifications/pd-open-incidents.png["PagerDuty page displaying open incidents.", 600]
+
+== Disable PagerDuty notifications
+
+To disable PagerDuty notifications, follow these steps:
+
+. Log in to Lōkahi/Cloud, and click *Minions>Outbound Notification*.
+. Type a space in the integration key field to create a blank line and click *Save*.

@@ -142,6 +142,8 @@
         :selected-filter-range="flowsStore.filters.dateFilter"
         :chart-data="appStore.lineChartData"
         :table-data="appStore.tableData"
+        :format="flowsStore.convertToDate"
+        :get-chart-area-width-for-data-points="setMaxDataPointsAndUpdateCharts"
       />
       <div
         v-if="
@@ -241,6 +243,13 @@ const timeOptions = ref([
 const isDrawerOpen = ref(false)
 const toggleDrawer = () => {
   isDrawerOpen.value = !isDrawerOpen.value
+}
+
+const setMaxDataPointsAndUpdateCharts = (width: number) => {
+  if (width && width !== flowsStore.filters.maxDataPoints) {
+    flowsStore.filters.maxDataPoints = width
+    flowsStore.updateApplicationCharts()
+  }
 }
 
 onUnmounted(() => flowsStore.$reset)

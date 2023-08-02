@@ -1,6 +1,5 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import router from './router'
 import { createPinia } from 'pinia'
 import VueKeycloak from '@dsb-norge/vue-keycloak-js'
 import Keycloak from 'keycloak-js'
@@ -16,12 +15,10 @@ import { getGqlClient } from './services/gqlService'
 const { setKeycloak } = useKeycloak()
 
 const app = createApp(App)
-  .use(router)
   .use(createPinia())
   .use(VueKeycloak, {
     init: {
-      onLoad: 'login-required',
-      redirectUri: window.location.href
+      onLoad: 'login-required'
     },
     config: {
       realm: keycloakConfig.realm,
@@ -32,7 +29,18 @@ const app = createApp(App)
       setKeycloak(kc)
       const gqlClient = getGqlClient(kc)
       app.use(gqlClient)
-      app.mount('#app')
+
+      // FIXME: This is a workaround for these issues:
+      //  https://github.com/keycloak/keycloak/issues/14742
+      //  https://opennms.atlassian.net/browse/HS-1654
+      //  VueJS's `createRouter` function interferes with the routing Keycloak does as part of its auth process.
+      //  Keycloak needs to be fully initialized before the router is imported.
+      //  Other components should prefer `const router = useRouter()`, importing `@/router` can cause this to regress.
+      import('./router')
+        .then((router) => {
+          app.use(router.default)
+          app.mount('#app')
+        })
     }
   })
   .directive('date', dateFormatDirective)

@@ -6,7 +6,6 @@ mutation CreateLocation($location: MonitoringLocationCreateInput!) {
     address
     longitude
     latitude
-    tenantId
   }
 }
 
@@ -18,11 +17,15 @@ mutation UpdateLocation($location: MonitoringLocationUpdateInput) {
     address
     longitude
     latitude
-    tenantId
   }
 }
 
 #delete
 mutation DeleteLocation($id: Long!) {
   deleteLocation(id: $id)
+}
+
+#revoke
+mutation revokeMinionCertificate($locationId: Long!) {
+  revokeMinionCertificate(locationId: $locationId)
 }

@@ -41,9 +41,7 @@ import org.opennms.horizon.inventory.dto.TagCreateListDTO;
 import org.opennms.horizon.inventory.dto.TagEntityIdDTO;
 import org.opennms.horizon.inventory.exception.EntityExistException;
 import org.opennms.horizon.inventory.exception.LocationNotFoundException;
-import org.opennms.horizon.inventory.mapper.IpInterfaceMapper;
 import org.opennms.horizon.inventory.mapper.NodeMapper;
-import org.opennms.horizon.inventory.mapper.SnmpInterfaceMapper;
 import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.Node;
@@ -51,6 +49,7 @@ import org.opennms.horizon.inventory.model.Tag;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
+import org.opennms.horizon.inventory.repository.TagRepository;
 import org.opennms.horizon.inventory.service.taskset.CollectorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
@@ -84,6 +83,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class NodeService {
 
+    private final static String DEFAULT_TAG = "default";
     private final ThreadFactory threadFactory = new ThreadFactoryBuilder()
         .setNameFormat("delete-node-task-publish-%d")
         .build();
@@ -98,9 +98,8 @@ public class NodeService {
     private final TaskSetPublisher taskSetPublisher;
     private final TagService tagService;
     private final NodeMapper mapper;
-    private final SnmpInterfaceMapper snmpInterfaceMapper;
-    private final IpInterfaceMapper ipInterfaceMapper;
     private final TagPublisher tagPublisher;
+    private final TagRepository tagRepository;
 
     @Transactional(readOnly = true)
     public List<NodeDTO> findByTenantId(String tenantId) {
@@ -153,7 +152,7 @@ public class NodeService {
     private MonitoringLocation findMonitoringLocation(NodeCreateDTO request, String tenantId) throws LocationNotFoundException {
         Optional<MonitoringLocation> found = monitoringLocationRepository.findByIdAndTenantId(Long.parseLong(request.getLocationId()), tenantId);
 
-        return found.orElseThrow(() -> new LocationNotFoundException("Location not found " + request.getLocationId()));
+        return found.orElseThrow(() -> new LocationNotFoundException("Location not found with ID " + request.getLocationId()));
     }
 
     private Node saveNode(NodeCreateDTO request, MonitoringLocation monitoringLocation,
@@ -231,7 +230,8 @@ public class NodeService {
             ipInterface.getMonitoredServices().forEach((ms) -> {
                 String serviceName = ms.getMonitoredServiceType().getServiceName();
                 var monitorType = MonitorType.valueOf(serviceName);
-                var monitorTask = monitorTaskSetService.getMonitorTask(monitorType, ipInterface, node.getId(), null);
+                var monitorTask = monitorTaskSetService.getMonitorTask(monitorType, ipInterface, node.getId(),
+                    ms.getId(), null);
                 Optional.ofNullable(monitorTask).ifPresent(tasks::add);
                 var collectorTask = collectorTaskSetService.getCollectorTask(monitorType, ipInterface, node.getId(), null);
                 Optional.ofNullable(collectorTask).ifPresent(tasks::add);
@@ -240,21 +240,69 @@ public class NodeService {
         return tasks;
     }
 
-    public void updateNodeInfo(Node node, NodeInfoResult nodeInfo, MonitoredState monitoredState) {
+    public void updateNodeMonitoredState(Node node) {
+
+        // See HS-1812, Always match "default" tag.
+        final var monitored = tagRepository.findByTenantIdAndNodeId(node.getTenantId(), node.getId()).stream()
+            .anyMatch(tag -> !tag.getMonitorPolicyIds().isEmpty() || DEFAULT_TAG.equals(tag.getName()));
+
+        final var monitoredState = monitored ? MonitoredState.MONITORED
+            : node.getMonitoredState() == MonitoredState.DETECTED
+                ? MonitoredState.DETECTED
+                : MonitoredState.UNMONITORED;
+
+        if (node.getMonitoredState() != monitoredState) {
+            node.setMonitoredState(monitoredState);
+            this.nodeRepository.save(node);
+        }
+    }
+
+    public void updateNodeMonitoredState(long nodeId, String tenantId) {
+
+        // See HS-1812, Always match "default" tag.
+        final var monitored = tagRepository.findByTenantIdAndNodeId(tenantId, nodeId).stream()
+            .anyMatch(tag -> !tag.getMonitorPolicyIds().isEmpty() || DEFAULT_TAG.equals(tag.getName()));
+
+        var optional = nodeRepository.findById(nodeId);
+        if(optional.isEmpty()) {
+            return;
+        }
+        var node = optional.get();
+        final var monitoredState = monitored ? MonitoredState.MONITORED
+            : (node.getMonitoredState() == MonitoredState.DETECTED ? MonitoredState.DETECTED : MonitoredState.UNMONITORED);
+
+        if (node.getMonitoredState() != monitoredState) {
+            node.setMonitoredState(monitoredState);
+            this.nodeRepository.save(node);
+        }
+    }
+
+    public void updateNodeInfo(Node node, NodeInfoResult nodeInfo) {
         mapper.updateFromNodeInfo(nodeInfo, node);
 
         if (StringUtils.isNotEmpty(nodeInfo.getSystemName())) {
-            // HS-1364: update the node label if the incoming System Name is set, and the existing node value is not
-            if (StringUtils.isEmpty(node.getNodeLabel())) {
+            Boolean validIpAddress = isValidInetAddress(node.getNodeLabel());
+            if (validIpAddress) {
+                //Overwrite node label with System name if label is an IP Address.
                 node.setNodeLabel(nodeInfo.getSystemName());
             } else {
-                log.debug("Node already has a nodeLabel - keeping the existing value: node-label={}; system-name={}", node.getNodeLabel(), nodeInfo.getSystemName());
+                log.debug("Node already has a nodeLabel - keeping the existing value: node-label={}; system-name={}",
+                    node.getNodeLabel(), nodeInfo.getSystemName());
             }
         }
 
-        node.setMonitoredState(monitoredState);
+        this.updateNodeMonitoredState(node.getId(), node.getTenantId());
 
         nodeRepository.save(node);
+    }
+
+    private Boolean isValidInetAddress(String ipAddress) {
+        try {
+            var inetAddress = InetAddressUtils.addr(ipAddress);
+            return true;
+        } catch (IllegalArgumentException  e) {
+            return false;
+        }
     }
 
     private void removeAssociatedTags(Node node) {
@@ -295,7 +343,7 @@ public class NodeService {
             log.error("Error while sending nodescan task for node with label {}", node.getNodeLabel());
         }
     }
-    
+
     @Transactional(readOnly = true)
     public List<NodeDTO> listNodesByNodeLabelSearch(String tenantId, String nodeLabelSearchTerm) {
         return nodeRepository.findByTenantIdAndNodeLabelLike(tenantId, nodeLabelSearchTerm).stream()

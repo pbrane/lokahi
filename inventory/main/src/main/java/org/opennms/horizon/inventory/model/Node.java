@@ -79,7 +79,7 @@ public class Node {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "monitored_state")
-    private MonitoredState monitoredState;
+    private MonitoredState monitoredState = MonitoredState.DETECTED;
 
     @NotNull
     @Column(name = "create_time", columnDefinition = "TIMESTAMP")
@@ -97,6 +97,9 @@ public class Node {
 
     @OneToMany(mappedBy = "node", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<SnmpInterface> snmpInterfaces = new ArrayList<>();
+
+    @OneToMany(mappedBy = "node", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<AzureInterface> azureInterfaces = new ArrayList<>();
 
     @ManyToMany(mappedBy = "nodes")
     private List<Tag> tags = new ArrayList<>();

@@ -1,11 +1,7 @@
 <template>
   <div class="line-chart-container">
     <div class="chart-container">
-      <Line
-        :data="chartData"
-        :options="chartOptions"
-        ref="lineChart"
-      />
+      <Line :data="chartData" :options="chartOptions" ref="lineChart" />
     </div>
   </div>
 </template>
@@ -16,6 +12,8 @@ import { ChartData } from '@/types'
 import { PropType } from 'vue'
 import { Line } from 'vue-chartjs'
 import { downloadCanvas } from '../Graphs/utils'
+import 'chartjs-adapter-date-fns'
+
 import {
   Chart,
   CategoryScale,
@@ -27,11 +25,12 @@ import {
   Legend,
   ChartOptions
 } from 'chart.js'
+import { humanFileSize } from '../utils'
 const { onThemeChange, isDark } = useTheme()
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
-defineProps({
+const props = defineProps({
   id: {
     required: true,
     type: String
@@ -47,6 +46,14 @@ defineProps({
   selectedFilterRange: {
     required: true,
     type: String
+  },
+  format: {
+    required: true,
+    type: Function as PropType<(val: string) => string>
+  },
+  getChartAreaWidthForDataPoints: {
+    required: true,
+    type: Function as PropType<(width: number) => void>
   }
 })
 const lineChart = ref()
@@ -87,7 +94,7 @@ const chartOptions = computed<ChartOptions<any>>(() => {
           }
         },
         onHover: (event: any, activeElements: any) => {
-          ;(event?.native?.target as HTMLElement).style.cursor = activeElements?.length > 0 ? 'pointer' : 'auto'
+          ; (event?.native?.target as HTMLElement).style.cursor = activeElements?.length > 0 ? 'pointer' : 'auto'
         }
       },
 
@@ -105,17 +112,21 @@ const chartOptions = computed<ChartOptions<any>>(() => {
           title: (context: any) => context.label,
           label: (context: any) => {
             const appName = context.dataset.label
-            return `${appName} : ` + formatBytes(context.parsed.y)
+            return `${appName} : ` + humanFileSize(context.parsed.y)
           }
         }
       }
     },
     scales: {
       x: {
+        type: 'time',
         stacked: true,
         grid: {
           display: true,
           color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+        },
+        ticks: {
+          callback: (val: number) => props.format(new Date(val).toISOString())
         }
       },
       y: {
@@ -124,7 +135,7 @@ const chartOptions = computed<ChartOptions<any>>(() => {
         },
         ticks: {
           callback: function (value: any) {
-            return formatBytes(value, 2)
+            return humanFileSize(value)
           }
         },
         title: {
@@ -141,19 +152,14 @@ onThemeChange(() => {
   chartOptions.value.plugins.legend.labels.color = isDark.value ? 'rgba(10, 12, 27, .9)' : '#000000'
 })
 
-const formatBytes = (bytes: any, decimals = 2) => {
-  if (!+bytes) return '0 Bytes'
-
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  if (sizes[i] === undefined) {
-    return 0
+const getChartAreaWidth = () => {
+  if (lineChart.value?.chart) {
+    props.getChartAreaWidthForDataPoints(lineChart.value.chart.chartArea.width)
   }
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
+
+onMounted(() => getChartAreaWidth())
+useResizeObserver(lineChart, () => getChartAreaWidth())
 
 defineExpose({
   downloadChart

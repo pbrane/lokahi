@@ -58,14 +58,14 @@ export interface ChartData {
 export const enum Monitor {
   ICMP = 'ICMP',
   SNMP = 'SNMP',
-  ECHO = 'ECHO'
+  ECHO = 'ECHO',
+  AZURE = 'AZURE'
 }
 
 export interface TagSelectItem {
   name: string
   id?: string
   _text?: string
-  tenantId?: string
 }
 
 export interface ContextMenuItem {
@@ -79,3 +79,7 @@ export interface IButtonTextIcon {
 }
 
 export const AZURE_SCAN = 'AZURE_SCAN'
+
+export type DeepPartial<T> = T extends object ? {
+  [P in keyof T]?: DeepPartial<T[P]>
+} : T

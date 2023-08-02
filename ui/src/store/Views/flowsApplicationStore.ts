@@ -104,17 +104,27 @@ export const useFlowsApplicationStore = defineStore('flowsApplicationStore', {
         const datasetArr = {
           type: 'line',
           datasets: data?.map((element: any, index: number) => {
-            return {
-              label: element.label,
-              data: element.data.map((data: any) => {
+
+            const mappedData = [
+              ...element.data.map((data: any) => {
                 return {
-                  x: flowsStore.convertToDate(data.timestamp),
+                  x: data.timestamp,
                   y: data.value
                 }
               }),
+              // if collector down, this tracks the gap between the previous point and now
+              { x: new Date().toISOString(), y: 0 }
+            ]
+
+            return {
+              label: element.label,
+              data: mappedData,
               fill: true,
               borderColor: flowsStore.randomColours(index),
-              backgroundColor: flowsStore.randomColours(index, true)
+              backgroundColor: flowsStore.randomColours(index, true),
+              // hide the last point, which tracks the gap between the previous point and now
+              pointRadius: Array.from(Array(mappedData.length).keys()).map((_, index) => element.data.length === index ? 0 : 1),
+              spanGaps: flowsStore.getSpanGap()
             }
           })
         }
@@ -144,7 +154,7 @@ export const useFlowsApplicationStore = defineStore('flowsApplicationStore', {
       flowsStore.filters.dateFilter = TimeRange.Last_24Hours
       const exporter = get(flowsStore.filters.selectedExporterTopApplication, 'value') as IExporter
       const exporters: IExporter[] = exporter ? [exporter] : []
-      const requestData = flowsStore.getRequestData(10, 2000000, exporters, [])
+      const requestData = flowsStore.getRequestData(10, exporters, [])
 
       const topApplications = await flowsQueries.getApplicationsSummaries(requestData)
       flowsStore.topApplications = [

@@ -32,132 +32,143 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.groups.Tuple;
-import org.junit.jupiter.api.Assertions;
 import org.junit.platform.commons.util.StringUtils;
 import org.opennms.horizon.alerts.proto.Alert;
+import org.opennms.horizon.alerts.proto.AlertConditionProto;
+import org.opennms.horizon.alerts.proto.AlertEventDefinitionProto;
 import org.opennms.horizon.alerts.proto.EventType;
+import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsRequest;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
 import org.opennms.horizon.alerts.proto.MonitorPolicyList;
 import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.alerts.proto.OverTimeUnit;
 import org.opennms.horizon.alerts.proto.PolicyRuleProto;
 import org.opennms.horizon.alerts.proto.Severity;
-import org.opennms.horizon.alerts.proto.TriggerEventProto;
 import org.opennms.horizon.alertservice.AlertGrpcClientUtils;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
-import org.opennms.horizon.shared.common.tag.proto.Operation;
-import org.opennms.horizon.shared.common.tag.proto.TagOperationList;
-import org.opennms.horizon.shared.common.tag.proto.TagOperationProto;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Slf4j
 @RequiredArgsConstructor
 public class MonitorPolicySteps {
+    private final TenantSteps tenantSteps;
     private final KafkaTestHelper kafkaTestHelper;
     private final BackgroundSteps background;
     private final AlertGrpcClientUtils grpcClient;
-    private MonitorPolicyProto.Builder policyBuilder = MonitorPolicyProto.newBuilder();
-    private PolicyRuleProto.Builder ruleBuilder = PolicyRuleProto.newBuilder();
-    private List<TriggerEventProto.Builder> triggerBuilders = new ArrayList<>();
-    private Long policyId;
-    private String tenantId;
-    private String tagTopic;
 
-    private MonitorPolicyProto policy;
+    private MonitorPolicyProto.Builder policyBuilder;
+    private PolicyRuleProto.Builder ruleBuilder;
 
-    private EventType eventType;
+    private List<AlertConditionProto.Builder> triggerBuilders = new ArrayList<>();
 
-    @Given("Monitoring policy kafka consumer")
-    public void setupMonitoringPolicyTopic() {
-        kafkaTestHelper.setKafkaBootstrapUrl(background.getKafkaBootstrapUrl());
-        kafkaTestHelper.startConsumerAndProducer(background.getMonitoringPolicyTopic(), background.getMonitoringPolicyTopic());
+    private Map<String, AlertEventDefinitionProto> snmpTrapDefinitions;
+
+    private MonitorPolicyProto lastCreatedPolicy;
+    private MonitorPolicyProto defaultPolicy;
+
+    @Given("A monitoring policy named {string} with tag {string}, notifying by email")
+    public void defineNewPolicyNotifyViaEmail(String name, String tag) {
+        defineNewPolicy(name, tag);
+        policyBuilder.setNotifyByEmail(true);
     }
 
-    @Given("Kafka topic for tags {string}")
-    public void kafkaTopicForTags(String tagTopic) {
-        this.tagTopic = tagTopic;
-        kafkaTestHelper.setKafkaBootstrapUrl(background.getKafkaBootstrapUrl());
-        kafkaTestHelper.startConsumerAndProducer(tagTopic, tagTopic);
-    }
-
-    @Given("Tenant id {string}")
-    public void defaultTenantId(String tenantId) {
-        this.tenantId = tenantId;
-        grpcClient.setTenantId(tenantId);
-    }
-
-    @Given("Monitor policy name {string} and memo {string}")
-    public void monitorPolicyNameAndMemo(String name, String memo) {
-        policyBuilder
-            .setName(name)
-            .setMemo(memo);
-    }
-
-    @Given("tags for monitor policy {string}")
-    public void tagsForMonitorPolicy(String tag) {
+    @Given("A monitoring policy named {string} with tag {string}")
+    public void defineNewPolicy(String name, String tag) {
+        defineNewPolicy(name);
         policyBuilder.addTags(tag);
+
+        ruleBuilder = PolicyRuleProto.newBuilder();
+        triggerBuilders = new ArrayList<>();
     }
 
-    @Given("Notify by email {string}")
-    public void notifyByEmail(String notifyByEmail) {
-        policyBuilder.setNotifyByEmail(Boolean.parseBoolean(notifyByEmail));
+    @Given("A monitoring policy named {string}")
+    public void defineNewPolicy(String name) {
+        policyBuilder = MonitorPolicyProto.newBuilder()
+            .setName(name);
+
+        ruleBuilder = PolicyRuleProto.newBuilder();
+        triggerBuilders = new ArrayList<>();
     }
 
-    @Given("Policy Rule name {string} and componentType {string}")
-    public void policyRuleNameAndComponentType(String name, String type) {
-        ruleBuilder
-            .setName(name)
+    @Given("The policy has a rule named {string} with component type {string} and trap definitions")
+    public void setPolicyRules(String ruleName, String type, DataTable alertConditions) {
+        ruleBuilder = PolicyRuleProto.newBuilder()
+            .setName(ruleName)
             .setComponentType(ManagedObjectType.valueOf(type.toUpperCase()));
+
+        snmpTrapDefinitions = this.loadSnmpTrapDefinitions();
+
+        alertConditions.asMaps().stream()
+            .map(map -> {
+                AlertConditionProto.Builder eventBuilder = AlertConditionProto.newBuilder()
+                    .setTriggerEvent(snmpTrapDefinitions.get(map.get("trigger_event_name")))
+                    .setCount(Integer.parseInt(map.get("count")))
+                    .setOvertime(Integer.parseInt(map.get("overtime")))
+                    .setOvertimeUnit(OverTimeUnit.valueOf(map.get("overtime_unit").toUpperCase()))
+                    .setSeverity(Severity.valueOf(map.get("severity").toUpperCase()));
+                String clearEventType = map.get("clear_event_name");
+                if (StringUtils.isNotBlank(clearEventType)) {
+                    eventBuilder.setClearEvent(snmpTrapDefinitions.get(clearEventType));
+                }
+                return eventBuilder;
+            })
+            .forEach(triggerBuilders::add);
     }
 
-    @Given("Trigger events data")
-    public void triggerEventsData(DataTable data) {
-        List<Map<String, String>> mapList = data.asMaps();
-        mapList.forEach(map -> {
-            TriggerEventProto.Builder eventBuilder = TriggerEventProto.newBuilder().setTriggerEvent(EventType.valueOf(map.get("trigger_event")))
-                .setCount(Integer.parseInt(map.get("count")))
-                .setOvertime(Integer.parseInt(map.get("overtime")))
-                .setOvertimeUnit(OverTimeUnit.valueOf(map.get("overtime_unit").toUpperCase()))
-                .setSeverity(Severity.valueOf(map.get("severity").toUpperCase()));
-            String clearEvent = map.get("clear_event");
-            if(StringUtils.isNotBlank(clearEvent)) {
-                eventBuilder.setClearEvent(EventType.valueOf(clearEvent));
-            }
-            eventType = eventBuilder.getTriggerEvent();
-            triggerBuilders.add(eventBuilder);
-        });
+    private Map<String, AlertEventDefinitionProto> loadSnmpTrapDefinitions() {
+        ListAlertEventDefinitionsRequest request = ListAlertEventDefinitionsRequest.newBuilder()
+            .setEventType(EventType.SNMP_TRAP)
+            .build();
+        List<AlertEventDefinitionProto> eventDefinitionsList = this.grpcClient.getAlertEventDefinitionStub()
+            .listAlertEventDefinitions(request)
+            .getAlertEventDefinitionsList();
+        return eventDefinitionsList.stream()
+            .collect(Collectors.toMap(AlertEventDefinitionProto::getName, Function.identity()));
     }
 
-    @Then("Create a new policy with give parameters")
-    public void createANewPolicyWithGiveParameters() {
-        triggerBuilders.forEach(b -> ruleBuilder.addSnmpEvents(b.build()));
-        MonitorPolicyProto policy = policyBuilder.addRules(ruleBuilder.build()).build();
-        MonitorPolicyProto dbPolicy = grpcClient.getPolicyStub().createPolicy(policy);
-        policyId = dbPolicy.getId();
+    @And("The policy is created in the tenant")
+    public void thePolicyIsCreatedInANewTenant() {
+        triggerBuilders.stream()
+            .map(AlertConditionProto.Builder::build)
+            .forEach(ruleBuilder::addSnmpEvents);
+
+        MonitorPolicyProto policy = policyBuilder
+            .addRules(ruleBuilder.build())
+            .build();
+
         log.info("Creating policy {}", policy);
-        assertThat(dbPolicy).isNotNull();
+        lastCreatedPolicy = grpcClient.getPolicyStub().createPolicy(policy);
+        assertThat(lastCreatedPolicy).isNotNull();
     }
 
     @Then("Verify the new policy has been created")
     public void verifyTheNewPolicyHasBeenCreated() {
-        TriggerEventProto.Builder triggerBuilder = triggerBuilders.stream().filter(b -> b.getTriggerEvent().equals(eventType)).findFirst().get();
-        MonitorPolicyProto policy = grpcClient.getPolicyStub().getPolicyById(Int64Value.of(policyId));
+        AlertEventDefinitionProto triggerEventDefinition = triggerBuilders.stream()
+            .findFirst()
+            .orElseThrow()
+            .getTriggerEvent();
+
+        AlertConditionProto.Builder triggerBuilder = triggerBuilders.stream()
+            .filter(b -> b.getTriggerEvent().equals(triggerEventDefinition))
+            .findFirst().orElseThrow();
+        MonitorPolicyProto policy = grpcClient.getPolicyStub().getPolicyById(Int64Value.of(lastCreatedPolicy.getId()));
         assertThat(policy).isNotNull()
             .extracting("name", "memo", "tagsList")
             .containsExactly(policyBuilder.getName(), policyBuilder.getMemo(), policyBuilder.getTagsList());
@@ -167,7 +178,7 @@ public class MonitorPolicySteps {
         assertThat(policy.getRulesList().get(0).getSnmpEventsList()).asList().hasSize(1)
             .extracting("triggerEvent", "count", "overtime", "overtimeUnit", "severity", "clearEvent")
             .containsExactly(Tuple.tuple(triggerBuilder.getTriggerEvent(), triggerBuilder.getCount(), triggerBuilder.getOvertime(),
-                triggerBuilder.getOvertimeUnit(), triggerBuilder.getSeverity(), EventType.UNKNOWN_EVENT));
+                triggerBuilder.getOvertimeUnit(), triggerBuilder.getSeverity(), triggerBuilder.getClearEvent()));
     }
 
     @Then("List policy should contain {int}")
@@ -179,8 +190,8 @@ public class MonitorPolicySteps {
 
     @Then("The default monitoring policy exist with name {string} and all notification enabled")
     public void theDefaultMonitoringPolicyExistWithNameAndTag(String policyName) {
-         policy = grpcClient.getPolicyStub().getDefaultPolicy(Empty.getDefaultInstance());
-        assertThat(policy).isNotNull()
+        defaultPolicy = grpcClient.getPolicyStub().getDefaultPolicy(Empty.getDefaultInstance());
+        assertThat(defaultPolicy).isNotNull()
             .extracting("name", "notifyByEmail", "notifyByPagerDuty", "notifyByWebhooks")
             .containsExactly(policyName, true, true, true);
     }
@@ -188,21 +199,21 @@ public class MonitorPolicySteps {
     @Then("Verify the default monitoring policy has the following data")
     public void verifyTheDefaultMonitoringPolicyHasTheFollowingData(DataTable dataTable) {
         List<Map<String, String>> rows = dataTable.asMaps();
-        List<TriggerEventProto> events = policy.getRulesList().get(0).getSnmpEventsList();
+        List<AlertConditionProto> events = defaultPolicy.getRulesList().get(0).getSnmpEventsList();
         assertThat(events).asList().hasSize(rows.size());
-        for(int i =0; i < events.size(); i++) {
+        for (int i = 0; i < events.size(); i++) {
             assertThat(events.get(i))
-                .extracting(e -> e.getTriggerEvent().name(), e -> e.getSeverity().name())
-                .containsExactly(rows.get(i).get("triggerEvent"), rows.get(i).get("severity"));
+                .extracting(e -> e.getTriggerEvent().getName(), e -> e.getSeverity().name())
+                .containsExactly(rows.get(i).get("triggerEventName"), rows.get(i).get("severity"));
         }
     }
 
     @Then("Verify the default policy rule has name {string} and component type {string}")
     public void verifyTheDefaultPolicyRuleHasNameAndComponentType(String name, String type) {
-        assertThat(policy.getRulesList()).asList().hasSize(1);
-        PolicyRuleProto rule = policy.getRulesList().get(0);
+        assertThat(defaultPolicy.getRulesList()).asList().hasSize(1);
+        PolicyRuleProto rule = defaultPolicy.getRulesList().get(0);
         assertThat(rule)
-            .extracting(PolicyRuleProto::getName, r->r.getComponentType().name())
+            .extracting(PolicyRuleProto::getName, r -> r.getComponentType().name())
             .containsExactly(name, type);
 
     }
@@ -221,13 +232,18 @@ public class MonitorPolicySteps {
         });
     }
 
+    @Then("Verify valid monitoring policy ID is set in alert for the tenant")
+    public void checkMonitoringPolicyIdSet() {
+        checkMonitoringPolicyIdSet(tenantSteps.getTenantId());
+    }
+
     @Then("Verify valid monitoring policy ID is set in alert for tenant {string}")
     public void checkMonitoringPolicyIdSet(String tenantId) {
         Awaitility.waitAtMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-                List<Alert> alerts = filterMessagesForTenant(tenantId, alert -> alert.getMonitoringPolicyIdCount() >= 1);
-                assertEquals(1, alerts.size());
+            List<Alert> alerts = filterMessagesForTenant(tenantId, alert -> alert.getMonitoringPolicyIdCount() >= 1);
+            assertEquals(1, alerts.size());
 
-                assertNotNull(grpcClient.getPolicyStub().getPolicyById(Int64Value.of(alerts.get(0).getMonitoringPolicyId(0))));
+            assertNotNull(grpcClient.getPolicyStub().getPolicyById(Int64Value.of(alerts.get(0).getMonitoringPolicyId(0))));
         });
     }
 
@@ -241,39 +257,4 @@ public class MonitorPolicySteps {
         }).filter(predicate).toList();
 
     }
-
-
-    @Then("Verify policy has tag {string}")
-    public void verifyPolicyHasTag(String tag) throws InterruptedException {
-        Awaitility.waitAtMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var policyProto = grpcClient.getPolicyStub().getPolicyById(Int64Value.newBuilder().setValue(policyId).build());
-            Assertions.assertFalse(policyProto.getTagsList().isEmpty());
-            String aTag = policyProto.getTags(0);
-            Assertions.assertEquals(tag, aTag);
-        });
-    }
-
-
-    @Given("Send tag operation data for existing monitoring policy")
-    public void sendTagOperationDataForExistingMonitoringPolicy(DataTable data) {
-
-        Map<String, String> map = data.asMaps().get(0);
-        var builder = TagOperationProto.newBuilder();
-        builder.setOperation(Operation.valueOf(map.get("action")))
-            .setTagName(map.get("name"))
-            .setTenantId(map.get("tenant-id"))
-            .addAllMonitoringPolicyId(List.of(policyId));
-        TagOperationList tagList = TagOperationList.newBuilder()
-            .addTags(builder.build()).build();
-        kafkaTestHelper.sendToTopic(tagTopic, tagList.toByteArray(), tenantId);
-    }
-
-    @Given("existing policy, get policy id")
-    public void existingPolicyGetPolicyId() {
-        var list = grpcClient.getPolicyStub().listPolicies(Empty.getDefaultInstance());
-        Assertions.assertFalse(list.getPoliciesList().isEmpty());
-        var monitoringPolicy = list.getPoliciesList().get(0);
-        policyId = monitoringPolicy.getId();
-    }
-
 }

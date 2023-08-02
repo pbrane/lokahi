@@ -28,50 +28,48 @@
 
 package org.opennms.miniongateway.grpc.server.flows;
 
-import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.opennms.horizon.flows.document.FlowDocumentLog;
 import org.opennms.horizon.flows.document.TenantLocationSpecificFlowDocumentLog;
 import org.opennms.horizon.shared.flows.mapper.TenantLocationSpecificFlowDocumentLogMapper;
-import org.opennms.horizon.shared.grpc.common.LocationServerInterceptor;
-import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
+import org.opennms.horizon.shared.grpc.interceptor.MeteringServerInterceptor;
 import org.opennms.horizon.shared.ipc.sink.api.MessageConsumer;
 import org.opennms.horizon.shared.ipc.sink.api.SinkModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.opennms.miniongateway.grpc.server.kafka.SinkMessageKafkaPublisher;
+import org.opennms.miniongateway.grpc.server.kafka.SinkMessageKafkaPublisherFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 /**
  * Forwarder of Flow messages - received via GRPC and forwarded to Kafka.
  */
 @Component
 public class FlowKafkaForwarder implements MessageConsumer<FlowDocumentLog, FlowDocumentLog> {
-    public static final String DEFAULT_TASK_RESULTS_TOPIC = "flows";
+    public static final String DEFAULT_FLOW_RESULTS_TOPIC = "flows";
 
-    private final Logger logger = LoggerFactory.getLogger(FlowKafkaForwarder.class);
+    public static final String FLOW_DOCUMENT_TAG = "FlowDocument";
+    public static final String FLOW_DOCUMENT_LOG_TAG = "FlowDocumentLog";
+    private final SinkMessageKafkaPublisher<FlowDocumentLog, TenantLocationSpecificFlowDocumentLog> kafkaPublisher;
+    private final Counter flowCounter;
+    private final Counter flowLogCounter;
 
-    private final TenantIDGrpcServerInterceptor tenantIDGrpcInterceptor;
-
-    private final LocationServerInterceptor locationServerInterceptor;
-
-    private final KafkaTemplate<String, byte[]> kafkaTemplate;
-
-    private final TenantLocationSpecificFlowDocumentLogMapper tenantLocationSpecificFlowDocumentLogMapper;
-
-    @Value("${task.results.kafka-topic:" + DEFAULT_TASK_RESULTS_TOPIC + "}")
-    private String kafkaTopic;
-
-    public FlowKafkaForwarder(@Autowired TenantIDGrpcServerInterceptor tenantIDGrpcInterceptor,
-                              @Autowired LocationServerInterceptor locationServerInterceptor,
-                              @Autowired KafkaTemplate<String, byte[]> kafkaTemplate,
-                              @Autowired TenantLocationSpecificFlowDocumentLogMapper tenantLocationSpecificFlowDocumentLogMapper) {
-        this.tenantIDGrpcInterceptor = tenantIDGrpcInterceptor;
-        this.locationServerInterceptor = locationServerInterceptor;
-        this.kafkaTemplate = kafkaTemplate;
-        this.tenantLocationSpecificFlowDocumentLogMapper = tenantLocationSpecificFlowDocumentLogMapper;
+    @Autowired
+    public FlowKafkaForwarder(SinkMessageKafkaPublisherFactory messagePublisherFactory, TenantLocationSpecificFlowDocumentLogMapper mapper,
+                              @Value("${flow.results.kafka-topic:" + DEFAULT_FLOW_RESULTS_TOPIC + "}") String kafkaTopic,
+                              MeterRegistry registry) {
+        this.kafkaPublisher = messagePublisherFactory.create(
+            mapper::mapBareToTenanted,
+            kafkaTopic
+        );
+        Objects.requireNonNull(registry);
+        flowCounter = registry.counter(FlowKafkaForwarder.class.getName(),
+            MeteringServerInterceptor.SERVICE_TAG_NAME, FLOW_DOCUMENT_TAG);
+        flowLogCounter = registry.counter(FlowKafkaForwarder.class.getName(),
+            MeteringServerInterceptor.SERVICE_TAG_NAME, FLOW_DOCUMENT_LOG_TAG);
     }
 
     @Override
@@ -81,27 +79,8 @@ public class FlowKafkaForwarder implements MessageConsumer<FlowDocumentLog, Flow
 
     @Override
     public void handleMessage(FlowDocumentLog messageLog) {
-        // Retrieve the Tenant ID from the TenantID GRPC Interceptor
-        String tenantId = tenantIDGrpcInterceptor.readCurrentContextTenantId();
-        // Ditto for location
-        String locationId = locationServerInterceptor.readCurrentContextLocationId();
-        logger.trace("Received flow; sending to Kafka: tenantId: {}; locationId={}; kafka-topic={}; message={}", tenantId, locationId, kafkaTopic, messageLog);
-
-
-        var tenantLocationSpecificFlowDocumentLog =
-            tenantLocationSpecificFlowDocumentLogMapper.mapBareToTenanted(tenantId, locationId, messageLog);
-
-        sendToKafka(tenantLocationSpecificFlowDocumentLog);
-    }
-
-//========================================
-// INTERNALS
-//----------------------------------------
-
-    private void sendToKafka(TenantLocationSpecificFlowDocumentLog tenantLocationSpecificFlowDocumentLog) {
-        byte[] rawContent = tenantLocationSpecificFlowDocumentLog.toByteArray();
-        var producerRecord = new ProducerRecord<String, byte[]>(kafkaTopic, rawContent);
-
-        this.kafkaTemplate.send(producerRecord);
+        flowCounter.increment(messageLog.getMessageCount());
+        flowLogCounter.increment();
+        this.kafkaPublisher.send(messageLog);
     }
 }

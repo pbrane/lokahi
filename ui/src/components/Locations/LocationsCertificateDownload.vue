@@ -25,17 +25,18 @@
         <div class="divider"></div>
         <div class="download-buttons-wrapper">
           <div class="download-buttons">
-            <FeatherButton
+            <ButtonWithSpinner
               primary
-              @click="onPrimaryButtonClick"
+              :click="onPrimaryButtonClick"
+              :is-fetching="locationStore.certIsFetching"
               data-test="download-btn"
             >
               {{ props.primaryButtonText }}
-            </FeatherButton>
+            </ButtonWithSpinner>
             <FeatherButton
               v-if="props.hasCert"
               secondary
-              @click="onSecondaryButtonClick"
+              @click="locationStore.revokeMinionCertificate"
               data-test="revoke-btn"
             >
               {{ props.secondaryButtonText }}
@@ -71,7 +72,7 @@
       </div>
     </div>
   </div>
-  <div class="row mt-m">
+  <div class="row mt-m" v-if="locationStore.certificatePassword">
     <LocationsMinionCmd />
   </div>
 </template>
@@ -81,9 +82,11 @@ import { PropType } from 'vue'
 import CopyIcon from '@featherds/icon/action/ContentCopy'
 import CheckIcon from '@featherds/icon/action/CheckCircle'
 import CalendarIcon from '@featherds/icon/action/CalendarEndDate'
+import { useLocationStore } from '@/store/Views/locationStore'
 
 import useSnackbar from '@/composables/useSnackbar'
 const { showSnackbar } = useSnackbar()
+const locationStore = useLocationStore()
 
 const props = defineProps({
   title: {

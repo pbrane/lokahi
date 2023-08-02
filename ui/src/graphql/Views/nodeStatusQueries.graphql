@@ -28,6 +28,7 @@ fragment NodeByIdParts on Query {
       netmask
       nodeId
       snmpPrimary
+      azureInterfaceId
     }
     snmpInterfaces {
       id
@@ -43,6 +44,15 @@ fragment NodeByIdParts on Query {
       nodeId
       physicalAddr
     }
+    azureInterfaces {
+      id
+      nodeId
+      interfaceName
+      privateIpId
+      publicIpAddress
+      publicIpId
+      location
+    }
   }
 }
 
@@ -50,4 +60,18 @@ fragment NodeByIdParts on Query {
 query ListNodeStatus($id: Long) {
   ...EventsByNodeIdParts
   ...NodeByIdParts
+}
+
+
+query findExportersForNodeStatus($requestCriteria: RequestCriteriaInput!) {
+  findExporters(requestCriteria: $requestCriteria) {
+    snmpInterface {
+      ifIndex
+      ifName
+    }
+    ipInterface {
+      id
+      ipAddress
+    }
+  }
 }

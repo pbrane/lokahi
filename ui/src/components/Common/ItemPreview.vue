@@ -6,22 +6,24 @@
     <div class="item-preview-body" v-if="!loading">
       <div class="item-preview-card">
         <div class="item-preview-meta">
-          <strong>{{ itemTitle }}</strong>
+          <strong data-test="item-preview-meta-id">{{ itemTitle }}</strong>
           <span>{{ itemSubtitle }}</span>
         </div>
         <div class="item-preview-statuses">
           <div class="item-preview-status" v-for="(item, index) in itemStatuses" :key="index">
             <span>{{ item.title }}</span>
-            <div :style="{ backgroundColor: item.statusColor, color: item.statusText }">{{ item.status }}</div>
+            <div data-test="item-preview-status-id"
+              :style="{ backgroundColor: item.statusColor, color: item.statusText }">{{ item.status }}</div>
           </div>
         </div>
       </div>
     </div>
+    <div v-if="bottomCopy && !loading" class="bottom-copy">{{ bottomCopy }}</div>
     <div class="item-preview-loading" v-if="loading">
       <div>
         <FeatherSpinner />
       </div>
-      <div>Loading first discovery.</div>
+      <div data-test="welcome-discovery-status-txt">{{ loadingCopy }}</div>
     </div>
   </div>
 </template>
@@ -30,9 +32,11 @@ import { ItemPreviewProps } from './commonTypes'
 
 withDefaults(defineProps<ItemPreviewProps>(), {
   loading: false,
+  loadingCopy: '',
   title: '',
   itemTitle: '',
   itemSubtitle: '',
+  bottomCopy: '',
   itemStatuses: () => []
 })
 </script>
@@ -112,5 +116,10 @@ withDefaults(defineProps<ItemPreviewProps>(), {
     height: 24px;
     margin-right: 12px;
   }
+}
+
+.bottom-copy {
+  padding: 2px 12px;
+  @include caption();
 }
 </style>

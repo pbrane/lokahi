@@ -11,13 +11,11 @@
       :label="DiscoverySNMPForm.nameInputLabel"
       class="name-input"
       :schema="nameV"
+      :disabled="isDisabled"
     />
-    <DiscoveryLocationsAutocomplete
-      class="locations-select"
-      type="single"
-      :preLoadedlocation="props.discovery?.locationId"
-      @location-selected="(loc: MonitoringLocation) => setSnmpConfig('locationId', loc.id)"
-    />
+    <div class="locations-select">
+      <DiscoveryLocationsAutocomplete :disabled="isDisabled" />
+    </div>
     <BasicAutocomplete
       @items-selected="tagsSelectedListener"
       :get-items="tagQueries.getTagsSearch"
@@ -27,6 +25,7 @@
       class="tags-autocomplete"
       data-test="tags-autocomplete"
       :preselectedItems="tags"
+      :disabled="isDisabled"
     />
     <div class="content-editable-container">
       <DiscoveryContentEditable
@@ -41,6 +40,7 @@
         :content="props.discovery?.ipAddresses?.join(', ')"
         isRequired
         :id="1"
+        :disabled="isDisabled"
       />
       <DiscoveryContentEditable
         @content-formatted="(val) => setSnmpConfig('snmpConfig.readCommunities', val)"
@@ -52,6 +52,7 @@
         class="community-input"
         :content="props.discovery?.snmpConfig?.readCommunities?.join(', ')"
         :id="2"
+        :disabled="isDisabled"
       />
       <DiscoveryContentEditable
         @content-formatted="(val) => setSnmpConfig('snmpConfig.ports', val)"
@@ -65,6 +66,7 @@
         :tooltipText="Common.tooltipPort"
         :content="props.discovery?.snmpConfig?.ports?.join(', ')"
         :id="3"
+        :disabled="isDisabled"
       />
     </div>
 
@@ -97,9 +99,10 @@ import {
 import discoveryText, { DiscoverySNMPForm, Common } from '@/components/Discovery/discovery.text'
 import { useDiscoveryQueries } from '@/store/Queries/discoveryQueries'
 import { useTagQueries } from '@/store/Queries/tagQueries'
-import { IcmpActiveDiscovery, IcmpActiveDiscoveryCreateInput, MonitoringLocation } from '@/types/graphql'
+import { IcmpActiveDiscovery, IcmpActiveDiscoveryCreateInput } from '@/types/graphql'
 import { set } from 'lodash'
 import { useDiscoveryMutations } from '@/store/Mutations/discoveryMutations'
+import { useDiscoveryStore } from '@/store/Views/discoveryStore'
 import DiscoveryContentEditable from '@/components/Discovery/DiscoveryContentEditable.vue'
 import { useForm } from '@featherds/input-helper'
 import { string } from 'yup'
@@ -108,6 +111,7 @@ const form = useForm()
 const { createDiscoveryConfig, activeDiscoveryError, isFetchingActiveDiscovery } = useDiscoveryMutations()
 const tagQueries = useTagQueries()
 const discoveryQueries = useDiscoveryQueries()
+const discoveryStore = useDiscoveryStore()
 
 const props = defineProps<{
   discovery?: IcmpActiveDiscovery | null
@@ -162,6 +166,7 @@ const saveHandler = async () => {
   const isIpInvalid = contentEditableIPRef.value?.validateContent()
   const isPortInvalid = contentEditableUDPPortRef.value?.validateContent()
   if (form.validate().length || isIpInvalid || isPortInvalid) return
+  discoveryInfo.value.locationId = discoveryStore.selectedLocation?.id
   await createDiscoveryConfig({ request: discoveryInfo.value })
   if (!activeDiscoveryError.value && discoveryInfo.value.name) {
     discoveryQueries.getDiscoveries()
@@ -170,6 +175,8 @@ const saveHandler = async () => {
     discoveryInfo.value = {} as IcmpActiveDiscoveryCreateInput
   }
 }
+
+const isDisabled = computed(() => Boolean(props.discovery))
 </script>
 
 <style scoped lang="scss">

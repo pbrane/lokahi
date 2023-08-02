@@ -13,7 +13,8 @@
           data-test="name"
         />
       </div>
-      <PillColor
+      <!-- Post EAR -->
+      <!-- <PillColor
         :item="statusPill"
         class="status"
         data-test="status"
@@ -23,7 +24,7 @@
           :icon="icons.cert"
           data-test="icon-expiry"
         />
-      </div>
+      </div> -->
     </div>
     <div class="context-menu">
       <MoreOptionsMenu
@@ -43,7 +44,8 @@ import { useLocationStore } from '@/store/Views/locationStore'
 import { useMinionsQueries } from '@/store/Queries/minionsQueries'
 
 const props = defineProps<{
-  item: LocationTemp
+  item: LocationTemp,
+  openModalForDelete: (item: LocationTemp) => void
 }>()
 
 const locationStore = useLocationStore()
@@ -64,7 +66,7 @@ const statusPill = {
 
 const contextMenuItems = [
   { label: 'Edit', handler: () => locationStore.selectLocation(props.item.id) },
-  { label: 'Delete', handler: () => locationStore.deleteLocation(props.item.id) }
+  { label: 'Delete', handler: () => props.openModalForDelete(props.item) }
 ]
 
 const icons = markRaw({

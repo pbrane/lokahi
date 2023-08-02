@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     server: {
-      port: parseInt(env.VITE_SERVER_PORT)
+      port: parseInt(env.VITE_SERVER_PORT) || 8080
     },
     resolve: {
       alias: {
@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'happy-dom',
       deps: {
-        inline: true
+        inline: ['/@featherds/']
       },
       coverage: {
         reporter: ['lcov', 'html']
