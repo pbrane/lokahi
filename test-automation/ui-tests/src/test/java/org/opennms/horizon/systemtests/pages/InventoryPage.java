@@ -36,8 +36,7 @@ import org.openqa.selenium.By;
 
 import java.time.Duration;
 
-import static com.codeborne.selenide.Condition.enabled;
-import static com.codeborne.selenide.Condition.exist;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
@@ -50,6 +49,7 @@ public class InventoryPage {
     private static final SelenideElement firstSnmpInterfaceInTable = $(By.xpath("//table[@data-test='SNMPInterfacesTable']/tbody/tr[1]"));
 
     private static final SelenideElement firstNodeDeleteButton = $(By.xpath("//li[@data-test='MONITORED'][1]//li[@data-test='delete']"));
+    private static final SelenideElement firstNodeManagementIP = $(By.xpath("//li[@data-test='MONITORED'][1]//li[@data-test='management-ip']/span"));
     private static final SelenideElement deleteConfirmButton = $(By.xpath("//button[@data-testid='save-btn']"));
     private static final ElementsCollection monitoredInventoryCards = $$(By.xpath("//li[@data-test='MONITORED']"));
 
@@ -100,9 +100,14 @@ public class InventoryPage {
         int nodeCount = monitoredInventoryCards.size();
         while (nodeCount > 0) {
             --nodeCount;
+            // Get specific reference with IP for first card, delete, then ensure it is gone before continuing
+            String mgmtIp = firstNodeManagementIP.should(exist).getText();
+            SelenideElement searchMgmt = $(By.xpath("//li[@data-test='MONITORED'][1]//li[@data-test='management-ip']/span[text()='" + mgmtIp + "']"));
+
             firstNodeDeleteButton.shouldBe(enabled).hover().click();
             deleteConfirmButton.should(exist).shouldBe(enabled).click();
-            Selenide.sleep(500); // TODO Refactor to better monitor for the page update instead
+
+            searchMgmt.should(not(exist));
         }
     }
 
