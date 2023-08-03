@@ -62,9 +62,9 @@ spec:
             requests:
               cpu: "{{ .Values.OpenNMS.UI.Resources.Requests.Cpu }}"
               memory: "{{ .Values.OpenNMS.UI.Resources.Requests.Memory }}"
-          {{/*  TODO    livenessProbe:*/}}
-          {{/*          readinessProbe:*/}}
-          {{/*          startupProbe:*/}}
+          {{-/*  TODO    livenessProbe:*/}}
+          {{-/*          readinessProbe:*/}}
+          {{-/*          startupProbe:*/}}
           volumeMounts:
             - name: nginx-cache-volume
               mountPath: /var/cache/nginx

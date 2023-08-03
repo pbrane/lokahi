@@ -88,6 +88,13 @@ spec:
             periodSeconds: 2
             successThreshold: 1
             failureThreshold: 250
+          resources:
+            limits:
+              cpu: "{{ .Values.OpenNMS.MinionCertificateVerifier.Resources.Limits.Cpu }}"
+              memory: "{{ .Values.OpenNMS.MinionCertificateVerifier.Resources.Limits.Memory }}"
+            requests:
+              cpu: "{{ .Values.OpenNMS.MinionCertificateVerifier.Resources.Requests.Cpu }}"
+              memory: "{{ .Values.OpenNMS.MinionCertificateVerifier.Resources.Requests.Memory }}"
       {{- if .Values.OpenNMS.MinionCertificateVerifier.PrivateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
