@@ -100,6 +100,13 @@ spec:
             periodSeconds: 2
             successThreshold: 1
             failureThreshold: 250
+          resources:
+            limits:
+              cpu: "{{ .Values.OpenNMS.Alert.Resources.Limits.Cpu }}"
+              memory: "{{ .Values.OpenNMS.Alert.Resources.Limits.Memory }}"
+            requests:
+              cpu: "{{ .Values.OpenNMS.Alert.Resources.Requests.Cpu }}"
+              memory: "{{ .Values.OpenNMS.Alert.Resources.Requests.Memory }}"
       {{- if .Values.OpenNMS.Alert.PrivateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials

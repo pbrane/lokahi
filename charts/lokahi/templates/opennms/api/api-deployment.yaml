@@ -92,13 +92,6 @@ spec:
               containerPort: 9090
             - name: http
               containerPort: 8080
-          resources:
-            limits:
-              cpu: "{{ .Values.OpenNMS.API.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.OpenNMS.API.Resources.Limits.Memory }}"
-            requests:
-              cpu: "{{ .Values.OpenNMS.API.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.OpenNMS.API.Resources.Requests.Memory }}"
           volumeMounts:
             - name: spring-boot-app-config-volume
               mountPath: "/app/config"
@@ -122,6 +115,13 @@ spec:
             periodSeconds: 2
             successThreshold: 1
             failureThreshold: 250
+          resources:
+            limits:
+              cpu: "{{ .Values.OpenNMS.API.Resources.Limits.Cpu }}"
+              memory: "{{ .Values.OpenNMS.API.Resources.Limits.Memory }}"
+            requests:
+              cpu: "{{ .Values.OpenNMS.API.Resources.Requests.Cpu }}"
+              memory: "{{ .Values.OpenNMS.API.Resources.Requests.Memory }}"
       {{- if .Values.OpenNMS.API.PrivateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
