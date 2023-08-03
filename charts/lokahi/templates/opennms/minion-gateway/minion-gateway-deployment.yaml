@@ -96,7 +96,11 @@ spec:
             - name: internal-grpc
               containerPort: {{ .Values.OpenNMS.MinionGateway.InternalGrpcPort }}
             - name: ig-client
-              containerPort: {{ .Values.OpenNMS.MinionGateway.IgniteClientPort }}
+              containerPort: 10800
+            - name: ig-discovery
+              containerPort: 47500
+            - name: ig-spi
+              containerPort: 47100
           volumeMounts:
             - name: minion-gateway-ignite-config-volume
               mountPath: "/app/resources/ignite"
