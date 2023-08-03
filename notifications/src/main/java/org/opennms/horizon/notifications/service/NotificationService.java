@@ -28,6 +28,7 @@
 
 package org.opennms.horizon.notifications.service;
 
+import io.opentelemetry.api.trace.Span;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +63,10 @@ public class NotificationService {
 
     @WithTenant(tenantIdArg = 0, tenantIdArgInternalMethod = "getTenantId", tenantIdArgInternalClass = "org.opennms.horizon.alerts.proto.Alert")
     public void postNotification(Alert alert) {
+        Span span = Span.current();
+        span.setAttribute("tenantId", alert.getTenantId());
+        span.setAttribute("alertId", alert.getDatabaseId());
+
         if (alert.getMonitoringPolicyIdList().isEmpty()) {
             log.info("Alert has no associated monitoring policies, dropping alert[id: {}, tenant: {}]",
                 alert.getDatabaseId(), alert.getTenantId());
