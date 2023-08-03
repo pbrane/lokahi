@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -26,35 +26,20 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.shared.azure.http;
+package org.opennms.horizon.shared.azure.http.dto.instanceview;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
-import org.opennms.horizon.shared.azure.http.dto.error.AzureHttpError;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
-public class AzureHttpException extends Exception {
-    private final transient AzureHttpError httpError;
-    private final transient int httpStatusCode;
-
-    public AzureHttpException(AzureHttpError httpError, int httpStatusCode) {
-        super(httpError.getErrorDescription() != null ? httpError.getErrorDescription() : httpError.getMessage());
-        this.httpError = httpError;
-        this.httpStatusCode = httpStatusCode;
-    }
-
-    public AzureHttpException(String message) {
-        super(message);
-        this.httpError = null;
-        this.httpStatusCode = 0;
-    }
-
-    public AzureHttpException(String message, Throwable t) {
-        super(message, t);
-        this.httpError = null;
-        this.httpStatusCode = 0;
-    }
-
-    public boolean hasHttpError() {
-        return this.httpError != null;
-    }
+@Setter
+public class VmAgent {
+    @SerializedName("vmAgentVersion")
+    private String vmAgentVersion;
+    @SerializedName("statuses")
+    private List<AzureStatus> statuses = new ArrayList<>();
 }

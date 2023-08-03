@@ -1,6 +1,6 @@
 <template>
   <ul class="cards">
-    <li v-for="node in tabContent" :key="node?.id">
+    <li :data-test="state" v-for="node in tabContent" :key="node?.id">
       <section class="header">
         <Icon :icon="storageIcon" data-test="icon-storage" />
         <h4 data-test="heading">{{ node?.label }}</h4>
