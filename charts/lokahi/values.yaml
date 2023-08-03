@@ -101,7 +101,6 @@ OpenNMS:
     Image: opennms/lokahi-minion-gateway
     ImagePullPolicy: IfNotPresent
     InternalGrpcPort: 8991
-    IgniteClientPort: 10800
     Replicas: 1
     UseKubernetes: "true"
     DbName: "horizon_stream"
