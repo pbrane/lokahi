@@ -4,23 +4,31 @@ import java.util.List;
 
 public class PolicyRuleData {
 
-    private String componentType;
+    private List<AlertCondition> alertConditions;
+    private ManagedObjectType componentType;
+    private DetectionMethod detectionMethod;
+    private EventType eventType;
     private String name;
-    private String tenantId;
-    private List<TriggerEventData> triggerEvents; //replace with List ?
 
-    public String getComponentType() {
+    public ManagedObjectType getComponentType() {
         return componentType;
     }
-    public void setComponentType(String componentType) {
+    public void setComponentType(ManagedObjectType componentType) {
         this.componentType = componentType;
     }
 
-    public String getTenantId() {
-        return tenantId;
+    public DetectionMethod getDetectionMethod() {
+        return detectionMethod;
     }
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
+    public void setDetectionMethod(DetectionMethod detectionMethod) {
+        this.detectionMethod = detectionMethod;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
     }
 
     public String getName() {
@@ -30,10 +38,10 @@ public class PolicyRuleData {
         this.name = name;
     }
 
-    public List<TriggerEventData> getTriggerEvents() {
-        return triggerEvents;
+    public List<AlertCondition> getAlertConditions() {
+        return alertConditions;
     }
-    public void setTriggerEvents(List<TriggerEventData> triggerEvents) {
-        this.triggerEvents = triggerEvents;
+    public void setAlertConditions(List<AlertCondition> alertConditions) {
+        this.alertConditions = alertConditions;
     }
 }

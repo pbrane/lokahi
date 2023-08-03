@@ -10,7 +10,6 @@ public class MonitorPolicyInputData {
     private boolean notifyByPagerDuty;
     private boolean notifyByWebhooks;
     private String notifyInstruction;
-    private String tenantId;
     private String[] tags;
     private List<PolicyRuleData> rules; //replace with List ?
 
@@ -19,13 +18,6 @@ public class MonitorPolicyInputData {
     }
     public void setMemo(String memo) {
         this.memo = memo;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getName() {
@@ -53,21 +45,18 @@ public class MonitorPolicyInputData {
     public void setNotifyByWebhooks(boolean notifyByWebhooks) {
         this.notifyByWebhooks = notifyByWebhooks;
     }
-
     public String getNotifyInstruction() {
         return notifyInstruction;
     }
     public void setNotifyInstruction(String notifyInstruction) {
         this.notifyInstruction = notifyInstruction;
     }
-
     public String[] getTags() {
         return tags;
     }
     public void setTags(String[] tags) {
         this.tags = tags;
     }
-
     public List<PolicyRuleData> getRules() {
         return rules;
     }
