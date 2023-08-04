@@ -25,7 +25,15 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
-import org.opennms.horizon.it.gqlmodels.*;
+import org.opennms.horizon.it.gqlmodels.MonitorPolicyInputData;
+import org.opennms.horizon.it.gqlmodels.PolicyRuleData;
+import org.opennms.horizon.it.gqlmodels.AlertCondition;
+import org.opennms.horizon.it.gqlmodels.ManagedObjectType;
+import org.opennms.horizon.it.gqlmodels.AlertEventDefinitionInput;
+import org.opennms.horizon.it.gqlmodels.EventType;
+import org.opennms.horizon.it.gqlmodels.LocationData;
+import org.opennms.horizon.it.gqlmodels.GQLQuery;
+import org.opennms.horizon.it.gqlmodels.MinionData;
 import org.opennms.horizon.it.gqlmodels.querywrappers.AddDiscoveryResult;
 import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllLocationsData;
 import org.opennms.horizon.it.gqlmodels.querywrappers.FindAllMinionsQueryResult;
@@ -40,7 +48,10 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 @CucumberOptions(  monochrome = true,
@@ -62,6 +73,11 @@ public class MonitoringPolicyTestSteps {
     private final MonitorPolicyInputData monitorPolicyInputData = new MonitorPolicyInputData();
     private final PolicyRuleData policyRuleData = new PolicyRuleData();
     private final List<AlertCondition> alertConditions = new ArrayList<>();
+
+    private GenericContainer<?> snmpContainer;
+    private String minionIpaddress;
+    private String snmpNodeIp;
+
 
     public MonitoringPolicyTestSteps(TestsExecutionHelper helper) { this.helper = helper; }
     @Given("Monitor policy name {string} and memo {string}")
@@ -285,8 +301,6 @@ public class MonitoringPolicyTestSteps {
             return minion;
         });
     }
-    private GenericContainer<?> snmpContainer;
-    private String minionIpaddress;
 
     @When("SNMP node {string} is started in the network of minion {string}.")
     public void startSNMPNode(String nodeLabel, String systemId) {
@@ -315,8 +329,6 @@ public class MonitoringPolicyTestSteps {
     public void discoverSingleNodeWithDefaults(String discoveryName, String nodeName, String location, String policyTag) throws MalformedURLException {
         discoverSNMPNode(discoveryName, nodeName, location, 161, "public", policyTag);
     }
-    private String snmpNodeIp;
-
     public void discoverSNMPNode(String discoveryName, String nodeName, String location, int port, String community, String policyTag) throws MalformedURLException {
         GenericContainer<?> node = snmpContainer;
         if (node == null) {
