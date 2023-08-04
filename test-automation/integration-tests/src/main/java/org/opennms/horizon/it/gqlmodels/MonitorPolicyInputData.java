@@ -16,6 +16,7 @@ public class MonitorPolicyInputData {
     public String getMemo() {
         return memo;
     }
+
     public void setMemo(String memo) {
         this.memo = memo;
     }
@@ -23,6 +24,7 @@ public class MonitorPolicyInputData {
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -30,6 +32,7 @@ public class MonitorPolicyInputData {
     public boolean isNotifyByEmail() {
         return notifyByEmail;
     }
+
     public void setNotifyByEmail(boolean notifyByEmail1) {
         this.notifyByEmail = notifyByEmail1;
     }
@@ -37,29 +40,39 @@ public class MonitorPolicyInputData {
     public boolean isNotifyByPagerDuty() {
         return notifyByPagerDuty;
     }
+
     public void setNotifyByPagerDuty(boolean notifyByPagerDuty) {
         this.notifyByPagerDuty = notifyByPagerDuty;
     }
 
-    public boolean isNotifyByWebhooks() { return notifyByWebhooks; }
+    public boolean isNotifyByWebhooks() {
+        return notifyByWebhooks;
+    }
+
     public void setNotifyByWebhooks(boolean notifyByWebhooks) {
         this.notifyByWebhooks = notifyByWebhooks;
     }
+
     public String getNotifyInstruction() {
         return notifyInstruction;
     }
+
     public void setNotifyInstruction(String notifyInstruction) {
         this.notifyInstruction = notifyInstruction;
     }
+
     public List<String> getTags() {
         return tags;
     }
+
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
+
     public List<PolicyRuleData> getRules() {
         return rules;
     }
+
     public void setRules(List<PolicyRuleData> rules) {
         this.rules = rules;
     }

@@ -13,6 +13,7 @@ public class PolicyRuleData {
     public ManagedObjectType getComponentType() {
         return componentType;
     }
+
     public void setComponentType(ManagedObjectType componentType) {
         this.componentType = componentType;
     }
@@ -20,6 +21,7 @@ public class PolicyRuleData {
     public DetectionMethod getDetectionMethod() {
         return detectionMethod;
     }
+
     public void setDetectionMethod(DetectionMethod detectionMethod) {
         this.detectionMethod = detectionMethod;
     }
@@ -27,6 +29,7 @@ public class PolicyRuleData {
     public EventType getEventType() {
         return eventType;
     }
+
     public void setEventType(EventType eventType) {
         this.eventType = eventType;
     }
@@ -34,6 +37,7 @@ public class PolicyRuleData {
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -41,6 +45,7 @@ public class PolicyRuleData {
     public List<AlertCondition> getAlertConditions() {
         return alertConditions;
     }
+
     public void setAlertConditions(List<AlertCondition> alertConditions) {
         this.alertConditions = alertConditions;
     }

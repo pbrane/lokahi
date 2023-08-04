@@ -5,7 +5,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -14,7 +20,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.NetworkSettings;
 import io.cucumber.java.en.Given;
@@ -24,7 +29,6 @@ import io.cucumber.junit.CucumberOptions;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.awaitility.Awaitility;
-import org.junit.Assert;
 import org.opennms.horizon.it.gqlmodels.MonitorPolicyInputData;
 import org.opennms.horizon.it.gqlmodels.PolicyRuleData;
 import org.opennms.horizon.it.gqlmodels.AlertCondition;
@@ -54,15 +58,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-@CucumberOptions(  monochrome = true,
-        features = "src/main/resources/org/opennms/horizon/it/monitoring-policy.feature")
+@CucumberOptions(monochrome = true,
+    features = "src/main/resources/org/opennms/horizon/it/monitoring-policy.feature")
 public class MonitoringPolicyTestSteps {
-
     private static final Logger LOG = LoggerFactory.getLogger(MonitoringPolicyTestSteps.class);
     private final TestsExecutionHelper helper;
 
     /* minions, containers ... */
-    private final Map<String, GenericContainer> minions = new ConcurrentHashMap();
+    private final Map<String, GenericContainer<?>> minions = new ConcurrentHashMap<>();
 
     // Runtime Data
     private String minionLocation;
@@ -78,13 +81,16 @@ public class MonitoringPolicyTestSteps {
     private String minionIpaddress;
     private String snmpNodeIp;
 
+    public MonitoringPolicyTestSteps(TestsExecutionHelper helper) {
+        this.helper = helper;
+    }
 
-    public MonitoringPolicyTestSteps(TestsExecutionHelper helper) { this.helper = helper; }
     @Given("Monitor policy name {string} and memo {string}")
     public void monitor_policy_name_and_memo(String name, String memo) {
         monitorPolicyInputData.setName(name);
         monitorPolicyInputData.setMemo(memo);
     }
+
     @Given("Notify by email {string}")
     public void notify_by_email(String notifyByEmail) {
         monitorPolicyInputData.setNotifyByEmail(Boolean.parseBoolean(notifyByEmail));
@@ -92,31 +98,22 @@ public class MonitoringPolicyTestSteps {
 
     @Given("Policy rule name {string} and component type {string}")
     public void policyRule(String name, String componentType) {
-
         policyRuleData.setName(name);
-        ManagedObjectType managedObjectType = null;
-        switch (componentType) {
-            case "ANY": managedObjectType = ManagedObjectType.ANY;
-                break;
-            case "NODE": managedObjectType = ManagedObjectType.NODE;
-                break;
-            case "SNMP_INTERFACE": managedObjectType = ManagedObjectType.SNMP_INTERFACE;
-                break;
-            case "SNMP_INTERFACE_LINK": managedObjectType = ManagedObjectType.SNMP_INTERFACE_LINK;
-                break;
-            case "UNDEFINED": managedObjectType = ManagedObjectType.UNDEFINED;
-                break;
-            case "UNRECOGNIZED": managedObjectType = ManagedObjectType.UNRECOGNIZED;
-                break;
-        }
+        ManagedObjectType managedObjectType = switch (componentType) {
+            case "ANY" -> ManagedObjectType.ANY;
+            case "NODE" -> ManagedObjectType.NODE;
+            case "SNMP_INTERFACE" -> ManagedObjectType.SNMP_INTERFACE;
+            case "SNMP_INTERFACE_LINK" -> ManagedObjectType.SNMP_INTERFACE_LINK;
+            case "UNDEFINED" -> ManagedObjectType.UNDEFINED;
+            case "UNRECOGNIZED" -> ManagedObjectType.UNRECOGNIZED;
+            default -> null;
+        };
         policyRuleData.setComponentType(managedObjectType);
-
     }
 
     @Given("Alert conditions data")
     public void alertConditionsData(io.cucumber.datatable.DataTable table) {
         table.asLists().forEach((row) -> {
-
             AlertCondition alertCondition = new AlertCondition();
             AlertEventDefinitionInput alertEventDefinitionInput = new AlertEventDefinitionInput();
 
@@ -139,7 +136,6 @@ public class MonitoringPolicyTestSteps {
 
     @Then("Create a monitoring policy with name {string} and tag {string}")
     public void createAMonitoringPolicy(String name, String tag) {
-
         String queryList = "mutation createMonitorPolicy($policy: MonitorPolicyInput!) { createMonitorPolicy(policy: $policy) { id } }";
 
         monitorPolicyInputData.setName(name);
@@ -158,7 +154,7 @@ public class MonitoringPolicyTestSteps {
         String jsonResp = response.getBody().print();
 
         LOG.info("response.getBody().print() {}", jsonResp);
-        JsonObject jsonObject = new JsonParser().parse(jsonResp).getAsJsonObject();
+        JsonObject jsonObject = JsonParser.parseString(jsonResp).getAsJsonObject();
 
         int policyId = jsonObject.getAsJsonObject("data").getAsJsonObject("createMonitorPolicy").get("id").getAsInt();
         LOG.info("policyId {}", policyId);
@@ -179,10 +175,10 @@ public class MonitoringPolicyTestSteps {
     }
 
     @Given("Location {string} is removed.")
-    public void deleteLocation(String location) throws Exception {
+    public void deleteLocation(String location) {
         LocationData locationData = commonQueryLocations().getData().getFindAllLocations().stream()
-                .filter(loc -> loc.getLocation().equals(location))
-                .findFirst().orElse(null);
+            .filter(loc -> loc.getLocation().equals(location))
+            .findFirst().orElse(null);
 
         if (locationData == null) {
             fail("Location " + location + " not found");
@@ -197,17 +193,17 @@ public class MonitoringPolicyTestSteps {
     }
 
     @Given("Location {string} does not exist.")
-    public void queryLocationDoNotExist(String location) throws MalformedURLException {
+    public void queryLocationDoNotExist(String location) {
         List<LocationData> locationData = commonQueryLocations().getData().getFindAllLocations().stream()
-                .filter(data -> data.getLocation().equals(location)).toList();
+            .filter(data -> data.getLocation().equals(location)).toList();
         assertTrue(locationData.isEmpty());
     }
 
     @Then("Location {string} do exist.")
-    public void queryLocationDoExist(String location) throws MalformedURLException {
+    public void queryLocationDoExist(String location) {
         Optional<LocationData> locationData = commonQueryLocations().getData().getFindAllLocations().stream()
-                .filter(data -> data.getLocation().equals(location))
-                .findFirst();
+            .filter(data -> data.getLocation().equals(location))
+            .findFirst();
         assertTrue(locationData.isPresent());
     }
 
@@ -226,11 +222,10 @@ public class MonitoringPolicyTestSteps {
     public void waitForAtLeastOneMinionForTheGivenLocationReportedByInventoryWithTimeoutMs(int timeout) {
         try {
             Awaitility
-                    .await()
-                    .atMost(timeout, TimeUnit.MILLISECONDS)
-                    .ignoreExceptions()
-                    .until(this::checkAtLeastOneMinionAtGivenLocation)
-            ;
+                .await()
+                .atMost(timeout, TimeUnit.MILLISECONDS)
+                .ignoreExceptions()
+                .until(this::checkAtLeastOneMinionAtGivenLocation);
         } finally {
             LOG.info("LAST CHECK MINION RESPONSE BODY: {}", lastMinionQueryResultBody);
         }
@@ -241,10 +236,10 @@ public class MonitoringPolicyTestSteps {
         LOG.info("Requesting certificate for location {}.", location);
 
         Long locationId = commonQueryLocations().getData().getFindAllLocations().stream()
-                .filter(loc -> location.equals(loc.getLocation()))
-                .findFirst()
-                .map(LocationData::getId)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown location " + location));
+            .filter(loc -> location.equals(loc.getLocation()))
+            .findFirst()
+            .map(LocationData::getId)
+            .orElseThrow(() -> new IllegalArgumentException("Unknown location " + location));
 
         GQLQuery gqlQuery = new GQLQuery();
         gqlQuery.setQuery(String.format(GQLQueryConstants.CREATE_MINION_CERTIFICATE, locationId));
@@ -271,18 +266,18 @@ public class MonitoringPolicyTestSteps {
                 existing.stop();
             }
             GenericContainer<?> minion = new GenericContainer<>(DockerImageName.parse(helper.getMinionImageNameSupplier().get()))
-                    .withEnv("MINION_GATEWAY_HOST", helper.getMinionIngressSupplier().get())
-                    .withEnv("MINION_GATEWAY_PORT", String.valueOf(helper.getMinionIngressPortSupplier().get()))
-                    .withEnv("MINION_GATEWAY_TLS", String.valueOf(helper.getMinionIngressTlsEnabledSupplier().get()))
-                    .withEnv("MINION_ID", systemId)
-                    .withEnv("USE_KUBERNETES", "false")
-                    .withEnv("GRPC_CLIENT_KEYSTORE", "/opt/karaf/minion.p12")
-                    .withEnv("GRPC_CLIENT_KEYSTORE_PASSWORD", certificate.getKey())
-                    .withEnv("GRPC_CLIENT_OVERRIDE_AUTHORITY", helper.getMinionIngressOverrideAuthority().get())
-                    .withEnv("IGNITE_SERVER_ADDRESSES", "localhost")
-                    .withNetworkAliases("minion")
-                    .withNetwork(Network.SHARED)
-                    .withLabel("label", key);
+                .withEnv("MINION_GATEWAY_HOST", helper.getMinionIngressSupplier().get())
+                .withEnv("MINION_GATEWAY_PORT", String.valueOf(helper.getMinionIngressPortSupplier().get()))
+                .withEnv("MINION_GATEWAY_TLS", String.valueOf(helper.getMinionIngressTlsEnabledSupplier().get()))
+                .withEnv("MINION_ID", systemId)
+                .withEnv("USE_KUBERNETES", "false")
+                .withEnv("GRPC_CLIENT_KEYSTORE", "/opt/karaf/minion.p12")
+                .withEnv("GRPC_CLIENT_KEYSTORE_PASSWORD", certificate.getKey())
+                .withEnv("GRPC_CLIENT_OVERRIDE_AUTHORITY", helper.getMinionIngressOverrideAuthority().get())
+                .withEnv("IGNITE_SERVER_ADDRESSES", "localhost")
+                .withNetworkAliases("minion")
+                .withNetwork(Network.SHARED)
+                .withLabel("label", key);
 
             File ca = helper.getMinionIngressCaCertificateSupplier().get();
             if (ca != null) {
@@ -310,10 +305,10 @@ public class MonitoringPolicyTestSteps {
         GenericContainer<?> minion = minions.get(systemId);
 
         snmpContainer = new GenericContainer<>(DockerImageName.parse(helper.getNodeImageNameSupplier().get()))
-                .withNetworkAliases("nodes")
-                .withNetwork(minion.getNetwork())
-                .withCopyFileToContainer(MountableFile.forClasspathResource("BOOT-INF/classes/snmpd/snmpd.conf"), "/etc/snmp/snmpd.conf")
-                .withLabel("label", nodeLabel);
+            .withNetworkAliases("nodes")
+            .withNetwork(minion.getNetwork())
+            .withCopyFileToContainer(MountableFile.forClasspathResource("BOOT-INF/classes/snmpd/snmpd.conf"), "/etc/snmp/snmpd.conf")
+            .withLabel("label", nodeLabel);
 
         snmpContainer.waitingFor(Wait.forLogMessage(".*SNMPD Daemon started.*", 1).withStartupTimeout(Duration.ofMinutes(3)));
         snmpContainer.start();
@@ -329,6 +324,7 @@ public class MonitoringPolicyTestSteps {
     public void discoverSingleNodeWithDefaults(String discoveryName, String nodeName, String location, String policyTag) throws MalformedURLException {
         discoverSNMPNode(discoveryName, nodeName, location, 161, "public", policyTag);
     }
+
     public void discoverSNMPNode(String discoveryName, String nodeName, String location, int port, String community, String policyTag) throws MalformedURLException {
         GenericContainer<?> node = snmpContainer;
         if (node == null) {
@@ -343,14 +339,14 @@ public class MonitoringPolicyTestSteps {
         LOG.info("SNMP node ip={}", snmpNodeIp);
 
         Long locationId = helper.commonQueryLocations().getData().getFindAllLocations().stream()
-                .filter(loc -> location.equals(loc.getLocation()))
-                .findFirst()
-                .map(LocationData::getId)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown location " + location));
+            .filter(loc -> location.equals(loc.getLocation()))
+            .findFirst()
+            .map(LocationData::getId)
+            .orElseThrow(() -> new IllegalArgumentException("Unknown location " + location));
 
         String ADD_DISCOVERY_QUERY_WITH_TAG =
-                "mutation { createIcmpActiveDiscovery( request: { name: \"%s\", locationId: \"%s\", ipAddresses: [\"%s\"], snmpConfig: { readCommunities: [\"%s\"], ports: [%d]\n" +
-                        " }, tags: [ { name: \"%s\" } ] } ) {id, name, ipAddresses, locationId, snmpConfig { readCommunities, ports } } }";
+            "mutation { createIcmpActiveDiscovery( request: { name: \"%s\", locationId: \"%s\", ipAddresses: [\"%s\"], snmpConfig: { readCommunities: [\"%s\"], ports: [%d]\n" +
+                " }, tags: [ { name: \"%s\" } ] } ) {id, name, ipAddresses, locationId, snmpConfig { readCommunities, ports } } }";
 
         String query = String.format(ADD_DISCOVERY_QUERY_WITH_TAG, discoveryName, locationId, snmpNodeIp, community, port, policyTag);
 
@@ -360,7 +356,7 @@ public class MonitoringPolicyTestSteps {
         Response response = helper.executePostQuery(gqlQuery);
 
         assertEquals("add-discovery query failed: status=" + response.getStatusCode() + "; body=" + response.getBody().asString(),
-                200, response.getStatusCode());
+            200, response.getStatusCode());
 
         AddDiscoveryResult discoveryResult = response.getBody().as(AddDiscoveryResult.class);
 
@@ -368,21 +364,20 @@ public class MonitoringPolicyTestSteps {
         LOG.info("SNMP node id={}", snmpNodeId);
 
         assertTrue("create-node errors: " + discoveryResult.getErrors(),
-                (discoveryResult.getErrors() == null) || (discoveryResult.getErrors().isEmpty()));
+            (discoveryResult.getErrors() == null) || (discoveryResult.getErrors().isEmpty()));
     }
 
     @Then("Send a trap to Minion with oid {string}")
     public void sendTrap(String oid) throws Exception {
-
         String community = "public";
         String trapReceiver = minionIpaddress + ":1162";
         String[] command = {
-                "snmptrap",
-                "-v", "2c",
-                "-c", community,
-                trapReceiver,
-                "", // empty string for the trap specific arguments
-                oid
+            "snmptrap",
+            "-v", "2c",
+            "-c", community,
+            trapReceiver,
+            "", // empty string for the trap specific arguments
+            oid
         };
 
         Container.ExecResult sendTrapResult = snmpContainer.execInContainer(command);
@@ -391,8 +386,9 @@ public class MonitoringPolicyTestSteps {
         LOG.info("Docker sendTrapResult stdout={}, exitCode={}, sendTrapResult={}", stdout, exitCode, sendTrapResult.getStderr());
 
         LOG.info("sleeping for 2sec ...");
-        Thread.sleep((2*1000));
+        Thread.sleep((2000));
     }
+
     @Then("The alert has the severity set to {string}")
     public void verifyAlertSeverity(String severity) throws Exception {
         LOG.info("Waiting 2 seconds for the new alert...");
@@ -401,11 +397,11 @@ public class MonitoringPolicyTestSteps {
         JsonArray alerts = getAlerts(nodeLabel);
 
         String alertSeverity = null;
-        for(JsonElement element : alerts) {
+        for (JsonElement element : alerts) {
             JsonObject alert = (JsonObject) element;
             String nodeName = alert.get("nodeName").getAsString();
             LOG.info(nodeName + " : " + nodeLabel);
-            if(nodeName.equals(nodeLabel)) {
+            if (nodeName.equals(nodeLabel)) {
                 alertSeverity = alert.get("severity").getAsString();
                 break;
             }
@@ -416,12 +412,12 @@ public class MonitoringPolicyTestSteps {
     public String getNodeLabel() {
 
         String request = """
-                query NodesTableParts { findAllNodes { id nodeLabel
-                      ipInterfaces {
-                        id
-                        ipAddress
-                      }
-                      }}""";
+            query NodesTableParts { findAllNodes { id nodeLabel
+                  ipInterfaces {
+                    id
+                    ipAddress
+                  }
+                  }}""";
 
         GQLQuery gqlQuery = new GQLQuery();
         gqlQuery.setQuery(request);
@@ -432,10 +428,10 @@ public class MonitoringPolicyTestSteps {
 
         String jsonResp = response.getBody().print();
 
-        JsonObject jsonObject = new JsonParser().parse(jsonResp).getAsJsonObject();
+        JsonObject jsonObject = JsonParser.parseString(jsonResp).getAsJsonObject();
 
         JsonArray nodes = jsonObject.getAsJsonObject("data").getAsJsonArray("findAllNodes");
-        for(JsonElement nodeElement : nodes) {
+        for (JsonElement nodeElement : nodes) {
             JsonObject node = (JsonObject) nodeElement;
             JsonArray ipInterfaces = node.getAsJsonArray("ipInterfaces");
             for (JsonElement element : ipInterfaces) {
@@ -454,7 +450,7 @@ public class MonitoringPolicyTestSteps {
 
         String request = """
             query {
-              findAllAlerts(pageSize: 20, page: 0, timeRange: ALL, sortBy: "tenantId", sortAscending: true, nodeLabel: """ + " \"" + nodeLabel + "\"\n" + """
+              findAllAlerts(pageSize: 20, page: 0, timeRange: ALL, sortBy: "tenantId", sortAscending: true, nodeLabel:""" + " \"" + nodeLabel + "\"\n" + """
                 ) {
                 nextPage
                 alerts {
@@ -474,7 +470,7 @@ public class MonitoringPolicyTestSteps {
 
         String jsonResp = response.getBody().print();
 
-        JsonObject jsonObject = new JsonParser().parse(jsonResp).getAsJsonObject();
+        JsonObject jsonObject = JsonParser.parseString(jsonResp).getAsJsonObject();
 
         return jsonObject.getAsJsonObject("data").getAsJsonObject("findAllAlerts").getAsJsonArray("alerts");
     }
@@ -495,14 +491,14 @@ public class MonitoringPolicyTestSteps {
 
         LOG.debug("MINIONS for location: count={}; location={}", filtered.size(), minionLocation);
 
-        return ( ! filtered.isEmpty() );
+        return (!filtered.isEmpty());
     }
 
     private FindAllLocationsData commonQueryLocations() {
         GQLQuery gqlQuery = new GQLQuery();
         gqlQuery.setQuery(GQLQueryConstants.LIST_LOCATIONS_QUERY);
         Response restAssuredResponse = helper.executePostQuery(gqlQuery);
-        Assert.assertEquals(200, restAssuredResponse.getStatusCode());
+        assertEquals(200, restAssuredResponse.getStatusCode());
         LOG.info("FindAllLocationsData {}", restAssuredResponse.getBody().print());
         return restAssuredResponse.getBody().as(FindAllLocationsData.class);
     }
@@ -513,7 +509,7 @@ public class MonitoringPolicyTestSteps {
 
         Response restAssuredResponse = helper.executePostQuery(gqlQuery);
         lastMinionQueryResultBody = restAssuredResponse.getBody().asString();
-        Assert.assertEquals(200, restAssuredResponse.getStatusCode());
+        assertEquals(200, restAssuredResponse.getStatusCode());
         return restAssuredResponse.getBody().as(FindAllMinionsQueryResult.class);
     }
 
@@ -521,9 +517,9 @@ public class MonitoringPolicyTestSteps {
         List<MinionData> minionData = findAllMinionsQueryResult.getData().getFindAllMinions();
 
         List<MinionData> minionsAtLocation =
-                minionData.stream()
-                        .filter((md) -> Objects.equals(md.getLocation().getLocation(), minionLocation))
-                        .collect(Collectors.toList());
+            minionData.stream()
+                .filter((md) -> Objects.equals(md.getLocation().getLocation(), minionLocation))
+                .collect(Collectors.toList());
 
         LOG.debug("MINIONS for location: count={}; location={}", minionsAtLocation.size(), minionLocation);
 
