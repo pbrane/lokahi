@@ -30,14 +30,14 @@ port="$1"; shift
 
 mkdir -p $DIR/target
 
-kubectl get secret client-root-ca-certificate 2>&1 > /dev/null || die "Kubernetes secret with 'Client CA' secret not found"
+kubectl get secret client-root-ca-certificate > /dev/null || die "Kubernetes secret with 'Client CA' secret not found"
 echo "'Client CA' secret found"
 
 kubectl get secret client-root-ca-certificate -ogo-template='{{index .data "tls.crt" }}' | base64 --decode > $DIR/target/client-ca.crt || die "'Client CA' certificate not found"
 kubectl get secret client-root-ca-certificate -ogo-template='{{index .data "tls.key" }}' | base64 --decode > $DIR/target/client-ca.key || die "'Client CA' private key not found"
 echo "'Client CA' certificate and private key extracted fine"
 
-kubectl get secret root-ca-certificate 2>&1 > /dev/null || die "Kubernetes secret with 'Server CA' secret not found"
+kubectl get secret root-ca-certificate > /dev/null || die "Kubernetes secret with 'Server CA' secret not found"
 echo "'Server CA' secret found"
 kubectl get secret root-ca-certificate -ogo-template='{{index .data "tls.crt" }}' | base64 --decode > $DIR/target/server-ca.crt || die "'Server CA' certificate not found"
 kubectl get secret root-ca-certificate -ogo-template='{{index .data "tls.key" }}' | base64 --decode > $DIR/target/server-ca.key || die "'Server CA' private key not found"
@@ -45,14 +45,14 @@ echo "'Server CA' certificate and private key extracted fine"
 
 openssl verify -CAfile $DIR/target/server-ca.crt $DIR/target/server-ca.crt || die "'Server CA' certificate could not be verified"
 
-kubectl get secret opennms-ui-certificate 2>&1 > /dev/null || die "Kubernetes secret 'opennms-ui-certificate' not found"
+kubectl get secret opennms-ui-certificate > /dev/null || die "Kubernetes secret 'opennms-ui-certificate' not found"
 echo "'UI Ingress' secret found"
 kubectl get secret opennms-ui-certificate -ogo-template='{{index .data "tls.crt" }}' | base64 --decode > $DIR/target/ui.crt || die "'opennms-ui-certificate' certificate not found"
 echo "'UI Ingress'  certificate and private key extracted fine"
 
 openssl verify -CAfile $DIR/target/server-ca.crt $DIR/target/ui.crt || die "'UI Ingress' certificate could not be verified"
 
-kubectl get secret opennms-minion-gateway-certificate 2>&1 > /dev/null || die "Kubernetes secret 'opennms-minion-gateway-certificate' not found"
+kubectl get secret opennms-minion-gateway-certificate > /dev/null || die "Kubernetes secret 'opennms-minion-gateway-certificate' not found"
 echo "'Minion Gateway Ingress' secret found"
 kubectl get secret opennms-minion-gateway-certificate -ogo-template='{{index .data "tls.crt" }}' | base64 --decode > $DIR/target/mgw.crt || die "'opennms-minion-gateway-certificate' certificate not found"
 echo "'Minion Gateway' certificate and private key extracted fine"
@@ -60,7 +60,7 @@ echo "'Minion Gateway' certificate and private key extracted fine"
 openssl verify -CAfile $DIR/target/server-ca.crt $DIR/target/mgw.crt || die "'Minion Gateway' certificate could not be verified"
 
 while true; do
-  if curl -sSf --cacert $DIR/target/server-ca.crt --resolve "${domain}:${port}:127.0.0.1" https://${domain}:${port}/ 2>&1 > /dev/null; then
+  if curl -sSf --cacert $DIR/target/server-ca.crt --resolve "${domain}:${port}:127.0.0.1" https://${domain}:${port}/ > /dev/null; then
     break
   fi
   tries=$(expr $tries - 1)
@@ -73,7 +73,7 @@ while true; do
 done
 
 # This doesn't work unless we provide a client certificate
-#curl -sSf --cacert $DIR/target/server-ca.crt --resolve "minion.${domain}:${port}:127.0.0.1" https://minion.${domain}:${port}/ 2>&1 > /dev/null || die "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate"
+#curl -sSf --cacert $DIR/target/server-ca.crt --resolve "minion.${domain}:${port}:127.0.0.1" https://minion.${domain}:${port}/ > /dev/null || die "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate"
 
 # "openssl s_client" will get poll error and return non-zero, so we
 # temporarily disable pipefail here.
