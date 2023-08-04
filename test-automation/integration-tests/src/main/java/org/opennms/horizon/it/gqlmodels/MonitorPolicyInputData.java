@@ -10,8 +10,8 @@ public class MonitorPolicyInputData {
     private boolean notifyByPagerDuty;
     private boolean notifyByWebhooks;
     private String notifyInstruction;
-    private String[] tags;
-    private List<PolicyRuleData> rules; //replace with List ?
+    private List<String> tags;
+    private List<PolicyRuleData> rules;
 
     public String getMemo() {
         return memo;
@@ -51,10 +51,10 @@ public class MonitorPolicyInputData {
     public void setNotifyInstruction(String notifyInstruction) {
         this.notifyInstruction = notifyInstruction;
     }
-    public String[] getTags() {
+    public List<String> getTags() {
         return tags;
     }
-    public void setTags(String[] tags) {
+    public void setTags(List<String> tags) {
         this.tags = tags;
     }
     public List<PolicyRuleData> getRules() {

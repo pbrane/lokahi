@@ -22,7 +22,7 @@ Feature: Monitoring Policy
     Given Alert conditions data
 #      | trigger_event id | trigger_event name  | count | overtime | overtime_unit | severity | clear_event |
       | <trigger-event-id> | <trigger-event-name> | 1     | 3        | MINUTE        | <severity>    |             |
-    Then Create a monitoring policy with name "test-0002" and tag "<tag>"
+    Then Create a monitoring policy with name "test-monitoring-policy" and tag "<tag>"
 
     Given No Minion running with location "test-monitoring-policy-location".
     Given Location "test-monitoring-policy-location" does not exist.
@@ -33,18 +33,18 @@ Feature: Monitoring Policy
     When Minion "test-monitoring-policy-system01" is started in location "test-monitoring-policy-location".
     When SNMP node "mp_snmp_node" is started in the network of minion "test-monitoring-policy-system01".
     Then Discover "MPDiscovery" for snmp node "mp_snmp_node", location "test-monitoring-policy-location" is created to discover by IP with policy tag "<tag>"
-    Then Send a trap to Minion "test-monitoring-policy-system01" with oid "1.3.6.1.6.3.1.1.5.1"
+    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.1"
       # coldStart
-    Then Send a trap to Minion "test-monitoring-policy-system01" with oid "1.3.6.1.6.3.1.1.5.2"
-      # warmStart
-    Then Send a trap to Minion "test-monitoring-policy-system01" with oid "1.3.6.1.6.3.1.1.5.3"
-      # linkDown
-    Then Send a trap to Minion "test-monitoring-policy-system01" with oid "1.3.6.1.6.3.1.1.5.4"
-      # linkUp
-    Then Send a trap to Minion "test-monitoring-policy-system01" with oid "1.3.6.1.6.3.1.1.5.5"
-      # authenticationFailure
-    Then Send a trap to Minion "test-monitoring-policy-system01" with oid "1.3.6.1.6.3.1.1.5.6"
-      # egpNeighborLoss
+#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.2"
+#      # warmStart
+#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.3"
+#      # linkDown
+#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.4"
+#      # linkUp
+#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.5"
+#      # authenticationFailure
+#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.6"
+#      # egpNeighborLoss
 
     Then The alert has the severity set to "<severity>"
 
@@ -56,7 +56,7 @@ Feature: Monitoring Policy
 
     Examples:
       | tag | trigger-event-id | trigger-event-name | severity | policy-rule |
-      | monitoring-policy-tag01 | 1 | SNMP Cold Start | MAJOR | policy-rule01 |
+      | monitoring-policy-tag-major | 1 | SNMP Cold Start | MAJOR | policy-rule-major |
 
 #   Test with severity MINOR failed and needs to revisit
 #      | monitoring-policy-tag02 | 1 | snmp-trap-event | MINOR | policy-rule02 |
