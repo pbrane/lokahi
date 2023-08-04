@@ -49,8 +49,10 @@ load('ext://uibutton', 'cmd_button', 'location')
 load('ext://helm_remote', 'helm_remote') # for simple charts like jaeger and cert-manager
 load('ext://helm_resource', 'helm_resource', 'helm_repo') # for charts that we want to have resources for
 
+context = k8s_context()
+
 cmd_button(name='reload-certificates',
-           argv=['sh', '-c', 'find target/tmp/ -type f -exec rm {} \\; ; kubectl delete secret root-ca-certificate opennms-minion-gateway-certificate opennms-ui-certificate client-root-ca-certificate ; kubectl rollout restart deployment opennms-minion'],
+           argv=['sh', '-c', 'find target/tmp/ -type f -exec rm {} \\; ; kubectl --context ' + context + ' -n ' + k8s_namespace() + ' delete secret root-ca-certificate opennms-minion-gateway-certificate opennms-ui-certificate client-root-ca-certificate ; kubectl --context ' + context + ' -n ' + k8s_namespace() + ' rollout restart deployment opennms-minion'],
            text='Remove & reissue certificates',
            location=location.NAV,
            icon_name='sync')
@@ -184,12 +186,32 @@ def jib_project_multi_module(resource_name, image_name, base_path, k8s_resource_
     )
 
 def load_certificate_authority(secret_name, name, key_file_name, cert_file_name):
-    local('./install-local/load-or-generate-secret.sh "default" {} {} {} {}'.format(name, secret_name, key_file_name, cert_file_name))
+    local([
+        './install-local/load-or-generate-secret.sh',
+        name,
+        secret_name,
+        key_file_name,
+        cert_file_name,
+        '--context',
+        k8s_context(),
+        '-n',
+        k8s_namespace(),
+    ])
     watch_file(key_file_name)
     watch_file(cert_file_name)
 
 def generate_certificate(secret_name, domain, ca_key_file_name, ca_cert_file_name):
-    local('./install-local/generate-and-sign-certificate.sh "default" {} {} {} {}'.format(domain, secret_name, ca_key_file_name, ca_cert_file_name));
+    local([
+        './install-local/generate-and-sign-certificate.sh',
+        domain,
+        secret_name,
+        ca_key_file_name,
+        ca_cert_file_name,
+        '--context',
+        k8s_context(),
+        '-n',
+        k8s_namespace(),
+    ])
 
 def ssl_check(domain, port):
     local([
@@ -198,6 +220,10 @@ def ssl_check(domain, port):
         '5',
         domain,
         str(port),
+        '--context',
+        k8s_context(),
+        '-n',
+        k8s_namespace(),
     ])
 
 # If you don't specify a resource, the button will be added to the global nav (location.NAV).
