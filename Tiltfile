@@ -191,6 +191,15 @@ def load_certificate_authority(secret_name, name, key_file_name, cert_file_name)
 def generate_certificate(secret_name, domain, ca_key_file_name, ca_cert_file_name):
     local('./install-local/generate-and-sign-certificate.sh "default" {} {} {} {}'.format(domain, secret_name, ca_key_file_name, ca_cert_file_name));
 
+def ssl_check(domain, port):
+    local([
+        './tools/ssl-check.sh',
+        '-t',
+        '5',
+        domain,
+        str(port),
+    ])
+
 # If you don't specify a resource, the button will be added to the global nav (location.NAV).
 def create_devmode_toggle_btn(devmode_key, resource=None):
     # we should not mutate new_config so we need to work with a copy
@@ -239,6 +248,7 @@ load_certificate_authority('root-ca-certificate', 'opennms-ca', 'target/tmp/serv
 generate_certificate('opennms-minion-gateway-certificate', 'minion.onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 generate_certificate('opennms-ui-certificate', 'onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 load_certificate_authority('client-root-ca-certificate', 'client-ca', 'target/tmp/client-ca.key', 'target/tmp/client-ca.crt')
+ssl_check('onmshs.local', 1443)
 
 
 # Deployment #
