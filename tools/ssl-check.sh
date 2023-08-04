@@ -74,27 +74,42 @@ echo "'Minion Gateway' certificate and private key extracted fine"
 openssl verify -CAfile $DIR/target/server-ca.crt $DIR/target/mgw.crt || die "'Minion Gateway' certificate could not be verified"
 
 if [ $check_http -gt 0 ]; then
+  attempt=1
   while true; do
     if curl -sSf --cacert $DIR/target/server-ca.crt --resolve "${domain}:${port}:127.0.0.1" https://${domain}:${port}/ > /dev/null; then
       break
     fi
-    tries=$(expr $tries - 1)
-    if [ $tries -le 0 ]; then
+    if [ $attempt -ge $tries  ]; then
       die "'UI Ingress' failed to verify HTTPS connection using extracted CA certificate"
     else
-      echo "'UI Ingress' failed to verify HTTPS connection using extracted CA certificate -- will try again in 1 second ($tries tries left)" >&2
+      echo "'UI Ingress' failed to verify HTTPS connection using extracted CA certificate -- will try again in 1 second (attempt $attempt out of $tries tries)" >&2
     fi
     sleep 1
+    attempt=$(expr $attempt + 1)
   done
 
   # This doesn't work unless we provide a client certificate
   #curl -sSf --cacert $DIR/target/server-ca.crt --resolve "minion.${domain}:${port}:127.0.0.1" https://minion.${domain}:${port}/ > /dev/null || die "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate"
 
-  # "openssl s_client" will get poll error and return non-zero, so we
-  # temporarily disable pipefail here.
-  set +o pipefail
-  openssl s_client -CAfile target/tmp/server-ca.crt -connect minion.${domain}:${port} -servername minion.${domain} < /dev/null | openssl verify -CAfile target/tmp/server-ca.crt /dev/stdin || die "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate"
-  set -o pipefail
+  attempt=1
+  while true; do
+    # "openssl s_client" will get poll error and return non-zero, so we
+    # temporarily disable pipefail here.
+    set +o pipefail
+    if openssl s_client -CAfile target/tmp/server-ca.crt -connect minion.${domain}:${port} -servername minion.${domain} < /dev/null | openssl verify -CAfile target/tmp/server-ca.crt /dev/stdin; then
+      set -o pipefail
+      break
+    else
+      set -o pipefail
+    fi
+    if [ $attempt -ge $tries ]; then
+      die "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate"
+    else
+      echo "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate -- will try again in 1 second (attempt $attempt out of $tries tries)" >&2
+    fi
+    sleep 1
+    attempt=$(expr $attempt + 1)
+  done
 else
   echo "=== Skipping HTTP checks on request (-s) ==="
 fi
