@@ -11,18 +11,32 @@ function die() {
   exit 1
 }
 
-if [ $# -ge 2 ] && [ "$1" == "-t" ]; then
-  shift
-  tries="$1"; shift
-else
-  tries=1
-fi
+function usage() {
+  echo "Usage: $(basename "$0") [-h] [-s] [-t <tries>] <domain> <port> [<kubectl args>]"
+  echo
+  echo "  -h         Display this help"
+  echo "  -s         Skip HTTP validation"
+  echo "  -t tries   Retry HTTP validation for UI ingress"
+}
+
+## Defaults
+tries=1
+check_http=1
+
+while getopts hst: FLAG; do
+  case "$FLAG" in
+    h)      usage; exit 0 ;;
+    s)      check_http=0 ;;
+    t)      tries="${OPTARG}" ;;
+    ?)      usage >&2; exit 1 ;;
+  esac
+done
+shift $((OPTIND -1))
 
 if [ $# -lt 2 ]; then
-    echo "$(basename "$0"): too few command-line arguments" >&2
-    echo "usage: $(basename "$0"): [-t <tries>] <domain> <port> [<kubectl options>]" >&2
-    echo "example: $(basename "$0"): onmshs.local 1443" >&2
-    exit 1
+  echo "$(basename "$0"): too few command-line arguments" >&2
+  usage >&2
+  exit 1
 fi
 
 domain="$1"; shift
@@ -59,27 +73,31 @@ echo "'Minion Gateway' certificate and private key extracted fine"
 
 openssl verify -CAfile $DIR/target/server-ca.crt $DIR/target/mgw.crt || die "'Minion Gateway' certificate could not be verified"
 
-while true; do
-  if curl -sSf --cacert $DIR/target/server-ca.crt --resolve "${domain}:${port}:127.0.0.1" https://${domain}:${port}/ > /dev/null; then
-    break
-  fi
-  tries=$(expr $tries - 1)
-  if [ $tries -le 0 ]; then
-    die "'UI Ingress' failed to verify HTTPS connection using extracted CA certificate"
-  else
-    echo "'UI Ingress' failed to verify HTTPS connection using extracted CA certificate -- will try again in 1 second ($tries tries left)" >&2
-  fi
-  sleep 1
-done
+if [ $check_http -gt 0 ]; then
+  while true; do
+    if curl -sSf --cacert $DIR/target/server-ca.crt --resolve "${domain}:${port}:127.0.0.1" https://${domain}:${port}/ > /dev/null; then
+      break
+    fi
+    tries=$(expr $tries - 1)
+    if [ $tries -le 0 ]; then
+      die "'UI Ingress' failed to verify HTTPS connection using extracted CA certificate"
+    else
+      echo "'UI Ingress' failed to verify HTTPS connection using extracted CA certificate -- will try again in 1 second ($tries tries left)" >&2
+    fi
+    sleep 1
+  done
 
-# This doesn't work unless we provide a client certificate
-#curl -sSf --cacert $DIR/target/server-ca.crt --resolve "minion.${domain}:${port}:127.0.0.1" https://minion.${domain}:${port}/ > /dev/null || die "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate"
+  # This doesn't work unless we provide a client certificate
+  #curl -sSf --cacert $DIR/target/server-ca.crt --resolve "minion.${domain}:${port}:127.0.0.1" https://minion.${domain}:${port}/ > /dev/null || die "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate"
 
-# "openssl s_client" will get poll error and return non-zero, so we
-# temporarily disable pipefail here.
-set +o pipefail
-openssl s_client -CAfile target/tmp/server-ca.crt -connect minion.${domain}:${port} -servername minion.${domain} < /dev/null | openssl verify -CAfile target/tmp/server-ca.crt /dev/stdin || die "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate"
-set -o pipefail
+  # "openssl s_client" will get poll error and return non-zero, so we
+  # temporarily disable pipefail here.
+  set +o pipefail
+  openssl s_client -CAfile target/tmp/server-ca.crt -connect minion.${domain}:${port} -servername minion.${domain} < /dev/null | openssl verify -CAfile target/tmp/server-ca.crt /dev/stdin || die "'Minion Gateway' failed to verify HTTPS connection using extracted CA certificate"
+  set -o pipefail
+else
+  echo "=== Skipping HTTP checks on request (-s) ==="
+fi
 
 echo "============"
 echo "= ALL GOOD ="

@@ -213,18 +213,29 @@ def generate_certificate(secret_name, domain, ca_key_file_name, ca_cert_file_nam
         k8s_namespace(),
     ])
 
-def ssl_check(domain, port):
-    local([
+def ssl_check(domain, port, tries=1, check_http=True, deps=None, resource_deps=None):
+    cmd = [
         './tools/ssl-check.sh',
         '-t',
-        '5',
+        str(tries),
+    ]
+
+    if not check_http:
+        cmd = cmd + ['-s']
+
+    cmd = cmd + [
         domain,
         str(port),
         '--context',
         k8s_context(),
         '-n',
         k8s_namespace(),
-    ])
+    ]
+
+    if resource_deps:
+        local_resource('ssl_check', cmd, deps=deps, resource_deps=resource_deps, labels='z_dependencies')
+    else:
+        local(cmd)
 
 # If you don't specify a resource, the button will be added to the global nav (location.NAV).
 def create_devmode_toggle_btn(devmode_key, resource=None):
@@ -274,7 +285,9 @@ load_certificate_authority('root-ca-certificate', 'opennms-ca', 'target/tmp/serv
 generate_certificate('opennms-minion-gateway-certificate', 'minion.onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 generate_certificate('opennms-ui-certificate', 'onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 load_certificate_authority('client-root-ca-certificate', 'client-ca', 'target/tmp/client-ca.key', 'target/tmp/client-ca.crt')
-ssl_check('onmshs.local', 1443)
+ssl_check('onmshs.local', 1443, check_http=False) # Skip HTTP checks since the ingress isn't up yet
+certs = [ 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt', 'target/tmp/client-ca.key', 'target/tmp/client-ca.crt' ]
+ssl_check('onmshs.local', 1443, tries=300, deps=certs, resource_deps=['ingress-nginx']) # We'll do the HTTP checks later once ingress-nginx is up
 
 
 # Deployment #
