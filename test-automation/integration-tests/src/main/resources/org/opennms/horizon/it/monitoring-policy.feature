@@ -35,8 +35,8 @@ Feature: Monitoring Policy
     Then Discover "MPDiscovery" for snmp node "mp_snmp_node", location "test-monitoring-policy-location" is created to discover by IP with policy tag "<tag>"
     Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.1"
       # coldStart
-#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.2"
-#      # warmStart
+    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.2"
+      # warmStart
 #    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.3"
 #      # linkDown
 #    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.4"
@@ -56,8 +56,8 @@ Feature: Monitoring Policy
 
     Examples:
       | tag | trigger-event-id | trigger-event-name | severity | policy-rule |
-      | monitoring-policy-tag-major | 1 | SNMP Cold Start | MAJOR | policy-rule-major |
+      | monitoring-policy-tag-major | 1 | SNMP Event | MAJOR | policy-rule-major |
 
 #   Test with severity MINOR failed and needs to revisit
-#      | monitoring-policy-tag02 | 1 | snmp-trap-event | MINOR | policy-rule02 |
+#     | monitoring-policy-tag-minor | 1 | SNMP Event | MINOR | policy-rule-minor |
 
