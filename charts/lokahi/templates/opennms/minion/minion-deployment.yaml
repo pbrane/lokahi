@@ -157,9 +157,6 @@ spec:
               protocol: UDP
               containerPort: {{ .Values.OpenNMS.Minion.Netflow9ListenerPort }}
           volumeMounts:
-            - name: minion-config-volume
-              mountPath: "/opt/karaf/etc/org.opennms.identity.cfg"
-              subPath: "opennms-minion-identity"
             - name: maven-volume
               mountPath: /.m2
             {{- if .Values.OpenNMS.Minion.addDefaultLocation }}
