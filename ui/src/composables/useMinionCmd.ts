@@ -26,7 +26,6 @@ const useMinionCmd = () => {
       `docker run --rm`,
       `-p 162:1162/udp`,
       `-p 9999:9999/udp`,
-      `-e USE_KUBERNETES="false"`,
       `-e MINION_GATEWAY_HOST="${url.value}"`,
       `-e MINION_GATEWAY_PORT=443`,
       `-e MINION_GATEWAY_TLS="true"`,

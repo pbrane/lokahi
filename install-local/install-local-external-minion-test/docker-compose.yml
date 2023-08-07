@@ -13,7 +13,6 @@ services:
       TZ: 'America/New_York'
       MINION_ID: 'minion-b'
       MINION_LOCATION: 'minion-b-loc'
-      USE_KUBERNETES: false
       IGNITE_SERVER_ADDRESSES: localhost
       MINION_GATEWAY_HOST: minion.onmshs
       MINION_GATEWAY_PORT: 443
