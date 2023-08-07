@@ -1,12 +1,12 @@
 const useMinionCmd = () => {
   const password = ref('')
-  const minionId = ref('default')
+  const locationName = ref('default')
 
   const setPassword = (pass: string) => (password.value = pass)
-  const setMinionId = (minionIdString: string) => (minionId.value = minionIdString)
+  const setLocationName = (locationNameString: string) => (locationName.value = locationNameString)
   const clearMinionCmdVals = () => {
     password.value = ''
-    minionId.value = 'default'
+    locationName.value = 'default'
   }
 
   const url = computed<string>(() => {
@@ -28,13 +28,12 @@ const useMinionCmd = () => {
       `-p 9999:9999/udp`,
       `-e MINION_GATEWAY_HOST="${url.value}"`,
       `-e GRPC_CLIENT_KEYSTORE_PASSWORD='${password.value}'`,
-      `-e MINION_ID='${minionId.value}'`,
-      `--mount type=bind,source="/PATH_TO_DOWNLOADED_FILE/${minionId.value}-certificate.p12",target="/opt/karaf/minion.p12",readonly`,
+      `--mount type=bind,source="/PATH_TO_DOWNLOADED_FILE/${locationName.value}-certificate.p12",target="/opt/karaf/minion.p12",readonly`,
       `opennms/lokahi-minion:latest`
     ].join(' ')
   )
 
-  return { minionDockerCmd, setPassword, setMinionId, clearMinionCmdVals }
+  return { minionDockerCmd, setPassword, setLocationName, clearMinionCmdVals }
 }
 
 export default useMinionCmd
