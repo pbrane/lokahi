@@ -70,7 +70,6 @@ public class MinionContainer extends GenericContainer<MinionContainer> {
             .withEnv("IGNITE_SERVER_ADDRESSES", "localhost")
             .withEnv("MINION_GATEWAY_HOST", CucumberHooks.gatewayHost)
             .withEnv("MINION_GATEWAY_PORT", CucumberHooks.gatewayPort)
-            .withEnv("MINION_GATEWAY_TLS", "true")
 
             .withEnv("GRPC_CLIENT_KEYSTORE_PASSWORD", bundlePwd)
             .withCopyFileToContainer(MountableFile.forHostPath(certBundle.getPath()), "/opt/karaf/minion.p12")

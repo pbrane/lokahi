@@ -27,7 +27,6 @@ const useMinionCmd = () => {
       `-p 162:1162/udp`,
       `-p 9999:9999/udp`,
       `-e MINION_GATEWAY_HOST="${url.value}"`,
-      `-e MINION_GATEWAY_TLS="true"`,
       `-e GRPC_CLIENT_KEYSTORE_PASSWORD='${password.value}'`,
       `-e MINION_ID='${minionId.value}'`,
       `--mount type=bind,source="/PATH_TO_DOWNLOADED_FILE/${minionId.value}-certificate.p12",target="/opt/karaf/minion.p12",readonly`,

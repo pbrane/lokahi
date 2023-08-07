@@ -12,7 +12,6 @@ services:
       MINION_LOCATION: 'minion-a-loc'
       IGNITE_SERVER_ADDRESSES: localhost
       MINION_GATEWAY_HOST: 28eca03d-e463-442d-9d7c-b89666d7457e-i.btominion.oaaslite.opennms.com
-      MINION_GATEWAY_TLS: true
     networks:
       tenanta:
         ipv4_address: 172.1.1.1

@@ -17,7 +17,6 @@ services:
       GRPC_CLIENT_KEYSTORE_PASSWORD: '${PASSWORD}'
 
       MINION_GATEWAY_PORT: 1443
-      MINION_GATEWAY_TLS: 'true'
 
     ports:
       - '8181:8181/tcp'

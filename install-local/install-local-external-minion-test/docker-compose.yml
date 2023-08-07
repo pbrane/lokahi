@@ -15,7 +15,6 @@ services:
       MINION_LOCATION: 'minion-b-loc'
       IGNITE_SERVER_ADDRESSES: localhost
       MINION_GATEWAY_HOST: minion.onmshs
-      MINION_GATEWAY_TLS: 'true'
         #MINION_GATEWAY_HOST: host.docker.internal
         #      MINION_GATEWAY_PORT: 8990
      # MINION_GATEWAY_TLS: false
