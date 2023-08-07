@@ -14,7 +14,6 @@ services:
       
       GRPC_CLIENT_OVERRIDE_AUTHORITY: minion.onmshs
       GRPC_CLIENT_TRUSTSTORE: /opt/karaf/ca.crt
-      GRPC_CLIENT_KEYSTORE: /opt/karaf/minion.p12
       GRPC_CLIENT_KEYSTORE_PASSWORD: '<UPDATE_PASSWORD>'
 
       MINION_GATEWAY_PORT: 1443

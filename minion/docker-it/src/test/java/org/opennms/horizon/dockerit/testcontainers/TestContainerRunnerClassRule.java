@@ -148,7 +148,6 @@ public class TestContainerRunnerClassRule extends ExternalResource {
             .withEnv("MINION_GATEWAY_HOST", "opennms-minion-ssl-gateway")
             .withEnv("MINION_GATEWAY_PORT", "443")
             .withEnv("MINION_GATEWAY_TLS", "true")
-            .withEnv("GRPC_CLIENT_KEYSTORE", "/opt/karaf/minion.p12")
             .withEnv("GRPC_CLIENT_KEYSTORE_PASSWORD", "passw0rd")
             .withEnv("GRPC_CLIENT_TRUSTSTORE", "/opt/karaf/CA.cert")
             .withCopyFileToContainer(
