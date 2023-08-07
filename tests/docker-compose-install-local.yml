@@ -18,7 +18,6 @@ services:
 
       MINION_GATEWAY_PORT: 1443
       MINION_GATEWAY_TLS: 'true'
-      #MINION_GATEWAY_PORT: 443
 
       #MINION_GATEWAY_TLS: false
       #MINION_GATEWAY_PORT: 80
