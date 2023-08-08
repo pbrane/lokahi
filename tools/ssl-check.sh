@@ -96,7 +96,7 @@ if [ $check_http -gt 0 ]; then
     # "openssl s_client" will get poll error and return non-zero, so we
     # temporarily disable pipefail here.
     set +o pipefail
-    if openssl s_client -CAfile target/tmp/server-ca.crt -connect minion.${domain}:${port} -servername minion.${domain} < /dev/null | openssl verify -CAfile target/tmp/server-ca.crt /dev/stdin; then
+    if openssl s_client -CAfile target/tmp/server-ca.crt -connect 127.0.0.1:${port} -servername minion.${domain} < /dev/null | openssl verify -CAfile target/tmp/server-ca.crt /dev/stdin; then
       set -o pipefail
       break
     else
