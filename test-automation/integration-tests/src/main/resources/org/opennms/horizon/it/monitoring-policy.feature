@@ -34,17 +34,7 @@ Feature: Monitoring Policy
     When SNMP node "mp_snmp_node" is started in the network of minion "test-monitoring-policy-system01".
     Then Discover "MPDiscovery" for snmp node "mp_snmp_node", location "test-monitoring-policy-location" is created to discover by IP with policy tag "<tag>"
     Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.1"
-      # coldStart
     Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.2"
-      # warmStart
-#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.3"
-#      # linkDown
-#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.4"
-#      # linkUp
-#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.5"
-#      # authenticationFailure
-#    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.6"
-#      # egpNeighborLoss
 
     Then The alert has the severity set to "<severity>"
 
@@ -57,7 +47,3 @@ Feature: Monitoring Policy
     Examples:
       | tag | trigger-event-id | trigger-event-name | severity | policy-rule |
       | monitoring-policy-tag-major | 1 | SNMP Event | MAJOR | policy-rule-major |
-
-#   Test with severity MINOR failed and needs to revisit
-#     | monitoring-policy-tag-minor | 1 | SNMP Event | MINOR | policy-rule-minor |
-
