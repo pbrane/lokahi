@@ -18,28 +18,27 @@ Feature: Monitoring Policy
 
   Scenario Outline: Apply a custom monitoring policy to a node
 
-    Given Policy rule name "<policy-rule>" and component type "NODE"
+    Given Policy rule name "<policy-rule>", component type "NODE" and event type "SNMP_TRAP"
     Given Alert conditions data
-#      | trigger_event id | trigger_event name  | count | overtime | overtime_unit | severity | clear_event |
-      | <trigger-event-id> | <trigger-event-name> | 1     | 3        | MINUTE        | <severity>    |             |
-    Then Create a monitoring policy with name "test-monitoring-policy" and tag "<tag>"
+      | trigger event id   | trigger event name  | event type | count | overtime | overtime unit | severity   | clear event |
+      | <trigger-event-id> | <trigger-event-name> | SNMP_TRAP | 1     | 3        | MINUTE        | <severity> |             |
+    When The user saves the monitoring policy with name "test-monitoring-policy" and tag "<tag>"
+    Then There is a monitoring policy with name "test-monitoring-policy" and tag "<tag>"
 
-    Given No Minion running with location "test-monitoring-policy-location".
-    Given Location "test-monitoring-policy-location" does not exist.
+    Given No minion running with location "test-monitoring-policy-location"
+    Given Location "test-monitoring-policy-location" does not exist
     When Create location "test-monitoring-policy-location"
-    Then Location "test-monitoring-policy-location" do exist.
-    Then Request certificate for location "test-monitoring-policy-location".
+    Then Location "test-monitoring-policy-location" should exist
+    Then User can retrieve a certificate for location "test-monitoring-policy-location"
 
-    When Minion "test-monitoring-policy-system01" is started in location "test-monitoring-policy-location".
-    When SNMP node "mp_snmp_node" is started in the network of minion "test-monitoring-policy-system01".
+    When Minion "test-monitoring-policy-system01" is started at location "test-monitoring-policy-location"
+    And SNMP node "mp_snmp_node" is started in the network of minion "test-monitoring-policy-system01"
     Then Discover "MPDiscovery" for snmp node "mp_snmp_node", location "test-monitoring-policy-location" is created to discover by IP with policy tag "<tag>"
-    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.1"
-    Then Send a trap to Minion with oid "1.3.6.1.6.3.1.1.5.2"
-
-    Then The alert has the severity set to "<severity>"
+    When The snmp node sends a coldStart SNMP trap to Minion
+    And The snmp node sends a warmStart SNMP trap to Minion
+    Then An alert should be triggered with severity "<severity>"
 
     Given At least one Minion is running with location "test-monitoring-policy-location"
-    Then Wait for at least one minion for the given location reported by inventory with timeout 180000ms
     Then Minion "test-monitoring-policy-system01" is stopped
     When Location "test-monitoring-policy-location" is removed
     Then Location "test-monitoring-policy-location" does not exist

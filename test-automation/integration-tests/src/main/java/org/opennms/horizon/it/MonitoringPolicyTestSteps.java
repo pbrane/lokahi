@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.NetworkSettings;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -80,6 +81,7 @@ public class MonitoringPolicyTestSteps {
     private GenericContainer<?> snmpContainer;
     private String minionIpaddress;
     private String snmpNodeIp;
+    private int policyId;
 
     public MonitoringPolicyTestSteps(TestsExecutionHelper helper) {
         this.helper = helper;
@@ -96,8 +98,8 @@ public class MonitoringPolicyTestSteps {
         monitorPolicyInputData.setNotifyByEmail(Boolean.parseBoolean(notifyByEmail));
     }
 
-    @Given("Policy rule name {string} and component type {string}")
-    public void policyRule(String name, String componentType) {
+    @Given("Policy rule name {string}, component type {string} and event type {string}")
+    public void policyRule(String name, String componentType, String eventType) {
         policyRuleData.setName(name);
         ManagedObjectType managedObjectType = switch (componentType) {
             case "ANY" -> ManagedObjectType.ANY;
@@ -109,32 +111,32 @@ public class MonitoringPolicyTestSteps {
             default -> null;
         };
         policyRuleData.setComponentType(managedObjectType);
+        policyRuleData.setEventType(EventType.valueOf(eventType));
+
     }
 
     @Given("Alert conditions data")
     public void alertConditionsData(io.cucumber.datatable.DataTable table) {
-        table.asLists().forEach((row) -> {
+        for (Map<String, String> row : table.asMaps(String.class, String.class)) {
             AlertCondition alertCondition = new AlertCondition();
             AlertEventDefinitionInput alertEventDefinitionInput = new AlertEventDefinitionInput();
-
-            alertEventDefinitionInput.setId(Integer.parseInt(row.get(0)));
-            alertEventDefinitionInput.setName(row.get(1));
-            alertEventDefinitionInput.setEventType(EventType.SNMP_TRAP);
+            alertEventDefinitionInput.setId(Integer.parseInt(row.get("trigger event id")));
+            alertEventDefinitionInput.setName(row.get("trigger event name"));
+            alertEventDefinitionInput.setEventType(EventType.valueOf(row.get("event type")));
             alertCondition.setTriggerEvent(alertEventDefinitionInput);
 
-            alertCondition.setCount(Integer.parseInt(row.get(2)));
-            alertCondition.setOvertime(Integer.parseInt(row.get(3)));
-            alertCondition.setOvertimeUnit(row.get(4));
-            alertCondition.setSeverity(row.get(5));
+            alertCondition.setCount(Integer.parseInt(row.get("count")));
+            alertCondition.setOvertime(Integer.parseInt(row.get("overtime")));
+            alertCondition.setOvertimeUnit(row.get("overtime unit"));
+            alertCondition.setSeverity(row.get("severity"));
             alertConditions.add(alertCondition);
-        });
+        }
 
         policyRuleData.setAlertConditions(alertConditions);
-        policyRuleData.setEventType(EventType.SNMP_TRAP);
         monitorPolicyInputData.setRules(List.of(policyRuleData));
     }
 
-    @Then("Create a monitoring policy with name {string} and tag {string}")
+    @When("The user saves the monitoring policy with name {string} and tag {string}")
     public void createAMonitoringPolicy(String name, String tag) {
         String queryList = "mutation createMonitorPolicy($policy: MonitorPolicyInput!) { createMonitorPolicy(policy: $policy) { id } }";
 
@@ -156,10 +158,38 @@ public class MonitoringPolicyTestSteps {
         LOG.info("response.getBody().print() {}", jsonResp);
         JsonObject jsonObject = JsonParser.parseString(jsonResp).getAsJsonObject();
 
-        int policyId = jsonObject.getAsJsonObject("data").getAsJsonObject("createMonitorPolicy").get("id").getAsInt();
+        policyId = jsonObject.getAsJsonObject("data").getAsJsonObject("createMonitorPolicy").get("id").getAsInt();
         LOG.info("policyId {}", policyId);
 
         assertEquals(response.getStatusCode(), 200);
+    }
+
+    @Then("There is a monitoring policy with name {string} and tag {string}")
+    public void aMonitoringPolicyExists(String name, String tag) {
+        String request = "query { findMonitorPolicyById(id: " + policyId + ") { name, tags } }";
+        GQLQuery gqlQuery = new GQLQuery();
+        gqlQuery.setQuery(request);
+
+        LOG.info("gqlQuery - {}", gqlQuery);
+        Response response = helper.executePostQuery(gqlQuery);
+        assertEquals(response.getStatusCode(), 200);
+
+        String jsonResp = response.getBody().print();
+
+        JsonObject jsonObject = JsonParser.parseString(jsonResp).getAsJsonObject();
+
+        JsonObject policy = jsonObject.getAsJsonObject("data").getAsJsonObject("findMonitorPolicyById");
+
+        if(null != policy && name.equals(policy.get("name").getAsString())) {
+            JsonArray tags = policy.get("tags").getAsJsonArray();
+            for (JsonElement element : tags) {
+                if (tag.equals(element.getAsString())) {
+                    LOG.info("Monitoring policy with name {} and tag {} exists.", name, tag);
+                    return;
+                }
+            }
+        }
+        assertTrue("Monitoring policy with name " + name + " and tag " + tag + " does not exist.", false);
     }
 
     @Given("Location {string} is created.")
@@ -192,14 +222,7 @@ public class MonitoringPolicyTestSteps {
         assertEquals(response.getStatusCode(), 200);
     }
 
-    @Given("Location {string} does not exist.")
-    public void queryLocationDoNotExist(String location) {
-        List<LocationData> locationData = commonQueryLocations().getData().getFindAllLocations().stream()
-            .filter(data -> data.getLocation().equals(location)).toList();
-        assertTrue(locationData.isEmpty());
-    }
-
-    @Then("Location {string} do exist.")
+    @Then("Location {string} should exist")
     public void queryLocationDoExist(String location) {
         Optional<LocationData> locationData = commonQueryLocations().getData().getFindAllLocations().stream()
             .filter(data -> data.getLocation().equals(location))
@@ -212,7 +235,7 @@ public class MonitoringPolicyTestSteps {
         minionLocation = location;
     }
 
-    @Given("No Minion running with location {string}.")
+    @Given("No minion running with location {string}")
     public void check(String location) throws MalformedURLException {
         atLeastOneMinionIsRunningWithLocation(location);
         assertFalse(checkAtLeastOneMinionAtGivenLocation());
@@ -231,7 +254,7 @@ public class MonitoringPolicyTestSteps {
         }
     }
 
-    @When("Request certificate for location {string}.")
+    @Then("User can retrieve a certificate for location {string}")
     public void requestCertificateForLocation(String location) throws MalformedURLException {
         LOG.info("Requesting certificate for location {}.", location);
 
@@ -254,7 +277,7 @@ public class MonitoringPolicyTestSteps {
         keystores.put(location, Map.entry(pkcs12password, pkcs12));
     }
 
-    @Then("Minion {string} is started in location {string}.")
+    @Then("Minion {string} is started at location {string}")
     public void startMinion(String systemId, String location) {
         if (!keystores.containsKey(location)) {
             fail("Could not find location " + location + " certificate");
@@ -297,7 +320,7 @@ public class MonitoringPolicyTestSteps {
         });
     }
 
-    @When("SNMP node {string} is started in the network of minion {string}.")
+    @And("SNMP node {string} is started in the network of minion {string}")
     public void startSNMPNode(String nodeLabel, String systemId) {
 
         LOG.info("Starting node with systemId: " + systemId);
@@ -367,7 +390,15 @@ public class MonitoringPolicyTestSteps {
             (discoveryResult.getErrors() == null) || (discoveryResult.getErrors().isEmpty()));
     }
 
-    @Then("Send a trap to Minion with oid {string}")
+    @When("The snmp node sends a coldStart SNMP trap to Minion")
+    public void sendColdStartTrap() throws  Exception{
+        sendTrap("1.3.6.1.6.3.1.1.5.1");
+    }
+    @And("The snmp node sends a warmStart SNMP trap to Minion")
+    public void sendWarmStartTrap() throws  Exception{
+        sendTrap("1.3.6.1.6.3.1.1.5.2");
+    }
+
     public void sendTrap(String oid) throws Exception {
         String community = "public";
         String trapReceiver = minionIpaddress + ":1162";
@@ -389,7 +420,7 @@ public class MonitoringPolicyTestSteps {
         Thread.sleep((2000));
     }
 
-    @Then("The alert has the severity set to {string}")
+    @Then("An alert should be triggered with severity {string}")
     public void verifyAlertSeverity(String severity) throws Exception {
         LOG.info("Waiting 2 seconds for the new alert...");
         Thread.sleep(2000);
@@ -422,7 +453,7 @@ public class MonitoringPolicyTestSteps {
         GQLQuery gqlQuery = new GQLQuery();
         gqlQuery.setQuery(request);
 
-        LOG.info("gqlQuery - all nodes {}", gqlQuery);
+        LOG.info("gqlQuery - {}", gqlQuery);
         Response response = helper.executePostQuery(gqlQuery);
         assertEquals(response.getStatusCode(), 200);
 
@@ -464,7 +495,7 @@ public class MonitoringPolicyTestSteps {
         GQLQuery gqlQuery = new GQLQuery();
         gqlQuery.setQuery(request);
 
-        LOG.info("gqlQuery - alert found {}", gqlQuery);
+        LOG.info("gqlQuery - {}", gqlQuery);
         Response response = helper.executePostQuery(gqlQuery);
         assertEquals(response.getStatusCode(), 200);
 
