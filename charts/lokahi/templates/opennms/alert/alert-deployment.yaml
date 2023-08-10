@@ -67,11 +67,11 @@ spec:
                   key: alertPwd
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "{{ .Values.OpenNMS.global.kafkaClient.bootstrapServers }}"
-            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Alert) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Alert) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env
-          {{- include "kafkaSecretFrom" .Values.OpenNMS.Alert | indent 10 }}
+          {{- include "lokahi.kafkaSecretFrom" .Values.OpenNMS.Alert | indent 10 }}
           ports:
             - name: http
               containerPort: 8080

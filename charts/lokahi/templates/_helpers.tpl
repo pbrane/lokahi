@@ -30,7 +30,7 @@ aren't versioning the chart yet.
 {{- end -}}
 {{- end -}}
 
-{{- define "deployment.env" -}}
+{{- define "lokahi.deployment.env" -}}
   {{- /* OpenTelemetry environment variables */ -}}
 - name: OTEL_SERVICE_NAME
   value: {{ .thisService.ServiceName | quote }}
@@ -45,7 +45,7 @@ aren't versioning the chart yet.
   {{- end }}
 {{- end }}
 
-{{- define "kafkaSecretFrom" -}}
+{{- define "lokahi.kafkaSecretFrom" -}}
   {{- if .kafkaSecretName }}
 - secretRef:
     name: {{ .kafkaSecretName }}

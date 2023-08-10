@@ -151,7 +151,7 @@ spec:
               value: {{ $val | quote }}
               {{- end }}
             {{- end }}
-            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Minion) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Minion) | nindent 12 }}
           ports:
             - name: http
               containerPort: {{ .Values.OpenNMS.Minion.Port }}

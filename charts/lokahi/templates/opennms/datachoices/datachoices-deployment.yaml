@@ -68,7 +68,7 @@ spec:
               value: "http://{{ .Values.Keycloak.ServiceName }}:8080/auth/"
             - name: KEYCLOAK_REALM
               value: "{{ .Values.Keycloak.RealmName }}"
-            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.DataChoices) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.DataChoices) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env

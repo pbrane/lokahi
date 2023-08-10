@@ -83,7 +83,7 @@ spec:
             - name: GRPC_URL_FLOWS_TLS_ENABLED
               value: "{{ .Values.OpenNMS.API.FlowsTlsEnabled }}"
 
-            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.API) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.API) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env

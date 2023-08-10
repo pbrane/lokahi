@@ -101,11 +101,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.Keycloak.ServiceName }}-initial-admin
                   key: password
-            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Notification) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Notification) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env
-          {{- include "kafkaSecretFrom" .Values.OpenNMS.Notification | indent 10 }}
+          {{- include "lokahi.kafkaSecretFrom" .Values.OpenNMS.Notification | indent 10 }}
           ports:
             - name: grpc
               containerPort: 6565

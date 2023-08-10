@@ -61,11 +61,11 @@ spec:
               value: "{{ .Values.OpenNMS.MetricsProcessor.FlowTlsEnabled }}"
             - name: CORTEX_WRITE_URL
               value: {{ .Values.CortexClient.Protocol }}://{{ .Values.CortexClient.HostWrite }}:{{ .Values.CortexClient.PortWrite }}{{ .Values.CortexClient.PathWrite }}
-            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.MetricsProcessor) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.MetricsProcessor) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env
-          {{- include "kafkaSecretFrom" .Values.OpenNMS.MetricsProcessor | indent 10 }}
+          {{- include "lokahi.kafkaSecretFrom" .Values.OpenNMS.MetricsProcessor | indent 10 }}
           ports:
             - name: http
               containerPort: 8080
