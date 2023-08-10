@@ -30,6 +30,22 @@ aren't versioning the chart yet.
 {{- end -}}
 {{- end -}}
 
+{{- /*
+lokahi.deployment.env: return a subset of a pod spec "env" section with common environment
+variables and any service-specific overrides.
+argument: (like lokahi.image above) a dictionary with Values and "thisService" rooted at the
+values for the service.
+example:
+	env:
+	  ... normal env settings should come first ...
+	  # Do not put any env variables below this. The lokahi.development.env include should be last
+	  # in the 'env' section so variables can be overridden with Helm chart values when needed.
+	  {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Events) | nindent 12 }}
+
+Note: when this is included, the the lokahi.development.env include should be last thing
+in the 'env' section so variables can be overridden with Helm chart values when needed
+by adding them as key/value pairs under <ServiceName>.env.
+*/}}
 {{- define "lokahi.deployment.env" -}}
   {{- /* OpenTelemetry environment variables */ -}}
 - name: OTEL_SERVICE_NAME

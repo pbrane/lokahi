@@ -68,6 +68,8 @@ spec:
               value: "{{ .Values.Keycloak.RealmName }}"
             - name: GRPC_SERVER_PORT
               value: "8990"
+            # Do not put any env variables below this. The lokahi.development.env include should be last
+            # in the 'env' section so variables can be overridden with Helm chart values when needed.
             {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.MinionCertificateManager) | nindent 12 }}
           envFrom:
           - configMapRef:
