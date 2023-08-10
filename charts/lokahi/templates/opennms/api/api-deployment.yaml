@@ -52,7 +52,7 @@ spec:
             name: spring-boot-app-config
       containers:
         - name: {{ .Values.OpenNMS.API.ServiceName }}
-          image: {{ .Values.OpenNMS.API.Image }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.API) | quote }}
           imagePullPolicy: {{ .Values.OpenNMS.API.ImagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -83,7 +83,7 @@ spec:
             - name: GRPC_URL_FLOWS_TLS_ENABLED
               value: "{{ .Values.OpenNMS.API.FlowsTlsEnabled }}"
 
-            {{- include "deployment.env" .Values.OpenNMS.API | nindent 12 }}
+            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.API) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env

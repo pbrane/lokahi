@@ -56,7 +56,7 @@ spec:
             name: spring-boot-app-config
       containers:
         - name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
-          image: {{ .Values.OpenNMS.MinionGateway.Image }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.MinionGateway) | quote }}
           imagePullPolicy: {{ .Values.OpenNMS.MinionGateway.ImagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -83,7 +83,7 @@ spec:
               value: "{{ .Values.OpenNMS.global.kafkaClient.bootstrapServers }}"
             - name: IGNITE_UPDATE_NOTIFIER # Disable Ignite version lookups
               value: "false"
-            {{- include "deployment.env" .Values.OpenNMS.MinionGateway | nindent 12 }}
+            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.MinionGateway) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env

@@ -48,7 +48,7 @@ spec:
             name: spring-boot-app-config
       containers:
         - name: {{ .Values.OpenNMS.Notification.ServiceName }}
-          image: {{ .Values.OpenNMS.Notification.Image }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Notification) | quote }}
           imagePullPolicy: {{ .Values.OpenNMS.Notification.ImagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -101,7 +101,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.Keycloak.ServiceName }}-initial-admin
                   key: password
-            {{- include "deployment.env" .Values.OpenNMS.Notification | nindent 12 }}
+            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Notification) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env

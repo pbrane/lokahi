@@ -79,7 +79,7 @@ spec:
         # into minion. Please do not use this in production.
         # Remarks - working directory for this container is /cert which is emptyDir. This empty dir is later mounted
         # into minion container itself under /opt/karaf/certs/.
-        - image: {{ .Values.OpenNMS.Minion.Image }}
+        - image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Minion) | quote }}
           imagePullPolicy: "IfNotPresent"
           name: get-cert
           command:
@@ -105,7 +105,7 @@ spec:
         {{- end }}
       containers:
         - name: {{ .Values.OpenNMS.Minion.ServiceName }}
-          image: {{ .Values.OpenNMS.Minion.Image }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Minion) | quote }}
           imagePullPolicy: {{ .Values.OpenNMS.Minion.ImagePullPolicy }}
           env:
             - name: USE_KUBERNETES
@@ -151,7 +151,7 @@ spec:
               value: {{ $val | quote }}
               {{- end }}
             {{- end }}
-            {{- include "deployment.env" .Values.OpenNMS.Minion | nindent 12 }}
+            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Minion) | nindent 12 }}
           ports:
             - name: http
               containerPort: {{ .Values.OpenNMS.Minion.Port }}

@@ -48,7 +48,7 @@ spec:
             name: spring-boot-app-config
       containers:
         - name: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
-          image: {{ .Values.OpenNMS.MetricsProcessor.Image }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.MetricsProcessor) | quote }}
           imagePullPolicy: {{ .Values.OpenNMS.MetricsProcessor.ImagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -61,7 +61,7 @@ spec:
               value: "{{ .Values.OpenNMS.MetricsProcessor.FlowTlsEnabled }}"
             - name: CORTEX_WRITE_URL
               value: {{ .Values.CortexClient.Protocol }}://{{ .Values.CortexClient.HostWrite }}:{{ .Values.CortexClient.PortWrite }}{{ .Values.CortexClient.PathWrite }}
-            {{- include "deployment.env" .Values.OpenNMS.MetricsProcessor | nindent 12 }}
+            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.MetricsProcessor) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env

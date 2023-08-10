@@ -48,7 +48,7 @@ spec:
             name: spring-boot-app-config
       containers:
         - name: {{ .Values.OpenNMS.Inventory.ServiceName }}
-          image: {{ .Values.OpenNMS.Inventory.Image }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Inventory) | quote }}
           imagePullPolicy: {{ .Values.OpenNMS.Inventory.ImagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -76,7 +76,7 @@ spec:
                 secretKeyRef:
                   key: encryptionKey
                   name: {{ .Values.OpenNMS.Inventory.ServiceName }}-encryption-key
-            {{- include "deployment.env" .Values.OpenNMS.Inventory | nindent 12 }}
+            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Inventory) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env

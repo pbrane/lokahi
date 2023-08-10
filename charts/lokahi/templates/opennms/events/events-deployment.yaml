@@ -48,7 +48,7 @@ spec:
             name: spring-boot-app-config
       containers:
         - name: {{ .Values.OpenNMS.Events.ServiceName }}
-          image: {{ .Values.OpenNMS.Events.Image }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Events) | quote }}
           imagePullPolicy: {{ .Values.OpenNMS.Events.ImagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -69,7 +69,7 @@ spec:
               value: "{{ .Values.OpenNMS.global.kafkaClient.bootstrapServers }}"
             - name: GRPC_URL_INVENTORY
               value: "{{ .Values.OpenNMS.Inventory.ServiceName }}:6565"
-            {{- include "deployment.env" .Values.OpenNMS.Events | nindent 12 }}
+            {{- include "deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Events) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env
