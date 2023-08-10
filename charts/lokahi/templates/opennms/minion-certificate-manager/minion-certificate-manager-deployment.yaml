@@ -86,6 +86,13 @@ spec:
               mountPath: "/app/config"
             - name: rocksdb
               mountPath: "/app/rocks-db"
+          resources:
+            limits:
+              cpu: "{{ .Values.OpenNMS.MinionCertificateManager.Resources.Limits.Cpu }}"
+              memory: "{{ .Values.OpenNMS.MinionCertificateManager.Resources.Limits.Memory }}"
+            requests:
+              cpu: "{{ .Values.OpenNMS.MinionCertificateManager.Resources.Requests.Cpu }}"
+              memory: "{{ .Values.OpenNMS.MinionCertificateManager.Resources.Requests.Memory }}"
       {{- if .Values.OpenNMS.MinionCertificateManager.PrivateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
