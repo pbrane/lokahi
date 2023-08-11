@@ -48,7 +48,7 @@ spec:
             name: spring-boot-app-config
       containers:
         - name: {{ .Values.OpenNMS.Notification.ServiceName }}
-          image: {{ .Values.OpenNMS.Notification.Image }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Notification) | quote }}
           imagePullPolicy: {{ .Values.OpenNMS.Notification.ImagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -101,11 +101,13 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.Keycloak.ServiceName }}-initial-admin
                   key: password
-            {{- include "deployment.env" .Values.OpenNMS.Notification | nindent 12 }}
+            # Do not put any env variables below this. The lokahi.development.env include should be last
+            # in the 'env' section so variables can be overridden with Helm chart values when needed.
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Notification) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env
-          {{- include "kafkaSecretFrom" .Values.OpenNMS.Notification | indent 10 }}
+          {{- include "lokahi.kafkaSecretFrom" .Values.OpenNMS.Notification | indent 10 }}
           ports:
             - name: grpc
               containerPort: 6565
