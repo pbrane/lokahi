@@ -68,6 +68,7 @@ OpenNMS:
         Cpu: '0'
         Memory: '0'
   MinionGateway:
+    Replicas: 2
     Resources:
       Limits:
         Cpu: '0'
