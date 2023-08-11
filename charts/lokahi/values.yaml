@@ -112,7 +112,7 @@ OpenNMS:
     Resources:
       Limits:
         Cpu: "2"
-        Memory: 4Gi # MaxRAMPercentage=50,avg-usage=480MB
+        Memory: 4Gi # MaxRAMPercentage=40 for heap (avg-usage=480MB) plus up to 2GB off-heap (4 Ignite Data Regions)
       Requests:
         Cpu: "1"
         Memory: 2Gi
