@@ -102,7 +102,7 @@ public class CucumberHooks {
             minionDockerTag = "latest";
         }
 
-        SetupSteps.loggedInWithANamedMinion(defaultMinionName);
+        SetupSteps.login();
     }
 
     @After

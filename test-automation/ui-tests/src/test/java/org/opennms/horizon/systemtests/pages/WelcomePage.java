@@ -30,6 +30,7 @@ package org.opennms.horizon.systemtests.pages;
 import com.codeborne.selenide.*;
 import lombok.SneakyThrows;
 import org.junit.Assert;
+import org.opennms.horizon.systemtests.steps.LocationSteps;
 import org.opennms.horizon.systemtests.steps.MinionSteps;
 import org.opennms.horizon.systemtests.utils.MinionStarter;
 import org.openqa.selenium.By;
@@ -130,7 +131,7 @@ public class WelcomePage {
                 Matcher matcher = pattern.matcher(dockerText);
 
                 if (matcher.find()) {
-                    MinionContainer minion = MinionSteps.startMinion(bundle, matcher.group(1), minionName);
+                    MinionContainer minion = MinionSteps.startMinion(bundle, matcher.group(1), minionName, LocationSteps.getLocationName());
                     // Minion startup and connect is slow - need a specific timeout here
                     minionDetectedCheck.should(exist, Duration.ofSeconds(120));
                     return minion;
