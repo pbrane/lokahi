@@ -16,14 +16,22 @@ Feature: Monitoring Policy
     Given Minion ingress overridden authority is in variable "MINION_INGRESS_OVERRIDE_AUTHORITY"
     Then login to Keycloak with timeout 120000ms
 
-  Scenario Outline: Apply a custom monitoring policy to a node
+  Scenario Outline: Create monitoring policies
 
     Given Policy rule name "<policy-rule>", component type "NODE" and event type "SNMP_TRAP"
     Given Alert conditions data
-      | trigger event id   | trigger event name  | event type | count | overtime | overtime unit | severity   | clear event |
-      | <trigger-event-id> | <trigger-event-name> | SNMP_TRAP | 1     | 3        | MINUTE        | <severity> |             |
+      | trigger event id   | trigger event name   | event type | count | overtime | overtime unit | severity   | clear event |
+      | <trigger-event-id> | <trigger-event-name> | SNMP_TRAP  | 1     | 0        |               | <severity> |             |
     When The user saves the monitoring policy with name "test-monitoring-policy" and tag "<tag>"
     Then There is a monitoring policy with name "test-monitoring-policy" and tag "<tag>"
+
+    Examples:
+      | tag                     | trigger-event-id | trigger-event-name | severity | policy-rule   |
+      | monitoring-policy-tag01 | 1                | SNMP Cold Start    | MINOR    | policy-rule01 |
+      | monitoring-policy-tag01 | 2                | SNMP Warm Start    | MAJOR    | policy-rule02 |
+      | monitoring-policy-tag01 | 4                | SNMP Link Down     | CRITICAL | policy-rule04 |
+
+  Scenario: Send trap and verify alert severity
 
     Given No minion running with location "test-monitoring-policy-location"
     Given Location "test-monitoring-policy-location" does not exist
@@ -33,16 +41,18 @@ Feature: Monitoring Policy
 
     When Minion "test-monitoring-policy-system01" is started at location "test-monitoring-policy-location"
     And SNMP node "mp_snmp_node" is started in the network of minion "test-monitoring-policy-system01"
-    Then Discover "MPDiscovery" for snmp node "mp_snmp_node", location "test-monitoring-policy-location" is created to discover by IP with policy tag "<tag>"
-    When The snmp node sends a coldStart SNMP trap to Minion
-    And The snmp node sends a warmStart SNMP trap to Minion
-    Then An alert should be triggered with severity "<severity>"
+    Then Discover "test-monitoring-policy-discovery" for snmp node "mp_snmp_node", location "test-monitoring-policy-location" is created to discover by IP with policy tag "monitoring-policy-tag01"
+
+    When The snmp node sends a "SNMP Cold Start" to Minion
+    Then An alert with "SNMP Cold Start" should be triggered with severity "MINOR"
+
+    When The snmp node sends a "SNMP Warm Start" to Minion
+    Then An alert with "SNMP Warm Start" should be triggered with severity "MAJOR"
+
+    When The snmp node sends a "SNMP Link Down" to Minion
+    Then An alert with "SNMP Link Down" should be triggered with severity "CRITICAL"
 
     Given At least one Minion is running with location "test-monitoring-policy-location"
     Then Minion "test-monitoring-policy-system01" is stopped
     When Location "test-monitoring-policy-location" is removed
     Then Location "test-monitoring-policy-location" does not exist
-
-    Examples:
-      | tag | trigger-event-id | trigger-event-name | severity | policy-rule |
-      | monitoring-policy-tag-major | 1 | SNMP Event | MAJOR | policy-rule-major |
