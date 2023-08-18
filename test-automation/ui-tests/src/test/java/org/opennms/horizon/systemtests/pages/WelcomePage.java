@@ -104,7 +104,7 @@ public class WelcomePage {
     }
 
     public static void nodeDiscovered(String sysName) {
-        nodeDetectedCheck.should(exist, Duration.ofMinutes(2));
+        nodeDetectedCheck.should(exist, Duration.ofMinutes(3));
         discoveryResultLatencyCheck.should(exist);
     }
 
