@@ -430,10 +430,8 @@ public class MonitoringPolicyTestSteps {
                 .atMost(20, TimeUnit.SECONDS)
                 .pollDelay(5, TimeUnit.SECONDS)
                 .ignoreExceptions()
-                .until(() -> waitForAlerts(triggerEventName, severity));
-    }
+                .until(() -> waitForAlerts(triggerEventName));
 
-    private boolean waitForAlerts(String triggerEventName, String severity) {
         String nodeLabel = getNodeLabel();
         JsonArray alerts = getAlerts(nodeLabel);
 
@@ -448,12 +446,23 @@ public class MonitoringPolicyTestSteps {
                 break;
             }
         }
-
-        if (!severity.equals(alertSeverity)) {
-            return false;
-        }
         assertEquals("Severity: " + severity + " was expected but got " + alertSeverity + " instead.", severity, alertSeverity);
-        return true;
+    }
+
+    private boolean waitForAlerts(String triggerEventName) {
+        String nodeLabel = getNodeLabel();
+        JsonArray alerts = getAlerts(nodeLabel);
+
+        for (JsonElement element : alerts) {
+            JsonObject alert = (JsonObject) element;
+            String nodeName = alert.get("nodeName").getAsString();
+            LOG.info(nodeName + " : " + nodeLabel);
+            String eventUei = alert.get("uei").getAsString();
+            if (nodeName.equals(nodeLabel) && eventUei.endsWith(triggerEventName.replaceAll(" ", "_"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getNodeLabel() {
