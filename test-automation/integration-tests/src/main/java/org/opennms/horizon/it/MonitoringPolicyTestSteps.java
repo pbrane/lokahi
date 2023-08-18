@@ -313,7 +313,7 @@ public class MonitoringPolicyTestSteps {
             }
 
             minion.withCopyToContainer(Transferable.of(certificate.getValue()), "/opt/karaf/minion.p12");
-            minion.waitingFor(Wait.forLogMessage(".*Ignite node started OK.*", 1).withStartupTimeout(Duration.ofMinutes(3)));
+            minion.waitingFor(Wait.forLogMessage(".* Listening on \\[all interfaces\\]:1162.*", 1).withStartupTimeout(Duration.ofMinutes(3)));
             minion.start();
 
             return minion;
@@ -321,7 +321,7 @@ public class MonitoringPolicyTestSteps {
     }
 
     @And("SNMP node {string} is started in the network of minion {string}")
-    public void startSNMPNode(String nodeLabel, String systemId) throws InterruptedException {
+    public void startSNMPNode(String nodeLabel, String systemId) {
 
         LOG.info("Starting node with systemId: " + systemId);
 
@@ -340,9 +340,6 @@ public class MonitoringPolicyTestSteps {
         minionIpaddress = networksMap.values().iterator().next().getIpAddress();
 
         LOG.info("MINION ip={}", minionIpaddress);
-
-        LOG.info("Waiting for 20sec so both SNMP node and Minion are fully started ...");
-        Thread.sleep((20000));
 
     }
 
@@ -424,14 +421,19 @@ public class MonitoringPolicyTestSteps {
         int exitCode = sendTrapResult.getExitCode();
         LOG.info("Docker sendTrapResult stdout={}, exitCode={}, sendTrapResult={}", stdout, exitCode, sendTrapResult.getStderr());
 
-        LOG.info("sleeping for 2sec ...");
-        Thread.sleep((2000));
     }
 
     @Then("An alert with {string} should be triggered with severity {string}")
-    public void verifyAlertSeverity(String triggerEventName, String severity) throws Exception {
-        LOG.info("Waiting 2 seconds for the new alert...");
-        Thread.sleep(2000);
+    public void verifyAlertSeverity(String triggerEventName, String severity) {
+        Awaitility
+                .await()
+                .atMost(20, TimeUnit.SECONDS)
+                .pollDelay(5, TimeUnit.SECONDS)
+                .ignoreExceptions()
+                .until(() -> waitForAlerts(triggerEventName, severity));
+    }
+
+    private boolean waitForAlerts(String triggerEventName, String severity) {
         String nodeLabel = getNodeLabel();
         JsonArray alerts = getAlerts(nodeLabel);
 
@@ -446,7 +448,12 @@ public class MonitoringPolicyTestSteps {
                 break;
             }
         }
+
+        if (!severity.equals(alertSeverity)) {
+            return false;
+        }
         assertEquals("Severity: " + severity + " was expected but got " + alertSeverity + " instead.", severity, alertSeverity);
+        return true;
     }
 
     public String getNodeLabel() {
