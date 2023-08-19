@@ -71,7 +71,7 @@ public class FlowProcessor {
                     pipeline.process(flowDocumentLog);
                     metricsTracker.addTenantFlowCompletedCount(tenantId, flowDocumentLog.getMessageCount());
                 } catch (Exception exc) {
-                    log.warn("Error processing flow: {} error: {}", flowDocumentLog, exc.getMessage());
+                    log.warn("Error processing flow: tenant-id={}; error: {}", tenantId, exc.getMessage(), exc);
                 }
                 return null;
             });
