@@ -1,6 +1,11 @@
 package org.opennms.miniongateway.grpc.server;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+
 import org.opennms.horizon.shared.grpc.common.GrpcIpcServer;
 import org.opennms.horizon.shared.grpc.common.LocationServerInterceptor;
 import org.opennms.horizon.shared.grpc.common.TenantIDGrpcServerInterceptor;
@@ -17,27 +22,28 @@ import org.opennms.horizon.shared.ipc.grpc.server.manager.rpcstreaming.MinionRpc
 import org.opennms.horizon.shared.ipc.grpc.server.manager.rpcstreaming.impl.MinionRpcStreamConnectionManagerImpl;
 import org.opennms.horizon.shared.protobuf.mapper.TenantLocationSpecificTaskSetResultsMapper;
 import org.opennms.horizon.shared.protobuf.mapper.impl.TenantLocationSpecificTaskSetResultsMapperImpl;
-import org.opennms.miniongateway.grpc.server.heartbeat.HeartbeatKafkaForwarder;
 import org.opennms.miniongateway.grpc.server.flows.FlowKafkaForwarder;
+import org.opennms.miniongateway.grpc.server.heartbeat.HeartbeatKafkaForwarder;
 import org.opennms.miniongateway.grpc.server.tasktresults.TaskResultsKafkaForwarder;
 import org.opennms.miniongateway.grpc.server.traps.TrapsKafkaForwarder;
 import org.opennms.miniongateway.grpc.twin.TaskSetTwinMessageProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
 @Configuration
 public class GrpcServerConfig {
+    @Value("${debug.span.full.message:false}")
+    private boolean debugSpanFullMessage;
+
+    @Value("${debug.span.content:false}")
+    private boolean debugSpanContent;
 
     @Bean
     public TenantLocationSpecificTaskSetResultsMapper tenantLocationSpecificTaskSetResultsMapper() {
@@ -118,15 +124,17 @@ public class GrpcServerConfig {
         @Autowired FlowKafkaForwarder flowKafkaForwarder,
         @Autowired RpcRequestTimeoutManager rpcRequestTimeoutManager,
         @Autowired TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor,
+        @Autowired LocationServerInterceptor locationServerInterceptor,
         @Autowired MeterRegistry meterRegistry
         ) throws Exception {
 
-        OpennmsGrpcServer server = new OpennmsGrpcServer(serverBuilder, meterRegistry);
+        OpennmsGrpcServer server = new OpennmsGrpcServer(serverBuilder, meterRegistry, debugSpanFullMessage, debugSpanContent);
 
         server.setRpcConnectionTracker(rpcConnectionTracker);
         server.setRpcRequestTracker(rpcRequestTracker);
         server.setRpcRequestTimeoutManager(rpcRequestTimeoutManager);
         server.setTenantIDGrpcServerInterceptor(tenantIDGrpcServerInterceptor);
+        server.setLocationServerInterceptor(locationServerInterceptor);
         server.setMinionManager(minionManager);
         server.setMinionRpcStreamConnectionManager(minionRpcStreamConnectionManager);
         server.setIncomingRpcHandler(incomingRpcHandlerAdapter);
