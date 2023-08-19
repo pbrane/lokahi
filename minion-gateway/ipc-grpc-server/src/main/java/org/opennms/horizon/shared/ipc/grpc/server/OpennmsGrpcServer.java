@@ -467,26 +467,67 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
     }
 
     private CompletableFuture<GatewayRpcResponseProto> dispatch(StreamObserver<RpcRequestProto> rpcHandler, String location, RpcRequestProto request) {
-        CompletableFuture<RpcResponseProto> future = new CompletableFuture<>();
-        String rpcId = request.getRpcId();
-        BasicRpcResponseHandler responseHandler = new BasicRpcResponseHandler(request.getExpirationTime(), rpcId, request.getModuleId(), future);
-        rpcHandler.onNext(request);
-        rpcRequestTracker.addRequest(rpcId, responseHandler);
-        rpcRequestTimeoutManager.registerRequestTimeout(responseHandler);
-        return future.whenComplete((r, e) -> {
-            rpcRequestTracker.remove(rpcId);
-        }).thenApply(response -> {
-            return GatewayRpcResponseProto.newBuilder()
-                .setRpcId(response.getRpcId())
-                .setIdentity(MinionIdentity.newBuilder()
-                    .setSystemId(response.getIdentity().getSystemId())
-                    .setLocationId(location)
-                )
-                .setModuleId(response.getModuleId())
-                .setPayload(response.getPayload())
-                .build();
-        });
-    }
+        final var span = tracer.spanBuilder("CloudToMinionRPC dispatch " + request.getModuleId())
+            .setSpanKind(SpanKind.CLIENT)
+            .addLink(rpcConnectionTracker.getConnectionSpanContext(rpcHandler))
+            .setAllAttributes(rpcConnectionTracker.getConnectionSpanAttributes(rpcHandler))
+            .setAttribute("request_size", request.getSerializedSize())
+            .setAttribute("rpcId", request.getRpcId())
+            .setAttribute("expiration", request.getExpirationTime())
+            .setAttribute("moduleId", request.getModuleId())
+            .startSpan();
 
+        if (debugSpanFullMessage) {
+            span.setAttribute("request", request.toString());
+        }
+        if (debugSpanContent && request.hasPayload()) {
+            span.setAttribute("request_payload", request.getPayload().toString());
+        }
+
+        try (var ss = span.makeCurrent()) {
+            CompletableFuture<RpcResponseProto> future = new CompletableFuture<>();
+            String rpcId = request.getRpcId();
+            BasicRpcResponseHandler responseHandler = new BasicRpcResponseHandler(request.getExpirationTime(), rpcId, request.getModuleId(), future);
+            rpcHandler.onNext(request);
+            rpcRequestTracker.addRequest(rpcId, responseHandler);
+            rpcRequestTimeoutManager.registerRequestTimeout(responseHandler);
+            return future.whenComplete((r, e) -> {
+                rpcRequestTracker.remove(rpcId);
+                if (r != null) {
+                    span.setAttribute("response_size", r.getSerializedSize());
+                    if (debugSpanFullMessage) {
+                        span.setAttribute("response", r.toString());
+                    }
+                    if (debugSpanContent) {
+                        span.setAttribute("response_payload", r.getPayload().toString());
+                    }
+                }
+                if (e != null) {
+                    span.setStatus(StatusCode.ERROR, "Received exception during dispatch future: " + e);
+                    span.recordException(e);
+                }
+                span.end();
+            }).thenApply(response -> {
+                return GatewayRpcResponseProto.newBuilder()
+                    .setRpcId(response.getRpcId())
+                    .setIdentity(MinionIdentity.newBuilder()
+                        .setSystemId(response.getIdentity().getSystemId())
+                        .setLocationId(location)
+                    )
+                    .setModuleId(response.getModuleId())
+                    .setPayload(response.getPayload())
+                    .build();
+            });
+        } catch (Throwable throwable) {
+            span.setStatus(StatusCode.ERROR, "Received exception during dispatch: " + throwable);
+            span.recordException(throwable);
+            span.end();
+            throw new UndeclaredThrowableException(throwable);
+        } finally {
+            // In the non-exception case the span is ended earlier in future's whenComplete action.
+            // In the exception case, the span is ended in the catch clause earlier.
+            // So, no span.end() here.
+        }
+    }
 
 }
