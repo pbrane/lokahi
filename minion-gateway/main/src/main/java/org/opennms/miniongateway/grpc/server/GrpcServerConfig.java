@@ -90,7 +90,7 @@ public class GrpcServerConfig {
         TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor,
         LocationServerInterceptor locationServerInterceptor,
         List<OutgoingMessageFactory> outgoingMessageFactoryList) {
-        return new TaskSetTwinMessageProcessor(tenantIDGrpcServerInterceptor, locationServerInterceptor, outgoingMessageFactoryList);
+        return new TaskSetTwinMessageProcessor(tenantIDGrpcServerInterceptor, locationServerInterceptor, outgoingMessageFactoryList, debugSpanFullMessage, debugSpanContent);
     }
 
     @Bean
