@@ -85,7 +85,7 @@ public class LocationSteps {
                 Matcher matcher = pattern.matcher(dockerText);
 
                 if (matcher.find()) {
-                    MinionContainer minion = MinionSteps.startMinion(bundle, matcher.group(1), minionName);
+                    MinionContainer minion = MinionSteps.startMinion(bundle, matcher.group(1), minionName, LocationSteps.getLocationName());
                     // Minion startup and connect is slow - need a specific timeout here
                     return minion;
                 }
