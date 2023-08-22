@@ -18,42 +18,36 @@ Feature: Alert Page
 
   Scenario Outline: Generate SNMP traps and trigger alerts
     Given Policy rule name "<policy-rule>", component type "NODE" and event type "SNMP_TRAP"
-    Given Alert conditions data
-      | trigger event id   | trigger event name  | event type | count | overtime | overtime unit | severity   | clear event |
-      | <trigger-event-id> | <trigger-event-name> | SNMP_TRAP | 1     | 0        | MINUTE        | <severity> |             |
-    When The user saves the monitoring policy with name "<monitoring-policy>" and tag "<policy-tag>"
-    Then There is a monitoring policy with name "<monitoring-policy>" and tag "<policy-tag>"
+    And Alert conditions data
+      | trigger event id   | trigger event name   | event type | count | overtime | overtime unit | severity   | clear event |
+      | <trigger-event-id> | <trigger-event-name> | SNMP_TRAP  | 1     | 0        |               | <severity> |             |
+    When The user saves the monitoring policy with name "<policy>" and tag "<tag>"
+    Then There is a monitoring policy with name "<policy>" and tag "<tag>"
 
-    Given No minion running with location "<alert-page-location>"
-    Given Location "<alert-page-location>" does not exist
-    When Create location "<alert-page-location>"
-    Then Location "<alert-page-location>" should exist
-    Then User can retrieve a certificate for location "<alert-page-location>"
+    Given No minion running with location "<location>"
+    Given Location "<location>" does not exist
+    When Create location "<location>"
+    Then Location "<location>" should exist
+    Then User can retrieve a certificate for location "<location>"
 
-    When Minion "<minion>" is started at location "<alert-page-location>"
-    And SNMP node "<snmp-node>" is started in the network of minion "<minion>"
-    Then Discover "<discovery>" for snmp node "<snmp-node>", location "<alert-page-location>" is created to discover by IP with policy tag "<policy-tag>"
-    When The snmp node sends a coldStart SNMP trap to Minion
-    And The snmp node sends a warmStart SNMP trap to Minion
-    And The snmp node sends a linkDown SNMP trap to Minion
-    And The snmp node sends a linkUp SNMP trap to Minion
-    And The snmp node sends a authenticationFailure SNMP trap to Minion
-    And The snmp node sends a egpNeighborLoss SNMP trap to Minion
-    Then At least <alert-count> alerts have been triggered
+    When Minion "<system-id>" is started at location "<location>"
+    And SNMP node "<node-name>" is started in the network of minion "<system-id>"
+    Then Discover "<discovery>" for snmp node "<node-name>", location "<location>" is created to discover by IP with policy tag "<tag>"
 
-    Given At least one Minion is running with location "<alert-page-location>"
-    Then Minion "<minion>" is stopped
-    When Location "<alert-page-location>" is removed
-    Then Location "<alert-page-location>" does not exist
+    When The snmp node sends a "<trigger-event-name>" to Minion
+    And The snmp node sends a "<trigger-event-name>" to Minion
+    Then An alert with "<trigger-event-name>" should be triggered with severity "<severity>"
+    And At least <alert-count> alerts have been triggered
+
+    When Minion "<system-id>" is stopped
+    And Location "<location>" is removed
+    Then Location "<location>" does not exist
 
     Examples:
-      | discovery        | alert-page-location     | monitoring-policy       | minion                    | snmp-node       | policy-tag        | trigger-event-id | trigger-event-name | severity | policy-rule | alert-count |
-      | ap-discrovery-ma | alert-page-location-ma  | ap-monitoring-policy-ma | test-alert-page-system-ma | ap_snmp_node-ma | alert-page-tag-ma | 1 | SNMP Event Major | MAJOR | alert-page-policy-rule-ma | 0                 |
-      | ap-discrovery-mi | alert-page-location2-mi | ap-monitoring-policy-mi | test-alert-page-system-mi | ap_snmp_node-mi | alert-page-tag-mi | 6 | SNMP Event Minor | MINOR | alert-page-policy-rule-mi | 0                 |
-      | ap-discrovery-cr | alert-page-location3-cr | ap-monitoring-policy-cr | test-alert-page-system-cr | ap_snmp_node-cr | alert-page-tag-cr | 2 | SNMP Event Critical | CRITICAL | alert-page-policy-rule-cr | 0           |
-      | ap-discrovery-in | alert-page-location3-in | ap-monitoring-policy-in | test-alert-page-system-in | ap_snmp_node-in | alert-page-tag-in | 3 | SNMP Event INDETERMINATE | INDETERMINATE | alert-page-policy-rule-in | 4 |
-      | ap-discrovery-no | alert-page-location3-no | ap-monitoring-policy-no | test-alert-page-system-no | ap_snmp_node-no | alert-page-tag-no | 4 | SNMP Event NORMAL | NORMAL | alert-page-policy-rule-no | 0          |
-      | ap-discrovery-wa | alert-page-location3-wa | ap-monitoring-policy-wa | test-alert-page-system-wa | ap_snmp_node-wa | alert-page-tag-wa | 2 | SNMP Event WARNING | WARNING | alert-page-policy-rule-wa | 3          |
+      | policy              | tag                     | trigger-event-id | trigger-event-name | severity | policy-rule   | location            | system-id           | node-name      | discovery              | alert-count |
+      | alert-page-policy01 | alert-page-policy-tag01 | 1                | SNMP Cold Start    | MINOR    | policy-rule01 | alert-page-location | alert-page-system01 | mp_snmp_node01 | alert-page-discovery01 | 2           |
+      | alert-page-policy02 | alert-page-policy-tag02 | 2                | SNMP Warm Start    | MAJOR    | policy-rule02 | alert-page-location | alert-page-system02 | mp_snmp_node02 | alert-page-discovery02 | 4           |
+      | alert-page-policy03 | alert-page-policy-tag03 | 4                | SNMP Link Down     | CRITICAL | policy-rule04 | alert-page-location | alert-page-system03 | mp_snmp_node03 | alert-page-discovery03 | 6           |
 
   @skip
   Scenario: As a user I can view active alerts
@@ -88,10 +82,10 @@ Feature: Alert Page
     Then I will see a list filtered by Alerts that occurred in the time window
 
     Examples:
-       | time-window   |
-       | TODAY         |
-       | LAST_24_HOURS |
-       | SEVEN_DAYS    |
+      | time-window   |
+      | TODAY         |
+      | LAST_24_HOURS |
+      | SEVEN_DAYS    |
 
   @skip
   Scenario: As a user I can filter alerts by severity "CRITICAL"

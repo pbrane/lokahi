@@ -403,22 +403,6 @@ public class MonitoringPolicyTestSteps {
             default -> LOG.error("trigger event type not supported: " + triggerEventType);
         }
     }
-    @And("The snmp node sends a linkDown SNMP trap to Minion")
-    public void sendLinkdownTrap() throws  Exception{
-        sendTrap("1.3.6.1.6.3.1.1.5.3");
-    }
-    @And("The snmp node sends a linkUp SNMP trap to Minion")
-    public void sendLinkupTrap() throws  Exception{
-        sendTrap("1.3.6.1.6.3.1.1.5.4");
-    }
-    @And("The snmp node sends a authenticationFailure SNMP trap to Minion")
-    public void sendAuthenticationFailureTrap() throws  Exception{
-        sendTrap("1.3.6.1.6.3.1.1.5.5");
-    }
-    @And("The snmp node sends a egpNeighborLoss SNMP trap to Minion")
-    public void sendEgpNeighborLossTrap() throws  Exception{
-        sendTrap("1.3.6.1.6.3.1.1.5.6");
-    }
 
     private void sendTrapToMinion(String oid) throws Exception {
         String community = "public";
