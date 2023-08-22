@@ -49,7 +49,7 @@ import static com.codeborne.selenide.Selenide.$$;
 import static org.junit.Assert.fail;
 
 public class LocationSteps {
-    private static final String DEFAULT_LOCATION_NAME = "default";
+    public static final String DEFAULT_LOCATION_NAME = "default";
     private static final ElementsCollection locationMenus = $$(By.xpath("//div[@class='locations-card']//button[@data-test='more-options-btn']"));
     private static final SelenideElement firstMenu = $(By.xpath("//div[@class='locations-card']//button[@data-test='more-options-btn'][1]"));
     private static final SelenideElement addLocationButton = $(By.xpath("//button[@data-test='add-location-btn']"));
@@ -58,7 +58,7 @@ public class LocationSteps {
     private static final SelenideElement downloadCertButton = $(By.xpath("//button[@data-test='download-btn']"));
     private static final SelenideElement dockerCmd = $(By.xpath("//div[@class='instructions']/pre"));
 
-    private static String locationName = "default";
+    private static String locationName = "not_default";
 
 
 
@@ -77,7 +77,7 @@ public class LocationSteps {
         File bundle = null;
         try {
 
-            bundle = downloadCertButton.should(exist).shouldBe(enabled).download();
+            bundle = downloadCertButton.should(exist).shouldBe(enabled).download(60000);
             if (bundle.exists() && bundle.canRead() && bundle.length() > 0) {
                 // Parse out the pwd for the bundle
                 String dockerText = dockerCmd.shouldBe(visible).getText();

@@ -122,7 +122,7 @@ public class WelcomePage {
 
     public static MinionContainer addMinionUsingWalkthrough(String minionName) {
         try {
-            File bundle = downloadBundleBtn.shouldBe(enabled).download();
+            File bundle = downloadBundleBtn.shouldBe(enabled).download(60000);
             if (bundle.exists()) {
                 // Parse out the pwd for the bundle
                 String dockerText = dockerCmd.shouldBe(visible).getAttribute("value"); // getText doesn't work for textarea
@@ -131,7 +131,7 @@ public class WelcomePage {
                 Matcher matcher = pattern.matcher(dockerText);
 
                 if (matcher.find()) {
-                    MinionContainer minion = MinionSteps.startMinion(bundle, matcher.group(1), minionName, LocationSteps.getLocationName());
+                    MinionContainer minion = MinionSteps.startMinion(bundle, matcher.group(1), minionName, LocationSteps.DEFAULT_LOCATION_NAME);
                     // Minion startup and connect is slow - need a specific timeout here
                     minionDetectedCheck.should(exist, Duration.ofSeconds(120));
                     return minion;

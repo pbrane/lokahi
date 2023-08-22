@@ -94,4 +94,13 @@ public class MinionSteps {
             Selenide.sleep(2000);
         }
     }
+
+    public static boolean isMinionRunning(String locationName) {
+        MinionContainer minionContainer = minions.get(locationName);
+        boolean result = false;
+        if (minionContainer != null) {
+            result = minionContainer.isRunning();
+        }
+        return result;
+    }
 }
