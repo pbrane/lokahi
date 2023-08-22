@@ -13,6 +13,7 @@ Feature: User can use welcome wizard to connect local minion to the OpenNMS and 
     Then click on 'Start Discovery' button
     Then first node with system name "automated-testing-sysName" discovered successfully
     Then click on 'Continue' button to end the wizard
+    Then delete node "automated-testing-sysName"
     Then Navigate to the "locations" through the left panel
     Then check "default" location exists
     Then click on location "default"
@@ -21,7 +22,7 @@ Feature: User can use welcome wizard to connect local minion to the OpenNMS and 
     Then delete minion "minion_test_id_1"
     Then click on location "default"
     Then verify minion "minion_test_id_1" deleted
-    Then delete node "automated-testing-sysName"
+
 
 
 
