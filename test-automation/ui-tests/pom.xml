@@ -28,7 +28,7 @@
         <azure.identity.version>1.8.2</azure.identity.version>
         <lombok.version>1.18.26</lombok.version>
         <jna.version>5.12.1</jna.version>
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <testcontainers.version>1.19.0</testcontainers.version>
     </properties>
 
     <build>
