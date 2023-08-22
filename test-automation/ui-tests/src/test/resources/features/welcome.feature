@@ -5,7 +5,7 @@ Feature: User can use welcome wizard to connect local minion to the OpenNMS and 
    # Given Open the welcome wizard
     Given check 'Start Setup' button is accessible and visible
     Then click on 'Start Setup' button to start welcome wizard
-    Then click on 'Download' button to get certificate and password for minion "minion_test_id_1" and start minion using "docker-compose-minion.yaml"
+    Then click on 'Download' button to get certificate and password for minion "minion_test_id_1"
     Then wizard shows that minion connected successfully
     Then click on 'Continue' button
     Given Start snmp node "automated-testing-sysName"

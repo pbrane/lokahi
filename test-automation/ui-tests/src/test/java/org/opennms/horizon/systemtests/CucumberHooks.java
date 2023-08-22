@@ -107,7 +107,7 @@ public class CucumberHooks {
 
     @After
     public static void cleanupIndividualTests() {
-        DiscoverySteps.cleanup();
+        //DiscoverySteps.cleanup();
     }
 
     @AfterAll
