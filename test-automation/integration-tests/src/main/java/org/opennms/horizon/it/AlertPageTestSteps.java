@@ -49,7 +49,7 @@ public class AlertPageTestSteps {
 
         String request = """
                 query {
-                  findAllAlerts(pageSize: 20, page: 0, timeRange: ALL, sortBy: "tenantId", sortAscending: true                                                                   
+                  findAllAlerts(pageSize: 20, page: 0, timeRange: ALL, sortBy: "tenantId", sortAscending: true                                                   
                                 ) {
                                 nextPage
                                 alerts {
@@ -164,7 +164,7 @@ public class AlertPageTestSteps {
             case "LAST_24_HOURS" -> AlertTimeRange.LAST_24_HOURS;
             case "SEVEN_DAYS" -> AlertTimeRange.SEVEN_DAYS;
             case "TODAY" -> AlertTimeRange.TODAY;
-            default -> null;
+            default -> throw new IllegalArgumentException("Invalid time range: " + timeRange);
         };
     }
 
@@ -208,7 +208,7 @@ public class AlertPageTestSteps {
             case TODAY -> currentTime.truncatedTo(ChronoUnit.DAYS);
             case LAST_24_HOURS -> currentTime.minus(24, ChronoUnit.HOURS);
             case SEVEN_DAYS -> currentTime.minus(7, ChronoUnit.DAYS);
-            default -> null;
+            default -> throw new IllegalArgumentException("Invalid time range: " + alertTimeRange);
         };
         return !eventTime.isBefore(start);
     }

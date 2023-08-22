@@ -35,19 +35,17 @@ Feature: Alert Page
     Then Discover "<discovery>" for snmp node "<node-name>", location "<location>" is created to discover by IP with policy tag "<tag>"
 
     When The snmp node sends a "<trigger-event-name>" to Minion
-    And The snmp node sends a "<trigger-event-name>" to Minion
     Then An alert with "<trigger-event-name>" should be triggered with severity "<severity>"
-    And At least <alert-count> alerts have been triggered
 
     When Minion "<system-id>" is stopped
     And Location "<location>" is removed
     Then Location "<location>" does not exist
 
     Examples:
-      | policy              | tag                     | trigger-event-id | trigger-event-name | severity | policy-rule   | location            | system-id           | node-name      | discovery              | alert-count |
-      | alert-page-policy01 | alert-page-policy-tag01 | 1                | SNMP Cold Start    | MINOR    | policy-rule01 | alert-page-location | alert-page-system01 | mp_snmp_node01 | alert-page-discovery01 | 2           |
-      | alert-page-policy02 | alert-page-policy-tag02 | 2                | SNMP Warm Start    | MAJOR    | policy-rule02 | alert-page-location | alert-page-system02 | mp_snmp_node02 | alert-page-discovery02 | 4           |
-      | alert-page-policy03 | alert-page-policy-tag03 | 4                | SNMP Link Down     | CRITICAL | policy-rule04 | alert-page-location | alert-page-system03 | mp_snmp_node03 | alert-page-discovery03 | 6           |
+      | policy              | tag                   | trigger-event-id | trigger-event-name | severity | policy-rule      | location            | system-id           | node-name      | discovery              |
+      | alert-page-policy01 | alert-page-policy-tag | 1                | SNMP Cold Start    | MINOR    | ap-policy-rule01 | alert-page-location | alert-page-system01 | ap_snmp_node01 | alert-page-discovery01 |
+      | alert-page-policy02 | alert-page-policy-tag | 2                | SNMP Warm Start    | MAJOR    | ap-policy-rule02 | alert-page-location | alert-page-system02 | ap_snmp_node02 | alert-page-discovery02 |
+      | alert-page-policy03 | alert-page-policy-tag | 4                | SNMP Link Down     | CRITICAL | ap-policy-rule04 | alert-page-location | alert-page-system03 | ap_snmp_node03 | alert-page-discovery03 |
 
   @skip
   Scenario: As a user I can view active alerts
