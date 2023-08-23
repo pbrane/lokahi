@@ -25,10 +25,9 @@ package org.opennms.horizon.systemtests;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.FileDownloadMode;
 import com.codeborne.selenide.Selenide;
-import io.cucumber.java.After;
-import io.cucumber.java.AfterAll;
-import io.cucumber.java.BeforeAll;
+import io.cucumber.java.*;
 import org.opennms.horizon.systemtests.steps.DiscoverySteps;
+import org.opennms.horizon.systemtests.steps.LocationSteps;
 import org.opennms.horizon.systemtests.steps.MinionSteps;
 import org.opennms.horizon.systemtests.steps.SetupSteps;
 import org.testcontainers.containers.GenericContainer;
@@ -62,10 +61,9 @@ public class CucumberHooks {
     public static String defaultMinionName = "testMinion";
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUpForAllTests() {
         Configuration.fileDownload = FileDownloadMode.FOLDER;
         Configuration.headless = false;
-        Configuration.timeout = 80000;
 
         String keycloak = System.getenv().get(KEYCLOAK_LOGIN);
         if (keycloak != null) {
@@ -105,9 +103,17 @@ public class CucumberHooks {
         SetupSteps.login();
     }
 
+    @Before
+    public static void setUp(Scenario scenario) {
+        // we will start minion only once per location and also never for welcome test
+        if ((!scenario.getSourceTagNames().contains("@welcome")) && !MinionSteps.isMinionRunning(LocationSteps.getLocationName())) {
+            SetupSteps.startNamedMinion(defaultMinionName);
+        }
+    }
+
     @After
     public static void cleanupIndividualTests() {
-        //DiscoverySteps.cleanup();
+        DiscoverySteps.cleanup();
     }
 
     @AfterAll
