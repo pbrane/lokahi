@@ -239,24 +239,7 @@ public class NodeService {
         });
         return tasks;
     }
-
-    public void updateNodeMonitoredState(Node node) {
-
-        // See HS-1812, Always match "default" tag.
-        final var monitored = tagRepository.findByTenantIdAndNodeId(node.getTenantId(), node.getId()).stream()
-            .anyMatch(tag -> !tag.getMonitorPolicyIds().isEmpty() || DEFAULT_TAG.equals(tag.getName()));
-
-        final var monitoredState = monitored ? MonitoredState.MONITORED
-            : node.getMonitoredState() == MonitoredState.DETECTED
-                ? MonitoredState.DETECTED
-                : MonitoredState.UNMONITORED;
-
-        if (node.getMonitoredState() != monitoredState) {
-            node.setMonitoredState(monitoredState);
-            this.nodeRepository.save(node);
-        }
-    }
-
+    
     public void updateNodeMonitoredState(long nodeId, String tenantId) {
 
         // See HS-1812, Always match "default" tag.
@@ -319,11 +302,16 @@ public class NodeService {
         tagPublisher.publishTagUpdate(tagOpList);
     }
 
-    public void sendNewNodeTaskSetAsync(Node node, Long locationId, IcmpActiveDiscoveryDTO icmpDiscoveryDTO) {
-        executorService.execute(() -> sendTaskSetsToMinion(node, locationId, icmpDiscoveryDTO));
+    public void sendNewNodeTaskSetAsync(NodeDTO nodeDTO, Long locationId, IcmpActiveDiscoveryDTO icmpDiscoveryDTO) {
+        executorService.execute(() -> sendTaskSetsToMinion(nodeDTO, locationId, icmpDiscoveryDTO));
     }
 
-    private void sendTaskSetsToMinion(Node node, Long locationId, IcmpActiveDiscoveryDTO icmpDiscoveryDTO) {
+    public void sendNewNodeTaskSetAsync(Node node, Long locationId, IcmpActiveDiscoveryDTO icmpDiscoveryDTO) {
+        var nodeDTO = mapper.modelToDTO(node);
+        executorService.execute(() -> sendTaskSetsToMinion(nodeDTO, locationId, icmpDiscoveryDTO));
+    }
+
+    private void sendTaskSetsToMinion(NodeDTO nodeDTO, Long locationId, IcmpActiveDiscoveryDTO icmpDiscoveryDTO) {
 
         List<SnmpConfiguration> snmpConfigs = new ArrayList<>();
         try {
@@ -338,9 +326,9 @@ public class NodeService {
                     .setPort(port);
                 snmpConfigs.add(builder.build());
             });
-            scannerTaskSetService.sendNodeScannerTask(mapper.modelToDTO(node), locationId, snmpConfigs);
+            scannerTaskSetService.sendNodeScannerTask(nodeDTO, locationId, snmpConfigs);
         } catch (Exception e) {
-            log.error("Error while sending nodescan task for node with label {}", node.getNodeLabel());
+            log.error("Error while sending nodescan task for node with label {}", nodeDTO.getNodeLabel(), e);
         }
     }
 

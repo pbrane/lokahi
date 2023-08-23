@@ -71,6 +71,7 @@ public class PassiveDiscoveryService {
     public PassiveDiscoveryDTO createDiscovery(String tenantId, PassiveDiscoveryUpsertDTO request) {
         validateDiscovery(tenantId, request);
         validateSnmpPorts(request);
+        validateCommunityStrings(request);
 
         PassiveDiscovery discovery = mapper.dtoToModel(request);
         discovery.setTenantId(tenantId);
@@ -231,7 +232,6 @@ public class PassiveDiscoveryService {
                 .setPort(port);
             snmpConfigs.add(builder.build());
         });
-
         scannerTaskSetService.sendNodeScannerTask(node, discovery.getLocationId(), snmpConfigs);
     }
 
