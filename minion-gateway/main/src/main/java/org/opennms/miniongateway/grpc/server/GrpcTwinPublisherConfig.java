@@ -24,7 +24,7 @@ public class GrpcTwinPublisherConfig {
         TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor,
         LocationServerInterceptor locationServerInterceptor
     ) {
-        return new TwinRpcHandler(grpcTwinPublisher, tenantIDGrpcServerInterceptor, locationServerInterceptor);
+        return new TwinRpcHandler(grpcTwinPublisher, tenantIDGrpcServerInterceptor, locationServerInterceptor, debugSpanFullMessage, debugSpanContent);
     }
 
     @Bean(initMethod = "start", destroyMethod = "close")
