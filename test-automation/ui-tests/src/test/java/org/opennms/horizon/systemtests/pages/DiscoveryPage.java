@@ -35,8 +35,7 @@ import org.openqa.selenium.By;
 
 import java.time.Duration;
 
-import static com.codeborne.selenide.Condition.enabled;
-import static com.codeborne.selenide.Condition.exist;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
@@ -80,8 +79,6 @@ public class DiscoveryPage {
 
     public static boolean newDiscoveryCheckForLocation(String locationName) {
         String search = "//div[@class='locations-select']//span[text()=' " + locationName +"']";
-        // Sometimes a delay in the UI to populate the default selected location
-        Selenide.sleep(6000);
 
         return $(By.xpath(search)).exists();
     }
@@ -91,22 +88,26 @@ public class DiscoveryPage {
         LeftPanelPage.clickOnPanelSection("discovery");
         ADD_DISCOVERY_BUTTON.shouldBe(enabled).click();
         SNMP_DISCOVERY_RADIO_BUTTON.shouldBe(enabled).click();
-        DISCOVERY_NAME_INPUT.shouldBe(enabled).sendKeys(discoveryName);
+
+        DISCOVERY_NAME_INPUT.shouldBe(editable).sendKeys(discoveryName);
 
         if (!newDiscoveryCheckForLocation(locationName)) {
-            // When only 1 location exists, it is automatically selected
+            // When only 1 location exists, it is automatically selected and we don't need to do this
             LOCATION_NAME_INPUT.shouldBe(enabled).sendKeys(locationName);
-            LOCATION_NAME_INPUT.sendKeys("\n");
 
             String specificListItemSearch = "//div[@label='" + locationName + "']";
             SelenideElement locationPopupListItem = $(By.xpath(specificListItemSearch));
             locationPopupListItem.should(exist, Duration.ofSeconds(20)).shouldBe(enabled).click();
+
+            // For some reason the UI takes a very long time to get rid of this list
+//            Selenide.sleep(10000);
         }
 
         IP_RANGE_INPUT.shouldBe(enabled).sendKeys(ip);
 
         PORT_INPUT.shouldBe(enabled).clear();
         PORT_INPUT.sendKeys(Integer.toString(port));
+
         COMMUNITY_STRING_INPUT.shouldBe(enabled).clear();
         COMMUNITY_STRING_INPUT.sendKeys(community);
 
