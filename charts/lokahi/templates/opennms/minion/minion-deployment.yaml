@@ -120,6 +120,10 @@ spec:
               value: "Default"
             - name: IGNITE_UPDATE_NOTIFIER # Disable Ignite version lookups
               value: "false"
+            {{- if .Values.OpenNMS.Minion.logLevel }}
+            - name: KARAF_OPTS
+              value: -Dkaraf.log.console={{ .Values.OpenNMS.Minion.logLevel }}
+            {{- end }}
             {{- if .Values.OpenNMS.Minion.addDefaultLocation }}
             - name: GRPC_CLIENT_KEYSTORE
               value: "/opt/karaf/certs/minion.p12"
@@ -202,4 +206,5 @@ spec:
               - unset JAVA_TOOL_OPTIONS; echo "opennms:task-set-print" | bin/client -b | grep -q taskDefinition
             initialDelaySeconds: 25
             periodSeconds: 5
+            failureThreshold: 10
 {{- end }}
