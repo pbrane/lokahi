@@ -518,6 +518,18 @@ k8s_resource(
     trigger_mode=TRIGGER_MODE_MANUAL,
     resource_deps=['shared-lib'],
 )
+cmd_button(
+    name='button-opennms-minion',
+    text='Rollout restart minion',
+    resource='minion',
+    argv=[
+        'kubectl',
+        '--context', k8s_context(),
+        '-n', k8s_namespace(),
+        'rollout', 'restart', 'deployment', 'opennms-minion',
+    ],
+    icon_name='sync',
+)
 
 ### Minion Certificate Manager ###
 jib_project(
