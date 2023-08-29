@@ -13,10 +13,10 @@ services:
     ports:
       - '8181:8181/tcp'
       - '8101:8101/tcp'
+      - "162:1162/udp" # snmp
       - "8877:8877/udp" # netflow5
       - "4729:4729/udp" # netflow9
       - "9999:9999/udp" # netflow
-      - "162:162/udp"
     volumes:
       - "${CERT_FOLDER}:/opt/karaf/minion.p12"
     networks:
