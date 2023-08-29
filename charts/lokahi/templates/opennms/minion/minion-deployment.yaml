@@ -206,4 +206,5 @@ spec:
               - unset JAVA_TOOL_OPTIONS; echo "opennms:task-set-print" | bin/client -b | grep -q taskDefinition
             initialDelaySeconds: 25
             periodSeconds: 5
+            failureThreshold: 10
 {{- end }}
