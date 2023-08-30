@@ -15,7 +15,7 @@ OpenNMS:
     openTelemetry:
       otlpTracesEndpoint: null
       env:
-        OTEL_PROPAGATORS: tracecontext,baggage,jaeger,b3multi
+        OTEL_PROPAGATORS: tracecontext,baggage,jaeger
   API:
     Path: /api
     ServiceName: opennms-rest-server
