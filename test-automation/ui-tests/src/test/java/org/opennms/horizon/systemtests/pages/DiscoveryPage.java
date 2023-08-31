@@ -28,9 +28,8 @@
 package org.opennms.horizon.systemtests.pages;
 
 import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import org.opennms.horizon.systemtests.steps.DiscoverySteps;
+import com.google.common.base.CharMatcher;
 import org.openqa.selenium.By;
 
 import java.time.Duration;
@@ -39,6 +38,7 @@ import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.$x;
 
 public class DiscoveryPage {
 
@@ -59,6 +59,11 @@ public class DiscoveryPage {
     private static final SelenideElement COMMUNITY_STRING_INPUT = $(By.xpath("//div[@data-test='communityInput']//div[@class='content-editable']"));
     private static final SelenideElement PORT_INPUT = $(By.xpath("//div[@data-test='portInput']//div[@class='content-editable']"));
     private static final SelenideElement VIEW_DETECTED_NODES_BUTTON = $(By.xpath("//button[@data-test='viewDetectedNodesButton']"));
+    private static final SelenideElement NUMBER_OF_DISCOVERY_INSTANCES = $x("//div[@class='card-my-discoveries']//div[@class='count']");
+    private static final SelenideElement TOP_DISCOVERY = $x("//div[@class='card-my-discoveries']/div[@class='list']//div[@class='name'][1]");
+    private static final SelenideElement DISCOVERY_DELETE_BUTTON = $x("//div[@class='delete-button']/div");
+    private static final SelenideElement DELETE_DISCOVERY_CONFIRM_YES = $x("//div[@data-ref-id='feather-dialog-footer']//span[text()='Yes']");
+
 
     public static void selectICMP_SNMP() {
         SNMPRadioButton.shouldBe(Condition.visible, Condition.enabled).click();
@@ -98,9 +103,6 @@ public class DiscoveryPage {
             String specificListItemSearch = "//div[@label='" + locationName + "']";
             SelenideElement locationPopupListItem = $(By.xpath(specificListItemSearch));
             locationPopupListItem.should(exist, Duration.ofSeconds(20)).shouldBe(enabled).click();
-
-            // For some reason the UI takes a very long time to get rid of this list
-//            Selenide.sleep(10000);
         }
 
         IP_RANGE_INPUT.shouldBe(enabled).sendKeys(ip);
@@ -116,6 +118,27 @@ public class DiscoveryPage {
     }
 
     public static void deleteAllDiscoveries() {
-        // TODO: Delete all discoveries once it is supported
+        LeftPanelPage.clickOnPanelSection("discovery");
+
+        String rawCountString = NUMBER_OF_DISCOVERY_INSTANCES.getOwnText();
+        String intString = CharMatcher.inRange('0', '9').retainFrom(rawCountString);
+        while (!intString.isBlank() && Integer.parseInt(intString) > 0) {
+            deleteTopDiscovery();
+
+            // Wait to make sure the count changes
+            SelenideElement oldCountElement = $x("//div[@class='card-my-discoveries']//div[@class='count'][text()='" +
+                                rawCountString + "']");
+
+            oldCountElement.shouldNot(exist);
+
+            rawCountString = NUMBER_OF_DISCOVERY_INSTANCES.getOwnText();
+            intString = CharMatcher.inRange('0', '9').retainFrom(rawCountString);
+        }
+    }
+
+    private static void deleteTopDiscovery() {
+        TOP_DISCOVERY.click();
+        DISCOVERY_DELETE_BUTTON.should(exist).click();
+        DELETE_DISCOVERY_CONFIRM_YES.should(exist).click();
     }
 }
