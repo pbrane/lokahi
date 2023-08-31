@@ -2,9 +2,7 @@ package org.opennms.horizon.systemtests.pages;
 
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import org.junit.Assert;
 import org.opennms.horizon.systemtests.steps.DiscoverySteps;
-import org.testcontainers.containers.GenericContainer;
 
 import java.time.Duration;
 
@@ -24,17 +22,41 @@ public class FlowsPage {
         noDataTxt.should(exist);
     }
 
-    public static void verifyTopApplicationFlowTotalsChanges() {
+    public static void verifyTopApplicationFlowTotalsIncreases() {
         // We'll just check that the top application totals have changed
         String appTotal = getTopApplicationFlowTotal();
         if (appTotal.isEmpty()) {
             // No flow data exists yet, so just check for when it shows up
             RefreshMonitor.waitForElement(topApplicationTotal, exist, 120, true);
         } else {
-            // There is already flow data, so check for when it changes (i.e. the old value is gone)
-            SelenideElement topTotalElement = $x(topApplicationTotalQuery + "[./text()='" + getTopApplicationFlowTotal() + "']");
-            RefreshMonitor.waitForElement(topTotalElement, exist, 120, false);
+            double flowValue = getRawBytes(appTotal);
+            double compareValue = 0;
+
+            int iterations = 3;
+            // The xpath will just detect the value is different. Put it in a little loop in case it decreases first (bug LOK-2009)
+
+            while (flowValue >= compareValue && iterations > 0) {
+                // There is already flow data, so check for when it changes (i.e. the old value is gone)
+                SelenideElement topTotalElement = $x(topApplicationTotalQuery + "[./text()='" + getTopApplicationFlowTotal() + "']");
+                RefreshMonitor.waitForElement(topTotalElement, exist, 120, false);
+                --iterations;
+                compareValue = getRawBytes(getTopApplicationFlowTotal());
+            }
         }
+    }
+
+    private static double getRawBytes(String appTotal) {
+        String parts[] = appTotal.split(" ");
+        double value = Double.parseDouble(parts[0]);
+        if (parts.length > 1) {
+            switch (parts[1]) {
+                case "kB" -> value *= 1000D;
+                case "mB" -> value *= 1000000D;
+                case "gB" -> value *= 1000000000D;
+                case "tB" -> value *= 1000000000000D;
+            }
+        }
+        return value;
     }
 
     private static String getTopApplicationFlowTotal() {
