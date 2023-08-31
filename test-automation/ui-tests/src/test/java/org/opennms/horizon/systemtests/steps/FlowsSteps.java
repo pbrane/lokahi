@@ -47,7 +47,7 @@ public class FlowsSteps {
 
     @Then("sees chart with new netflow data")
     public void verifyChartDataUpdates() {
-        FlowsPage.verifyTopApplicationFlowTotalsChanges();
+        FlowsPage.verifyTopApplicationFlowTotalsIncreases();
     }
 
     @Then("click on 'Exporter' filter")
