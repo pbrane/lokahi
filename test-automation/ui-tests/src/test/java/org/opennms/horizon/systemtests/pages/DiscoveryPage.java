@@ -63,8 +63,7 @@ public class DiscoveryPage {
     private static final SelenideElement TOP_DISCOVERY = $x("//div[@class='card-my-discoveries']/div[@class='list']//div[@class='name'][1]");
     private static final SelenideElement DISCOVERY_DELETE_BUTTON = $x("//div[@class='delete-button']/div");
     private static final SelenideElement DELETE_DISCOVERY_CONFIRM_YES = $x("//div[@data-ref-id='feather-dialog-footer']//span[text()='Yes']");
-
-
+    private static final SelenideElement POPUP_LOCATION_LIST = $x("//div[@class='list visible']/div[@class='list-item'][1]");
     public static void selectICMP_SNMP() {
         SNMPRadioButton.shouldBe(Condition.visible, Condition.enabled).click();
     }
@@ -96,9 +95,13 @@ public class DiscoveryPage {
 
         DISCOVERY_NAME_INPUT.shouldBe(editable).sendKeys(discoveryName);
 
+        // When only 1 location exists, it is automatically selected and we don't need to add it
         if (!newDiscoveryCheckForLocation(locationName)) {
-            // When only 1 location exists, it is automatically selected and we don't need to do this
-            LOCATION_NAME_INPUT.shouldBe(enabled).sendKeys(locationName);
+            // For the location selector to work, we need to click in it first as this shows the dropdown
+            // selections. From there, we can enter the value to filter for our specific location
+            LOCATION_NAME_INPUT.shouldBe(enabled).click();
+            POPUP_LOCATION_LIST.should(exist);
+            LOCATION_NAME_INPUT.sendKeys(locationName);
 
             String specificListItemSearch = "//div[@label='" + locationName + "']";
             SelenideElement locationPopupListItem = $(By.xpath(specificListItemSearch));
