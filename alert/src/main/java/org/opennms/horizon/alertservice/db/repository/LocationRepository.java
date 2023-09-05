@@ -26,29 +26,15 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.alertservice.db.entity;
+package org.opennms.horizon.alertservice.db.repository;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import org.opennms.horizon.alertservice.db.entity.Location;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@Getter
-@Setter
-@RequiredArgsConstructor
-@Entity
-public class Node {
-    @Id
-    private long id;
+import java.util.Optional;
 
-    @Column(name = "tenant_id")
-    private String tenantId;
-
-    @Column(name = "node_label")
-    private String nodeLabel;
-
-    @Column(name = "monitoring_location_id")
-    private long monitoringLocationId;
+@Repository
+public interface LocationRepository extends JpaRepository<Location, Long> {
+    Optional<Location> findByIdAndTenantId(long id, String tenantId);
 }

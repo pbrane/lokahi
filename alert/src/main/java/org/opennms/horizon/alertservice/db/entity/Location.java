@@ -39,16 +39,13 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 @Entity
-public class Node {
+public class Location {
     @Id
     private long id;
 
     @Column(name = "tenant_id")
     private String tenantId;
 
-    @Column(name = "node_label")
-    private String nodeLabel;
-
-    @Column(name = "monitoring_location_id")
-    private long monitoringLocationId;
+    @Column(name = "location_name")
+    private String locationName;
 }

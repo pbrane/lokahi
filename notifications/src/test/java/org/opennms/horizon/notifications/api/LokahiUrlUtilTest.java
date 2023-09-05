@@ -26,29 +26,30 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.alertservice.db.entity;
+package org.opennms.horizon.notifications.api;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import org.junit.Assert;
+import org.junit.Test;
+import org.opennms.horizon.alerts.proto.Alert;
+import org.springframework.test.util.ReflectionTestUtils;
 
-@Getter
-@Setter
-@RequiredArgsConstructor
-@Entity
-public class Node {
-    @Id
-    private long id;
+public class LokahiUrlUtilTest {
+    private final Alert alert = Alert.newBuilder().setTenantId("tenantId").build();
 
-    @Column(name = "tenant_id")
-    private String tenantId;
+    private final LokahiUrlUtil lokahiUrlUtil = new LokahiUrlUtil();
+    @Test
+    public void testAppendFalse(){
+        ReflectionTestUtils.setField(lokahiUrlUtil, "baseUrl", "onmshs.local:1443");
+        ReflectionTestUtils.setField(lokahiUrlUtil, "urlAppendTenantId", false);
+        String url = lokahiUrlUtil.getAlertstUrl(alert);
+        Assert.assertEquals("https://onmshs.local:1443/alerts", url);
+    }
 
-    @Column(name = "node_label")
-    private String nodeLabel;
-
-    @Column(name = "monitoring_location_id")
-    private long monitoringLocationId;
+    @Test
+    public void testAppendTrue(){
+        ReflectionTestUtils.setField(lokahiUrlUtil, "baseUrl", "opennms.com");
+        ReflectionTestUtils.setField(lokahiUrlUtil, "urlAppendTenantId", true);
+        String url = lokahiUrlUtil.getAlertstUrl(alert);
+        Assert.assertEquals("https://tenantId.opennms.com/alerts", url);
+    }
 }

@@ -26,29 +26,29 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.horizon.alertservice.db.entity;
+package org.opennms.horizon.notifications.api;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import org.opennms.horizon.alerts.proto.Alert;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-@Getter
-@Setter
-@RequiredArgsConstructor
-@Entity
-public class Node {
-    @Id
-    private long id;
+@Component
+public class LokahiUrlUtil {
+    @Value("${lokahi.baseUrl.url}")
+    private String baseUrl;
 
-    @Column(name = "tenant_id")
-    private String tenantId;
+    @Value("${lokahi.baseUrl.appendTenantId}")
+    private boolean urlAppendTenantId;
 
-    @Column(name = "node_label")
-    private String nodeLabel;
-
-    @Column(name = "monitoring_location_id")
-    private long monitoringLocationId;
+    public String getAlertstUrl(Alert alert){
+        StringBuilder sb = new StringBuilder();
+        sb.append("https://");
+        if (urlAppendTenantId) {
+            sb.append(alert.getTenantId());
+            sb.append(".");
+        }
+        sb.append(baseUrl);
+        sb.append("/alerts");
+        return sb.toString();
+    }
 }
