@@ -1,8 +1,8 @@
-/*******************************************************************************
+/*
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -24,22 +24,29 @@
  *     OpenNMS(R) Licensing <license@opennms.org>
  *     http://www.opennms.org/
  *     http://www.opennms.com/
- *******************************************************************************/
+ */
 
-package org.opennms.horizon.server.model.inventory;
+package org.opennms.horizon.server.config;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.jackson.Jacksonized;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.core.convert.converter.Converter;
 
-@Builder
-@Getter
-@Jacksonized
-@Setter
-public class MonitoringLocationCreate {
-    private String location;
-    private Double longitude;
-    private Double latitude;
-    private String address;
+import java.util.Map;
+
+/**
+ * Converts a json string to a map. Without this, sending json in a GET query
+ * breaks because opentelemetry can't convert the value.
+ */
+//@Service
+public class StringToMapConverter implements Converter<String, Map> {
+    // TODO: Null handling, generic type specification etc
+    @Override
+    public Map convert(String source) {
+        try {
+            return new ObjectMapper().readValue(source, Map.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
