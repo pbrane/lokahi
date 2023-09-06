@@ -116,7 +116,7 @@ public class GraphQLControllerTest {
     void doesNotAllowRequestsViaGet() {
         webClient.get()
             .uri(ENDPOINT + "?query={q}", Map.of("q", QUERY))
-            .header("Content-Type", MediaType.APPLICATION_JSON.toString())
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .header("Authorization", "Bearer " + ACCESS_TOKEN)
             .exchange()
             .expectStatus().isEqualTo(HttpStatus.METHOD_NOT_ALLOWED)
@@ -135,7 +135,7 @@ public class GraphQLControllerTest {
 
         webClient.post()
             .uri(ENDPOINT)
-            .header("Content-Type", MediaType.APPLICATION_JSON.toString())
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .header("Authorization", "Bearer " + ACCESS_TOKEN)
             .bodyValue(body)
             .exchange()
@@ -156,7 +156,6 @@ public class GraphQLControllerTest {
                 """);
     }
 
-    // TODO: Application/XML
     public static Stream<Arguments> jsonFiles() {
         return Stream.of(
             // TODO: These tests
@@ -181,7 +180,7 @@ public class GraphQLControllerTest {
     ) {
         webClient.post()
             .uri(ENDPOINT)
-            .header("Content-Type", MediaType.APPLICATION_JSON.toString())
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .header("Authorization", "Bearer " + ACCESS_TOKEN)
             .bodyValue(requestBody)
             .exchange()
@@ -197,10 +196,10 @@ public class GraphQLControllerTest {
         "NONSENSE", "{\"query\":"
     })
     @ParameterizedTest
-    void invalidRequestsShouldReturn400Error(String requestBody) {
+    void invalidRequestsBodyShouldReturn400Error(String requestBody) {
         webClient.post()
             .uri(ENDPOINT)
-            .header("Content-Type", MediaType.APPLICATION_JSON.toString())
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .header("Authorization", "Bearer " + ACCESS_TOKEN)
             .bodyValue(requestBody)
             .exchange()
@@ -220,7 +219,7 @@ public class GraphQLControllerTest {
 
         webClient.post()
             .uri(ENDPOINT)
-            .header("Content-Type", MediaType.APPLICATION_JSON.toString())
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .header("Authorization", "Bearer " + ACCESS_TOKEN)
             .bodyValue(createPayload())
             .exchange()
@@ -239,7 +238,7 @@ public class GraphQLControllerTest {
 
         webClient.post()
             .uri(ENDPOINT)
-            .header("Content-Type", MediaType.APPLICATION_JSON.toString())
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .header("Authorization", "Bearer " + ACCESS_TOKEN)
             .bodyValue(createPayload())
             .exchange()
@@ -266,7 +265,7 @@ public class GraphQLControllerTest {
 
         webClient.post()
             .uri(ENDPOINT)
-            .header("Content-Type", MediaType.APPLICATION_JSON.toString())
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .header("Authorization", "Bearer " + ACCESS_TOKEN)
             .bodyValue(createPayload(query))
             .exchange()
@@ -279,7 +278,6 @@ public class GraphQLControllerTest {
             .jsonPath("$.errors[0].path[0]").isEqualTo("deleteLocation")
             .jsonPath("$.trace").doesNotExist();
     }
-
 
     private String createPayload() {
         return createPayload(QUERY);
