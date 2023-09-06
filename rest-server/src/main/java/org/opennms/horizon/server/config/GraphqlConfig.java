@@ -56,8 +56,8 @@ public class GraphqlConfig {
     @Bean
     public Instrumentation maxLimitInstrumentations() {
         // TODO: Configurability
-        int maxDepth = 10;
-        int maxComplexity = 10;
+        int maxDepth = 5;
+        int maxComplexity = 20;
 
         return new ChainedInstrumentation(
             new MaxQueryDepthInstrumentation(maxDepth),
