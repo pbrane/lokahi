@@ -5,6 +5,14 @@ keycloak:
   realm: opennms
   signatureAlgorithm: RS256
 
+lokahi:
+  bff:
+    max-query-depth: 5
+
+graphql:
+  spqr:
+    max-complexity: 20
+
 grpc:
   url:
     inventory: localhost:29065

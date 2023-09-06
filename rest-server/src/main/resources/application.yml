@@ -15,13 +15,17 @@ keycloak:
   realm: opennms
   signatureAlgorithm: RS256
 
-# graphql
+lokahi:
+  bff:
+    max-query-depth: 5
+
 graphql:
   spqr:
     gui:
       enabled: true
     base-packages:
       - org.opennms.horizon.server.model
+    max-complexity: 20
 
 logging:
   file.path: /var/log/restServer

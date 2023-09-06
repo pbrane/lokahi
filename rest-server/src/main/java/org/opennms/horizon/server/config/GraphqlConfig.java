@@ -32,20 +32,21 @@ import graphql.GraphQL;
 import graphql.analysis.MaxQueryComplexityInstrumentation;
 import graphql.analysis.MaxQueryDepthInstrumentation;
 import graphql.execution.DataFetcherExceptionHandler;
-import graphql.execution.instrumentation.ChainedInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.schema.GraphQLSchema;
 import io.leangen.graphql.GraphQLRuntime;
 import io.leangen.graphql.spqr.spring.autoconfigure.SpqrProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.server.web.GraphQLExceptionHandler;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 import java.util.List;
 
 /**
- * Provides fine-tuned configuration for GraphQL
+ * Provides fine-tuned configuration for GraphQL.
  *
  * @see io.leangen.graphql.spqr.spring.autoconfigure.BaseAutoConfiguration
  */
@@ -54,15 +55,23 @@ import java.util.List;
 public class GraphqlConfig {
 
     @Bean
-    public Instrumentation maxLimitInstrumentations() {
-        // TODO: Configurability
-        int maxDepth = 5;
-        int maxComplexity = 20;
+    @ConditionalOnExpression("${lokahi.bff.max-query-depth:-1} > 1")
+    @Order(1)
+    public Instrumentation maxDepthInstrumentation(
+        BffProperties bffProperties
+    ) {
+        log.info("Limiting max query depth to {}", bffProperties.getMaxQueryDepth());
+        return new MaxQueryDepthInstrumentation(bffProperties.getMaxQueryDepth());
+    }
 
-        return new ChainedInstrumentation(
-            new MaxQueryDepthInstrumentation(maxDepth),
-            new MaxQueryComplexityInstrumentation(maxComplexity)
-        );
+    @Bean
+    @ConditionalOnExpression("${graphql.spqr.max-complexity:-1} > 1")
+    @Order(2)
+    public Instrumentation maxComplexityInstrumentation(
+        SpqrProperties spqrProperties
+    ) {
+        log.info("Limiting max query complexity to {}", spqrProperties.getMaxComplexity());
+        return new MaxQueryComplexityInstrumentation(spqrProperties.getMaxComplexity());
     }
 
     @Bean
@@ -73,15 +82,11 @@ public class GraphqlConfig {
     @Bean
     public GraphQL graphQL(
         GraphQLSchema schema,
-        SpqrProperties spqrProperties,
         List<Instrumentation> instrumentations,
         DataFetcherExceptionHandler exceptionResolver
     ) {
         GraphQLRuntime.Builder builder = GraphQLRuntime.newGraphQL(schema);
         instrumentations.forEach(builder::instrumentation);
-//        if (spqrProperties.getMaxComplexity() > 1) {
-//            builder.maximumQueryComplexity(spqrProperties.getMaxComplexity());
-//        }
         builder.defaultDataFetcherExceptionHandler(exceptionResolver);
 
         return builder.build();
