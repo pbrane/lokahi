@@ -2,6 +2,10 @@
 = Manage Discoveries
 :description: Learn how to manage the discovery of network inventory with OpenNMS Lōkahi/Cloud.
 
+This section describes how to edit and delete discoveries.
+
+== Edit a discovery
+
 You can edit information, including discovery name, location, and tags, for active and passive discoveries.
 When you save an edited active discovery, it runs again immediately, and then every 24 hours thereafter.
 You may want to edit and run discoveries at times that will have the lowest impact on network performance.
@@ -13,4 +17,18 @@ To edit a discovery, follow these steps:
 . Change the information you want and click *Save Discovery*.
 
 //any additional caveats about editing a discovery?
+
+== Delete a discovery
+
+Deleting a discovery does not delete the nodes that the discovery identified.
+They will still appear in the inventory Lōkahi/Cloud is monitoring.
+However, that discovery will no longer run, and you will no longer discover new nodes on the IP address ranges or subnets you configured with that discovery.
+
+//what if they delete a discovery while it is running?
+
+To delete a discovery, follow these steps:
+
+. In the list of discoveries, click the one you want to delete.
+. Click the *delete* icon and confirm deletion.
+
 
