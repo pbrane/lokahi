@@ -11,22 +11,18 @@ Discovery behavior varies depending on the information you edit:
 
 * New location: discovery runs on Minions on the new location.
 This will create new nodes (same IP, but different location).
-//seems odd to me, I'm not clear on why
 * Updated tags: new tags are added to previously discovered nodes.
 Old tags are not removed.
-* Updated SNMP information: Previously discovered nodes keep their original credentials.
+* Updated SNMP information: Node Scan runs again for all the nodes (existing/new).
+Previously discovered nodes keep their original credentials.
 New nodes will have new credentials.
 
 When you save an edited active discovery, it runs again immediately, and then every 24 hours thereafter.
-You may want to edit and run discoveries at times that will have the lowest impact on network performance.
-//if toggle is on when I edit a passive discovery, will it run automatically, or do I need to turn the toggle on and off?
 
 To edit a discovery, follow these steps:
 
 . In the list of discoveries, click the one you want to edit.
-. Change the information you want and click *Save Discovery*.
-
-//any additional caveats about editing a discovery?
+. Change the information you want to update and click *Save Discovery*.
 
 == Delete a discovery
 
@@ -34,11 +30,9 @@ Deleting a discovery does not delete the nodes that the discovery identified.
 They will still appear in the inventory Lōkahi/Cloud is monitoring.
 However, that discovery will no longer run, and you will no longer discover new nodes on the IP address ranges or subnets you configured with that discovery.
 
-//what if they delete a discovery while it is running?
+Note that if you delete a discovery that is running, it will stop running on the Minion.
 
 To delete a discovery, follow these steps:
 
 . In the list of discoveries, click the one you want to delete.
 . Click the *delete* icon and confirm deletion.
-
-
