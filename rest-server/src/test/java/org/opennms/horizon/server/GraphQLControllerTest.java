@@ -119,7 +119,7 @@ public class GraphQLControllerTest {
             .expectHeader().contentType(MediaType.APPLICATION_JSON)
             .expectBody()
             .jsonPath("$.error").isEqualTo("Method Not Allowed")
-            .jsonPath("$.message").isEqualTo("Request method 'GET' not supported")
+            .jsonPath("$.message").isEqualTo("Request method 'GET' is not supported.")
             .jsonPath("$.trace").doesNotExist();
     }
 

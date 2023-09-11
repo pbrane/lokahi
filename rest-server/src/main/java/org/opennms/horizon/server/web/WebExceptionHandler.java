@@ -99,7 +99,10 @@ public class WebExceptionHandler extends AbstractErrorWebExceptionHandler {
             // which we don't want to expose externally. If a reason was
             // explicitly provided, display that, otherwise use the status
             // reason phrase (ie, "Not Found")
-            status = e.getStatus();
+            status = HttpStatus.resolve(e.getStatusCode().value());
+            if (status == null) {
+                status = HttpStatus.INTERNAL_SERVER_ERROR;
+            }
             message = e.getReason() != null ? e.getReason() : status.getReasonPhrase();
         } else {
             // Any exceptions we don't explicitly handle should be considered

@@ -23,15 +23,17 @@
     <properties>
         <application.docker.image.name>opennms/lokahi-rest-server</application.docker.image.name>
         <java.version>17</java.version>
-        <graphql.spqr.version>0.0.6</graphql.spqr.version>
+        <graphql.spqr.version>1.0.0</graphql.spqr.version>
+        <netty4.version>4.1.94.Final</netty4.version>
         <sonar.projectKey>opennms_lokahi_bff</sonar.projectKey>
+        <spring-boot.version>3.1.1</spring-boot.version>
     </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.6.8</version>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -74,6 +76,11 @@
             <groupId>io.leangen.graphql</groupId>
             <artifactId>graphql-spqr-spring-boot-starter</artifactId>
             <version>${graphql.spqr.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java</artifactId>
+            <version>20.3</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -172,7 +179,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock</artifactId>
+            <artifactId>wiremock-standalone</artifactId>
             <version>${wiremock.version}</version>
             <scope>test</scope>
         </dependency>
