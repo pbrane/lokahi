@@ -1,8 +1,8 @@
-/*******************************************************************************
+/*
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -24,22 +24,19 @@
  *     OpenNMS(R) Licensing <license@opennms.org>
  *     http://www.opennms.org/
  *     http://www.opennms.com/
- *******************************************************************************/
+ */
 
-package org.opennms.horizon.server.model.inventory;
+package org.opennms.horizon.server.config;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.jackson.Jacksonized;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-@Builder
-@Getter
-@Jacksonized
-@Setter
-public class MonitoringLocationCreate {
-    private String location;
-    private Double longitude;
-    private Double latitude;
-    private String address;
+
+@Configuration
+@ConfigurationProperties(prefix = "lokahi.bff")
+@Data
+public class BffProperties {
+
+    private int maxQueryDepth;
 }
