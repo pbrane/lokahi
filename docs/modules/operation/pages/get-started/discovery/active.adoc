@@ -7,7 +7,7 @@ You may also choose to xref:get-started/discovery/passive.adoc[create a passive 
 You can create a number of active discoveries to cover different areas of your network.
 
 The discovery runs as soon as you save it, and every 24 hours thereafter.
-There is continues polling and collecting data every minute.
+There is continuous polling and data collection every minute.
 
 To create an active discovery, follow these steps:
 

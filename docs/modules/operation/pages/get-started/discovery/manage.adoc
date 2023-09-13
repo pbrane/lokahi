@@ -10,12 +10,10 @@ You can edit information, including discovery name, location, and tags, for acti
 Discovery behavior varies depending on the information you edit:
 
 * New location: discovery runs on Minions on the new location.
-This will create new nodes (same IP, but different location).
+This will create new nodes (same IP Address, but different location).
 * Updated tags: new tags are added to previously discovered nodes.
 Old tags are not removed.
-* Updated SNMP information: Node Scan runs again for all the nodes (existing/new).
-Previously discovered nodes keep their original credentials.
-New nodes will have new credentials.
+* Updated SNMP information: Node Scan runs again for all the nodes (existing/new) with new SNMP credentials.
 
 When you save an edited active discovery, it runs again immediately, and then every 24 hours thereafter.
 
