@@ -64,7 +64,7 @@ Click on the crossed-out protocol to make the data reappear.
 == Troubleshooting flows
 
 By default, the OpenNMS secure collector (Minion) collects flows data from any device that sends flows and is monitored with SNMP.
-This includes support for NetFlow v5, NetFlow v9, sFlow, and IPFIX.
+This includes support for NetFlow v5, NetFlow v9, and IPFIX.
 
 If you do not see any flows data (for example on the insights dashboard or flows page), make sure you have the following:
 
