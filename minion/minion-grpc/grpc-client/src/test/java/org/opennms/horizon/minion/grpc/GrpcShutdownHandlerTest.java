@@ -29,13 +29,14 @@
 package org.opennms.horizon.minion.grpc;
 
 import org.apache.karaf.system.SystemService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.github.stefanbirkner.systemlambda.SystemLambda.catchSystemExit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 class GrpcShutdownHandlerTest {
@@ -43,24 +44,31 @@ class GrpcShutdownHandlerTest {
     private final SystemService mockSystemService = mock(SystemService.class);
     private final GrpcShutdownHandler target = new GrpcShutdownHandler(mockSystemService);
 
+    @BeforeEach
+    void setup() {
+        target.setDelayMs(100);
+    }
+
     @Test
     void testShutdownWithMessage() throws Exception {
         target.shutdown("message");
-        verify(mockSystemService, times(1)).halt();
+        verify(mockSystemService, timeout(target.getDelayMs() * 2L).times(1)).halt();
     }
 
     @Test
     void testShutdownWithThrowable() throws Exception {
         RuntimeException ex = new RuntimeException("exception");
         target.shutdown(ex);
-        verify(mockSystemService, times(1)).halt();
+        verify(mockSystemService, timeout(target.getDelayMs() * 2L).times(1)).halt();
     }
 
     @Test
     void testShutdownException() throws Exception {
         doThrow(new RuntimeException()).when(mockSystemService).halt();
-        int statusCode = catchSystemExit(() -> target.shutdown("message"));
-        verify(mockSystemService, times(1)).halt();
+        int statusCode = catchSystemExit(() -> {
+            target.shutdown("message");
+            verify(mockSystemService, timeout(target.getDelayMs() * 2L).times(1)).halt();
+        });
         assertEquals(-1, statusCode);
     }
 }

@@ -28,6 +28,8 @@
 
 package org.opennms.horizon.minion.grpc;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.karaf.system.SystemService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,11 @@ public class GrpcShutdownHandler {
 
     private final SystemService systemService;
 
+    // default delay 5 second
+    @Setter
+    @Getter
+    private int delayMs = 5 * 1000;
+
     public GrpcShutdownHandler(SystemService systemService) {
         this.systemService = systemService;
     }
@@ -45,13 +52,25 @@ public class GrpcShutdownHandler {
         shutdown(String.format("%s. Going to shut down now.", throwable.getMessage()));
     }
 
-    public void shutdown(String message) {
-        try {
-            LOG.error(message);
-            systemService.halt();
-        } catch (Exception e) {
-            LOG.error("Fail to shutdown properly. Calling system.exit now. Error: {}", e.getMessage());
-            System.exit(-1);
-        }
+    public void shutdown(final String message) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(delayMs);
+                
+                var length = message.length();
+                var banner = "*".repeat(length + 4);
+                LOG.error(banner);
+                LOG.error("* {} *", message);
+                LOG.error(banner);
+
+                systemService.halt();
+            } catch (InterruptedException e){
+                Thread.currentThread().interrupt();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                LOG.error("Fail to shutdown properly. Calling system.exit now. Error: {}", ex.getMessage());
+                System.exit(-1);
+            }
+        }).start();
     }
 }
