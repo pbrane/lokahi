@@ -38,10 +38,13 @@ import org.openqa.selenium.By;
 import org.testcontainers.containers.Network;
 import testcontainers.MinionContainer;
 
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static com.codeborne.selenide.Condition.exist;
 import static com.codeborne.selenide.Selenide.$;
@@ -74,14 +77,37 @@ public class MinionSteps {
         waitForMinionUp(minionName);
     }
 
-    public static MinionContainer startMinion(File bundle, String pwd, String minionId, String locationName) {
+    public static MinionContainer startMinion(File bundle, String pwd, String minionId, String locationName) throws IOException {
         Network network = SetupSteps.getCommonNetwork();
+
+        File cert = File.createTempFile("minionCert", "p12");
+        extractCert(bundle, cert);
         MinionContainer minion = new MinionContainer(minionId, "minion-" + minionId.toLowerCase(), network,
-            bundle, pwd);
+            cert, pwd);
 
         minion.start();
         minions.put(locationName, minion);
         return minion;
+    }
+
+    private static void extractCert(File zip, File cert) throws IOException {
+        ZipInputStream zstream = new ZipInputStream(Files.newInputStream(zip.toPath()));
+        ZipEntry zentry = zstream.getNextEntry();
+        while (zstream.available() != 0 && zentry != null && !zentry.getName().contains(".p12")) {
+            zstream.closeEntry();
+            zentry = zstream.getNextEntry();
+        }
+        if (zentry == null || !zentry.getName().contains(".p12")) {
+            throw new IOException("Unable to locate .p12 certificate file in zip");
+        }
+
+        OutputStream ostream = new FileOutputStream(cert);
+        byte[] buffer = new byte[4096];
+        int readBytes;
+        while ((readBytes = zstream.read(buffer)) != -1) {
+            ostream.write(buffer, 0, readBytes);
+        }
+        ostream.close();
     }
 
     @Then("stop minion for location {string}")
