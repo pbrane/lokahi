@@ -10,6 +10,7 @@ import org.opennms.horizon.server.mapper.certificate.CertificateMapper;
 import org.opennms.horizon.server.model.certificate.CertificateResponse;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
 import org.opennms.horizon.server.service.grpc.MinionCertificateManagerClient;
+import org.opennms.horizon.server.utils.MinionDockerZipPackager;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -30,10 +31,15 @@ public class GrpcMinionCertificateManager {
 
         var monitoringLocation = inventoryClient.getLocationById(locationId, authHeader);
         var location = monitoringLocation.getId();
-        CertificateResponse minionCert = mapper.protoToCertificateResponse(
-            client.getMinionCert(tenantId, location, authHeader)
-        );
-        return Mono.just(minionCert);
+        var cert = client.getMinionCert(tenantId, location, authHeader);
+        var certPackage = MinionDockerZipPackager.generateZip(cert.getCertificate(), monitoringLocation.getLocation(), cert.getPassword());
+
+        CertificateResponse response = new CertificateResponse();
+        response.setCertificate(certPackage);
+        response.setPassword(cert.getPassword());
+
+        return Mono.just(response);
+
     }
 
     @GraphQLMutation(name = "revokeMinionCertificate")
