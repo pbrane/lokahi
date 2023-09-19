@@ -1,7 +1,11 @@
 <template>
   <div class="line-chart-container">
     <div class="chart-container">
-      <Line :data="chartData" :options="chartOptions" ref="lineChart" />
+      <Line
+        :data="chartData"
+        :options="chartOptions"
+        ref="lineChart"
+      />
     </div>
   </div>
 </template>
@@ -25,7 +29,7 @@ import {
   Legend,
   ChartOptions
 } from 'chart.js'
-import { humanFileSizeFromBits } from '../utils'
+import { humanFileSizeFromBits, getColorFromFeatherVar, getChartGridColor } from '../utils'
 const { onThemeChange, isDark } = useTheme()
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
@@ -93,13 +97,13 @@ const chartOptions = computed<ChartOptions<any>>(() => {
           useBorderRadius: true,
           padding: 16,
           borderRadius: 1,
-          color: isDark ? 'rgba(10, 12, 27, .9)' : '#000000',
+          color: colorFromFeatherVar.value,
           font: {
             weight: 400
           }
         },
         onHover: (event: any, activeElements: any) => {
-          ; (event?.native?.target as HTMLElement).style.cursor = activeElements?.length > 0 ? 'pointer' : 'auto'
+          ;(event?.native?.target as HTMLElement).style.cursor = activeElements?.length > 0 ? 'pointer' : 'auto'
         }
       },
 
@@ -128,10 +132,11 @@ const chartOptions = computed<ChartOptions<any>>(() => {
         stacked: true,
         grid: {
           display: true,
-          color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+          color: getChartGridColor(isDark.value)
         },
         ticks: {
-          callback: (val: number) => props.format(new Date(val).toISOString())
+          callback: (val: number) => props.format(new Date(val).toISOString()),
+          color: colorFromFeatherVar.value
         }
       },
       y: {
@@ -141,7 +146,8 @@ const chartOptions = computed<ChartOptions<any>>(() => {
         ticks: {
           callback: function (value: any) {
             return humanFileSizeFromBits(value) + props.labelSuffix
-          }
+          },
+          color: colorFromFeatherVar.value
         },
         title: {
           display: true,
@@ -152,9 +158,12 @@ const chartOptions = computed<ChartOptions<any>>(() => {
   }
 })
 
+const colorFromFeatherVar = computed(() =>
+  isDark.value ? getColorFromFeatherVar('primary-text-on-color') : getColorFromFeatherVar('primary-text-on-surface')
+)
+
 onThemeChange(() => {
-  chartOptions.value.scales.x.grid.color = isDark.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-  chartOptions.value.plugins.legend.labels.color = isDark.value ? 'rgba(10, 12, 27, .9)' : '#000000'
+  chartOptions.value.scales.x.grid.color = getChartGridColor(isDark.value)
 })
 
 const getChartAreaWidth = () => {
