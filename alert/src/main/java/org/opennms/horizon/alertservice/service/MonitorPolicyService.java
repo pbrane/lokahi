@@ -39,7 +39,9 @@ import org.opennms.horizon.alertservice.db.entity.EventDefinition;
 import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
 import org.opennms.horizon.alertservice.db.entity.Tag;
 import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
+import org.opennms.horizon.alertservice.db.repository.AlertRepository;
 import org.opennms.horizon.alertservice.db.repository.MonitorPolicyRepository;
+import org.opennms.horizon.alertservice.db.repository.PolicyRuleRepository;
 import org.opennms.horizon.alertservice.db.repository.TagRepository;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
 import org.opennms.horizon.alertservice.service.routing.TagOperationProducer;
@@ -63,7 +65,10 @@ public class MonitorPolicyService {
 
     private final MonitorPolicyMapper policyMapper;
     private final MonitorPolicyRepository repository;
+    private final PolicyRuleRepository policyRuleRepository;
     private final AlertDefinitionRepository definitionRepo;
+    private final AlertRepository alertRepository;
+
     private final TagRepository tagRepository;
     private final TagOperationProducer tagOperationProducer;
 
@@ -154,6 +159,33 @@ public class MonitorPolicyService {
         return repository.findByName(DEFAULT_POLICY)
             .map(policyMapper::map);
     }
+
+    @Transactional
+    public void deletePolicyById(long id, String tenantId) {
+        var alerts = alertRepository.findByPolicyIdAndTenantId(id, tenantId);
+        if (alerts != null && !alerts.isEmpty()) {
+            alertRepository.deleteAll(alerts);
+        }
+        repository.deleteByIdAndTenantId(id, tenantId);
+    }
+
+    @Transactional
+    public void deleteRuleById(long id, String tenantId) {
+        var alerts = alertRepository.findByRuleIdAndTenantId(id, tenantId);
+        if (alerts != null && !alerts.isEmpty()) {
+            alertRepository.deleteAll(alerts);
+        }
+        policyRuleRepository.deleteByIdAndTenantId(id, tenantId);
+    }
+
+    public long countAlertByPolicyId(long id, String tenantId) {
+        return alertRepository.countByPolicyIdAndTenantId(id, tenantId);
+    }
+
+    public long countAlertByRuleId(long id, String tenantId) {
+        return alertRepository.countByRuleIdAndTenantId(id, tenantId);
+    }
+
     private void updateData(MonitorPolicy policy, String tenantId) {
         policy.setTenantId(tenantId);
         policy.getRules().forEach(r -> {
