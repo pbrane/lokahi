@@ -11,6 +11,8 @@ services:
     volumes:
       # The local certificate file must map to "minion.p12" in the container.
       - ./storage/[CERT_FILE]:/opt/karaf/minion.p12
+      # Save the logs into a local directory outside of the container
+      - ./logs:/opt/karaf/data/log
       # Must provide the CA.cert for the local install
       - ./CA.cert:/opt/karaf/certs/CA.cert
     environment:
@@ -21,7 +23,7 @@ services:
 
       # Common settings for local Lokahi testing
       IGNITE_SERVER_ADDRESSES: "localhost"
-      MINION_GATEWAY_HOST: "host.docker.internal"
+      MINION_GATEWAY_HOST: "[MINION_ENDPOINT]"
       MINION_GATEWAY_TLS: "true"
       MINION_GATEWAY_PORT: "1443"
       GRPC_CLIENT_OVERRIDE_AUTHORITY: "minion.onmshs.local"
