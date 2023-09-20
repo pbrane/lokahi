@@ -34,7 +34,7 @@ import java.io.Serial;
  * An exception that represents an error that occurred whose message can be
  * displayed to the user, ie bad request, id not found, etc.
  */
-public class GraphQLException extends Exception {
+public class GraphQLException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = -4543741752174882855L;
 
