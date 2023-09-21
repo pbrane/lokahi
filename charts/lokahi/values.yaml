@@ -33,6 +33,8 @@ OpenNMS:
     FlowsUrl: SOME-EXTERNAL-FLOW-SERVER:80
     FlowsTlsEnabled: false
     CertificateManagerUrl: ""
+    PackagedMinionFile: run-minion-docker-compose.yaml
+    MinionEndpoint: host.docker.internal
   MetricsProcessor:
     ServiceName: opennms-metrics-processor
     ImageShortName: lokahi-metrics-processor
