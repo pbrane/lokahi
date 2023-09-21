@@ -39,15 +39,19 @@ public class MinionDockerZipPackager {
     }
 
     private static byte[] loadDockerCompose(String minionName, String password) throws IOException {
+        String dockerCompose = System.getenv("PACKAGED_MINION_FILE");
         InputStream dockerStream = MinionDockerZipPackager.class.getClassLoader()
-            .getResourceAsStream("run-minion-docker-compose.yaml");
+            .getResourceAsStream(dockerCompose);
         if (dockerStream == null) {
             throw new IOException("Unable to load docker compose file from resources");
         }
+
+        String minionEndpoint = System.getenv("MINION_ENDPOINT");
         String dockerTxt = new BufferedReader(new InputStreamReader(dockerStream)).lines()
             .parallel().collect(Collectors.joining("\n"));
         dockerTxt = dockerTxt.replace("[KEYSTORE_PASSWORD]", password);
         dockerTxt = dockerTxt.replace("[MINION_NAME]", minionName);
+        dockerTxt = dockerTxt.replace("[MINION_ENDPOINT]", minionEndpoint);
         dockerTxt = dockerTxt.replace("[CERT_FILE]", minionName + ".p12");
         return dockerTxt.getBytes();
     }
