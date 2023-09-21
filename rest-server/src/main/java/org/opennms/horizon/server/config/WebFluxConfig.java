@@ -28,16 +28,25 @@
 
 package org.opennms.horizon.server.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.config.CorsRegistry;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
 
-
+@Slf4j
 @Configuration
-@ConfigurationProperties(prefix = "lokahi.bff")
-@Data
-public class BffProperties {
+@RequiredArgsConstructor
+public class WebFluxConfig implements WebFluxConfigurer {
 
-    private boolean corsAllowed;
-    private int maxQueryDepth;
+    private final BffProperties bffProperties;
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        if (!bffProperties.isCorsAllowed()) {
+            return;
+        }
+        log.info("Allowing all CORS requests");
+        registry.addMapping("/graphql");
+    }
 }
