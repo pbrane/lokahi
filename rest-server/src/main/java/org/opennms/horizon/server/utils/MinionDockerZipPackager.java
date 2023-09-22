@@ -45,25 +45,26 @@ public class MinionDockerZipPackager {
     private static final Logger LOG = LoggerFactory.getLogger(MinionDockerZipPackager.class);
 
     public static byte[] generateZip(ByteString certificate, String locationName, String password) throws IOException {
-        var bytesOut = new ByteArrayOutputStream();
-        var zipOutStream = new ZipOutputStream(bytesOut);
-        var minionName = "minion1-" + locationName;
-        ZipEntry entry = new ZipEntry("storage/" + minionName + ".p12");
+        try (var bytesOut = new ByteArrayOutputStream();
+        var zipOutStream = new ZipOutputStream(bytesOut)) {
+            var minionName = "minion1-" + locationName;
+            ZipEntry entry = new ZipEntry("storage/" + minionName + ".p12");
 
-        zipOutStream.putNextEntry(entry);
-        zipOutStream.write(certificate.toByteArray());
-        zipOutStream.closeEntry();
+            zipOutStream.putNextEntry(entry);
+            zipOutStream.write(certificate.toByteArray());
+            zipOutStream.closeEntry();
 
-        byte[] dockerBytes = loadDockerCompose(minionName, password);
-        entry = new ZipEntry("docker-compose.yaml");
-        zipOutStream.putNextEntry(entry);
-        zipOutStream.write(dockerBytes);
-        zipOutStream.closeEntry();
+            byte[] dockerBytes = loadDockerCompose(minionName, password);
+            entry = new ZipEntry("docker-compose.yaml");
+            zipOutStream.putNextEntry(entry);
+            zipOutStream.write(dockerBytes);
+            zipOutStream.closeEntry();
 
-        zipOutStream.close();
-        bytesOut.close();
+            zipOutStream.close();
+            bytesOut.close();
 
-        return bytesOut.toByteArray();
+            return bytesOut.toByteArray();
+        }
     }
 
     private static byte[] loadDockerCompose(String minionName, String password) throws IOException {

@@ -290,28 +290,31 @@ public class InventoryTestSteps {
         LinkedHashMap<String, String> lhm = jsonPathEvaluator.get("data.getMinionCertificate");
 
         byte[] zipBytes = Base64.getDecoder().decode(lhm.get("certificate"));
-        ZipInputStream zins = new ZipInputStream(new ByteArrayInputStream(zipBytes));
+        try (ZipInputStream zins = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
 
-        ZipEntry zentry = zins.getNextEntry();
-        while (zins.available() != 0 && zentry != null && !zentry.getName().contains(".p12")) {
-            zins.closeEntry();
-            zentry = zins.getNextEntry();
-        }
-        if (zentry == null || !zentry.getName().contains(".p12")) {
-            throw new IOException("Unable to locate .p12 certificate file in zip");
-        }
+            ZipEntry zentry = zins.getNextEntry();
+            while (zins.available() != 0 && zentry != null && !zentry.getName().contains(".p12")) {
+                zins.closeEntry();
+                zentry = zins.getNextEntry();
+            }
+            if (zentry == null || !zentry.getName().contains(".p12")) {
+                throw new IOException("Unable to locate .p12 certificate file in zip");
+            }
 
-        byte[] pkcs12Buffer = new byte[10240]; // Usual size is around 2k or so, should be safe for tests
-        int size = zins.read(pkcs12Buffer);
-        int len = size;
-        while ((size = zins.read(pkcs12Buffer, len, 2048)) != -1) {
-            len += size;
+            System.out.println("===================================================================");
+            System.out.println("JER: Expected size: " + zins.available())
+            byte[] pkcs12Buffer = new byte[10240]; // Usual size is around 2k or so, should be safe for tests
+            int size = zins.read(pkcs12Buffer);
+            int len = size;
+            while ((size = zins.read(pkcs12Buffer, len, 2048)) != -1) {
+                len += size;
+            }
+            byte[] pkcs12 = Arrays.copyOf(pkcs12Buffer, len);
+            String pkcs12password = lhm.get("password");
+            assertTrue(pkcs12.length > 0);
+            assertNotNull(pkcs12password);
+            keystores.put(location, Map.entry(pkcs12password, pkcs12));
         }
-        byte[] pkcs12 = Arrays.copyOf(pkcs12Buffer, len);
-        String pkcs12password = lhm.get("password");
-        assertTrue(pkcs12.length > 0);
-        assertNotNull(pkcs12password);
-        keystores.put(location, Map.entry(pkcs12password, pkcs12));
     }
 
     @Then("Minion {string} is started with shared networking in location {string}")
