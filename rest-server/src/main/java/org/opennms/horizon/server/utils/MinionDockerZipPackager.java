@@ -40,6 +40,9 @@ public class MinionDockerZipPackager {
 
     private static byte[] loadDockerCompose(String minionName, String password) throws IOException {
         String dockerCompose = System.getenv("PACKAGED_MINION_FILE");
+        if (dockerCompose == null || dockerCompose.isBlank()) {
+            dockerCompose = "run-minion-docker-compose.yaml";
+        }
         InputStream dockerStream = MinionDockerZipPackager.class.getClassLoader()
             .getResourceAsStream(dockerCompose);
         if (dockerStream == null) {
@@ -47,6 +50,9 @@ public class MinionDockerZipPackager {
         }
 
         String minionEndpoint = System.getenv("MINION_ENDPOINT");
+        if (minionEndpoint == null || minionEndpoint.isBlank()) {
+            minionEndpoint = "host.docker.internal";
+        }
         String dockerTxt = new BufferedReader(new InputStreamReader(dockerStream)).lines()
             .parallel().collect(Collectors.joining("\n"));
         dockerTxt = dockerTxt.replace("[KEYSTORE_PASSWORD]", password);
