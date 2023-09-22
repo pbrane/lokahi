@@ -15,6 +15,8 @@ import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+
 @RequiredArgsConstructor
 @GraphQLApi
 @Service
@@ -25,7 +27,7 @@ public class GrpcMinionCertificateManager {
     private final InventoryClient inventoryClient;
 
     @GraphQLQuery(name = "getMinionCertificate")
-    public Mono<CertificateResponse> getMinionCertificate(Long locationId, @GraphQLEnvironment ResolutionEnvironment env) {
+    public Mono<CertificateResponse> getMinionCertificate(Long locationId, @GraphQLEnvironment ResolutionEnvironment env) throws IOException {
         String tenantId = headerUtil.extractTenant(env);
         String authHeader = headerUtil.getAuthHeader(env);
 
