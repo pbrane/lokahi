@@ -40,6 +40,7 @@ import testcontainers.MinionContainer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,9 +92,9 @@ public class LocationSteps {
                 }
                 fail("Unable to parse p12 password from docker string: " + dockerText);
             } else {
-                fail("Failure downloading file " + bundle.getAbsolutePath());
+                fail("Failure downloading file");
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             fail("File not found after attempting to download p12 bundle");
         }
         fail("Failure downloading p12 bundle file");

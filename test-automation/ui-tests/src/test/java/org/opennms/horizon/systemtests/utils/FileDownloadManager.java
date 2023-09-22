@@ -40,7 +40,7 @@ public class FileDownloadManager {
         File bundle = null;
         for (int i = 0; i < 5; i++) {
             bundle = downloadBundleBtn.should(exist).shouldBe(enabled).download(60000);
-            if (bundle.exists() && bundle.canRead() && bundle.length() > 0 && bundle.getName().endsWith(".p12")) {
+            if (bundle.exists() && bundle.canRead() && bundle.length() > 0 && bundle.getName().endsWith(".zip")) {
                 break;
             } else {
                 bundle = null;

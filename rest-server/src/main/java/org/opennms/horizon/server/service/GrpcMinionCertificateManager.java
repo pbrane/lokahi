@@ -10,9 +10,12 @@ import org.opennms.horizon.server.mapper.certificate.CertificateMapper;
 import org.opennms.horizon.server.model.certificate.CertificateResponse;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
 import org.opennms.horizon.server.service.grpc.MinionCertificateManagerClient;
+import org.opennms.horizon.server.utils.MinionDockerZipPackager;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
 
 @RequiredArgsConstructor
 @GraphQLApi
@@ -24,16 +27,21 @@ public class GrpcMinionCertificateManager {
     private final InventoryClient inventoryClient;
 
     @GraphQLQuery(name = "getMinionCertificate")
-    public Mono<CertificateResponse> getMinionCertificate(Long locationId, @GraphQLEnvironment ResolutionEnvironment env) {
+    public Mono<CertificateResponse> getMinionCertificate(Long locationId, @GraphQLEnvironment ResolutionEnvironment env) throws IOException {
         String tenantId = headerUtil.extractTenant(env);
         String authHeader = headerUtil.getAuthHeader(env);
 
         var monitoringLocation = inventoryClient.getLocationById(locationId, authHeader);
         var location = monitoringLocation.getId();
-        CertificateResponse minionCert = mapper.protoToCertificateResponse(
-            client.getMinionCert(tenantId, location, authHeader)
-        );
-        return Mono.just(minionCert);
+        var cert = client.getMinionCert(tenantId, location, authHeader);
+        var certPackage = MinionDockerZipPackager.generateZip(cert.getCertificate(), monitoringLocation.getLocation(), cert.getPassword());
+
+        CertificateResponse response = new CertificateResponse();
+        response.setCertificate(certPackage);
+        response.setPassword(cert.getPassword());
+
+        return Mono.just(response);
+
     }
 
     @GraphQLMutation(name = "revokeMinionCertificate")
