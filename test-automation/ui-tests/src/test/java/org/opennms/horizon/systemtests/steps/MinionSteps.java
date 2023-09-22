@@ -38,7 +38,10 @@ import org.openqa.selenium.By;
 import org.testcontainers.containers.Network;
 import testcontainers.MinionContainer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.HashMap;
