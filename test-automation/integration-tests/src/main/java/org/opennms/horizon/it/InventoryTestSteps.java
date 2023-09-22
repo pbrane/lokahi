@@ -301,8 +301,6 @@ public class InventoryTestSteps {
                 throw new IOException("Unable to locate .p12 certificate file in zip");
             }
 
-            System.out.println("===================================================================");
-            System.out.println("JER: Expected size: " + zins.available())
             byte[] pkcs12Buffer = new byte[10240]; // Usual size is around 2k or so, should be safe for tests
             int size = zins.read(pkcs12Buffer);
             int len = size;
