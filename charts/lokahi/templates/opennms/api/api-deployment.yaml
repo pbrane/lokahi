@@ -86,12 +86,16 @@ spec:
               value: "{{ .Values.OpenNMS.API.PackagedMinionFile }}"
             - name: MINION_ENDPOINT
               value: "{{ .Values.OpenNMS.API.MinionEndpoint }}"
+            {{- with .Values.OpenNMS.API.CorsAllowed }}
+            - name: LOKAHI_BFF_CORS_ALLOWED
+              value: "{{ . }}"
+            {{- end }}
             # Do not put any env variables below this. The lokahi.development.env include should be last
             # in the 'env' section so variables can be overridden with Helm chart values when needed.
             {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.API) | nindent 12 }}
           envFrom:
-          - configMapRef:
-              name: spring-boot-env
+            - configMapRef:
+                name: spring-boot-env
           ports:
             - name: grpc
               containerPort: 9090
