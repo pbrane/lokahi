@@ -45,8 +45,11 @@ import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryServiceGrpc;
 import org.opennms.horizon.inventory.grpc.TenantLookup;
 import org.opennms.horizon.inventory.service.discovery.active.IcmpActiveDiscoveryService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
+import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.springframework.stereotype.Component;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 @Slf4j
@@ -56,6 +59,7 @@ public class IcmpActiveDiscoveryGrpcService extends IcmpActiveDiscoveryServiceGr
     private final TenantLookup tenantLookup;
     private final IcmpActiveDiscoveryService discoveryService;
     private final ScannerTaskSetService scannerTaskSetService;
+    private static final Integer MAX_RANGE_OF_IP_ADDRESSES_PER_DISCOVERY = 65536;
 
     @Override
     public void createDiscovery(IcmpActiveDiscoveryCreateDTO request, StreamObserver<IcmpActiveDiscoveryDTO> responseObserver) {
@@ -63,6 +67,13 @@ public class IcmpActiveDiscoveryGrpcService extends IcmpActiveDiscoveryServiceGr
             .ifPresentOrElse(tenantId -> {
                 try {
                     var activeDiscoveryConfig = discoveryService.createActiveDiscovery(request, tenantId);
+                    try {
+                        validateActiveDiscovery(request);
+                    } catch (Exception e) {
+                        log.error("Exception while validating active discovery", e);
+                        responseObserver.onError(StatusProto.toStatusRuntimeException(createInvalidDiscoveryInput(e.getMessage())));
+                        return;
+                    }
                     responseObserver.onNext(activeDiscoveryConfig);
                     responseObserver.onCompleted();
                     scannerTaskSetService.sendDiscoveryScannerTask(request.getIpAddressesList(), Long.valueOf(request.getLocationId()), tenantId, activeDiscoveryConfig.getId());
@@ -103,6 +114,13 @@ public class IcmpActiveDiscoveryGrpcService extends IcmpActiveDiscoveryServiceGr
         if (tenant.isPresent()) {
             var activeDiscovery = discoveryService.getDiscoveryById(request.getId(), tenant.get());
             IcmpActiveDiscoveryDTO activeDiscoveryConfig;
+            try {
+                validateActiveDiscovery(request);
+            } catch (Exception e) {
+                log.error("Exception while validating active discovery", e);
+                responseObserver.onError(StatusProto.toStatusRuntimeException(createInvalidDiscoveryInput(e.getMessage())));
+                return;
+            }
             if (activeDiscovery.isEmpty()) {
                 activeDiscoveryConfig = discoveryService.createActiveDiscovery(request, tenant.get());
             } else {
@@ -111,12 +129,43 @@ public class IcmpActiveDiscoveryGrpcService extends IcmpActiveDiscoveryServiceGr
                 scannerTaskSetService.removeDiscoveryScanTask(Long.parseLong(icmpDiscovery.getLocationId()), icmpDiscovery.getId(), tenant.get());
                 activeDiscoveryConfig = discoveryService.upsertActiveDiscovery(request, tenant.get());
             }
+
             scannerTaskSetService.sendDiscoveryScannerTask(request.getIpAddressesList(),
                 Long.valueOf(request.getLocationId()), tenant.get(), activeDiscoveryConfig.getId());
             responseObserver.onNext(activeDiscoveryConfig);
             responseObserver.onCompleted();
         } else {
             responseObserver.onError(StatusProto.toStatusRuntimeException(createMissingTenant()));
+        }
+    }
+
+    private void validateActiveDiscovery(IcmpActiveDiscoveryCreateDTO request) throws UnknownHostException {
+        var ipList = request.getIpAddressesList();
+        for (var ipAddressEntry : ipList) {
+            if (!ipAddressEntry.contains("-") && !ipAddressEntry.contains("/")) {
+                try {
+                    var inetAddress = InetAddressUtils.getInetAddress(ipAddressEntry);
+                } catch (Exception e) {
+                    log.error("Invalid Ip Address entry {}", ipAddressEntry);
+                    throw new IllegalArgumentException("Invalid Ip Address entry " + ipAddressEntry);
+                }
+            } else if (ipAddressEntry.contains("-")) {
+                    var ipEntry = ipAddressEntry.split("-", 2);
+                    if (ipEntry.length >= 2) {
+                        var beginAddress = ipEntry[0];
+                        var endAddress = ipEntry[1];
+                        var beginIp = InetAddress.getByName(beginAddress);
+                        var endIp = InetAddress.getByName(endAddress);
+                        var numberOfIpAddresses = InetAddressUtils.difference(beginIp, endIp);
+                        if (numberOfIpAddresses.abs().longValueExact() >= MAX_RANGE_OF_IP_ADDRESSES_PER_DISCOVERY) {
+                            log.error("Ip Address range is too large {}", ipAddressEntry);
+                            throw new IllegalArgumentException("Ip Address range is too large " + ipAddressEntry);
+                        }
+                    } else {
+                        log.error("Invalid Ip Address range {}", ipAddressEntry);
+                        throw new IllegalArgumentException("Invalid Ip Address range " + ipAddressEntry);
+                    }
+            }
         }
     }
 
@@ -139,6 +188,10 @@ public class IcmpActiveDiscoveryGrpcService extends IcmpActiveDiscoveryServiceGr
         } else {
             responseObserver.onError(StatusProto.toStatusRuntimeException(createMissingTenant()));
         }
+    }
+
+    private Status createInvalidDiscoveryInput(String message) {
+        return Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage(message).build();
     }
 
     private Status createMissingTenant() {
