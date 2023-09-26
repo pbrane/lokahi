@@ -19,8 +19,8 @@
               :results="tagQueries.tagsSearched.map((d) => d.name)" :inputValue="inputValue" :textChanged="textChanged">
             </AtomicAutocomplete>
             <FeatherTooltip :title="tagManagerTip" v-slot="{ attrs, on }">
-              <FeatherButton v-bind="attrs" v-on="tagManagerTip ? on : null"
-                @click="() => tagStore.saveTagsToSelectedNodes(state)" :disabled="!inventoryStore.nodesSelected.length"
+              <FeatherButton class="save-tags-btn" v-bind="attrs" v-on="tagManagerTip ? on : null"
+                @click="() => tagStore.saveTagsToSelectedNodes()" :disabled="!inventoryStore.nodesSelected.length"
                 primary data-test="save-tags-button">
                 {{ `Save tags to node${inventoryStore.nodesSelected.length > 1 ? 's' : ''}` }}
               </FeatherButton>
@@ -119,6 +119,12 @@ const tagManagerTip = computed(() => {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
+
+      .save-tags-btn {
+        @media (min-width:768px) {
+          margin-left: var(variables.$spacing-m);
+        }
+      }
 
       .tags-autocomplete {
         margin-right: 12px;

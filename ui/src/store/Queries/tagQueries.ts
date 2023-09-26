@@ -8,8 +8,6 @@ export const useTagQueries = defineStore('tagQueries', () => {
     searchTerm: ''
   })
 
-
-
   const {
     data: tagsSearchData,
     execute: tagsSearchExecute,

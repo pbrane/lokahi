@@ -11,31 +11,55 @@ export interface Anchor {
   tagValue: Tag[]
 }
 
-interface MonitoredNode {
+interface InventoryNode {
   id: number
   label: string | undefined
   status: string
   metrics: Chip[]
   anchor: Anchor
   isNodeOverlayChecked: boolean
-  type: MonitoredStates.MONITORED
+  type: MonitoredStates.DETECTED | MonitoredStates.MONITORED | MonitoredStates.UNMONITORED
 }
 
-interface UnmonitoredNode {
+interface NewInventoryNode {
   id: number
-  label: string
-  anchor: Anchor
-  isNodeOverlayChecked: boolean
-  type: MonitoredStates.UNMONITORED
+  ipInterfaces: [{id:number,ipAddress:string,nodeId:number,snmpPrimary:boolean}],
+  location:{id:number,location:string},
+  monitoredState: string,
+  monitoringLocationId: number,
+  nodeLabel: string,
+  scanType: string,
+  tags: [{id:number, name: string}],
+}
+interface RawMetric {
+  metric: {
+    __name__:string,
+    instance: string, 
+    location_id: string,
+    monitor:string,
+    node_id:string,
+    system_id:string
+  },
+  value: [number,number],
+  values: []
 }
 
-interface DetectedNode {
-  id: number
-  label: string
-  anchor: Anchor
-  isNodeOverlayChecked: boolean
-  type: MonitoredStates.DETECTED
+interface RawMetrics {
+  status:string,
+  data:{
+    resultType:string,
+    result:Array<RawMetric>
+  }
 }
+
+
+export interface InventoryItem extends NewInventoryNode{
+    metrics?: RawMetric
+}
+export interface InventoryPage {
+    nodes: Array<InventoryItem>;
+}
+
 
 export const enum MonitoredStates {
   MONITORED = 'MONITORED',
@@ -43,4 +67,3 @@ export const enum MonitoredStates {
   DETECTED = 'DETECTED'
 }
 
-type InventoryNode = MonitoredNode | UnmonitoredNode | DetectedNode

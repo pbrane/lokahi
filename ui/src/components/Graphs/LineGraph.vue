@@ -26,7 +26,6 @@ import { format, add } from 'date-fns'
 
 import { getColorFromFeatherVar, humanFileSize, getChartGridColor } from '../utils'
 const emits = defineEmits(['has-data'])
-// Chart.register(zoomPlugin) disable zoom until phase 2
 const graphs = useGraphs()
 const props = defineProps({
   graph: {
@@ -43,7 +42,7 @@ const colorFromFeatherVar = computed(() =>
 
 let chart: any = {}
 const formatAxisBasedOnType = (context: number) => {
-  let formattedAxis = context.toFixed(1);
+  let formattedAxis = context.toFixed(1)
   if (props.type === 'bytes') {
     formattedAxis = humanFileSize(context)
   } else if (props.type === 'percentage') {
@@ -55,9 +54,15 @@ const options = computed<ChartOptions<any>>(() => ({
   responsive: true,
   aspectRatio: 1.4,
   plugins: {
+    legend: {
+      labels: {
+        color: colorFromFeatherVar.value
+      }
+    },
     title: {
       display: true,
-      text: props.graph.label
+      text: props.graph.label,
+      color: colorFromFeatherVar.value
     } as TitleOptions,
     zoom: {
       zoom: {
@@ -79,9 +84,9 @@ const options = computed<ChartOptions<any>>(() => ({
         },
         title: () => {
           return ''
-        },
+        }
       }
-    }
+    },
   },
   scales: {
     y: {
@@ -93,6 +98,10 @@ const options = computed<ChartOptions<any>>(() => ({
         callback: (value: any, index: any) => (formatAxisBasedOnType(value)),
         maxTicksLimit: 8,
         color: colorFromFeatherVar.value
+      },
+      grid: {
+        display: true,
+        color: getChartGridColor(isDark.value)
       },
       stacked: false
     },
@@ -146,8 +155,9 @@ const chartData = computed<ChartData<any>>(() => {
 })
 const render = async (update?: boolean) => {
   try {
-    if (update) {
+    if (update || chart?.update) {
       chart.data = chartData.value
+      chart.options = options.value
       chart.update()
     } else {
       if (chartData.value.datasets.length) {
@@ -169,12 +179,20 @@ const onDownload = () => {
   const canvas = document.getElementById(props.graph.label) as HTMLCanvasElement
   downloadCanvas(canvas, props.graph.label)
 }
+watch(props,async () => {
+  if (props.graph.metrics){
+    await graphs.getMetrics(props.graph)
+    render()
+  }
+})
 onMounted(async () => {
   await graphs.getMetrics(props.graph)
   render()
 })
 onThemeChange(() => {
-  options.value.scales.x.grid.color = getChartGridColor(isDark.value)
+  options.value.scales.x.ticks.color = colorFromFeatherVar.value
+  options.value.scales.y.ticks.color = colorFromFeatherVar.value
+  render(true)
 })
 </script>
 
