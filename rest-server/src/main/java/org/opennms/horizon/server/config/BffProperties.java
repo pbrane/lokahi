@@ -38,10 +38,11 @@ import org.springframework.context.annotation.Configuration;
 @Data
 public class BffProperties {
 
-    private boolean corsAllowed;
+    private boolean corsAllowed = false;
     private boolean introspectionEnabled = true;
-    private int maxAliasOccurrence;
-    private int maxDirectiveOccurrence;
-    private int maxFieldOccurrence;
-    private int maxQueryDepth;
+    private int maxAliasOccurrence = -1;
+    private int maxComplexity = -1;
+    private int maxDirectiveOccurrence = -1;
+    private int maxFieldOccurrence = -1;
+    private int maxQueryDepth = -1;
 }

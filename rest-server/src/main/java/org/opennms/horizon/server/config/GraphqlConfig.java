@@ -47,6 +47,7 @@ import org.opennms.horizon.server.service.graphql.MaxAliasOccurrenceValidation;
 import org.opennms.horizon.server.service.graphql.MaxDirectiveOccurrenceInstrumentation;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -69,31 +70,32 @@ public class GraphqlConfig {
     @ConditionalOnExpression("${lokahi.bff.max-query-depth:-1} > 1")
     @Order(1)
     public Instrumentation maxDepthInstrumentation(
-        BffProperties bffProperties
+        BffProperties properties
     ) {
-        log.info("Limiting max query depth to {}", bffProperties.getMaxQueryDepth());
-        return new MaxQueryDepthInstrumentation(bffProperties.getMaxQueryDepth());
+        log.info("Limiting max query depth to {}", properties.getMaxQueryDepth());
+        return new MaxQueryDepthInstrumentation(properties.getMaxQueryDepth());
     }
 
-    // TODO: Switch to lokahi.bff for consistency.
     @Bean
-    @ConditionalOnExpression("${graphql.spqr.max-complexity:-1} > 1")
+    @ConditionalOnExpression("${lokahi.bff.max-complexity:-1} > 1")
     @Order(2)
     public Instrumentation maxComplexityInstrumentation(
-        SpqrProperties spqrProperties
+        BffProperties properties
     ) {
-        log.info("Limiting max query complexity to {}", spqrProperties.getMaxComplexity());
-        return new MaxQueryComplexityInstrumentation(spqrProperties.getMaxComplexity());
+        log.info("Limiting max query complexity to {}", properties.getMaxComplexity());
+        return new MaxQueryComplexityInstrumentation(properties.getMaxComplexity());
     }
 
     @Bean
     @ConditionalOnExpression("${lokahi.bff.max-directive-occurrence:-1} > 0")
+    @ConditionalOnBean
     @Order(3)
     public Instrumentation maxDirectiveOccurrenceInstrumentation(
-        BffProperties bffProperties
+        BffProperties properties
     ) {
+        log.info("Limiting directive occurrences to {} or less", properties.getMaxDirectiveOccurrence());
         return new MaxDirectiveOccurrenceInstrumentation(
-            bffProperties.getMaxDirectiveOccurrence()
+            properties.getMaxDirectiveOccurrence()
         );
     }
 
@@ -101,11 +103,11 @@ public class GraphqlConfig {
     @ConditionalOnExpression("${lokahi.bff.max-alias-occurrence:-1} > 0")
     @Order(4)
     public Instrumentation maxAliasOccurrenceInstrumentation(
-        BffProperties bffProperties
+        BffProperties properties
     ) {
-        log.info("Limiting field occurrences to {} or less", bffProperties.getMaxFieldOccurrence());
+        log.info("Limiting alias occurrences to {} or less", properties.getMaxAliasOccurrence());
         return new FieldValidationInstrumentation(
-            new MaxAliasOccurrenceValidation(bffProperties.getMaxAliasOccurrence())
+            new MaxAliasOccurrenceValidation(properties.getMaxAliasOccurrence())
         );
     }
 
@@ -113,11 +115,11 @@ public class GraphqlConfig {
     @ConditionalOnExpression("${lokahi.bff.max-field-occurrence:-1} > 0")
     @Order(5)
     public Instrumentation fieldDuplicationInstrumentation(
-        BffProperties bffProperties
+        BffProperties properties
     ) {
-        log.info("Limiting field occurrences to {} or less", bffProperties.getMaxFieldOccurrence());
+        log.info("Limiting field occurrences to {} or less", properties.getMaxFieldOccurrence());
         return new FieldValidationInstrumentation(
-            new DuplicateFieldValidation(bffProperties.getMaxFieldOccurrence())
+            new DuplicateFieldValidation(properties.getMaxFieldOccurrence())
         );
     }
 

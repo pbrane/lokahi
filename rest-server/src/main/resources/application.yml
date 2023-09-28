@@ -15,19 +15,12 @@ keycloak:
   realm: opennms
   signatureAlgorithm: RS256
 
-lokahi:
-  bff:
-    max-field-occurrence: 5
-    max-query-depth: 20
-    introspection-enabled: false
-
 graphql:
   spqr:
     gui:
       enabled: true
     base-packages:
       - org.opennms.horizon.server.model
-    max-complexity: 100
 
 logging:
   file.path: /var/log/restServer
