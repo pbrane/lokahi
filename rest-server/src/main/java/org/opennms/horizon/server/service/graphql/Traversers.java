@@ -28,33 +28,21 @@
 
 package org.opennms.horizon.server.service.graphql;
 
-import graphql.language.Directive;
-import graphql.language.Node;
-import graphql.language.NodeVisitorStub;
-import graphql.util.TraversalControl;
-import graphql.util.TraverserContext;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import graphql.analysis.QueryTraverser;
+import graphql.execution.ExecutionContext;
+import graphql.execution.instrumentation.fieldvalidation.FieldValidationEnvironment;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-
-// TODO: Name
-@Slf4j
-public class FieldOccurrenceCountVisitor extends NodeVisitorStub {
-
-    @Getter
-    private final Map<String, Integer> occurrences;
-
-    public FieldOccurrenceCountVisitor() {
-        occurrences = new LinkedHashMap<>();
+public class Traversers {
+    public static QueryTraverser queryTraverser(FieldValidationEnvironment environment) {
+        return queryTraverser(environment.getExecutionContext());
     }
 
-    @Override
-    public TraversalControl visitDirective(Directive node, TraverserContext<Node> context) {
-        int count = occurrences.getOrDefault(node.getName(), 0) + 1;
-        occurrences.put(node.getName(), count);
-        return TraversalControl.CONTINUE;
+    public static QueryTraverser queryTraverser(ExecutionContext context) {
+        return QueryTraverser.newQueryTraverser()
+            .schema(context.getGraphQLSchema())
+            .document(context.getDocument())
+            .operationName(context.getExecutionInput().getOperationName())
+            .coercedVariables(context.getCoercedVariables())
+            .build();
     }
 }

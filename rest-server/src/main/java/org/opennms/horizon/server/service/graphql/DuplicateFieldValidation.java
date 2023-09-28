@@ -29,63 +29,53 @@
 package org.opennms.horizon.server.service.graphql;
 
 import graphql.GraphQLError;
-import graphql.analysis.QueryReducer;
-import graphql.analysis.QueryTraverser;
 import graphql.analysis.QueryVisitorFieldEnvironment;
-import graphql.execution.ExecutionContext;
 import graphql.execution.instrumentation.fieldvalidation.FieldValidation;
 import graphql.execution.instrumentation.fieldvalidation.FieldValidationEnvironment;
+import graphql.schema.FieldCoordinates;
 import graphql.schema.GraphQLFieldDefinition;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@Slf4j
 public class DuplicateFieldValidation implements FieldValidation {
 
     private final int maxFieldOccurrence;
 
     @Override
-    public List<GraphQLError> validateFields(FieldValidationEnvironment validationEnvironment) {
-        QueryTraverser queryTraverser = newQueryTraverser(validationEnvironment.getExecutionContext());
-        var occurrences = queryTraverser.reducePreOrder(new Reducer(), new HashMap<>());
+    public List<GraphQLError> validateFields(FieldValidationEnvironment environment) {
+        Map<FieldCoordinates, Integer> occurrences = Traversers
+            .queryTraverser(environment)
+            .reducePreOrder(this::reduceField, new LinkedHashMap<>());
 
         return occurrences
             .entrySet().stream()
             .filter(entry -> entry.getValue() > maxFieldOccurrence)
             .map(Map.Entry::getKey)
-            .map(field -> validationEnvironment.mkError(
-                "Validation error: Field '" + field.getName() + "' is repeated too many times"
+            .map(field -> environment.mkError(
+                "Validation error: Field '" + field + "' is repeated too many times"
             ))
             .collect(Collectors.toList());
     }
 
-    QueryTraverser newQueryTraverser(ExecutionContext executionContext) {
-        return QueryTraverser.newQueryTraverser()
-            .schema(executionContext.getGraphQLSchema())
-            .document(executionContext.getDocument())
-            .operationName(executionContext.getExecutionInput().getOperationName())
-            .coercedVariables(executionContext.getCoercedVariables())
-            .build();
-    }
+    public Map<FieldCoordinates, Integer> reduceField(
+        QueryVisitorFieldEnvironment env,
+        Map<FieldCoordinates, Integer> acc
+    ) {
+        GraphQLFieldDefinition field = env.getFieldDefinition();
 
-    private static class Reducer implements QueryReducer<Map<GraphQLFieldDefinition, Integer>> {
+        FieldCoordinates key = env.isTypeNameIntrospectionField()
+            ? FieldCoordinates.systemCoordinates(field.getName())
+            : FieldCoordinates.coordinates(env.getFieldsContainer(), field);
 
-        // TODO: No GraphQLSchemaElement implements `equals/hashCode` because
-        //  we need object identity to treat a GraphQLSchema as an abstract graph.
-        @Override
-        public Map<GraphQLFieldDefinition, Integer> reduceField(
-            QueryVisitorFieldEnvironment fieldEnvironment,
-            Map<GraphQLFieldDefinition, Integer> acc
-        ) {
-            var key = fieldEnvironment.getFieldDefinition();
-            int count = acc.getOrDefault(key, 0) + 1;
-            acc.put(key, count);
+        acc.merge(key, 1, Integer::sum);
 
-            return acc;
-        }
+        return acc;
     }
 }

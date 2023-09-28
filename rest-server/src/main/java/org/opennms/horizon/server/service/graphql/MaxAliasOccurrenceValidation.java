@@ -29,10 +29,8 @@
 package org.opennms.horizon.server.service.graphql;
 
 import graphql.GraphQLError;
-import graphql.analysis.QueryReducer;
 import graphql.analysis.QueryTraverser;
 import graphql.analysis.QueryVisitorFieldEnvironment;
-import graphql.execution.ExecutionContext;
 import graphql.execution.instrumentation.fieldvalidation.FieldValidation;
 import graphql.execution.instrumentation.fieldvalidation.FieldValidationEnvironment;
 import lombok.RequiredArgsConstructor;
@@ -48,44 +46,30 @@ public class MaxAliasOccurrenceValidation implements FieldValidation {
     private final int maxFieldOccurrence;
 
     @Override
-    public List<GraphQLError> validateFields(FieldValidationEnvironment validationEnvironment) {
-        QueryTraverser queryTraverser = newQueryTraverser(validationEnvironment.getExecutionContext());
-        var occurrences = queryTraverser.reducePreOrder(new Reducer(), new LinkedHashMap<>());
+    public List<GraphQLError> validateFields(FieldValidationEnvironment environment) {
+        QueryTraverser queryTraverser = Traversers.queryTraverser(environment);
+        var occurrences = queryTraverser.reducePreOrder(this::reduceField, new LinkedHashMap<>());
 
         return occurrences
             .entrySet().stream()
             .filter(entry -> entry.getValue() > maxFieldOccurrence)
             .map(Map.Entry::getKey)
-            .map(field -> validationEnvironment.mkError(
+            .map(field -> environment.mkError(
                 "Validation error: Alias '" + field + "' is repeated too many times"
             ))
             .collect(Collectors.toList());
     }
 
-    QueryTraverser newQueryTraverser(ExecutionContext executionContext) {
-        return QueryTraverser.newQueryTraverser()
-            .schema(executionContext.getGraphQLSchema())
-            .document(executionContext.getDocument())
-            .operationName(executionContext.getExecutionInput().getOperationName())
-            .coercedVariables(executionContext.getCoercedVariables())
-            .build();
-    }
-
-    private static class Reducer implements QueryReducer<Map<String, Integer>> {
-
-        @Override
-        public Map<String, Integer> reduceField(
-            QueryVisitorFieldEnvironment fieldEnvironment,
-            Map<String, Integer> acc
-        ) {
-            var alias = fieldEnvironment.getField().getAlias();
-            var key = fieldEnvironment.getField().getName();
-            if (alias != null) {
-                int count = acc.getOrDefault(key, 0) + 1;
-                acc.put(key, count);
-            }
-
-            return acc;
+    public Map<String, Integer> reduceField(
+        QueryVisitorFieldEnvironment fieldEnvironment,
+        Map<String, Integer> acc
+    ) {
+        var alias = fieldEnvironment.getField().getAlias();
+        var key = fieldEnvironment.getField().getName();
+        if (alias != null) {
+            acc.merge(key, 1, Integer::sum);
         }
+
+        return acc;
     }
 }

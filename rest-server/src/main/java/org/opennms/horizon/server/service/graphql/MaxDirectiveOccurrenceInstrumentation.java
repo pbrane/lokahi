@@ -35,10 +35,17 @@ import graphql.execution.instrumentation.InstrumentationContext;
 import graphql.execution.instrumentation.InstrumentationState;
 import graphql.execution.instrumentation.SimplePerformantInstrumentation;
 import graphql.execution.instrumentation.parameters.InstrumentationValidationParameters;
+import graphql.language.Directive;
+import graphql.language.Node;
 import graphql.language.NodeTraverser;
+import graphql.language.NodeVisitorStub;
+import graphql.util.TraversalControl;
+import graphql.util.TraverserContext;
 import graphql.validation.ValidationError;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +61,7 @@ public class MaxDirectiveOccurrenceInstrumentation extends SimplePerformantInstr
         InstrumentationValidationParameters parameters,
         InstrumentationState state
     ) {
-        var nodeVisitor = new FieldOccurrenceCountVisitor();
+        var nodeVisitor = new DirectiveCounterVisitor();
         new NodeTraverser().preOrder(nodeVisitor, parameters.getDocument().getChildren());
 
         var errors = nodeVisitor.getOccurrences().entrySet().stream()
@@ -70,5 +77,21 @@ public class MaxDirectiveOccurrenceInstrumentation extends SimplePerformantInstr
             throw new AbortExecutionException(errors);
         }
         return super.beginValidation(parameters, state);
+    }
+
+    private static class DirectiveCounterVisitor extends NodeVisitorStub {
+
+        @Getter
+        private final Map<String, Integer> occurrences;
+
+        public DirectiveCounterVisitor() {
+            occurrences = new LinkedHashMap<>();
+        }
+
+        @Override
+        public TraversalControl visitDirective(Directive node, TraverserContext<Node> context) {
+            occurrences.merge(node.getName(), 1, Integer::sum);
+            return TraversalControl.CONTINUE;
+        }
     }
 }
