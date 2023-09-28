@@ -64,6 +64,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Slf4j
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = RestServerApplication.class)
 public class GraphQLControllerTest {
+    private static final String DESCRIPTIVE_DISPLAY_NAME = "[{index}]: {0}";
+
     private static final String ENDPOINT = "/graphql";
     private static final String ACCESS_TOKEN = "test-token-12345";
 
@@ -83,7 +85,7 @@ public class GraphQLControllerTest {
             }
         }
         """;
-    public static final MonitoringLocationDTO RESPONSE_DTO = MonitoringLocationDTO.newBuilder()
+    private static final MonitoringLocationDTO RESPONSE_DTO = MonitoringLocationDTO.newBuilder()
         .setId(5L)
         .setLocation("foo")
         .setAddress("bar")
@@ -157,13 +159,9 @@ public class GraphQLControllerTest {
                 """);
     }
 
-    public static Stream<Arguments> jsonFiles() {
+    public static Stream<Arguments> invalidRequests() {
         return Stream.of(
-            readArgumentPair("/test/data/alias-overloading.json"),
-            readArgumentPair("/test/data/directive-overloading.json"),
-            readArgumentPair("/test/data/error-mishandling.json"),
-            readArgumentPair("/test/data/field-duplication.json"),
-            readArgumentPair("/test/data/introspection-circular.json")
+            readArgumentPair("/test/data/error-mishandling.json")
         );
     }
 
@@ -171,8 +169,8 @@ public class GraphQLControllerTest {
         return Arguments.of(filePath, ResourceFileReader.read(filePath));
     }
 
-    @MethodSource("jsonFiles")
-    @ParameterizedTest(name = "[{index}]: {0}")
+    @MethodSource("invalidRequests")
+    @ParameterizedTest(name = DESCRIPTIVE_DISPLAY_NAME)
     void wellFormedButInvalidRequestShouldReturn200WithErrorDetails(
         String description,
         String requestBody
@@ -191,15 +189,23 @@ public class GraphQLControllerTest {
             .jsonPath("$.trace").doesNotExist();
     }
 
-    @Test
-    void introspectionNotAllowedWhenDisabled() {
-        String query = ResourceFileReader.read("/test/data/introspection-query.json");
+    public static Stream<Arguments> aliasOverloading() {
+        return Stream.of(
+            readArgumentPair("/test/data/alias-overloading.json")
+        );
+    }
 
+    @MethodSource("aliasOverloading")
+    @ParameterizedTest(name = DESCRIPTIVE_DISPLAY_NAME)
+    void limitsAliasOverloading(
+        String description,
+        String requestBody
+    ) {
         webClient.post()
             .uri(ENDPOINT)
             .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .header("Authorization", "Bearer " + ACCESS_TOKEN)
-            .bodyValue(query)
+            .bodyValue(requestBody)
             .exchange()
             .expectStatus().isEqualTo(HttpStatus.OK)
             .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -207,7 +213,96 @@ public class GraphQLControllerTest {
             .jsonPath("$.data").doesNotExist()
             .jsonPath("$.errors").isArray()
             .jsonPath("$.errors[*].message").value(Matchers.everyItem(
-                Matchers.matchesRegex("^Validation error .+: Field '.+' in type '__.+' is undefined$")
+                Matchers.matchesRegex("^Validation error.*: Alias '.+' is repeated too many times$")
+            ))
+            .jsonPath("$.trace").doesNotExist();
+    }
+
+    public static Stream<Arguments> directiveOverloading() {
+        return Stream.of(
+            readArgumentPair("/test/data/directive-overloading.json")
+        );
+    }
+
+
+    @MethodSource("directiveOverloading")
+    @ParameterizedTest(name = DESCRIPTIVE_DISPLAY_NAME)
+    void limitsDirectiveOverloading(
+        String description,
+        String requestBody
+    ) {
+        webClient.post()
+            .uri(ENDPOINT)
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .header("Authorization", "Bearer " + ACCESS_TOKEN)
+            .bodyValue(requestBody)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.OK)
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.data").doesNotExist()
+            .jsonPath("$.errors").isArray()
+            .jsonPath("$.errors[*].message").value(Matchers.everyItem(
+                Matchers.matchesRegex("^Validation error.*: Directive '.+' is repeated too many times$")
+            ))
+            .jsonPath("$.trace").doesNotExist();
+    }
+
+    public static Stream<Arguments> introspectionRequests() {
+        return Stream.of(
+            readArgumentPair("/test/data/introspection-query.json"),
+            readArgumentPair("/test/data/introspection-circular.json")
+        );
+    }
+
+    @MethodSource("introspectionRequests")
+    @ParameterizedTest(name = DESCRIPTIVE_DISPLAY_NAME)
+    void introspectionNotAllowedWhenDisabled(
+        String description,
+        String requestBody
+    ) {
+        webClient.post()
+            .uri(ENDPOINT)
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .header("Authorization", "Bearer " + ACCESS_TOKEN)
+            .bodyValue(requestBody)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.OK)
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.data").doesNotExist()
+            .jsonPath("$.errors").isArray()
+            .jsonPath("$.errors[*].message").value(Matchers.everyItem(
+                Matchers.matchesRegex("^Validation error.*: Field '.+' in type '__.+' is undefined$")
+            ))
+            .jsonPath("$.trace").doesNotExist();
+    }
+
+    public static Stream<Arguments> fieldDuplicationRequests() {
+        return Stream.of(
+            readArgumentPair("/test/data/field-duplication.json")
+        );
+    }
+
+    @MethodSource("fieldDuplicationRequests")
+    @ParameterizedTest(name = DESCRIPTIVE_DISPLAY_NAME)
+    void limitsFieldDuplication(
+        String description,
+        String requestBody
+    ) {
+        webClient.post()
+            .uri(ENDPOINT)
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .header("Authorization", "Bearer " + ACCESS_TOKEN)
+            .bodyValue(requestBody)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.OK)
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.data").doesNotExist()
+            .jsonPath("$.errors").isArray()
+            .jsonPath("$.errors[*].message").value(Matchers.everyItem(
+                Matchers.matchesRegex("^Validation error.*: Field '.+' is repeated too many times$")
             ))
             .jsonPath("$.trace").doesNotExist();
     }

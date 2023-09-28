@@ -8,6 +8,9 @@ keycloak:
 lokahi:
   bff:
     introspection-enabled: false
+    max-alias-occurrence: 5
+    max-directive-occurrence: 5
+    max-field-occurrence: 5
     max-query-depth: 5
 
 graphql:

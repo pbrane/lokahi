@@ -17,7 +17,9 @@ keycloak:
 
 lokahi:
   bff:
-    max-query-depth: 5
+    max-field-occurrence: 5
+    max-query-depth: 20
+    introspection-enabled: false
 
 graphql:
   spqr:
@@ -25,7 +27,7 @@ graphql:
       enabled: true
     base-packages:
       - org.opennms.horizon.server.model
-    max-complexity: 20
+    max-complexity: 100
 
 logging:
   file.path: /var/log/restServer

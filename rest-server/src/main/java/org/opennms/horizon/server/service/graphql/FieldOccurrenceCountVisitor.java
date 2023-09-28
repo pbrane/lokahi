@@ -26,22 +26,35 @@
  *     http://www.opennms.com/
  */
 
-package org.opennms.horizon.server.config;
+package org.opennms.horizon.server.service.graphql;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import graphql.language.Directive;
+import graphql.language.Node;
+import graphql.language.NodeVisitorStub;
+import graphql.util.TraversalControl;
+import graphql.util.TraverserContext;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
-@Configuration
-@ConfigurationProperties(prefix = "lokahi.bff")
-@Data
-public class BffProperties {
+// TODO: Name
+@Slf4j
+public class FieldOccurrenceCountVisitor extends NodeVisitorStub {
 
-    private boolean corsAllowed;
-    private boolean introspectionEnabled = true;
-    private int maxAliasOccurrence;
-    private int maxDirectiveOccurrence;
-    private int maxFieldOccurrence;
-    private int maxQueryDepth;
+    @Getter
+    private final Map<String, Integer> occurrences;
+
+    public FieldOccurrenceCountVisitor() {
+        occurrences = new LinkedHashMap<>();
+    }
+
+    @Override
+    public TraversalControl visitDirective(Directive node, TraverserContext<Node> context) {
+        int count = occurrences.getOrDefault(node.getName(), 0) + 1;
+        occurrences.put(node.getName(), count);
+        return TraversalControl.CONTINUE;
+    }
 }

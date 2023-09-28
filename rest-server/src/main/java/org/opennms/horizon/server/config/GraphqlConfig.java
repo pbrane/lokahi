@@ -33,6 +33,7 @@ import graphql.analysis.MaxQueryComplexityInstrumentation;
 import graphql.analysis.MaxQueryDepthInstrumentation;
 import graphql.execution.DataFetcherExceptionHandler;
 import graphql.execution.instrumentation.Instrumentation;
+import graphql.execution.instrumentation.fieldvalidation.FieldValidationInstrumentation;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.visibility.NoIntrospectionGraphqlFieldVisibility;
 import io.leangen.graphql.GraphQLRuntime;
@@ -41,6 +42,9 @@ import io.leangen.graphql.spqr.spring.autoconfigure.BaseAutoConfiguration;
 import io.leangen.graphql.spqr.spring.autoconfigure.SpqrProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.server.service.graphql.BffDataFetchExceptionHandler;
+import org.opennms.horizon.server.service.graphql.DuplicateFieldValidation;
+import org.opennms.horizon.server.service.graphql.MaxAliasOccurrenceValidation;
+import org.opennms.horizon.server.service.graphql.MaxDirectiveOccurrenceInstrumentation;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -71,6 +75,7 @@ public class GraphqlConfig {
         return new MaxQueryDepthInstrumentation(bffProperties.getMaxQueryDepth());
     }
 
+    // TODO: Switch to lokahi.bff for consistency.
     @Bean
     @ConditionalOnExpression("${graphql.spqr.max-complexity:-1} > 1")
     @Order(2)
@@ -79,6 +84,41 @@ public class GraphqlConfig {
     ) {
         log.info("Limiting max query complexity to {}", spqrProperties.getMaxComplexity());
         return new MaxQueryComplexityInstrumentation(spqrProperties.getMaxComplexity());
+    }
+
+    @Bean
+    @ConditionalOnExpression("${lokahi.bff.max-directive-occurrence:-1} > 0")
+    @Order(3)
+    public Instrumentation maxDirectiveOccurrenceInstrumentation(
+        BffProperties bffProperties
+    ) {
+        return new MaxDirectiveOccurrenceInstrumentation(
+            bffProperties.getMaxDirectiveOccurrence()
+        );
+    }
+
+    @Bean
+    @ConditionalOnExpression("${lokahi.bff.max-alias-occurrence:-1} > 0")
+    @Order(4)
+    public Instrumentation maxAliasOccurrenceInstrumentation(
+        BffProperties bffProperties
+    ) {
+        log.info("Limiting field occurrences to {} or less", bffProperties.getMaxFieldOccurrence());
+        return new FieldValidationInstrumentation(
+            new MaxAliasOccurrenceValidation(bffProperties.getMaxAliasOccurrence())
+        );
+    }
+
+    @Bean
+    @ConditionalOnExpression("${lokahi.bff.max-field-occurrence:-1} > 0")
+    @Order(5)
+    public Instrumentation fieldDuplicationInstrumentation(
+        BffProperties bffProperties
+    ) {
+        log.info("Limiting field occurrences to {} or less", bffProperties.getMaxFieldOccurrence());
+        return new FieldValidationInstrumentation(
+            new DuplicateFieldValidation(bffProperties.getMaxFieldOccurrence())
+        );
     }
 
     @Bean
@@ -99,6 +139,7 @@ public class GraphqlConfig {
         @Override
         public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
             if (bean instanceof GraphQLSchemaGenerator schemaGenerator) {
+                log.info("Disabling introspection in graphql");
                 schemaGenerator.withSchemaProcessors((schemaBuilder, buildContext) -> {
                     buildContext.codeRegistry.fieldVisibility(
                         NoIntrospectionGraphqlFieldVisibility.NO_INTROSPECTION_FIELD_VISIBILITY);

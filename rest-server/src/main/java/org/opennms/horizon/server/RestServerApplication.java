@@ -11,7 +11,6 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.event.EventListener;
 
 @SpringBootApplication(exclude = {
-//    BaseAutoConfiguration.class,
     DataSourceAutoConfiguration.class,
     DataSourceTransactionManagerAutoConfiguration.class,
     HibernateJpaAutoConfiguration.class
