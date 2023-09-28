@@ -114,7 +114,6 @@ public class GraphQLControllerTest {
             .when(mockHeaderUtil)
             .getAuthHeader(any(ResolutionEnvironment.class));
     }
-
     @Test
     void doesNotAllowRequestsViaGet() {
         webClient.get()
@@ -127,6 +126,26 @@ public class GraphQLControllerTest {
             .expectBody()
             .jsonPath("$.error").isEqualTo("Method Not Allowed")
             .jsonPath("$.message").isEqualTo("Request method 'GET' is not supported.")
+            .jsonPath("$.trace").doesNotExist();
+    }
+
+    @ValueSource(strings = {
+        MediaType.APPLICATION_XML_VALUE,
+        MediaType.APPLICATION_FORM_URLENCODED_VALUE
+    })
+    @ParameterizedTest
+    void doesNotAllowUnsupportedMediaTypes(String mediaType) {
+        webClient.post()
+            .uri(ENDPOINT)
+            .header("Content-Type", mediaType)
+            .header("Authorization", "Bearer " + ACCESS_TOKEN)
+            .bodyValue(createPayload())
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.error").isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE.getReasonPhrase())
+            .jsonPath("$.message").isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE.getReasonPhrase())
             .jsonPath("$.trace").doesNotExist();
     }
 

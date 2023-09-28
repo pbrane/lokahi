@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -68,6 +69,11 @@ public class WebExceptionHandler {
     ) {
         this.errorAttributes = errorAttributes;
         this.messageReaders = serverCodecConfigurer.getReaders();
+    }
+
+    @ExceptionHandler(UnsupportedMediaTypeStatusException.class)
+    public Mono<ResponseEntity<Object>> handle(UnsupportedMediaTypeStatusException e, ServerWebExchange exchange) {
+        return createResponse(e, exchange, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
 
     @ExceptionHandler(ResponseStatusException.class)
