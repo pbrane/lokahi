@@ -54,8 +54,8 @@ public class MaxDirectiveOccurrenceInstrumentation extends SimplePerformantInstr
 
     private final int maxDirectiveOccurrence;
 
-    // This needs to be done at the beginning of validation, instead of as a
-    // field validation, otherwise other validations will take precedence.
+    // This needs to be done at the beginning of the validation phase instead of
+    // as a field validation, otherwise other validations will take precedence.
     @Override
     public InstrumentationContext<List<ValidationError>> beginValidation(
         InstrumentationValidationParameters parameters,

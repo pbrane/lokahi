@@ -33,6 +33,7 @@ import io.leangen.graphql.spqr.spring.web.GraphQLController;
 import io.leangen.graphql.spqr.spring.web.dto.GraphQLRequest;
 import io.leangen.graphql.spqr.spring.web.reactive.GraphQLReactiveExecutor;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.MethodNotAllowedException;
 import org.springframework.web.server.ServerWebExchange;
@@ -66,6 +67,6 @@ public class BffGraphQLController extends GraphQLController<ServerWebExchange> {
     public Object executeFormPost(
         Map<String, String> queryParams, GraphQLRequest graphQLRequest, ServerWebExchange request
     ) {
-        throw new UnsupportedMediaTypeStatusException(null);
+        throw new UnsupportedMediaTypeStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE.getReasonPhrase());
     }
 }

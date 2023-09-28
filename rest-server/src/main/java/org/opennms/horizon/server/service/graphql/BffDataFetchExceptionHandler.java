@@ -48,6 +48,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class BffDataFetchExceptionHandler implements DataFetcherExceptionHandler {
 
+    /** {@inheritDoc} */
     @Override
     public CompletableFuture<DataFetcherExceptionHandlerResult> handleException(
         DataFetcherExceptionHandlerParameters parameters
@@ -60,7 +61,7 @@ public class BffDataFetchExceptionHandler implements DataFetcherExceptionHandler
             parameters.getSourceLocation()
         );
 
-        log.warn(error.getMessage(), exception);
+        log.warn("Caught exception during data fetching", exception);
 
         var result = DataFetcherExceptionHandlerResult
             .newResult()

@@ -129,9 +129,10 @@ public class GraphqlConfig {
     }
 
     /**
-     * Takes the previously configured {@link GraphQLSchemaGenerator} instance
-     * and configures it to disable introspection. This is done instead in order
-     * to re-use the original autoconfiguration instead of replacing it.
+     * Takes the previously auto-configured {@link GraphQLSchemaGenerator}
+     * instance and additionally configures it to disable introspection. This is
+     * done to re-use the relatively complex original autoconfiguration instead
+     * of replacing it.
      *
      * @see BaseAutoConfiguration#graphQLSchemaGenerator(SpqrProperties)
      */

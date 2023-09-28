@@ -44,7 +44,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.opennms.horizon.inventory.dto.GeoLocation;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
-import org.opennms.horizon.server.test.util.ResourceFileReader;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -59,11 +58,17 @@ import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.opennms.horizon.server.test.util.ResourceFileReader.read;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 @Slf4j
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = RestServerApplication.class)
 public class GraphQLControllerTest {
+
+    private static Arguments readArgumentPair(String filePath) {
+        return Arguments.of(filePath, read(filePath));
+    }
+
     private static final String DESCRIPTIVE_DISPLAY_NAME = "[{index}]: {0}";
 
     private static final String ENDPOINT = "/graphql";
@@ -178,22 +183,10 @@ public class GraphQLControllerTest {
                 """);
     }
 
-    public static Stream<Arguments> invalidRequests() {
-        return Stream.of(
-            readArgumentPair("/test/data/error-mishandling.json")
-        );
-    }
+    @Test
+    void wellFormedButInvalidRequestShouldReturn200WithErrorDetails() {
+        String requestBody = read("/test/data/error-mishandling.json");
 
-    private static Arguments readArgumentPair(String filePath) {
-        return Arguments.of(filePath, ResourceFileReader.read(filePath));
-    }
-
-    @MethodSource("invalidRequests")
-    @ParameterizedTest(name = DESCRIPTIVE_DISPLAY_NAME)
-    void wellFormedButInvalidRequestShouldReturn200WithErrorDetails(
-        String description,
-        String requestBody
-    ) {
         webClient.post()
             .uri(ENDPOINT)
             .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -208,18 +201,10 @@ public class GraphQLControllerTest {
             .jsonPath("$.trace").doesNotExist();
     }
 
-    public static Stream<Arguments> aliasOverloading() {
-        return Stream.of(
-            readArgumentPair("/test/data/alias-overloading.json")
-        );
-    }
+    @Test
+    void limitsAliasOverloading() {
+        String requestBody = read("/test/data/alias-overloading.json");
 
-    @MethodSource("aliasOverloading")
-    @ParameterizedTest(name = DESCRIPTIVE_DISPLAY_NAME)
-    void limitsAliasOverloading(
-        String description,
-        String requestBody
-    ) {
         webClient.post()
             .uri(ENDPOINT)
             .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -237,19 +222,10 @@ public class GraphQLControllerTest {
             .jsonPath("$.trace").doesNotExist();
     }
 
-    public static Stream<Arguments> directiveOverloading() {
-        return Stream.of(
-            readArgumentPair("/test/data/directive-overloading.json")
-        );
-    }
+    @Test
+    void limitsDirectiveOverloading() {
+        String requestBody = read("/test/data/directive-overloading.json");
 
-
-    @MethodSource("directiveOverloading")
-    @ParameterizedTest(name = DESCRIPTIVE_DISPLAY_NAME)
-    void limitsDirectiveOverloading(
-        String description,
-        String requestBody
-    ) {
         webClient.post()
             .uri(ENDPOINT)
             .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
