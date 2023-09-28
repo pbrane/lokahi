@@ -34,14 +34,21 @@ import graphql.analysis.MaxQueryDepthInstrumentation;
 import graphql.execution.DataFetcherExceptionHandler;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.visibility.NoIntrospectionGraphqlFieldVisibility;
 import io.leangen.graphql.GraphQLRuntime;
+import io.leangen.graphql.GraphQLSchemaGenerator;
+import io.leangen.graphql.spqr.spring.autoconfigure.BaseAutoConfiguration;
 import io.leangen.graphql.spqr.spring.autoconfigure.SpqrProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.server.service.graphql.BffDataFetchExceptionHandler;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -77,6 +84,32 @@ public class GraphqlConfig {
     @Bean
     public DataFetcherExceptionHandler exceptionResolver() {
         return new BffDataFetchExceptionHandler();
+    }
+
+    /**
+     * Takes the previously configured {@link GraphQLSchemaGenerator} instance
+     * and configures it to disable introspection. This is done instead in order
+     * to re-use the original autoconfiguration instead of replacing it.
+     *
+     * @see BaseAutoConfiguration#graphQLSchemaGenerator(SpqrProperties)
+     */
+    @Component
+    @ConditionalOnProperty(value = "lokahi.bff.introspection-enabled", havingValue = "false")
+    public static class IntrospectionDisabler implements BeanPostProcessor {
+        @Override
+        public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+            if (bean instanceof GraphQLSchemaGenerator schemaGenerator) {
+                schemaGenerator.withSchemaProcessors((schemaBuilder, buildContext) -> {
+                    buildContext.codeRegistry.fieldVisibility(
+                        NoIntrospectionGraphqlFieldVisibility.NO_INTROSPECTION_FIELD_VISIBILITY);
+                    schemaBuilder.codeRegistry(buildContext.codeRegistry.build());
+                    return schemaBuilder;
+                });
+                return schemaGenerator;
+            }
+
+            return bean;
+        }
     }
 
     @Bean

@@ -7,6 +7,7 @@ keycloak:
 
 lokahi:
   bff:
+    introspection-enabled: false
     max-query-depth: 5
 
 graphql:

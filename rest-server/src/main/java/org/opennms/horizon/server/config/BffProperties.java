@@ -39,5 +39,6 @@ import org.springframework.context.annotation.Configuration;
 public class BffProperties {
 
     private boolean corsAllowed;
+    private boolean introspectionEnabled = true;
     private int maxQueryDepth;
 }

@@ -33,6 +33,7 @@ import io.grpc.StatusRuntimeException;
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.web.GraphQLExecutor;
 import lombok.extern.slf4j.Slf4j;
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -162,8 +163,7 @@ public class GraphQLControllerTest {
             readArgumentPair("/test/data/directive-overloading.json"),
             readArgumentPair("/test/data/error-mishandling.json"),
             readArgumentPair("/test/data/field-duplication.json"),
-            readArgumentPair("/test/data/introspection-circular.json"),
-            readArgumentPair("/test/data/introspection-query.json")
+            readArgumentPair("/test/data/introspection-circular.json")
         );
     }
 
@@ -188,6 +188,27 @@ public class GraphQLControllerTest {
             .expectBody()
             .jsonPath("$.data").doesNotExist()
             .jsonPath("$.errors").isArray()
+            .jsonPath("$.trace").doesNotExist();
+    }
+
+    @Test
+    void introspectionNotAllowedWhenDisabled() {
+        String query = ResourceFileReader.read("/test/data/introspection-query.json");
+
+        webClient.post()
+            .uri(ENDPOINT)
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .header("Authorization", "Bearer " + ACCESS_TOKEN)
+            .bodyValue(query)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.OK)
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.data").doesNotExist()
+            .jsonPath("$.errors").isArray()
+            .jsonPath("$.errors[*].message").value(Matchers.everyItem(
+                Matchers.matchesRegex("^Validation error .+: Field '.+' in type '__.+' is undefined$")
+            ))
             .jsonPath("$.trace").doesNotExist();
     }
 
