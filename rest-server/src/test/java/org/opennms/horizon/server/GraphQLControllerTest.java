@@ -37,10 +37,13 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opennms.horizon.inventory.dto.GeoLocation;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
+import org.opennms.horizon.server.test.util.ResourceFileReader;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,6 +54,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -150,6 +154,41 @@ public class GraphQLControllerTest {
                   }
                 }
                 """);
+    }
+
+    public static Stream<Arguments> jsonFiles() {
+        return Stream.of(
+            readArgumentPair("/test/data/alias-overloading.json"),
+            readArgumentPair("/test/data/directive-overloading.json"),
+            readArgumentPair("/test/data/error-mishandling.json"),
+            readArgumentPair("/test/data/field-duplication.json"),
+            readArgumentPair("/test/data/introspection-circular.json"),
+            readArgumentPair("/test/data/introspection-query.json")
+        );
+    }
+
+    private static Arguments readArgumentPair(String filePath) {
+        return Arguments.of(filePath, ResourceFileReader.read(filePath));
+    }
+
+    @MethodSource("jsonFiles")
+    @ParameterizedTest(name = "[{index}]: {0}")
+    void wellFormedButInvalidRequestShouldReturn200WithErrorDetails(
+        String description,
+        String requestBody
+    ) {
+        webClient.post()
+            .uri(ENDPOINT)
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .header("Authorization", "Bearer " + ACCESS_TOKEN)
+            .bodyValue(requestBody)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.OK)
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.data").doesNotExist()
+            .jsonPath("$.errors").isArray()
+            .jsonPath("$.trace").doesNotExist();
     }
 
     @ValueSource(strings = {
