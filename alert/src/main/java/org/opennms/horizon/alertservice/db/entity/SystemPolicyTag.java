@@ -25,24 +25,52 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
+package org.opennms.horizon.alertservice.db.entity;
 
-package org.opennms.horizon.alertservice.db.repository;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.Serializable;
 
-import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+@Entity
+@Table(name="system_policy_tag")
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
+@IdClass(SystemPolicyTag.RelationshipId.class)
+public class SystemPolicyTag {
+    @Id
+    @Column(name = "tenant_id", nullable = false)
+    private String tenantId;
 
-public interface MonitorPolicyRepository extends JpaRepository<MonitorPolicy, Long> {
-    List<MonitorPolicy> findAllByTenantId(String tenantId);
-    Optional<MonitorPolicy> findByIdAndTenantId(Long id, String tenantId);
+    @Id
+    @Column(name = "policy_id", nullable = false)
+    private long policyId;
 
-    Optional<MonitorPolicy> findByNameAndTenantId(String name, String tenantId);
+    @Id
+    @OneToOne
+    @JoinColumn(name = "tag_id", referencedColumnName = "id", nullable = false)
+    private Tag tag;
 
-    void deleteByIdAndTenantId(Long id, String tenantId);
-
-    @Query("SELECT policy FROM AlertCondition ac INNER JOIN ac.rule as pr INNER JOIN pr.policy as policy WHERE ac.id = ?1")
-    Optional<MonitorPolicy> findMonitoringPolicyByAlertConditionId(Long alertConditionId);
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class RelationshipId implements Serializable {
+        private String tenantId;
+        private long policyId;
+        private Tag tag;
+    }
 }
