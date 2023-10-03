@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * This file is part of OpenNMS(R).
  *
  * Copyright (C) 2023 The OpenNMS Group, Inc.
@@ -24,32 +24,25 @@
  *     OpenNMS(R) Licensing <license@opennms.org>
  *     http://www.opennms.org/
  *     http://www.opennms.com/
- *******************************************************************************/
-
-package org.opennms.horizon.server.exception;
-
-import java.io.Serial;
-
-/**
- * An exception that represents an error that occurred whose message can be
- * displayed to the user, ie bad request, id not found, etc.
  */
-public class GraphQLException extends RuntimeException {
-    @Serial
-    private static final long serialVersionUID = -4543741752174882855L;
 
-    /**
-     * @param message A message about the failure that will be displayed in the response.
-     */
-    public GraphQLException(String message) {
-        super(message);
+package org.opennms.horizon.server.service.graphql;
+
+import graphql.analysis.QueryTraverser;
+import graphql.execution.ExecutionContext;
+import graphql.execution.instrumentation.fieldvalidation.FieldValidationEnvironment;
+
+public class Traversers {
+    public static QueryTraverser queryTraverser(FieldValidationEnvironment environment) {
+        return queryTraverser(environment.getExecutionContext());
     }
 
-    /**
-     * @param message A message about the failure that will be displayed in the response.
-     * @param cause   The cause of the exception. Will not be exposed in the response.
-     */
-    public GraphQLException(String message, Throwable cause) {
-        super(message, cause);
+    public static QueryTraverser queryTraverser(ExecutionContext context) {
+        return QueryTraverser.newQueryTraverser()
+            .schema(context.getGraphQLSchema())
+            .document(context.getDocument())
+            .operationName(context.getExecutionInput().getOperationName())
+            .coercedVariables(context.getCoercedVariables())
+            .build();
     }
 }
