@@ -1,22 +1,15 @@
 import { mount } from '@vue/test-utils'
-import InventoryTextAnchorList from '@/components/Inventory/InventoryTextAnchorList.vue'
+import InventoryTextTagList from '@/components/Inventory/InventoryTextTagList.vue'
 
 let wrapper: any
 
 describe('inventoryTextAnchorList', () => {
   beforeAll(() => {
-    wrapper = mount(InventoryTextAnchorList, {
+    wrapper = mount(InventoryTextTagList, {
       shallow: true,
       props: {
-        anchor: {
-          profileValue: 75,
-          profileLink: '#',
-          locationValue: 'DefaultMinion',
-          locationLink: '#',
-          managementIpValue: '0.0.0.0',
-          managementIpLink: '#',
-          tagValue: []
-        }
+        ipAddress: '',
+        location: ''
       }
     })
   })

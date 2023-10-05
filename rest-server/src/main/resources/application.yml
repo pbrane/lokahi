@@ -15,7 +15,6 @@ keycloak:
   realm: opennms
   signatureAlgorithm: RS256
 
-# graphql
 graphql:
   spqr:
     gui:
@@ -25,8 +24,6 @@ graphql:
 
 logging:
   file.path: /var/log/restServer
-  level:
-    root: debug
 tsdb.url: http://localhost:59090/api/v1
 
 grpc:
@@ -50,3 +47,4 @@ management:
       probes:
         enabled: true
       show-details: always
+

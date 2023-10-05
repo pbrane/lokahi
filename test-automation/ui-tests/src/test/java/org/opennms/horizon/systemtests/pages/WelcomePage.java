@@ -41,6 +41,7 @@ import testcontainers.MinionContainer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -139,7 +140,7 @@ public class WelcomePage {
                 }
                 fail("Unable to parse p12 password from docker string: " + dockerText);
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         fail("Failure downloading p12 bundle file");

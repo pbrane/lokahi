@@ -29,10 +29,26 @@
 package org.opennms.horizon.server.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.opennms.horizon.server.model.inventory.SnmpInterface;
 import org.opennms.horizon.inventory.dto.SnmpInterfaceDTO;
+import org.opennms.horizon.server.model.inventory.SnmpInterfaceAdminStatus;
+import org.opennms.horizon.server.model.inventory.SnmpInterfaceOperatorStatus;
 
 @Mapper(componentModel = "spring")
 public interface SnmpInterfaceMapper {
+    @Mapping(source = "ifAdminStatus", target = "ifAdminStatus", qualifiedByName = "mapAdminStatus")
+    @Mapping(source = "ifOperatorStatus", target = "ifOperatorStatus", qualifiedByName = "mapOperatorStatus")
     SnmpInterface protobufToSnmpInterface(SnmpInterfaceDTO protoBuf);
+
+    @Named("mapAdminStatus")
+    default String mapAdminStatus(int ifAdminStatus) {
+        return SnmpInterfaceAdminStatus.valueOf(ifAdminStatus).name();
+    }
+
+    @Named("mapOperatorStatus")
+    default String mapOperatorStatus(int ifOperatorStatus) {
+        return SnmpInterfaceOperatorStatus.valueOf(ifOperatorStatus).name();
+    }
 }

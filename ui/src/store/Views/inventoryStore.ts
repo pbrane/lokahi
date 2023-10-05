@@ -1,31 +1,63 @@
 import { defineStore } from 'pinia'
-import { InventoryNode } from '@/types/inventory'
+import { InventoryItem, NewInventoryNode, RawMetrics } from '@/types/inventory'
 import { Tag } from '@/types/graphql'
 import { useTagStore } from '../Components/tagStore'
+import { useInventoryQueries } from '../Queries/inventoryQueries'
+import { InventoryMapper } from '@/mappers'
+
 
 export const useInventoryStore = defineStore('inventoryStore', {
   state: () => ({
     isTagManagerOpen: false,
     isTagManagerReset: false,
     isFilterOpen: false,
+    loading: false,
     monitoredFilterActive: false,
+    nodes: [] as InventoryItem[],
     unmonitoredFilterActive: false,
     detectedFilterActive: false,
-    nodesSelected: [] as InventoryNode[],
+    nodesSelected: [] as NewInventoryNode[],
     searchType: { id: 1, name: 'Labels' },
     tagsSelected: [] as Tag[],
+    loadingTimeout: -1,
     isEditMode: false
   }),
   actions: {
+    init(){
+      this.loading = true
+      const {buildNetworkInventory, receivedNetworkInventory} = useInventoryQueries()
+      receivedNetworkInventory(this.receivedNetworkInventory as any)
+      buildNetworkInventory()
+      this.loadingTimeout = window.setTimeout(() => {this.loading = false},3000)
+    },
+    async filterNodesByTags() {
+      const {getNodesByTags} = useInventoryQueries()
+      const tags = this.tagsSelected.map((tag) => tag.name!)
+      const nodes = await getNodesByTags(tags)
+      const b = InventoryMapper.fromServer(nodes.value?.findAllNodesByTags as Array<NewInventoryNode>, nodes.value?.allMetrics as RawMetrics)
+      this.nodes = b.nodes
+    },
+    async filterNodesByLabel(label: string) {
+      const {getNodesByLabel} = useInventoryQueries()
+      const nodes = await getNodesByLabel(label)
+      const b = InventoryMapper.fromServer(nodes.value?.findAllNodesByNodeLabelSearch as Array<NewInventoryNode>, nodes.value?.allMetrics as RawMetrics)
+      this.nodes = b.nodes
+    },
+    receivedNetworkInventory(d: {findAllNodes:Array<NewInventoryNode>,allMetrics: RawMetrics}) {
+      const b= InventoryMapper.fromServer(d.findAllNodes,d.allMetrics)
+      this.nodes = b.nodes
+      window.clearTimeout(this.loadingTimeout)
+      this.loading = false
+    },
     toggleTagManager() {
       this.isTagManagerOpen = !this.isTagManagerOpen
 
       if (!this.isTagManagerOpen) {
-        this.tagsSelected = [];
-        this.isEditMode = false;
-        const tagStore = useTagStore();
-        tagStore.tagsSelected = [];
-        tagStore.setTagEditMode(false);
+        this.tagsSelected = []
+        this.isEditMode = false
+        const tagStore = useTagStore()
+        tagStore.tagsSelected = []
+        tagStore.setTagEditMode(false)
       }
     },
     toggleFilter() {
@@ -35,26 +67,26 @@ export const useInventoryStore = defineStore('inventoryStore', {
       this.isEditMode = !this.isEditMode
     },
     addSelectedTag(beep: Tag[]) {
-      this.tagsSelected = beep;
+      this.tagsSelected = beep
     },
     resetNodeEditMode() {
       this.isEditMode = false
     },
-    addRemoveNodesSelected(node: InventoryNode) {
+    addRemoveNodesSelected(node: NewInventoryNode) {
       if (this.nodesSelected.find((d) => d.id === node.id)) {
-        this.nodesSelected = this.nodesSelected.filter(({ id }) => id !== node.id);
+        this.nodesSelected = this.nodesSelected.filter(({ id }) => id !== node.id)
       } else {
         this.nodesSelected.push(node)
       }
     },
-    selectAll(allNodes: InventoryNode[]) {
+    selectAll(allNodes: NewInventoryNode[]) {
       this.nodesSelected = [...allNodes]
     },
     clearAll() {
-      this.nodesSelected = [];
+      this.nodesSelected = []
     },
     setSearchType(searchType: { id: number, name: string }) {
-      this.searchType = searchType;
+      this.searchType = searchType
     },
     resetSelectedNode() {
       this.nodesSelected = []

@@ -1,48 +1,24 @@
 <template>
-  <ul class="icon-action-list">
-    <li
-      v-if="isMonitored(node)"
-      @click="onLineChart"
-      data-test="line-chart"
-      class="pointer"
-    >
+  <ul :class="[`icon-action-list`,className]">
+    <li v-if="node.monitoredState === 'MONITORED'" @click="onLineChart" data-test="line-chart" class="pointer">
       <Icon :icon="lineChartIcon" />
     </li>
-    <li
-      @click="onWarning"
-      data-test="warning"
-      class="pointer"
-    >
+    <li @click="onWarning" data-test="warning" class="pointer">
       <Icon :icon="warningIcon" />
     </li>
-    <li
-      @click="onDelete"
-      data-test="delete"
-    >
+    <li @click="onDelete" data-test="delete">
       <Icon :icon="deleteIcon" />
     </li>
   </ul>
-  <PrimaryModal
-    :visible="isVisible"
-    :title="modal.title"
-    :class="modal.cssClass"
-  >
+  <PrimaryModal :visible="isVisible" :title="modal.title" :class="modal.cssClass">
     <template #content>
       <p>{{ modal.content }}</p>
     </template>
     <template #footer>
-      <FeatherButton
-        data-testid="cancel-btn"
-        secondary
-        @click="closeModal"
-      >
+      <FeatherButton data-testid="cancel-btn" secondary @click="closeModal">
         {{ modal.cancelLabel }}
       </FeatherButton>
-      <FeatherButton
-        data-testid="save-btn"
-        primary
-        @click="deleteHandler"
-      >
+      <FeatherButton data-testid="save-btn" primary @click="deleteHandler">
         {{ modal.saveLabel }}
       </FeatherButton>
     </template>
@@ -50,16 +26,16 @@
 </template>
 
 <script lang="ts" setup>
-import MultilineChart from '@material-design-icons/svg/outlined/multiline_chart.svg'
 import Warning from '@featherds/icon/notification/Warning'
 import Delete from '@featherds/icon/action/Delete'
-import { IIcon, MonitoredNode, UnmonitoredNode, DetectedNode } from '@/types'
+import GraphIcon from '@/components/Common/GraphIcon.vue'
+import { IIcon, InventoryItem } from '@/types'
 import { ModalPrimary } from '@/types/modal'
 import useSnackbar from '@/composables/useSnackbar'
 import useModal from '@/composables/useModal'
 import { useInventoryQueries } from '@/store/Queries/inventoryQueries'
 import { useNodeMutations } from '@/store/Mutations/nodeMutations'
-import { isMonitored } from './inventory.utils'
+import { PropType } from 'vue'
 
 const { showSnackbar } = useSnackbar()
 const { openModal, closeModal, isVisible } = useModal()
@@ -67,7 +43,11 @@ const inventoryQueries = useInventoryQueries()
 const nodeMutations = useNodeMutations()
 
 const router = useRouter()
-const props = defineProps<{ node: MonitoredNode | UnmonitoredNode | DetectedNode }>()
+const props = defineProps({
+  node: {type:Object as PropType<InventoryItem>, default: () => ({})},
+  className:{type: String, default: ''},
+  ['data-test']:{type: String, default: ''}
+})
 
 const onLineChart = () => {
   router.push({
@@ -76,9 +56,10 @@ const onLineChart = () => {
   })
 }
 const lineChartIcon: IIcon = {
-  image: MultilineChart,
+  image: markRaw(GraphIcon),
   tooltip: 'Graphs',
-  size: 1.5
+  size: 1.5,
+  cursorHover: true
 }
 
 const onWarning = () => {
@@ -90,7 +71,8 @@ const onWarning = () => {
 const warningIcon: IIcon = {
   image: markRaw(Warning),
   tooltip: 'Events/Alarms',
-  size: 1.5
+  size: 1.5,
+  cursorHover: true
 }
 
 const modal = ref<ModalPrimary>({
@@ -114,14 +96,14 @@ const deleteHandler = async () => {
     // Timeout because minion may not be available right away
     // TODO: Replace timeout with websocket/polling
     setTimeout(() => {
-      inventoryQueries.fetchByState(props.node.type)
+      inventoryQueries.buildNetworkInventory()
     }, 350)
   }
 }
 const onDelete = () => {
   modal.value = {
     ...modal.value,
-    title: props.node.label || '',
+    title: props.node.nodeLabel || '',
     cssClass: 'modal-delete',
     content: 'Do you want to delete?',
     id: props.node.id
@@ -133,6 +115,7 @@ const onDelete = () => {
 const deleteIcon: IIcon = {
   image: markRaw(Delete),
   tooltip: 'Delete',
+  cursorHover: true,
   size: 1.5
 }
 </script>
@@ -142,13 +125,16 @@ const deleteIcon: IIcon = {
 
 ul.icon-action-list {
   display: flex;
-  flex-direction: column;
   gap: 0.2rem;
-  > li {
+
+  li {
     padding: var(variables.$spacing-xxs);
     font-size: 1.5rem;
-    color: var(variables.$secondary-text-on-surface);
+    color: var(variables.$primary);
+    cursor: pointer;
+
     &:hover {
+      cursor: pointer;
       color: var(variables.$disabled-text-on-surface);
     }
   }

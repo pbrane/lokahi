@@ -1,11 +1,13 @@
 package org.opennms.horizon.it;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +17,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -255,7 +259,7 @@ public class MonitoringPolicyTestSteps {
     }
 
     @Then("User can retrieve a certificate for location {string}")
-    public void requestCertificateForLocation(String location) {
+    public void requestCertificateForLocation(String location) throws IOException {
         LOG.info("Requesting certificate for location {}.", location);
 
         Long locationId = commonQueryLocations().getData().getFindAllLocations().stream()
@@ -270,7 +274,25 @@ public class MonitoringPolicyTestSteps {
         JsonPath jsonPathEvaluator = helper.executePostQuery(gqlQuery).jsonPath();
         LinkedHashMap<String, String> lhm = jsonPathEvaluator.get("data.getMinionCertificate");
 
-        byte[] pkcs12 = Base64.getDecoder().decode(lhm.get("certificate"));
+        byte[] zipBytes = Base64.getDecoder().decode(lhm.get("certificate"));
+        ZipInputStream zins = new ZipInputStream(new ByteArrayInputStream(zipBytes));
+
+        ZipEntry zentry = zins.getNextEntry();
+        while (zins.available() != 0 && zentry != null && !zentry.getName().contains(".p12")) {
+            zins.closeEntry();
+            zentry = zins.getNextEntry();
+        }
+        if (zentry == null || !zentry.getName().contains(".p12")) {
+            throw new IOException("Unable to locate .p12 certificate file in zip");
+        }
+
+        byte[] pkcs12Buffer = new byte[10240]; // Usual size is around 2k or so, should be safe for tests
+        int size = zins.read(pkcs12Buffer);
+        int len = size;
+        while ((size = zins.read(pkcs12Buffer, len, 2048)) != -1) {
+            len += size;
+        }
+        byte[] pkcs12 = Arrays.copyOf(pkcs12Buffer, len);
         String pkcs12password = lhm.get("password");
         assertTrue(pkcs12.length > 0);
         assertNotNull(pkcs12password);

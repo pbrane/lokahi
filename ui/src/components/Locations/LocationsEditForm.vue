@@ -123,7 +123,7 @@ watchEffect(() => {
 })
 
 const onAddressChange = (newAddress: any) => {
-  if (newAddress != undefined) {
+  if (newAddress?.value.label && newAddress?.value.x && newAddress?.value.y) {
     formInputs.address = newAddress.value.label
     formInputs.longitude = newAddress.value.x
     formInputs.latitude = newAddress.value.y
@@ -152,7 +152,7 @@ const downloadCert = async () => {
 
   if (minionCertificate) {
     locationStore.setCertificatePassword(minionCertificate.password as string)
-    createAndDownloadBlobFile(minionCertificate.certificate, `${formInputs.location}-certificate.p12`)
+    createAndDownloadBlobFile(minionCertificate.certificate, `minion-${formInputs.location}.zip`)
     form.clearErrors()
   }
 }

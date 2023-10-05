@@ -5,7 +5,8 @@
     class="modal-delete"
   >
     <template #content>
-      <p>Are you sure you wish to delete <strong>{{ name }}</strong>?</p>
+      <p v-if="customMsg">{{ customMsg }}</p>
+      <p v-else>Are you sure you wish to delete {{ name }}?</p>
     </template>
     <template #footer>
       <FeatherButton
@@ -21,7 +22,7 @@
         :click="deleteAndCloseModal"
         :isFetching="isDeleting"
       >
-        Delete
+        {{ actionBtnText || 'Delete' }}
       </ButtonWithSpinner>
     </template>
   </PrimaryModal>
@@ -31,9 +32,11 @@
 const props = defineProps<{
   name?: string
   isVisible: boolean
-  deleteHandler: (...p: any) => Promise<any>
+  deleteHandler: (...p: any) => any
   closeModal: () => void
   isDeleting?: boolean
+  customMsg?: string
+  actionBtnText?: string
 }>()
 
 const deleteAndCloseModal = async () => {
