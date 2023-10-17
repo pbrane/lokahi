@@ -144,7 +144,7 @@ public class WelcomePage {
         throw new RuntimeException("Failure downloading certificate bundle file");
     }
 
-    private static String readCertKey(File zipBundle) throws IOException {
+    public static String readCertKey(File zipBundle) throws IOException {
         ZipInputStream zstream = new ZipInputStream(Files.newInputStream(zipBundle.toPath()));
         ZipEntry zentry = zstream.getNextEntry();
         while (zstream.available() != 0 && zentry != null && !zentry.getName().equals("docker-compose.yaml")) {

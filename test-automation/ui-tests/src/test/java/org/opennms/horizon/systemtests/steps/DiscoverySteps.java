@@ -238,9 +238,9 @@ public class DiscoverySteps {
     public void statusOfShouldBe(String nodeName, String requestedStatus) {
         InventoryPage.Status status;
         if (requestedStatus.toLowerCase().equals("up")) {
-            status = InventoryPage.Status.UP;
+            status = InventoryPage.Status.Up;
         } else {
-            status = InventoryPage.Status.DOWN;
+            status = InventoryPage.Status.Down;
         }
         String ipaddress = getContainerIP(nodes.get(nodeName));
 

@@ -30,11 +30,8 @@ package org.opennms.horizon.systemtests.pages;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
-
-import java.time.Duration;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
@@ -42,8 +39,8 @@ import static com.codeborne.selenide.Selenide.$$;
 
 public class InventoryPage {
     public enum Status {
-        UP,
-        DOWN
+        Up,
+        Down
     }
 
     private static final SelenideElement firstSnmpInterfaceInTable = $(By.xpath("//table[@data-test='SNMPInterfacesTable']/tbody/tr[1]"));
@@ -56,7 +53,7 @@ public class InventoryPage {
     public static void verifyNodeStatus(Status status, String nodeManagementIp) {
         LeftPanelPage.clickOnPanelSection("inventory");
 
-        String itemStatusSearch = "//div[@data-test='MONITORED' and .//li[@data-test='management-ip']/span/text()='" + nodeManagementIp + "']//span[text()='" + status + "']";
+        String itemStatusSearch = "//div[@data-test='MONITORED' and .//li[@data-test='management-ip']/span/text()='" + nodeManagementIp + "']//span[./text()='" + status + "']";
         SelenideElement statusCheck = $(By.xpath(itemStatusSearch));
 
         RefreshMonitor.waitForElement(statusCheck, exist, 80, true);

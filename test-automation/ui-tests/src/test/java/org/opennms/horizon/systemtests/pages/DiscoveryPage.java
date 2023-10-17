@@ -30,7 +30,6 @@ package org.opennms.horizon.systemtests.pages;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
-import com.google.common.base.CharMatcher;
 import org.openqa.selenium.By;
 
 import java.time.Duration;
@@ -52,14 +51,14 @@ public class DiscoveryPage {
     private static final SelenideElement saveDiscoveryButton = $("[type='submit']");
     private static final SelenideElement addAnotherDiscoveryButton = $("[class='btn hover focus btn-text has-icon']");
     private static final SelenideElement ADD_DISCOVERY_BUTTON = $(By.xpath("//button[@data-test='addDiscoveryBtn']"));
-    private static final SelenideElement SAVE_DISCOVERY_BUTTON = $(By.xpath("//button[@data-test='btn-submit']"));
-    private static final SelenideElement SNMP_DISCOVERY_RADIO_BUTTON = $(By.xpath("//div[@data-test='discoveryICMP']"));
-    private static final SelenideElement DISCOVERY_NAME_INPUT = $(By.xpath("//div[@data-test='discoveryNameInput']//input"));
-    private static final SelenideElement LOCATION_NAME_INPUT = $(By.xpath("//input[@placeholder='Search Locations']"));
-    private static final SelenideElement IP_RANGE_INPUT = $(By.xpath("//div[@data-test='ipAddressInput']//div[@class='content-editable']"));
-    private static final SelenideElement COMMUNITY_STRING_INPUT = $(By.xpath("//div[@data-test='communityInput']//div[@class='content-editable']"));
-    private static final SelenideElement PORT_INPUT = $(By.xpath("//div[@data-test='portInput']//div[@class='content-editable']"));
-    private static final SelenideElement VIEW_DETECTED_NODES_BUTTON = $(By.xpath("//button[@data-test='viewDetectedNodesButton']"));
+    private static final SelenideElement SAVE_DISCOVERY_BUTTON = $(By.xpath("//button[text()[contains(., 'Save')]]"));
+    private static final SelenideElement SNMP_DISCOVERY_BUTTON = $(By.xpath("//div[@class='type-selector'][contains(.//*/text() , 'ICMP/SNMP')]"));
+    private static final SelenideElement DISCOVERY_NAME_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Discovery Name')]/div/input"));
+    private static final SelenideElement LOCATION_NAME_INPUT = $(By.xpath("//input[@placeholder='Choose Location']"));
+    private static final SelenideElement IP_RANGE_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Enter IP Ranges')]/div/textarea"));
+    private static final SelenideElement COMMUNITY_STRING_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Community String')]/div/textarea"));
+    private static final SelenideElement PORT_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Enter UDP Port')]/div/textarea"));
+    private static final SelenideElement VIEW_DETECTED_NODES_BUTTON = $(By.xpath("//button[./*/text()[contains(., 'Go To Inventory')]]"));
     private static final ElementsCollection ACTIVE_DISCOVERY_CARDS = $$(By.xpath("//div[@class='card-my-discoveries']/div/div"));
     private static final SelenideElement DISCOVERY_DELETE_BUTTON = $x("//span[@class='btn-content'][text() = 'Delete']");
     private static final SelenideElement DELETE_DISCOVERY_CONFIRM_YES = $x("//div[@data-ref-id='feather-dialog-footer']//button[text()='Yes']");
@@ -91,7 +90,7 @@ public class DiscoveryPage {
                                         String community, String ip) {
         LeftPanelPage.clickOnPanelSection("discovery");
         ADD_DISCOVERY_BUTTON.shouldBe(enabled).click();
-        SNMP_DISCOVERY_RADIO_BUTTON.shouldBe(enabled).click();
+        SNMP_DISCOVERY_BUTTON.should(exist).click();
 
         DISCOVERY_NAME_INPUT.shouldBe(editable).sendKeys(discoveryName);
 
@@ -113,7 +112,8 @@ public class DiscoveryPage {
         PORT_INPUT.shouldBe(enabled).clear();
         PORT_INPUT.sendKeys(Integer.toString(port));
 
-        COMMUNITY_STRING_INPUT.shouldBe(enabled).clear();
+        COMMUNITY_STRING_INPUT.shouldBe(enabled).click();
+        COMMUNITY_STRING_INPUT.sendKeys("\b\b\b\b\b\b");
         COMMUNITY_STRING_INPUT.sendKeys(community);
 
         SAVE_DISCOVERY_BUTTON.shouldBe(enabled).click();
