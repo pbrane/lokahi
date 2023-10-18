@@ -124,7 +124,8 @@ public class WelcomePage {
     }
 
     public static void waitOnWalkthroughOrMain() {
-        $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']|//div[@class='app-aside']")).should(exist);
+        // First page to be opened. Seems to sometimes take a while to load under some test environments
+        $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']|//div[@class='app-aside']")).should(exist, Duration.ofSeconds(60));
     }
 
     public static MinionContainer addMinionUsingWalkthrough(String minionName) {
