@@ -59,7 +59,7 @@ public class DiscoveryPage {
     private static final SelenideElement COMMUNITY_STRING_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Community String')]/div/textarea"));
     private static final SelenideElement PORT_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Enter UDP Port')]/div/textarea"));
     private static final SelenideElement VIEW_DETECTED_NODES_BUTTON = $(By.xpath("//button[./*/text()[contains(., 'Go To Inventory')]]"));
-    private static final ElementsCollection ACTIVE_DISCOVERY_CARDS = $$(By.xpath("//div[@class='card-my-discoveries']/div/div"));
+    private static final ElementsCollection ACTIVE_DISCOVERY_CARDS = $$(By.xpath("//div[@class='card-my-discoveries']/div[@class='list']/div"));
     private static final SelenideElement DISCOVERY_DELETE_BUTTON = $x("//span[@class='btn-content'][text() = 'Delete']");
     private static final SelenideElement DELETE_DISCOVERY_CONFIRM_YES = $x("//div[@data-ref-id='feather-dialog-footer']//button[text()='Yes']");
     private static final SelenideElement POPUP_LOCATION_LIST = $x("//div[@class='list visible']/div[@class='list-item'][1]");
@@ -92,6 +92,9 @@ public class DiscoveryPage {
         ADD_DISCOVERY_BUTTON.shouldBe(enabled).click();
         SNMP_DISCOVERY_BUTTON.should(exist).click();
 
+        // Sometimes a small delay for the UI to fill in the default values. Make sure we wait on it
+        PORT_INPUT.shouldHave(attribute("value", "161"));
+
         DISCOVERY_NAME_INPUT.shouldBe(editable).sendKeys(discoveryName);
 
         // When only 1 location exists, it is automatically selected and we don't need to add it
@@ -109,7 +112,8 @@ public class DiscoveryPage {
 
         IP_RANGE_INPUT.shouldBe(enabled).sendKeys(ip);
 
-        PORT_INPUT.shouldBe(enabled).clear();
+        // Clear seems to be buggy with the current drivers. Using backspaces instead
+        PORT_INPUT.shouldBe(enabled).sendKeys("\b\b\b");
         PORT_INPUT.sendKeys(Integer.toString(port));
 
         COMMUNITY_STRING_INPUT.shouldBe(enabled).click();
@@ -125,17 +129,20 @@ public class DiscoveryPage {
 
         int discoveries = ACTIVE_DISCOVERY_CARDS.size();
         while (discoveries > 0) {
-            deleteTopDiscovery(discoveries);
+            deleteIndexedDiscovery(discoveries);
 
             // Wait to make sure the old element disappears
-            $x("//div[@class='card-my-discoveries']/div[@class='list']//div[@class='name'][" + discoveries + "]").shouldNot(exist);
+            $x("//div[@class='card-my-discoveries']/div[@class='list']/div[" + discoveries + "]").shouldNot(exist);
 
             --discoveries;
         }
     }
 
-    private static void deleteTopDiscovery(int index) {
-        $x("//div[@class='card-my-discoveries']/div[@class='list']//div[@class='name pointer'][" + index + "]").click();
+    private static void deleteIndexedDiscovery(int index) {
+        SelenideElement discoveryCard = $x("//div[@class='card-my-discoveries']/div[@class='list']/div/div[" + index + "]");
+        discoveryCard.isEnabled();
+        discoveryCard.click();
+
         DISCOVERY_DELETE_BUTTON.should(exist).click();
         DELETE_DISCOVERY_CONFIRM_YES.should(exist).click();
     }
