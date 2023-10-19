@@ -29,6 +29,7 @@ package org.opennms.horizon.systemtests.pages;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
 
@@ -55,6 +56,7 @@ public class DiscoveryPage {
     private static final SelenideElement SNMP_DISCOVERY_BUTTON = $(By.xpath("//div[@class='type-selector'][contains(.//*/text() , 'ICMP/SNMP')]"));
     private static final SelenideElement DISCOVERY_NAME_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Discovery Name')]/div/input"));
     private static final SelenideElement LOCATION_NAME_INPUT = $(By.xpath("//input[@placeholder='Choose Location']"));
+    private static final SelenideElement LOCATION_DROPDOWN_ICON = $(By.xpath("//input[@placeholder='Choose Location']/../../div[@class='post']"));
     private static final SelenideElement IP_RANGE_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Enter IP Ranges')]/div/textarea"));
     private static final SelenideElement COMMUNITY_STRING_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Community String')]/div/textarea"));
     private static final SelenideElement PORT_INPUT = $(By.xpath("//div[./div[@class='feather-input-border']][contains(./div/div/label/text(), 'Enter UDP Port')]/div/textarea"));
@@ -100,10 +102,9 @@ public class DiscoveryPage {
         // When only 1 location exists, it is automatically selected and we don't need to add it
         if (!newDiscoveryCheckForLocation(locationName)) {
             // For the location selector to work, we need to click in it first as this shows the dropdown
-            // selections. From there, we can enter the value to filter for our specific location
-            LOCATION_NAME_INPUT.shouldBe(enabled).click();
+            // selections.
+            LOCATION_DROPDOWN_ICON.shouldBe(enabled).click();
             POPUP_LOCATION_LIST.should(exist);
-            LOCATION_NAME_INPUT.sendKeys(locationName);
 
             String specificListItemSearch = "//div[@label='" + locationName + "']";
             SelenideElement locationPopupListItem = $(By.xpath(specificListItemSearch));
@@ -139,10 +140,12 @@ public class DiscoveryPage {
     }
 
     private static void deleteIndexedDiscovery(int index) {
-        SelenideElement discoveryCard = $x("//div[@class='card-my-discoveries']/div[@class='list']/div/div[" + index + "]");
+        SelenideElement discoveryCard = $x("//div[@class='card-my-discoveries']/div[@class='list']/div[" + index + "]/div");
         discoveryCard.isEnabled();
         discoveryCard.click();
 
+        // If the delete button is clicked too fast (before all the fields are populated), it doesn't work
+        Selenide.sleep(3000);
         DISCOVERY_DELETE_BUTTON.should(exist).click();
         DELETE_DISCOVERY_CONFIRM_YES.should(exist).click();
     }
