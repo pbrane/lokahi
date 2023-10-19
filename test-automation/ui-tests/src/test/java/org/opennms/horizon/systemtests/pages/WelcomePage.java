@@ -75,6 +75,7 @@ public class WelcomePage {
     private static final SelenideElement minionDetectedCheck = $(By.xpath("//div[text()='Minion detected.']"));
     private static final SelenideElement nodeDetectedCheck = $(By.xpath("//div[@data-test='item-preview-status-id'][text()='UP']"));
     private static final SelenideElement discoveryResultLatencyCheck = $(By.xpath("//div[@data-test='item-preview-status-id'][.<=800]"));
+    private static final SelenideElement WELCOME_CHECK = $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']|//div[@class='app-aside']"));
 
     public static void checkIsStartSetupButtonVisible() {
         startSetupBtn.shouldBe(enabled);
@@ -124,8 +125,8 @@ public class WelcomePage {
     }
 
     public static void waitOnWalkthroughOrMain() {
-        // First page to be opened. Seems to sometimes take a while to load under some test environments
-        $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']|//div[@class='app-aside']")).should(exist, Duration.ofSeconds(60));
+        RefreshMonitor.waitForElement(WELCOME_CHECK, exist, 300, true);
+        WELCOME_CHECK.should(exist);
     }
 
     public static MinionContainer addMinionUsingWalkthrough(String minionName) {
