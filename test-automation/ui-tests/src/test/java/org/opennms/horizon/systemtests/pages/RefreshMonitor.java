@@ -58,6 +58,34 @@ public class RefreshMonitor {
                 Selenide.refresh();
             }
         }
+    }
+
+    public static void waitForElementAndReload(SelenideElement element, Condition condition, int totalWaitTime,
+                                               boolean isPositiveCheck, String page) {
+        int individualWaitTime=30;
+        if (totalWaitTime <= 0) {
+            throw new RuntimeException("Invalid wait time of " + totalWaitTime);
+        }
+
+        // Need to have the duration/wait as part of the refresh since redrawing everything can take some time
+        // The duration isn't supported as part of the regular 'find' methods and only the 'should' methods
+        while (totalWaitTime > 0) {
+            try {
+                if (isPositiveCheck) {
+                    element.shouldBe(condition, Duration.ofSeconds(individualWaitTime));
+                } else {
+                    // Negative check may need to wait for the refresh to complete, so wait separately then check
+                    // if the element is showing up
+                    Selenide.sleep(individualWaitTime * 1000);
+                    element.shouldNotBe(condition, Duration.ofSeconds(0));
+                }
+                return;
+            } catch (com.codeborne.selenide.ex.ElementNotFound | com.codeborne.selenide.ex.ElementShouldNot e) {
+                totalWaitTime -= individualWaitTime;
+                Selenide.open(page);
+            }
+        }
 
     }
+
 }

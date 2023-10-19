@@ -31,6 +31,7 @@ import com.codeborne.selenide.*;
 import com.google.common.io.ByteStreams;
 import lombok.SneakyThrows;
 import org.junit.Assert;
+import org.opennms.horizon.systemtests.CucumberHooks;
 import org.opennms.horizon.systemtests.steps.LocationSteps;
 import org.opennms.horizon.systemtests.steps.MinionSteps;
 import org.opennms.horizon.systemtests.utils.FileDownloadManager;
@@ -121,7 +122,7 @@ public class WelcomePage {
     }
 
     public static void waitOnWalkthroughOrMain() {
-        RefreshMonitor.waitForElement(INITIAL_PAGE_CHECK, exist, 300, true);
+        RefreshMonitor.waitForElementAndReload(INITIAL_PAGE_CHECK, exist, 300, true, CucumberHooks.instanceUrl);
         INITIAL_PAGE_CHECK.should(exist);
     }
 
