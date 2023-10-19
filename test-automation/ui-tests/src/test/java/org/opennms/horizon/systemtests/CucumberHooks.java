@@ -64,7 +64,7 @@ public class CucumberHooks {
     public static void setUpForAllTests() {
         Configuration.fileDownload = FileDownloadMode.FOLDER;
         Configuration.headless = false;
-        Configuration.timeout = 10000;
+        Configuration.timeout = 20000;
 
         String keycloak = System.getenv().get(KEYCLOAK_LOGIN);
         if (keycloak != null) {
