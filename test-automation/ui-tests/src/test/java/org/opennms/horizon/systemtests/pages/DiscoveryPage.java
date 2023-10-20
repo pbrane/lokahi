@@ -105,7 +105,6 @@ public class DiscoveryPage {
             // selections. Even still, it sometimes doesn't show up even after 20s, so clear it and try again
             int tries = 5;
             while ((tries > 0) && (!POPUP_LOCATION_LIST.exists())) {
-                LeftPanelPage.topRightBorder.click();
                 LOCATION_DROPDOWN_ICON.shouldBe(enabled).click();
                 Selenide.sleep(3);
                 --tries;
