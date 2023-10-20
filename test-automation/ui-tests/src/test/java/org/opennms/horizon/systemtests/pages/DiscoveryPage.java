@@ -102,8 +102,14 @@ public class DiscoveryPage {
         // When only 1 location exists, it is automatically selected and we don't need to add it
         if (!newDiscoveryCheckForLocation(locationName)) {
             // For the location selector to work, we need to click in it first as this shows the dropdown
-            // selections.
-            LOCATION_DROPDOWN_ICON.shouldBe(enabled).click();
+            // selections. Even still, it sometimes doesn't show up even after 20s, so clear it and try again
+            int tries = 5;
+            while ((tries > 0) && (!POPUP_LOCATION_LIST.exists())) {
+                LeftPanelPage.topRightBorder.click();
+                LOCATION_DROPDOWN_ICON.shouldBe(enabled).click();
+                Selenide.sleep(3);
+                --tries;
+            }
             POPUP_LOCATION_LIST.should(exist);
 
             String specificListItemSearch = "//div[@label='" + locationName + "']";
