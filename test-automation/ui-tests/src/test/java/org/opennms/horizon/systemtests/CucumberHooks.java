@@ -66,6 +66,7 @@ public class CucumberHooks {
         Configuration.fileDownload = FileDownloadMode.FOLDER;
         Configuration.headless = true;
         Configuration.timeout = 20000;
+        Configuration.reopenBrowserOnFail = true;
 
         ChromeOptions options = new ChromeOptions();
 
