@@ -122,7 +122,6 @@ public class WelcomePage {
     }
 
     public static void waitOnWalkthroughOrMain() {
-        RefreshMonitor.waitForElementAndReload(INITIAL_PAGE_CHECK, exist, 300, true, CucumberHooks.instanceUrl);
         INITIAL_PAGE_CHECK.should(exist);
     }
 
