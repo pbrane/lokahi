@@ -6,27 +6,32 @@
 
 A monitoring policy defines a set of rules for monitoring nodes and automatically taking action under certain conditions (for example, sending alerts, enforcing thresholds).
 A policy also defines which nodes to monitor, the conditions for creating alerts, and the notification type.
-Through the use of tags, you can apply the same monitoring policy to multiple nodes, allowing for easier management of the devices on your network (for example, all nodes tagged as "router").
 
+Through the use of tags, you can apply the same monitoring policy to multiple nodes, allowing for easier management of the devices on your network (for example, all nodes tagged as "router").
 
 == About tags
 
+A tag is an optional label that you can associate with nodes and monitoring policies that allows for easy and flexible filtering and grouping of devices.
+
 OpenNMS assigns the “default” tag to all nodes identified through the xref:operation:get-started/discovery/introduction.adoc[discovery process].
-The default policy
-Users may choose to remove this tag or add other tags to the node (see xref:inventory/nodes.adoc#tag-create[Create tags and add them to a node]).
-The default_policy includes a default tag and applies to all discovered nodes that have the default tag and creates alerts for devices that are reinitializing through a cold or warm start, are unreachable, or whose service has been restored.
+Users can remove this tag or add other tags to the node (see xref:inventory/nodes.adoc#tag-create[Create tags and add them to a node]), depending on how they want to set up their system.
 
 [[default-monitoring-policy]]
 == Default monitoring policy
 
 By default, OpenNMS Cloud/Lōkahi starts monitoring the system when it discovers nodes.
-The default monitoring policy applies to all discovered nodes, and includes the following parameters:
+This is because the discovery process automatically assigns the `default` tag to all discovered nodes, and the default monitoring policy includes a `default` tag.
+
+The default monitoring policy creates alerts for devices that are reinitializing through a cold or warm start, are unreachable, or whose service has been restored.
+It also includes the following parameters:
 
 * Accepts SNMP Traps, Syslogs, and API events.
 * MIB-II enabled.
 * Azure cloud monitoring enabled.
 * Flows, Netflow, and JFlow enabled.
 * Uses PagerDuty to send notifications to all OpenNMS Cloud/Lōkahi users in your organization.
+
+As you customize Lōkahi/Cloud for your own monitoring requirements, you may choose to add/remove node tags from nodes or the default monitoring policy, or create new monitoring policies.
 
 == Before you begin
 
