@@ -19,7 +19,7 @@ Users can remove this tag or add other tags to the node (see xref:inventory/node
 By default, OpenNMS Cloud/Lōkahi starts monitoring the system when it discovers nodes.
 This is because the discovery process automatically assigns the `default` tag to all discovered nodes, and the default monitoring policy includes a `default` tag.
 
-The default monitoring policy creates alerts for devices that are reinitializing through a cold or warm start, are unreachable, or whose service has been restored.
+The default monitoring policy creates alerts for devices that are offline, coming back online, unreachable, or whose service has been restored.
 It also includes the following parameters:
 
 * Accepts SNMP Traps, Syslogs, and API events.
