@@ -7,11 +7,11 @@
 A monitoring policy defines a set of rules for monitoring nodes and automatically taking action under certain conditions (for example, sending alerts, enforcing thresholds).
 You can apply a monitoring policy to multiple devices, allowing for easy management of the devices on your network.
 
-A monitoring policy defines which nodes to monitor, the conditions for creating alerts, and the notification type. 
-Policies apply to nodes that match the tags in the policy. 
+A monitoring policy defines which nodes to monitor, the conditions for creating alerts, and the notification type.
+Policies apply to nodes that match the tags in the policy.
 
-OpenNMS assigns the “default” tag to all discovered nodes. The Default_Policy applies to all discovered nodes and creates alerts for devices that are unreachable or whose service is restored. 
-
+OpenNMS assigns the “default” tag to all discovered nodes.
+The default_policy applies to all discovered nodes and creates alerts for devices that are reinitializing through a cold or warm start, are unreachable, or whose service has been restored.
 
 [[default-monitoring-policy]]
 == Default monitoring policy
