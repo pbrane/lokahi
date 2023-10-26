@@ -4,16 +4,13 @@
 = Monitoring Policies
 :description: Learn how monitoring policies in OpenNMS Lōkahi/Cloud can define a set of rules for monitoring nodes and taking action under certain conditions.
 
-A monitoring policy defines a set of rules for monitoring nodes and automatically taking action under certain conditions (for example, sending alerts, enforcing thresholds).
-A policy also defines which nodes to monitor, the conditions for creating alerts, and the notification type.
+A monitoring policy defines a set of rules for monitoring nodes and automatically taking action under certain conditions (for example, sending alerts), and the notification type for those alerts (email or PagerDuty).
 
-Through the use of tags, you can apply the same monitoring policy to multiple nodes, allowing for easier management of the devices on your network (for example, all nodes tagged as "router").
+==  Tags, monitoring policies, and nodes
 
-== About tags
+A tag is an optional label (for example, `router`) that you can associate with nodes and monitoring policies that allows for easy and flexible filtering and grouping of devices.
 
-A tag is an optional label that you can associate with nodes and monitoring policies that allows for easy and flexible filtering and grouping of devices.
-
-OpenNMS assigns the “default” tag to all nodes identified through the xref:operation:get-started/discovery/introduction.adoc[discovery process].
+OpenNMS assigns the `default` tag to all nodes identified through the xref:operation:get-started/discovery/introduction.adoc[discovery process].
 Users can remove this tag or add other tags to the node (see xref:inventory/nodes.adoc#tag-create[Create tags and add them to a node]), depending on how they want to set up their system.
 
 [[default-monitoring-policy]]
