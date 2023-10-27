@@ -16,4 +16,4 @@ You need to log out of the Cloud Portal separately from its own UI.
 
 == Toggle light/dark mode
 By default, the OpenNMS Cloud UI appears in light mode.
-To switch to dark mode, click the light/dark mode symbol image:get-started/dark-mode.png[circle that is half black, half white, 30] in the top right of any screen.
+To switch between light and dark modes, click the light/dark mode symbol image:get-started/dark-mode.png[circle that is half black, half white, 30] in the top right of any screen.
