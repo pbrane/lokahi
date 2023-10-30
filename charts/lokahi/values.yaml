@@ -162,9 +162,9 @@ OpenNMS:
     ImageShortName: lokahi-alert
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "alert"
-    DbHost: "postgres"
+    DbHost: "citus"
     Resources:
       Limits:
         Cpu: "2"

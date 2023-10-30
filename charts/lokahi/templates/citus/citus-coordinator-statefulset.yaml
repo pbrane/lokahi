@@ -49,7 +49,7 @@ spec:
       #         main container
       containers:
       - name: postgres
-        image: citusdata/citus:11.0.2-alpine
+        image: citusdata/citus:12.1-alpine
         imagePullPolicy: IfNotPresent
         args:
         - sh
@@ -67,7 +67,7 @@ spec:
           sleep 5;
 
           echo [$(date -Iseconds)] Wait name resolve ${node_name};
-          timeout 1m sh -c "until nslookup ${node_name} > /dev/null; do sleep 2; done;";
+          timeout 10m sh -c "until nslookup ${node_name} > /dev/null; do sleep 2; done;";
           nslookup ${node_name} > /dev/null || { echo Name not ready; kill -9 1; exit 1; }
 
           echo [$(date -Iseconds)] citus_set_coordinator_host ${node_name};
@@ -119,6 +119,10 @@ spec:
         - name: conf
           mountPath: "/etc/postgres"
           readOnly: true
+        - mountPath: "/docker-entrypoint-initdb.d/postgres.initial.script.sql"
+          name: opennms-initialization-script
+          subPath: "postgres.initial.script.sql"
+
 
         livenessProbe:
           exec:
@@ -177,6 +181,10 @@ spec:
         secret:
           secretName: citus-cert
           defaultMode: 0440
+      - name: opennms-initialization-script
+        secret:
+          secretName: citus-initial-sql
+
 
   volumeClaimTemplates:
   - metadata:

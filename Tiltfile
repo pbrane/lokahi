@@ -465,7 +465,7 @@ jib_project(
     'alert',
     'opennms-alert',
     port_forwards=['32080:9090', '32050:5005', '32065:6565',  '32000:8080'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Metrics Processor ###
@@ -630,7 +630,7 @@ k8s_resource(
 
 k8s_resource(
     'citus',
-    objects=['citus-issuer:issuer', 'citus-cert:certificate', 'citus-conf:configmap', 'citus-secrets:secret'],
+    objects=['citus-issuer:issuer', 'citus-cert:certificate', 'citus-conf:configmap', 'citus-secrets:secret', 'citus-initial-sql:secret'],
     labels='citus',
     resource_deps=['cert-manager'],
 )
