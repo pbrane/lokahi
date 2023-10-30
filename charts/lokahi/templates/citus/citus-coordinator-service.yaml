@@ -1,0 +1,39 @@
+{{- if .Values.Citus.Enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: citus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: citus
+spec:
+  selector:
+    app: citus
+  clusterIP: None
+  ports:
+  - port: 5432
+    name: postgres
+  - port: 6432
+    name: pgbouncer
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: citus-nodeport
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: citus
+spec:
+  selector:
+    app: citus
+  ports:
+  - port: 5432
+    name: postgres
+    nodePort: {{ .Values.Citus.Nodeport }}
+  - port: 6432
+    name: pgbouncer
+    nodePort: {{ .Values.Citus.PgBouncerPort }}
+  type: NodePort
+{{- end }}

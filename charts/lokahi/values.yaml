@@ -263,6 +263,10 @@ OpenNMS:
         Memory: 1Gi
     PrivateRepoEnabled: false
     CertificateManagerUrl: ""
+Citus:
+  Enabled: true
+  Nodeport: 30007
+  PgBouncerPort: 30099
 Postgres:
   Enabled: true
   ServiceName: postgres

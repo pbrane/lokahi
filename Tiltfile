@@ -614,6 +614,34 @@ k8s_resource(
     ]
 )
 
+### Citus ###
+k8s_resource(
+    'citus',
+    labels='citus',
+    port_forwards=['25055:5432'],
+    resource_deps=['cert-manager'],
+)
+
+k8s_resource(
+    'citus-worker',
+    labels='citus',
+    resource_deps=['citus'],
+)
+
+k8s_resource(
+    'citus',
+    objects=['citus-issuer:issuer', 'citus-cert:certificate', 'citus-conf:configmap', 'citus-secrets:secret'],
+    labels='citus',
+    resource_deps=['cert-manager'],
+)
+
+k8s_resource(
+    'citus-worker',
+    objects=['citus-worker-conf:configmap'],
+    labels='citus',
+    resource_deps=['cert-manager'],
+)
+
 ### Kafka ###
 k8s_resource(
     'onms-kafka',
