@@ -20,13 +20,6 @@ By default, OpenNMS Cloud/Lōkahi starts monitoring the system when it discovers
 This is because the discovery process automatically assigns the `default` tag to all discovered nodes, and the default monitoring policy includes a `default` tag.
 
 The default monitoring policy creates alerts for devices that are offline, coming back online, unreachable, or whose service has been restored.
-It also includes the following parameters:
-
-* Accepts SNMP Traps, Syslogs, and API events.
-* MIB-II enabled.
-* Azure cloud monitoring enabled.
-* Flows, Netflow, and JFlow enabled.
-* Uses PagerDuty to send notifications to all OpenNMS Cloud/Lōkahi users in your organization.
 
 As you customize Lōkahi/Cloud for your own monitoring requirements, you may choose to add/remove node tags from nodes or the default monitoring policy, or create new monitoring policies.
 
