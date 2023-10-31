@@ -39,8 +39,6 @@ import org.opennms.horizon.server.test.util.GraphQLWebTestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.stream.Stream;
@@ -149,12 +147,7 @@ public class GraphQLQueryValidationTest {
 
         webClient
             .exchangePost(requestBody)
-            .expectStatus().isEqualTo(HttpStatus.OK)
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.data").doesNotExist()
-            .jsonPath("$.errors").isArray()
-            .jsonPath("$.trace").doesNotExist();
+            .expectGraphQLErrorResponse();
     }
 
     @Test
@@ -163,11 +156,7 @@ public class GraphQLQueryValidationTest {
 
         webClient
             .exchangePost(requestBody)
-            .expectStatus().isEqualTo(HttpStatus.OK)
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.data").doesNotExist()
-            .jsonPath("$.errors").isArray()
+            .expectGraphQLErrorResponse()
             .jsonPath("$.errors[*].message").value(Matchers.everyItem(
                 Matchers.matchesRegex("^Validation error.*: Alias '.+' is repeated too many times$")
             ))
@@ -176,7 +165,8 @@ public class GraphQLQueryValidationTest {
 
     public static Stream<Arguments> fieldDuplicationRequests() {
         return Stream.of(
-            readArgumentPair("/test/data/field-duplication.json")
+            readArgumentPair("/test/data/field-duplication.json"),
+            readArgumentPair("/test/data/notifyByEmail-duplication.json")
         );
     }
 
@@ -188,11 +178,7 @@ public class GraphQLQueryValidationTest {
     ) {
         webClient
             .exchangePost(requestBody)
-            .expectStatus().isEqualTo(HttpStatus.OK)
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.data").doesNotExist()
-            .jsonPath("$.errors").isArray()
+            .expectGraphQLErrorResponse()
             .jsonPath("$.errors[*].message").value(Matchers.everyItem(
                 Matchers.matchesRegex("^Validation error.*: Field '.+' is repeated too many times$")
             ))
@@ -206,11 +192,7 @@ public class GraphQLQueryValidationTest {
 
         webClient
             .exchangePost(requestBody)
-            .expectStatus().isEqualTo(HttpStatus.OK)
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.data").doesNotExist()
-            .jsonPath("$.errors").isArray()
+            .expectGraphQLErrorResponse()
             .jsonPath("$.errors[*].message").value(Matchers.everyItem(
                 Matchers.matchesRegex("^Validation error.*: Directive '.+' is repeated too many times$")
             ))
