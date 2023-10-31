@@ -29,7 +29,6 @@
 package org.opennms.horizon.server.config;
 
 import graphql.GraphQL;
-import graphql.analysis.MaxQueryDepthInstrumentation;
 import graphql.execution.DataFetcherExceptionHandler;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.execution.instrumentation.fieldvalidation.FieldValidationInstrumentation;
@@ -45,6 +44,7 @@ import org.opennms.horizon.server.service.graphql.DuplicateFieldValidation;
 import org.opennms.horizon.server.service.graphql.ExecutionTimingInstrumentation;
 import org.opennms.horizon.server.service.graphql.MaxAliasOccurrenceValidation;
 import org.opennms.horizon.server.service.graphql.MaxComplexityInstrumentation;
+import org.opennms.horizon.server.service.graphql.MaxDepthInstrumentation;
 import org.opennms.horizon.server.service.graphql.MaxDirectiveOccurrenceInstrumentation;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -80,7 +80,7 @@ public class GraphqlConfig {
         BffProperties properties
     ) {
         log.info("Limiting max query depth to {}", properties.getMaxQueryDepth());
-        return new MaxQueryDepthInstrumentation(properties.getMaxQueryDepth());
+        return new MaxDepthInstrumentation(properties.getMaxQueryDepth());
     }
 
     @Bean
