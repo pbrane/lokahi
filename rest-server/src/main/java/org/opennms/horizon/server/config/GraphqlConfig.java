@@ -33,28 +33,21 @@ import graphql.execution.DataFetcherExceptionHandler;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.execution.instrumentation.fieldvalidation.FieldValidationInstrumentation;
 import graphql.schema.GraphQLSchema;
-import graphql.schema.visibility.NoIntrospectionGraphqlFieldVisibility;
 import io.leangen.graphql.GraphQLRuntime;
-import io.leangen.graphql.GraphQLSchemaGenerator;
-import io.leangen.graphql.spqr.spring.autoconfigure.BaseAutoConfiguration;
-import io.leangen.graphql.spqr.spring.autoconfigure.SpqrProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.server.service.graphql.BffDataFetchExceptionHandler;
 import org.opennms.horizon.server.service.graphql.DuplicateFieldValidation;
 import org.opennms.horizon.server.service.graphql.ExecutionTimingInstrumentation;
+import org.opennms.horizon.server.service.graphql.IntrospectionDisabler;
 import org.opennms.horizon.server.service.graphql.MaxAliasOccurrenceValidation;
 import org.opennms.horizon.server.service.graphql.MaxComplexityInstrumentation;
 import org.opennms.horizon.server.service.graphql.MaxDepthInstrumentation;
 import org.opennms.horizon.server.service.graphql.MaxDirectiveOccurrenceInstrumentation;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -136,32 +129,11 @@ public class GraphqlConfig {
         return new BffDataFetchExceptionHandler();
     }
 
-    /**
-     * Takes the previously auto-configured {@link GraphQLSchemaGenerator}
-     * instance and additionally configures it to disable introspection. This is
-     * done to re-use the relatively complex original autoconfiguration instead
-     * of replacing it.
-     *
-     * @see BaseAutoConfiguration#graphQLSchemaGenerator(SpqrProperties)
-     */
-    @Component
-    @ConditionalOnProperty(value = "lokahi.bff.introspection-enabled", havingValue = "false")
-    public static class IntrospectionDisabler implements BeanPostProcessor {
-        @Override
-        public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-            if (bean instanceof GraphQLSchemaGenerator schemaGenerator) {
-                log.info("Disabling introspection in graphql");
-                schemaGenerator.withSchemaProcessors((schemaBuilder, buildContext) -> {
-                    buildContext.codeRegistry.fieldVisibility(
-                        NoIntrospectionGraphqlFieldVisibility.NO_INTROSPECTION_FIELD_VISIBILITY);
-                    schemaBuilder.codeRegistry(buildContext.codeRegistry.build());
-                    return schemaBuilder;
-                });
-                return schemaGenerator;
-            }
-
-            return bean;
-        }
+    @Bean
+    @ConditionalOnExpression("${lokahi.bff.introspection-enabled:false} == false")
+    public IntrospectionDisabler introspectionDisabler() {
+        log.info("Disabling introspection in graphql");
+        return new IntrospectionDisabler();
     }
 
     @Bean
