@@ -65,6 +65,10 @@ spec:
               value: /api
             - name: GRAPHQL_SPQR_GUI_TARGET_ENDPOINT
               value: /api/graphql
+            {{- with .Values.OpenNMS.API.PlaygroundGuiEnabled }}
+            - name: GRAPHQL_SPQR_GUI_ENABLED
+              value: "{{ . }}"
+            {{- end }}
             - name: GRPC_URL_INVENTORY
               value: "{{ .Values.OpenNMS.Inventory.ServiceName }}:6565"
             - name: GRPC_URL_EVENTS
