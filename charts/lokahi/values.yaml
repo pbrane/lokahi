@@ -37,7 +37,7 @@ OpenNMS:
     MinionEndpoint: host.docker.internal
     IntrospectionEnabled: false
     MaxAliasOccurrence: 5
-    MaxComplexity: 50
+    MaxComplexity: 60
     MaxDirectiveOccurrence: 5
     MaxFieldOccurrence: 5
     MaxQueryDepth: 5
