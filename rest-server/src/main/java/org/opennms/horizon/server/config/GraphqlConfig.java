@@ -29,7 +29,6 @@
 package org.opennms.horizon.server.config;
 
 import graphql.GraphQL;
-import graphql.analysis.MaxQueryComplexityInstrumentation;
 import graphql.analysis.MaxQueryDepthInstrumentation;
 import graphql.execution.DataFetcherExceptionHandler;
 import graphql.execution.instrumentation.Instrumentation;
@@ -43,7 +42,9 @@ import io.leangen.graphql.spqr.spring.autoconfigure.SpqrProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.server.service.graphql.BffDataFetchExceptionHandler;
 import org.opennms.horizon.server.service.graphql.DuplicateFieldValidation;
+import org.opennms.horizon.server.service.graphql.ExecutionTimingInstrumentation;
 import org.opennms.horizon.server.service.graphql.MaxAliasOccurrenceValidation;
+import org.opennms.horizon.server.service.graphql.MaxComplexityInstrumentation;
 import org.opennms.horizon.server.service.graphql.MaxDirectiveOccurrenceInstrumentation;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -67,8 +68,14 @@ import java.util.List;
 public class GraphqlConfig {
 
     @Bean
-    @ConditionalOnExpression("${lokahi.bff.max-query-depth:-1} > 1")
     @Order(1)
+    public Instrumentation timingInstrumentation() {
+        return new ExecutionTimingInstrumentation();
+    }
+
+    @Bean
+    @ConditionalOnExpression("${lokahi.bff.max-query-depth:-1} > 1")
+    @Order(2)
     public Instrumentation maxDepthInstrumentation(
         BffProperties properties
     ) {
@@ -78,18 +85,19 @@ public class GraphqlConfig {
 
     @Bean
     @ConditionalOnExpression("${lokahi.bff.max-complexity:-1} > 1")
-    @Order(2)
+    @Order(3)
     public Instrumentation maxComplexityInstrumentation(
         BffProperties properties
     ) {
         log.info("Limiting max query complexity to {}", properties.getMaxComplexity());
-        return new MaxQueryComplexityInstrumentation(properties.getMaxComplexity());
+        return new MaxComplexityInstrumentation(properties.getMaxComplexity());
+
     }
 
     @Bean
     @ConditionalOnExpression("${lokahi.bff.max-directive-occurrence:-1} > 0")
     @ConditionalOnBean
-    @Order(3)
+    @Order(4)
     public Instrumentation maxDirectiveOccurrenceInstrumentation(
         BffProperties properties
     ) {
@@ -101,7 +109,7 @@ public class GraphqlConfig {
 
     @Bean
     @ConditionalOnExpression("${lokahi.bff.max-alias-occurrence:-1} > 0")
-    @Order(4)
+    @Order(5)
     public Instrumentation maxAliasOccurrenceInstrumentation(
         BffProperties properties
     ) {
@@ -113,7 +121,7 @@ public class GraphqlConfig {
 
     @Bean
     @ConditionalOnExpression("${lokahi.bff.max-field-occurrence:-1} > 0")
-    @Order(5)
+    @Order(6)
     public Instrumentation fieldDuplicationInstrumentation(
         BffProperties properties
     ) {
@@ -162,7 +170,11 @@ public class GraphqlConfig {
         List<Instrumentation> instrumentations,
         DataFetcherExceptionHandler exceptionResolver
     ) {
-        log.info("Configured Instrumentations: {}", instrumentations);
+        if (log.isInfoEnabled()) {
+            log.info("Configured Instrumentations: {}",
+                instrumentations.stream().map(i -> i.getClass().getSimpleName()).toList()
+            );
+        }
 
         GraphQLRuntime.Builder builder = GraphQLRuntime.newGraphQL(schema);
         instrumentations.forEach(builder::instrumentation);

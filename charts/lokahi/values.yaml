@@ -35,6 +35,7 @@ OpenNMS:
     CertificateManagerUrl: ""
     PackagedMinionFile: run-minion-docker-compose.yaml
     MinionEndpoint: host.docker.internal
+    # TODO: Default values here
   MetricsProcessor:
     ServiceName: opennms-metrics-processor
     ImageShortName: lokahi-metrics-processor
