@@ -14,6 +14,12 @@ lokahi:
     max-field-occurrence: 5
     max-query-depth: 13
 
+graphql:
+  spqr:
+    # See https://github.com/leangen/graphql-spqr/issues/320
+    base-packages:
+      - org.opennms.horizon.server.model
+
 grpc:
   url:
     inventory: localhost:29065
