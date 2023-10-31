@@ -62,6 +62,8 @@ spec:
           echo [$(date -Iseconds)] pg is ready;
           # wait for extension
           sleep 5;
+          # extra wait for name to be available on the coordinator
+          sleep 55;
 
           echo [$(date -Iseconds)] Wait name resolve ${node_name};
           timeout 10m sh -c "until nslookup ${node_name} > /dev/null; do sleep 2; done;";
@@ -161,5 +163,5 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 5Gi
+          storage: 1Gi
 {{- end }}
