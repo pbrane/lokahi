@@ -115,9 +115,9 @@ OpenNMS:
     InternalGrpcPort: 8991
     Replicas: 1
     UseKubernetes: "true"
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "minion_gateway"
-    DbHost: "postgres"
+    DbHost: "citus"
     Resources:
       Limits:
         Cpu: "2"
@@ -144,9 +144,9 @@ OpenNMS:
     ImageShortName: lokahi-inventory
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "inventory"
-    DbHost: "postgres"
+    DbHost: "citus"
     Resources:
       Limits:
         Cpu: "2"
@@ -179,9 +179,9 @@ OpenNMS:
     ImageShortName: lokahi-notification
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "notification"
-    DbHost: "postgres"
+    DbHost: "citus"
     Resources:
       Limits:
         Cpu: "2"
@@ -205,9 +205,9 @@ OpenNMS:
     ImageShortName: lokahi-events
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "events"
-    DbHost: "postgres"
+    DbHost: "citus"
     Resources:
       Limits:
         Cpu: "2"
@@ -221,9 +221,9 @@ OpenNMS:
     ImageShortName: lokahi-datachoices
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "datachoices"
-    DbHost: "postgres"
+    DbHost: "citus"
     Resources:
       Limits:
         Cpu: "1"
