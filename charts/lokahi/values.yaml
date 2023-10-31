@@ -299,8 +299,8 @@ Keycloak:
   ServiceName: onms-keycloak
   TlsSecretName:
   DbSchemaName: "keycloak"
-  DbName: "horizon_stream"
-  DbHost: "postgres"
+  DbName: "desenv"
+  DbHost: "citus"
   Resources:
     Limits:
       Cpu: "1"

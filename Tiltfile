@@ -389,7 +389,7 @@ jib_project(
     'notifications',
     'opennms-notifications',
     port_forwards=['15065:6565', '15050:5005', '15080:8080'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Vue.js App ###
@@ -455,7 +455,7 @@ jib_project_multi_module(
     'inventory',
     'opennms-inventory',
     port_forwards=['29080:8080', '29050:5005', '29065:6565'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Alert ###
@@ -475,7 +475,7 @@ jib_project_multi_module(
     'metrics-processor',
     'opennms-metrics-processor',
     port_forwards=['28080:8080', '28050:5005'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Events ###
@@ -485,7 +485,7 @@ jib_project_multi_module(
     'events',
     'opennms-events',
     port_forwards=['30050:5005', '30080:8080', '30065:6565'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Minion Gateway ###
@@ -495,7 +495,7 @@ jib_project_multi_module(
     'minion-gateway',
     'opennms-minion-gateway',
     port_forwards=['16080:8080', '16050:5005'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### DataChoices ###
@@ -505,7 +505,7 @@ jib_project(
     'datachoices',
     'opennms-datachoices',
     port_forwards=['33080:9090', '33050:5005', '33065:6565'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Minion ###
@@ -572,6 +572,7 @@ k8s_resource(
     new_name='keycloak',
     labels='keycloak',
     port_forwards=['26080:8080'],
+    resource_deps=['citus-worker'],
     links=[
       link('https://onmshs.local:1443/auth/admin/', 'Admin Console'),
       link('http://localhost:26080/auth', 'Welcome Page')
