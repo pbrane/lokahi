@@ -102,6 +102,7 @@ public class GraphQLQueryValidationTest {
             readArgumentPair("/test/data/query-location-by-name.json"),
             readArgumentPair("/test/data/query-locations-list.json"),
             readArgumentPair("/test/data/query-network-traffic.json"),
+            readArgumentPair("/test/data/query-node-id.json"),
             readArgumentPair("/test/data/query-nodes-for-map-find-all-nodes.json"),
             readArgumentPair("/test/data/query-search-location.json"),
             readArgumentPair("/test/data/query-tags-by-active-discovery-id.json"),
