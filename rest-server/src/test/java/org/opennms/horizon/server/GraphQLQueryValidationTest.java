@@ -124,6 +124,7 @@ public class GraphQLQueryValidationTest {
 
     public static Stream<Arguments> introspectionRequests() {
         return Stream.of(
+            readArgumentPair("/test/data/simple-introspection-query.json"),
             readArgumentPair("/test/data/introspection-query.json"),
             readArgumentPair("/test/data/introspection-circular.json")
         );
