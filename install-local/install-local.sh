@@ -176,6 +176,9 @@ create_namespace () {
 }
 
 install_helm_chart_custom_images () {
+  echo ________________Installing cert-manager_________
+  kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+
   echo
   echo ________________Installing Lokahi________________
   echo
