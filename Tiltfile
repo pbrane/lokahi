@@ -566,6 +566,10 @@ k8s_resource(
     new_name='keycloak',
     labels='keycloak',
     port_forwards=['26080:8080'],
+    links=[
+      link('https://onmshs.local:1443/auth/admin/', 'Admin Console'),
+      link('http://localhost:26080/auth', 'Welcome Page')
+    ]
 )
 
 ### Email ###
