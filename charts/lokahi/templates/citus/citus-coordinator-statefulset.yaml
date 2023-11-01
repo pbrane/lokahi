@@ -93,14 +93,14 @@ spec:
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-              name: citus-secrets
+              name: citus
               key: password
         - name: POSTGRES_USER
           value: desenv
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: citus-secrets
+              name: citus
               key: password
         - name: POD_NAMESPACE
           valueFrom:
@@ -148,7 +148,7 @@ spec:
         - name: POSTGRESQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: citus-secrets
+              name: citus
               key: password
         - name: PGBOUNCER_AUTH_TYPE
           value: trust
@@ -196,5 +196,5 @@ spec:
       # storageClassName: local-path
       resources:
         requests:
-          storage: 1Gi
+          storage: {{ .Values.Citus.CoordinatorVolumeSize }}
 {{- end }}

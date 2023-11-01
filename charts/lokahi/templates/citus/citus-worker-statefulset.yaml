@@ -94,14 +94,14 @@ spec:
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-              name: citus-secrets
+              name: citus
               key: password
         - name: POSTGRES_USER
           value: desenv
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: citus-secrets
+              name: citus
               key: password
         - name: POD_NAMESPACE
           valueFrom:
@@ -163,5 +163,5 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 1Gi
+          storage: {{ .Values.Citus.WorkedVolumeSize }}
 {{- end }}

@@ -78,12 +78,12 @@ spec:
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: postgres
+                  name: citus
                   key: keycloakUser
             - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres
+                  name: citus
                   key: keycloakPwd
             - name: KEYCLOAK_ADMIN
               valueFrom:

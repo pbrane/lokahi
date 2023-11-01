@@ -267,14 +267,8 @@ Citus:
   Enabled: true
   Nodeport: 30007
   PgBouncerPort: 30099
-Postgres:
-  Enabled: true
-  ServiceName: postgres
-  Image: postgres:14.5-alpine
-  ImagePullPolicy: IfNotPresent
-  Replicas: 1
-  DbName: "horizon_stream"
-  DbHost: "postgres"
+  CoordinatorVolumeSize: 4Gi
+  WorkerVolumeSize: 2Gi
   AdminPassword: notset
   OpenNMSPassword: notset
   KeycloakPassword: notset
@@ -285,8 +279,6 @@ Postgres:
   MinionGatewayPassword: notset
   NotificationPassword: notset
   GrafanaPassword: notset
-  Pvc: true 
-  VolumeSize: 10Gi
 Keycloak:
   Path: /auth
   ImageShortName: lokahi-keycloak

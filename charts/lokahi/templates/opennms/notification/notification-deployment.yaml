@@ -60,12 +60,12 @@ spec:
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: postgres
+                  name: citus
                   key: notificationUser
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres
+                  name: citus
                   key: notificationPwd
             - name: SPRING_MAIL_FROM
               value: "{{ .Values.OpenNMS.Notification.mailFrom }}"

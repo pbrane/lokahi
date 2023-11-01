@@ -23,7 +23,7 @@
 ## 22 = mail-server
 ## 23 = zookeeper
 ## 24 = kafka
-## 25 = postgres
+## 25 = citus/postgres
 ## 26 = keycloak
 ## 27 = minion (classic)
 ## 28 = metric processor
@@ -605,22 +605,15 @@ k8s_resource(
     port_forwards=['19000:9000'],
 )
 
-### Postgres ###
-k8s_resource(
-    'postgres',
-    labels='z_dependencies',
-    port_forwards=['25054:5432'],
-    links=[
-        link('jdbc:postgresql://localhost:25054/horizon_stream?user=postgres&password=any', name='JDBC URL'),
-    ]
-)
-
-### Citus ###
+### Citus/Postgres ###
 k8s_resource(
     'citus',
     labels='citus',
-    port_forwards=['25055:5432'],
+    port_forwards=['25054:5432'],
     resource_deps=['cert-manager'],
+    links=[
+        link('jdbc:postgresql://localhost:25054/horizon_stream?user=desenv&password=any', name='JDBC URL'),
+    ]
 )
 
 k8s_resource(
@@ -631,7 +624,7 @@ k8s_resource(
 
 k8s_resource(
     'citus',
-    objects=['citus-issuer:issuer', 'citus-cert:certificate', 'citus-conf:configmap', 'citus-secrets:secret', 'citus-initial-sql:secret'],
+    objects=['citus-issuer:issuer', 'citus-cert:certificate', 'citus-conf:configmap', 'citus:secret', 'citus-initial-sql:secret'],
     labels='citus',
     resource_deps=['cert-manager'],
 )
