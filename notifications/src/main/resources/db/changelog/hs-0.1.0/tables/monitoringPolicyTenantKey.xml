@@ -7,7 +7,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd
 		http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet author="jbeuree" id="distribute_monitoring_policy">
+    <changeSet author="jbeuree" id="monitoring_policy_tenant_key">
         <validCheckSum>ANY</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <and>
@@ -18,7 +18,6 @@
 
         <dropPrimaryKey tableName="monitoring_policy"/>
         <addPrimaryKey tableName="monitoring_policy" columnNames="id, tenant_id" constraintName="pk_monitoring_policy_id"/>
-        <sql>select create_distributed_table('monitoring_policy', 'tenant_id')</sql>
     </changeSet>
 
 </databaseChangeLog>
