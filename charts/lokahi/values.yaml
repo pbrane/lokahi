@@ -320,6 +320,7 @@ Grafana:
   Path: /grafana
   Port: 3000
   Replicas: 1
+  DbHost: "citus"
   ServiceName: grafana
   ImageShortName: lokahi-grafana
   ImagePullPolicy: IfNotPresent

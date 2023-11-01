@@ -595,7 +595,7 @@ k8s_resource(
     'grafana',
     labels='z_dependencies',
     port_forwards=['18080:3000'],
-    resource_deps=['postgres'],
+    resource_deps=['citus-worker'],
 )
 
 ### Cortex ###
