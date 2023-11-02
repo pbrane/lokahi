@@ -9,11 +9,18 @@ server:
 spring:
   jackson:
     default-property-inclusion: non_null
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+
 
 keycloak:
   url: http://onms-keycloak:8080/auth
   realm: opennms
   signatureAlgorithm: RS256
+
 
 graphql:
   spqr:

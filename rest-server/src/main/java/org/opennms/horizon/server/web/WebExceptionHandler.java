@@ -89,10 +89,14 @@ public class WebExceptionHandler {
         return createResponse(e, exchange, status, message);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public Mono<ResponseEntity<Object>> handle(RuntimeException e, ServerWebExchange exchange) {
+        return createResponse(e, exchange, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<Object>> handle(Exception e, ServerWebExchange exchange) {
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        return createResponse(e, exchange, status);
+        return createResponse(e, exchange, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private Mono<ResponseEntity<Object>> createResponse(

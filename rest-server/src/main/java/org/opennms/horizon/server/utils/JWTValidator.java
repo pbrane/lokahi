@@ -27,12 +27,6 @@
  *******************************************************************************/
 package org.opennms.horizon.server.utils;
 
-import java.net.URL;
-import java.text.ParseException;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.source.RemoteJWKSet;
@@ -41,17 +35,25 @@ import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
-
 import io.opentelemetry.api.trace.Span;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.net.URL;
+import java.text.ParseException;
 
 @Component
 public class JWTValidator {
 
     private final DefaultJWTProcessor<SecurityContext> jwtProcessor;
 
-    public JWTValidator(@Value("${keycloak.url}") String keycloakUrl, @Value("${keycloak.realm}") String realm,
-        @Value("${keycloak.signatureAlgorithm}") String signatureAlgorithm) throws Exception {
-        RemoteJWKSet jwkSet = new RemoteJWKSet<>(new URL(keycloakUrl + "/realms/" + realm + "/protocol/openid-connect/certs"));
+    public JWTValidator(
+        @Value("${keycloak.url}") String keycloakUrl,
+        @Value("${keycloak.realm}") String realm,
+        @Value("${keycloak.signatureAlgorithm}") String signatureAlgorithm
+    ) throws Exception {
+        URL jwkSetURL = new URL(keycloakUrl + "/realms/" + realm + "/protocol/openid-connect/certs");
+        RemoteJWKSet jwkSet = new RemoteJWKSet<>(jwkSetURL);
         JWSVerificationKeySelector<SecurityContext> jwsKeySelector = new JWSVerificationKeySelector<>(JWSAlgorithm.parse(signatureAlgorithm), jwkSet);
 
         jwtProcessor = new DefaultJWTProcessor<>();
