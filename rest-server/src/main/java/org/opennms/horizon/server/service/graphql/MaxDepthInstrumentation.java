@@ -26,23 +26,28 @@
  *     http://www.opennms.com/
  */
 
-package org.opennms.horizon.server.config;
+package org.opennms.horizon.server.service.graphql;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import graphql.analysis.MaxQueryDepthInstrumentation;
+import graphql.analysis.QueryDepthInfo;
+import graphql.execution.AbortExecutionException;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.function.Function;
 
-@Configuration
-@ConfigurationProperties(prefix = "lokahi.bff")
-@Data
-public class BffProperties {
+@Slf4j
+public class MaxDepthInstrumentation extends MaxQueryDepthInstrumentation {
+    public MaxDepthInstrumentation(int maxDepth) {
+        super(maxDepth);
+    }
 
-    private boolean corsAllowed = false;
-    private boolean introspectionEnabled = false;
-    private int maxAliasOccurrence = -1;
-    private int maxComplexity = -1;
-    private int maxDirectiveOccurrence = -1;
-    private int maxFieldOccurrence = -1;
-    private int maxQueryDepth = -1;
+    public MaxDepthInstrumentation(int maxDepth, Function<QueryDepthInfo, Boolean> maxQueryDepthExceededFunction) {
+        super(maxDepth, maxQueryDepthExceededFunction);
+    }
+
+    @Override
+    protected AbortExecutionException mkAbortException(int depth, int maxDepth) {
+        log.debug("maximum query depth exceeded {} > {}", depth, maxDepth);
+        return new AbortExecutionException("maximum query depth exceeded");
+    }
 }
