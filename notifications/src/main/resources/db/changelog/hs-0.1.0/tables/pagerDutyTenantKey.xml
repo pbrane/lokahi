@@ -18,6 +18,12 @@
         <dropPrimaryKey tableName="pager_duty_config"/>
         <addPrimaryKey tableName="pager_duty_config" columnNames="id, tenant_id"
                        constraintName="pk_pager_duty_config_id"/>
+        <sql>DO
+             '
+             BEGIN
+             if exists(select 1 from information_schema.schemata where schema_name = ''citus'') THEN
+               select create_distributed_table(''pager_duty_config'', ''tenant_id'', colocate_with => ''monitoring_policy''); END IF; END; ';
+         </sql>
     </changeSet>
 
 </databaseChangeLog>

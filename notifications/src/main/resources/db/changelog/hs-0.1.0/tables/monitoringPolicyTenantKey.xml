@@ -18,6 +18,13 @@
 
         <dropPrimaryKey tableName="monitoring_policy"/>
         <addPrimaryKey tableName="monitoring_policy" columnNames="id, tenant_id" constraintName="pk_monitoring_policy_id"/>
+        <sql>DO
+             '
+             BEGIN
+             if exists(select 1 from information_schema.schemata where schema_name = ''citus'') THEN
+               select create_distributed_table(''monitoring_policy'', ''tenant_id''); END IF; END; ';
+         </sql>
+
     </changeSet>
 
 </databaseChangeLog>
