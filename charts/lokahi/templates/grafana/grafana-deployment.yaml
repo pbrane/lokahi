@@ -42,6 +42,19 @@ spec:
           secret:
             secretName: {{ .Values.Grafana.ServiceName }}
             defaultMode: 420
+      initContainers:
+        - name: wait-for-db
+          image: postgres:16-alpine
+          args:
+          - /bin/sh
+          - -c
+          - | 
+            set -x;
+            while ! psql -U {{ .Values.Citus.AdminUser }} -h citus -c 'select 1' > /dev/null 2>&1; do
+              echo "Waiting for DB to be available"
+              sleep 10
+            done
+            echo "Database is available"
       containers:
         - name: {{ .Values.Grafana.ServiceName }}
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.Grafana) | quote }}

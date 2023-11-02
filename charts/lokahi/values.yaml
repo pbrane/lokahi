@@ -269,6 +269,7 @@ Citus:
   PgBouncerPort: 30099
   CoordinatorVolumeSize: 4Gi
   WorkerVolumeSize: 2Gi
+  AdminUser: desenv
   AdminPassword: notset
   OpenNMSPassword: notset
   KeycloakPassword: notset

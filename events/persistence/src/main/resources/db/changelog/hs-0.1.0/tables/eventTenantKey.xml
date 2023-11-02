@@ -18,6 +18,7 @@
 
         <dropPrimaryKey tableName="event"/>
         <addPrimaryKey tableName="event" columnNames="id, tenant_id" constraintName="pk_events_id"/>
+        <sql>select create_distributed_table('event', 'tenant_id')</sql>
     </changeSet>
 
 </databaseChangeLog>
