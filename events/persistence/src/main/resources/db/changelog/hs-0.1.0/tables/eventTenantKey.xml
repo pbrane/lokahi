@@ -7,7 +7,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd
 		http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet author="jbeuree" id="distribute_event2">
+    <changeSet author="jbeuree" id="distribute_event">
         <validCheckSum>ANY</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <and>
