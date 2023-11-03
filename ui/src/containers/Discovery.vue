@@ -25,6 +25,7 @@
             :selectDiscovery="discoveryStore.editDiscovery"
             :selectedId="discoveryStore.selectedDiscovery.id"
             :showInstructions="() => openInstructions(InstructionsType.Active)"
+            :selectedType="discoveryStore.selectedDiscovery.type"
           />
           <DiscoveryListCard
             passive
@@ -34,8 +35,31 @@
             :selectDiscovery="discoveryStore.editDiscovery"
             :selectedId="discoveryStore.selectedDiscovery.id"
             :showInstructions="() => openInstructions(InstructionsType.Passive)"
+            :selectedType="discoveryStore.selectedDiscovery.type"
           />
         </div>
+      </section>
+      <section
+        class="discovery landing"
+        v-if="
+          !discoveryStore.discoveryFormActive &&
+          !discoveryStore.discoveryTypePageActive &&
+          !discoveryStore.loading &&
+          discoveryStore.loadedDiscoveries.length === 0
+        "
+      >
+        <p class="landing-title">You have not configured any discoveries.</p>
+        <p class="landing-text">
+          You need to create a discovery to identify devices and entities on your network to monitor. After a <br />
+          discovery runs, these devices become part of your network inventory.
+        </p>
+        <FeatherButton
+          text
+          class="landing-btn"
+          @click="discoveryStore.startNewDiscovery"
+        >
+          Add Discovery
+        </FeatherButton>
       </section>
       <section
         class="discovery"
@@ -427,13 +451,24 @@ const activeDiscoveryTypes = [
   .type-selector {
     margin-bottom: var(variables.$spacing-l);
   }
-
   @include mediaQueriesMixins.screen-md {
     padding: var(variables.$spacing-l);
     height: fit-content;
     flex-grow: 1;
     min-width: auto;
     margin-bottom: 20px;
+  }
+}
+
+.landing {
+  text-align: center;
+  padding: 100px 50px;
+  .landing-title {
+    @include typography.headline2;
+  }
+  .landing-text {
+    margin: 40px 0px;
+    @include typography.body-small;
   }
 }
 

@@ -31,17 +31,14 @@ import com.codeborne.selenide.*;
 import com.google.common.io.ByteStreams;
 import lombok.SneakyThrows;
 import org.junit.Assert;
+import org.opennms.horizon.systemtests.CucumberHooks;
 import org.opennms.horizon.systemtests.steps.LocationSteps;
 import org.opennms.horizon.systemtests.steps.MinionSteps;
 import org.opennms.horizon.systemtests.utils.FileDownloadManager;
-import org.opennms.horizon.systemtests.utils.MinionStarter;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import testcontainers.DockerComposeMinionContainer;
 import testcontainers.MinionContainer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -75,6 +72,7 @@ public class WelcomePage {
     private static final SelenideElement minionDetectedCheck = $(By.xpath("//div[text()='Minion detected.']"));
     private static final SelenideElement nodeDetectedCheck = $(By.xpath("//div[@data-test='item-preview-status-id'][text()='UP']"));
     private static final SelenideElement discoveryResultLatencyCheck = $(By.xpath("//div[@data-test='item-preview-status-id'][.<=800]"));
+    private static final SelenideElement INITIAL_PAGE_CHECK = $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']|//div[@class='app-aside']"));
 
     public static void checkIsStartSetupButtonVisible() {
         startSetupBtn.shouldBe(enabled);
@@ -124,8 +122,7 @@ public class WelcomePage {
     }
 
     public static void waitOnWalkthroughOrMain() {
-        // First page to be opened. Seems to sometimes take a while to load under some test environments
-        $(By.xpath("//button[@data-test='welcome-slide-one-setup-button']|//div[@class='app-aside']")).should(exist, Duration.ofSeconds(60));
+        INITIAL_PAGE_CHECK.should(exist);
     }
 
     public static MinionContainer addMinionUsingWalkthrough(String minionName) {
