@@ -609,6 +609,9 @@ k8s_resource(
     'postgres',
     labels='z_dependencies',
     port_forwards=['25054:5432'],
+    links=[
+        link('jdbc:postgresql://localhost:25054/horizon_stream?user=postgres&password=any', name='JDBC URL'),
+    ]
 )
 
 ### Kafka ###
