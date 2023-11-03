@@ -7,7 +7,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd
 		http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet author="jbeuree" id="distribute_event">
+    <changeSet author="jbeuree" id="distribute_event2">
         <validCheckSum>ANY</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <and>
@@ -21,8 +21,8 @@
         <sql>DO
              '
              BEGIN
-             if exists(select 1 from information_schema.schemata where schema_name = ''citus'') THEN
-               select create_distributed_table(''event'', ''tenant_id''); END IF; END; ';
+             if exists(select 1 from pg_extension where extname = ''citus'') THEN
+               perform create_distributed_table(''event'', ''tenant_id''); END IF; END; ';
          </sql>
     </changeSet>
 

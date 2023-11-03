@@ -21,8 +21,8 @@
         <sql>DO
              '
              BEGIN
-             if exists(select 1 from information_schema.schemata where schema_name = ''citus'') THEN
-               select create_distributed_table(''pager_duty_config'', ''tenant_id'', colocate_with => ''monitoring_policy''); END IF; END; ';
+             if exists(select 1 from pg_extension where extname = ''citus'') THEN
+               perform create_distributed_table(''pager_duty_config'', ''tenant_id'', colocate_with => ''monitoring_policy''); END IF; END; ';
          </sql>
     </changeSet>
 
