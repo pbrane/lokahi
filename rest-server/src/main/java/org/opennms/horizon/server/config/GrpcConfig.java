@@ -50,7 +50,7 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class ConfigurationUtil {
+public class GrpcConfig {
     @Value("${grpc.url.inventory}")
     private String inventoryGrpcAddress;
 
