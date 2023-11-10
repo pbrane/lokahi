@@ -4,10 +4,11 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <!-- TODO: If an alert exists, it won't be able to be delete due to a foreign key constraint on the 'alarm'
-           table...  Am unsure if this approach is correct (adding this new liquibase change log or editing
-           the existing one 'system_tenant_default_policy.xml'). -->
+    <!-- TODO: Need to test this with real data... -->
     <changeSet id="hs-0.1.1-delete-existing-system-tenant-data" author="pbouffard">
+        <delete tableName="alert">
+            <where>tenant_id='system-tenant'</where>
+        </delete>
         <delete tableName="alert_definition">
             <where>tenant_id='system-tenant'</where>
         </delete>
