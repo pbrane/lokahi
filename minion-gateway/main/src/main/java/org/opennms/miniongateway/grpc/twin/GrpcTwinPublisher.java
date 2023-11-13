@@ -58,7 +58,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -77,12 +76,13 @@ public class GrpcTwinPublisher extends AbstractTwinPublisher implements Outgoing
             .build();
     private final ExecutorService twinRpcExecutor = Executors.newCachedThreadPool(twinRpcThreadFactory);
 
-    private Tracer tracer = GlobalOpenTelemetry.get().getTracer(getClass().getName());
+    private final Tracer tracer;
     private final boolean debugSpanFullMessage;
     private final boolean debugSpanContent;
 
-    public GrpcTwinPublisher(Ignite ignite, boolean debugSpanFullMessage, boolean debugSpanContent) {
+    public GrpcTwinPublisher(Ignite ignite, final Tracer tracer, boolean debugSpanFullMessage, boolean debugSpanContent) {
         super(ignite);
+        this.tracer = tracer;
         this.debugSpanFullMessage = debugSpanFullMessage;
         this.debugSpanContent = debugSpanContent;
     }

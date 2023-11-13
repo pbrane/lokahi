@@ -84,7 +84,6 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
@@ -141,7 +140,7 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
     private BiConsumer<RpcRequestProto, StreamObserver<RpcResponseProto>> incomingRpcHandler;
     private OutgoingMessageHandler outgoingMessageHandler;
 
-    private Tracer tracer = GlobalOpenTelemetry.get().getTracer(getClass().getName());
+    private final Tracer tracer;
 
     private MeterRegistry meterRegistry;
 
@@ -149,13 +148,14 @@ public class OpennmsGrpcServer extends AbstractMessageConsumerManager implements
 // Constructor
 //----------------------------------------
 
-    public OpennmsGrpcServer(GrpcIpcServer grpcIpcServer, final MeterRegistry meterRegistry, boolean debugSpanFullMessage, boolean debugSpanContent) {
+    public OpennmsGrpcServer(GrpcIpcServer grpcIpcServer, final MeterRegistry meterRegistry, final Tracer tracer, boolean debugSpanFullMessage, boolean debugSpanContent) {
         this.grpcIpcServer = grpcIpcServer;
         this.interceptors = List.of(
             new MeteringInterceptorFactory(meterRegistry)
         );
 
         this.meterRegistry = Objects.requireNonNull(meterRegistry);
+        this.tracer = tracer;
         this.debugSpanFullMessage = debugSpanFullMessage;
         this.debugSpanContent = debugSpanContent;
     }

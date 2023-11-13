@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Configuration;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.api.OpenTelemetry;
 
 @Configuration
 public class GrpcServerConfig {
@@ -125,10 +126,11 @@ public class GrpcServerConfig {
         @Autowired RpcRequestTimeoutManager rpcRequestTimeoutManager,
         @Autowired TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor,
         @Autowired LocationServerInterceptor locationServerInterceptor,
-        @Autowired MeterRegistry meterRegistry
+        @Autowired MeterRegistry meterRegistry,
+        @Autowired OpenTelemetry openTelemetry
         ) throws Exception {
 
-        OpennmsGrpcServer server = new OpennmsGrpcServer(serverBuilder, meterRegistry, debugSpanFullMessage, debugSpanContent);
+        OpennmsGrpcServer server = new OpennmsGrpcServer(serverBuilder, meterRegistry, openTelemetry.getTracer(getClass().getName()), debugSpanFullMessage, debugSpanContent);
 
         server.setRpcConnectionTracker(rpcConnectionTracker);
         server.setRpcRequestTracker(rpcRequestTracker);

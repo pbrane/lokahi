@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Any;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -28,18 +27,20 @@ public class TwinRpcHandler implements ServerHandler {
     private final TwinProvider twinProvider;
     private final TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor;
     private final LocationServerInterceptor locationServerInterceptor;
+    private final Tracer tracer;
     private final boolean debugSpanFullMessage;
     private final boolean debugSpanContent;
     private Executor twinRpcExecutor = Executors.newSingleThreadScheduledExecutor((runnable) -> new Thread(runnable, "twin-rpc"));
-    private Tracer tracer = GlobalOpenTelemetry.get().getTracer(getClass().getName());
 
     public TwinRpcHandler(
         TwinProvider twinProvider,
         TenantIDGrpcServerInterceptor tenantIDGrpcServerInterceptor,
-        LocationServerInterceptor locationServerInterceptor, boolean debugSpanFullMessage, boolean debugSpanContent) {
+        LocationServerInterceptor locationServerInterceptor,
+        final Tracer tracer, boolean debugSpanFullMessage, boolean debugSpanContent) {
         this.twinProvider = twinProvider;
         this.tenantIDGrpcServerInterceptor = tenantIDGrpcServerInterceptor;
         this.locationServerInterceptor = locationServerInterceptor;
+        this.tracer = tracer;
         this.debugSpanFullMessage = debugSpanFullMessage;
         this.debugSpanContent = debugSpanContent;
     }
