@@ -178,6 +178,13 @@ public class AlertEventProcessor {
                 .flatMap(tenantId -> alertRepository.findByReductionKeyAndTenantId(alertData.reductionKey(), tenantId));
         }
 
+        // a cleared alert will reset threshold limit
+        if (queryResult.isPresent() && queryResult.get().getSeverity() == Severity.CLEARED
+            && queryResult.get().getEventUei().equals(event.getUei())) {
+            archiveClearedAlert(queryResult.get(), event);
+            queryResult = Optional.empty();
+        }
+
         boolean thresholdMet;
         if (isThresholding(alertData) && !AlertType.CLEAR.equals(alertData.type())) {
             // TODO: (Quote from Jose) We will have to add an option to auto close if rate is no longer met - that will be post FMA.
@@ -228,6 +235,16 @@ public class AlertEventProcessor {
         });
 
         return queryResult;
+    }
+
+    private void archiveClearedAlert(org.opennms.horizon.alertservice.db.entity.Alert clearedAlert, Event event) {
+        if(clearedAlert == null || clearedAlert.getSeverity() != Severity.CLEARED) {
+            throw new IllegalArgumentException("Only cleared alert can be archived");
+        }
+        clearedAlert.setReductionKey(reductionKeyService.renderArchiveReductionKey(clearedAlert, event));
+        clearedAlert.setClearKey(reductionKeyService.renderArchiveClearKey(clearedAlert, event));
+
+        alertRepository.saveAndFlush(clearedAlert);
     }
 
     private boolean isThresholdMet(AlertData alertData, String tenantId) {
