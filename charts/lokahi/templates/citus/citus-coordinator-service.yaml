@@ -13,8 +13,6 @@ spec:
   ports:
   - port: 5432
     name: postgres
-  - port: 6432
-    name: pgbouncer
 
 ---
 
@@ -32,8 +30,5 @@ spec:
   - port: 5432
     name: postgres
     nodePort: {{ .Values.Citus.Nodeport }}
-  - port: 6432
-    name: pgbouncer
-    nodePort: {{ .Values.Citus.PgBouncerPort }}
   type: NodePort
 {{- end }}

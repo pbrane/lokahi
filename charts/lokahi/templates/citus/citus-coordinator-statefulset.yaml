@@ -132,42 +132,6 @@ spec:
             - '--quiet'
           initialDelaySeconds: 60
 
-      - name: pgbouncer
-        image: bitnami/pgbouncer:1.17.0
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 6432
-          name: pgbouncer
-        env:
-        - name: POSTGRESQL_HOST
-          value: localhost
-        - name: POSTGRES_USER
-          value: desenv
-        - name: POSTGRESQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: citus
-              key: password
-        - name: PGBOUNCER_AUTH_TYPE
-          value: trust
-        - name: PGBOUNCER_CLIENT_TLS_SSLMODE
-          value: require
-        - name: PGBOUNCER_CLIENT_TLS_CERT_FILE
-          value: /etc/citus-cert/tls.crt
-        - name: PGBOUNCER_CLIENT_TLS_KEY_FILE
-          value: /etc/citus-cert/tls.key
-        - name: PGBOUNCER_IGNORE_STARTUP_PARAMETERS
-          value: extra_float_digits
-        volumeMounts:
-        - name: root-cert
-          mountPath: "/etc/citus-cert"
-          readOnly: true
-
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - all
       volumes:
       - name: conf
         configMap:
