@@ -51,10 +51,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @GraphQLApi
@@ -121,9 +120,7 @@ public class GrpcNodeService {
 
     @GraphQLQuery
     public Flux<TopNNode> getTopNNode(@GraphQLEnvironment ResolutionEnvironment env, Integer timeRange, TimeRangeUnit timeRangeUnit) {
-        var nodes = client.listNodes(headerUtil.getAuthHeader(env));
-        var topNNodes = nodes.stream().map(nodeDTO -> nodeStatusService.getTopNNode(nodeDTO, timeRange, timeRangeUnit, env))
-            .sorted(Comparator.comparingDouble(TopNNode::getReachability)).collect(Collectors.toList());
-        return Flux.fromIterable(topNNodes);
+        // see LOK-2206
+        return Flux.fromIterable(new ArrayList<>());
     }
 }
