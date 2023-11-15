@@ -86,9 +86,20 @@ public class GrpcConfig {
                                          InventoryServerInterceptor interceptor,
                                          ActiveDiscoveryGrpcService activeDiscoveryGrpcService,
                                          IcmpActiveDiscoveryGrpcService icmpActiveDiscoveryGrpcService,
-                                         PassiveDiscoveryGrpcService passiveDiscoveryGrpcService) {
+                                         PassiveDiscoveryGrpcService passiveDiscoveryGrpcService,
+                                         MonitoredServiceStatusGrpcService monitoredServiceStatusGrpcService,
+                                         MonitoredServiceGrpcService monitoredServiceGrpcService) {
         GrpcServerManager manager = new GrpcServerManager(port, interceptor);
-        manager.startServer(locationGrpc, systemGrpc, nodeGrpcService, azureActiveDiscoveryGrpcService, tagGrpcService, activeDiscoveryGrpcService, icmpActiveDiscoveryGrpcService, passiveDiscoveryGrpcService);
+        manager.startServer(locationGrpc,
+            systemGrpc,
+            nodeGrpcService,
+            azureActiveDiscoveryGrpcService,
+            tagGrpcService,
+            activeDiscoveryGrpcService,
+            icmpActiveDiscoveryGrpcService,
+            passiveDiscoveryGrpcService,
+            monitoredServiceGrpcService,
+            monitoredServiceStatusGrpcService);
         return manager;
     }
 }
