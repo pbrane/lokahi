@@ -32,47 +32,59 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Slf4j
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
-
+    private static final String USER_ROLE_AUTHORITY = "ROLE_USER";
 
     @Bean
     public SecurityWebFilterChain securityFilterChain(
+        @Value("${graphql.spqr.http.endpoint:/graphql}") String graphQLEndpoint,
         ServerHttpSecurity http,
         ReactiveJwtDecoder jwtDecoder
     ) {
         http
+            // Disabled because by-default, it is not configured to work with
+            // OAuth2
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange((authorize) -> authorize
-                    .pathMatchers(HttpMethod.POST)
-//                    .pathMatchers("**/graphql")
-//                .anyExchange()
-                    .authenticated()
-                    .anyExchange().permitAll()
+                .pathMatchers(graphQLEndpoint).hasAuthority(USER_ROLE_AUTHORITY)
+                .anyExchange().permitAll()
             )
             .oauth2ResourceServer(configurer ->
-                configurer.jwt(
-                    jwtSpec -> jwtSpec.jwtDecoder(jwtDecoder)
+                configurer.jwt(jwtSpec ->
+                    jwtSpec
+                        .jwtDecoder(jwtDecoder)
+                        .jwtAuthenticationConverter(grantedAuthoritiesExtractor())
                 )
             );
 
         return http.build();
     }
 
-    @Bean
-    ReactiveJwtDecoder reactiveJwtDecoder(
-        @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwkSetUri
-    ) {
-        log.info("jwk-set-uri: {}", jwkSetUri);
-        return NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build();
+    Converter<Jwt, Mono<AbstractAuthenticationToken>> grantedAuthoritiesExtractor() {
+        var authConverter = new JwtAuthenticationConverter();
+        // Right now we don't provide specific scopes or roles for the user
+        // aside from their tenant membership, so we'll assume a simple role
+        // for now.
+        authConverter.setJwtGrantedAuthoritiesConverter(
+            jwt -> List.of(new SimpleGrantedAuthority(USER_ROLE_AUTHORITY))
+        );
+        return new ReactiveJwtAuthenticationConverterAdapter(authConverter);
     }
-
 }

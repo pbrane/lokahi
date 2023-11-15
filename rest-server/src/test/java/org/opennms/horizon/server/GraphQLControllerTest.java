@@ -33,7 +33,6 @@ import io.grpc.StatusRuntimeException;
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.web.GraphQLExecutor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,8 +59,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Slf4j
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = RestServerApplication.class)
 public class GraphQLControllerTest {
-    private static final String ENDPOINT = "/graphql";
-    private static final String ACCESS_TOKEN = "test-token-12345";
 
     private static final String QUERY = """
         mutation {
@@ -88,6 +85,19 @@ public class GraphQLControllerTest {
             .setLongitude(0)
             .build())
         .build();
+    private static final String RESPONSE_DTO_JSON = """
+        {
+          "data": {
+            "createLocation": {
+              "id": 5,
+              "location": "foo",
+              "address": "bar",
+              "longitude": 0.0,
+              "latitude": 0.0
+            }
+          }
+        }
+        """;
 
     @MockBean
     private InventoryClient inventoryClient;
@@ -103,16 +113,16 @@ public class GraphQLControllerTest {
 
     @BeforeEach
     void setUp(@Autowired WebTestClient webTestClient) {
-        doReturn(ACCESS_TOKEN)
+        webClient = GraphQLWebTestClient.from(webTestClient);
+
+        doReturn(webClient.getAccessToken())
             .when(mockHeaderUtil)
             .getAuthHeader(any(ResolutionEnvironment.class));
-
-        this.webClient = GraphQLWebTestClient.builder().webClient(webTestClient).build();
     }
 
     @Test
     void doesNotAllowRequestsViaGet() {
-        webClient.exchangeGet(ENDPOINT + "?query={q}", Map.of("q", QUERY))
+        webClient.exchangeGet(webClient.getEndpoint() + "?query={q}", Map.of("q", QUERY))
             .expectJsonResponse(HttpStatus.METHOD_NOT_ALLOWED)
             .jsonPath("$.error").isEqualTo("Method Not Allowed")
             .jsonPath("$.message").isEqualTo("Request method 'GET' is not supported.");
@@ -126,7 +136,7 @@ public class GraphQLControllerTest {
     void doesNotAllowUnsupportedMediaTypes(String mediaType) {
         webClient
             .withContentType(MediaType.parseMediaType(mediaType))
-            .exchangePost(createPayload())
+            .exchangeGraphQLQuery(QUERY)
             .expectJsonResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
             .jsonPath("$.error").isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE.getReasonPhrase())
             .jsonPath("$.message").isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE.getReasonPhrase());
@@ -137,21 +147,9 @@ public class GraphQLControllerTest {
         when(inventoryClient.createLocation(any(), any())).thenReturn(RESPONSE_DTO);
 
         webClient
-            .exchangePost(createPayload())
+            .exchangeGraphQLQuery(QUERY)
             .expectCleanResponse()
-            .json("""
-                {
-                  "data": {
-                    "createLocation": {
-                      "id": 5,
-                      "location": "foo",
-                      "address": "bar",
-                      "longitude": 0.0,
-                      "latitude": 0.0
-                    }
-                  }
-                }
-                """);
+            .json(RESPONSE_DTO_JSON);
     }
 
     @ValueSource(strings = {
@@ -173,7 +171,7 @@ public class GraphQLControllerTest {
             .when(graphQLExecutor).execute(any(), any());
 
         webClient
-            .exchangePost(createPayload())
+            .exchangeGraphQLQuery(QUERY)
             .expectJsonResponse(HttpStatus.INTERNAL_SERVER_ERROR)
             .jsonPath("$.error").isEqualTo("Internal Server Error")
             .jsonPath("$.message").isEqualTo("Internal Server Error");
@@ -185,7 +183,7 @@ public class GraphQLControllerTest {
             .thenThrow(new RuntimeException("internal error details"));
 
         webClient
-            .exchangePost(createPayload())
+            .exchangeGraphQLQuery(QUERY)
             .expectJsonResponse(HttpStatus.OK)
             .jsonPath("$.errors").isArray()
             .jsonPath("$.errors[0].message").isEqualTo(
@@ -206,24 +204,12 @@ public class GraphQLControllerTest {
             """;
 
         webClient
-            .exchangePost(createPayload(query))
+            .exchangeGraphQLQuery(query)
             .expectJsonResponse(HttpStatus.OK)
             .jsonPath("$.errors").isArray()
             .jsonPath("$.errors[0].message").isEqualTo(
                 "Exception while fetching data (/deleteLocation) : Internal Error"
             )
             .jsonPath("$.errors[0].path[0]").isEqualTo("deleteLocation");
-    }
-
-    private String createPayload() {
-        return createPayload(QUERY);
-    }
-
-    private String createPayload(String query) {
-        try {
-            return new JSONObject().put("query", query.replace("\n", "")).toString();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }

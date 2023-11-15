@@ -30,7 +30,6 @@ package org.opennms.horizon.server.service;
 
 import io.leangen.graphql.execution.ResolutionEnvironment;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
@@ -39,39 +38,35 @@ import org.opennms.horizon.inventory.dto.TagListDTO;
 import org.opennms.horizon.inventory.dto.TagRemoveListDTO;
 import org.opennms.horizon.server.RestServerApplication;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
+import org.opennms.horizon.server.test.util.GraphQLWebTestClient;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = RestServerApplication.class)
 class GraphQLTagServiceTest {
-    private static final String GRAPHQL_PATH = "/graphql";
     public static final String TEST_TAG_NAME_1 = "tag-name-1";
     public static final String TEST_TAG_NAME_2 = "tag-name-2";
     public static final String TEST_TENANT_ID = "tenant-id";
     @MockBean
     private InventoryClient mockClient;
-    @Autowired
-    private WebTestClient webClient;
+
     @MockBean
     private ServerHeaderUtil mockHeaderUtil;
-    private final String accessToken = "test-token-12345";
+    private GraphQLWebTestClient webClient;
+    private String accessToken;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp(@Autowired WebTestClient webTestClient) {
+        webClient = GraphQLWebTestClient.from(webTestClient);
+        accessToken = webClient.getAccessToken();
+
         doReturn(accessToken).when(mockHeaderUtil).getAuthHeader(any(ResolutionEnvironment.class));
     }
 
@@ -101,14 +96,9 @@ class GraphQLTagServiceTest {
             "        name " +
             "    } " +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(request))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(request)
+            .expectCleanResponse()
             .jsonPath("$.data.addTagsToNodes[0].id").isEqualTo(1)
             .jsonPath("$.data.addTagsToNodes[0].name").isEqualTo(TEST_TAG_NAME_1)
             .jsonPath("$.data.addTagsToNodes[1].id").isEqualTo(2)
@@ -132,14 +122,9 @@ class GraphQLTagServiceTest {
             "        name " +
             "    }" +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(getRequest))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(getRequest)
+            .expectCleanResponse()
             .jsonPath("$.data.tagsByNodeId[0].id").isEqualTo(1)
             .jsonPath("$.data.tagsByNodeId[0].name").isEqualTo(TEST_TAG_NAME_1)
             .jsonPath("$.data.tagsByNodeId[1].id").isEqualTo(2)
@@ -165,14 +150,9 @@ class GraphQLTagServiceTest {
             "        } " +
             "    } " +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(getRequest))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(getRequest)
+            .expectCleanResponse()
             .jsonPath("$.data.tagsByNodeIds[0].nodeId").isEqualTo(1)
             .jsonPath("$.data.tagsByNodeIds[0].tags.size()").isEqualTo(2)
             .jsonPath("$.data.tagsByNodeIds[0].tags[0].name").isEqualTo(TEST_TAG_NAME_1)
@@ -201,14 +181,9 @@ class GraphQLTagServiceTest {
             "        name " +
             "    }" +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(getRequest))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(getRequest)
+            .expectCleanResponse()
             .jsonPath("$.data.tagsByNodeId[0].id").isEqualTo(1)
             .jsonPath("$.data.tagsByNodeId[0].name").isEqualTo(TEST_TAG_NAME_1)
             .jsonPath("$.data.tagsByNodeId[1].id").isEqualTo(2)
@@ -232,14 +207,9 @@ class GraphQLTagServiceTest {
             "        name " +
             "    }" +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(getRequest))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(getRequest)
+            .expectCleanResponse()
             .jsonPath("$.data.tagsByActiveDiscoveryId[0].id").isEqualTo(1)
             .jsonPath("$.data.tagsByActiveDiscoveryId[0].name").isEqualTo(TEST_TAG_NAME_1)
             .jsonPath("$.data.tagsByActiveDiscoveryId[1].id").isEqualTo(2)
@@ -263,14 +233,9 @@ class GraphQLTagServiceTest {
             "        name " +
             "    }" +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(getRequest))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(getRequest)
+            .expectCleanResponse()
             .jsonPath("$.data.tagsByActiveDiscoveryId[0].id").isEqualTo(1)
             .jsonPath("$.data.tagsByActiveDiscoveryId[0].name").isEqualTo(TEST_TAG_NAME_1)
             .jsonPath("$.data.tagsByActiveDiscoveryId[1].id").isEqualTo(2)
@@ -294,14 +259,9 @@ class GraphQLTagServiceTest {
             "        name " +
             "    }" +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(getRequest))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(getRequest)
+            .expectCleanResponse()
             .jsonPath("$.data.tagsByPassiveDiscoveryId[0].id").isEqualTo(1)
             .jsonPath("$.data.tagsByPassiveDiscoveryId[0].name").isEqualTo(TEST_TAG_NAME_1)
             .jsonPath("$.data.tagsByPassiveDiscoveryId[1].id").isEqualTo(2)
@@ -325,14 +285,9 @@ class GraphQLTagServiceTest {
             "        name " +
             "    }" +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(getRequest))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(getRequest)
+            .expectCleanResponse()
             .jsonPath("$.data.tagsByPassiveDiscoveryId[0].id").isEqualTo(1)
             .jsonPath("$.data.tagsByPassiveDiscoveryId[0].name").isEqualTo(TEST_TAG_NAME_1)
             .jsonPath("$.data.tagsByPassiveDiscoveryId[1].id").isEqualTo(2)
@@ -356,14 +311,9 @@ class GraphQLTagServiceTest {
             "        name " +
             "    }" +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(getRequest))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(getRequest)
+            .expectCleanResponse()
             .jsonPath("$.data.tags[0].id").isEqualTo(1)
             .jsonPath("$.data.tags[0].name").isEqualTo(TEST_TAG_NAME_1)
             .jsonPath("$.data.tags[1].id").isEqualTo(2)
@@ -387,14 +337,9 @@ class GraphQLTagServiceTest {
             "        name " +
             "    }" +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(getRequest))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
+        webClient
+            .exchangeGraphQLQuery(getRequest)
+            .expectCleanResponse()
             .jsonPath("$.data.tags[0].id").isEqualTo(1)
             .jsonPath("$.data.tags[0].name").isEqualTo(TEST_TAG_NAME_1)
             .jsonPath("$.data.tags[1].id").isEqualTo(2)
@@ -414,20 +359,11 @@ class GraphQLTagServiceTest {
             "        } " +
             "    ) " +
             "}";
-        webClient.post()
-            .uri(GRAPHQL_PATH)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createPayload(request))
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody();
+        webClient
+            .exchangeGraphQLQuery(request)
+            .expectCleanResponse();
 
         verify(mockClient).removeTags(any(TagRemoveListDTO.class), eq(accessToken));
         verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
-    }
-
-    private String createPayload(String request) throws JSONException {
-        return new JSONObject().put("query", request).toString();
     }
 }
