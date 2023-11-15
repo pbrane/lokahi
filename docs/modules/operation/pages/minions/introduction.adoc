@@ -4,34 +4,46 @@
 
 A Minion is a lightweight, secure collector that monitors and communicates with the devices on your network, shares collected data, and connects your network with OpenNMS Cloud/Lōkahi.
 
-This section describes management tasks for installed Minions.
-If you have not yet installed at least one Minion, see <documentation> for instructions.
-
-Each Minion is associated with a location.
-A location defines a network area where you installed your Minion.
-The Minion's security certificate is closely tied to the location.
 With OpenNMS Cloud, you install your first Minion as part of the onboarding process.
-We create a location called "default" to associate with this Minion.
+Each Minion is associated with a monitoring location.
+The monitoring location defines a network area where you installed your Minion (for example, Boston, Building 3).
+The Minion installed as part of onboarding belongs to the "default" location.
+The Minion's security certificate is closely tied to the location.
 
-Before you can add a Minion, you need to create a location.
+This section describes management tasks for installed Minions, and how to deploy a Minion from the UI.
 
 == Create a location
 A location defines the network area where you installed your Minion.
 
-Follow these steps to add a location:
+Note that specifying a physical address for the location is optional; if you do, the nodes associated with the location will appear on the map page.
+See xref:visualizations/introduction.adoc#geo-map[Geographical Map] in the visualizations chapter.
+
+Before you can add a Minion, you need to create a location:
 
 . Click *Locations* in the left navigation menu.
 . Click the *+ Location* button.
 . Type the location name in the field.
 +
 Note that you cannot edit the location name after you save the location.
+. (Optional) In the *Physical Address* field, type the street address for the location or the latitude and longitude.
 . Click *Save*.
 
 The new location is saved.
-From the Locations list, you can edit the location (to add a Minion to it) or delete it.
+From the Locations list, you can edit the location (to add a Minion to it or specify a physical address) or delete it.
 
 == Associate a Minion with a location
-To install a Minion on your system and associate it with a location, make sure your system meets the following requirements:
+
+To install a Minion on your system and associate it with a location, you need to download our runtime bundle and run it in your desired location.
+For optimal monitoring, the Minion needs to be available at all times.
+
+Our runtime bundle contains the following:
+
+* An encrypted Minion certificate with a decryption password
+* A Docker Compose file with a Minion container
+
+Installation can take up to 10 minutes.
+
+Before you install a Minion, make sure your system meets the following requirements:
 
 * CPU: 3GHz quad core x86_64 and above
 * RAM: 8GB (physical) and above
@@ -44,23 +56,25 @@ NOTE: We recommend using Linux for production environments.
 Mac and Windows work as test environments for the Minion, but sending traps to the Minion does not work correctly.
 Traps will not be associated with the correct node, and xref:get-started/discovery/introduction.adoc#passive-discovery[passive discovery] will not be able to find the node that is sending traps.
 
+=== Minion installation
+
 To associate a Minion with a location, follow these steps:
 
 . Click *Locations* in the left navigation menu.
 . In the *Locations* list, click the vertical ellipsis (*⋮*) next to the location you want to add the Minion to.
 . Click *Edit*.
-. Click *Download Certifcate*.
-. Create a permanent directory for the Minion on the device where you want to run it.
-. Copy the downloaded security certificate to the permanent directory.
-Do not change its name.
-. Copy the password in the *Unlock File Password* field.
-. Open the certificate file and, when prompted, enter the password in the field.
+. Click *Download Certificate*.
+. Create a permanent directory for the Minion on the device where you want to run it Select a permanent location for the download (for example, `/minion/minion-default.zip`).
+.. Future Minion restarts require the certificate.
+. Click *Download Bundle* and copy it to the permanent directory.
+. Copy the password from the *Unlock File Password* field.
+. Unzip and open the download bundle and, when prompted, enter the password in the field.
 . Open a terminal window.
-. In OpenNMS, copy the Docker command.
+. In the OpenNMS UI, copy the Docker run command (`docker compose up -d`).
 . Paste the command into the terminal window.
 . Edit the `PATH_TO_DOWNLOADED_FILE` with the full path to the certificate file.
 . Run the command.
-. In OpenNMS, click *Save*.
+. In the OpenNMS UI, click *Save*.
 
 Your Minion will appear in the Locations screen once it is running and OpenNMS detects it.
 
