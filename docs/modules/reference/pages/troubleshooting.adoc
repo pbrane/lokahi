@@ -1,0 +1,38 @@
+:imagesdir: ../assets/images
+:!sectids:
+
+= Minion Troubleshooting
+:description: Get tips on troubleshooting the OpenNMS Lōkahi/Cloud Minion secure data collector.
+
+Sometimes, you may have everything installed and set up, but something does not work as expected.
+This section presents some issues that you may encounter, and how to solve them.
+
+You can start troubleshooting your environment by checking these items:
+
+* Minion status
+* Minion logs
+* Minion container configuration
+
+You can also use the following tools:
+
+* The terminal user interface (TUI). You can use it to run a health check, view system settings and logs, and list running containers and container images.
+* Karaf commands can diagnose issues in the Minion container.
+
+Common errors
+how to address
+tips and tricks
+
+Missing certificate
+Invalid/expired certificate
+Incorrect password for certificate file
+Minion cannot connect to Lōkahi/Cloud
+
+If Minion encounters non-recoverable errors it will shutdown.
+Shutdown is delayed to give user visibility into specific errors.
+
+Minion logs everything to the `karaf.log`` file.
+Separate file ?name? displays errors like cert expired/invalid
+
+
+
+
