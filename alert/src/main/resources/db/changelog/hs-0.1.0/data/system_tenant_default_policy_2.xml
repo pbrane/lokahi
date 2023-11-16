@@ -4,7 +4,6 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <!-- TODO: Need to test this with real data... -->
     <changeSet id="hs-0.1.1-delete-existing-system-tenant-data" author="pbouffard">
         <delete tableName="alert">
             <where>tenant_id='system-tenant'</where>
