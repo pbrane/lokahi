@@ -265,6 +265,7 @@ OpenNMS:
     CertificateManagerUrl: ""
 Citus:
   Enabled: true
+  WorkersEnabled: true
   Nodeport: 30007
   PgBouncerPort: 30099
   CoordinatorVolumeSize: 4Gi

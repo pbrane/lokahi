@@ -65,6 +65,7 @@ spec:
           echo [$(date -Iseconds)] Wait name resolve ${node_name};
           timeout 10m sh -c "until nslookup ${node_name} > /dev/null; do sleep 2; done;";
 
+{{- if .Values.Citus.WorkersEnabled }}
           echo [$(date -Iseconds)] Wait manager;
           timeout 5m sh -c "until psql 'host=citus user=desenv' -c 'SELECT citus_is_coordinator()' > /dev/null; do sleep 2; done;";
           psql 'host=citus user=desenv' -c 'SELECT citus_is_coordinator()' > /dev/null || { echo Manager not ready; kill -9 1; exit 1; }
@@ -75,6 +76,7 @@ spec:
             echo citus_add_node failed;
             kill -9 1;
           }
+{{- end }}
           SH
 
           su-exec postgres "/usr/local/bin/docker-entrypoint.sh" "postgres" \
