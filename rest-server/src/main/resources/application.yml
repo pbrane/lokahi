@@ -15,8 +15,13 @@ spring:
         jwt:
           # Providing this value will cause Spring to autoconfigure a
           # org.springframework.security.oauth2.jwt.ReactiveJwtDecoder instance.
-          jwk-set-uri: http://onms-keycloak:8080/auth/realms/opennms/protocol/openid-connect/certs
-          jws-algorithms: RS256
+          jwk-set-uri: ${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+          jws-algorithms: ${keycloak.signatureAlgorithm}
+
+keycloak:
+  url: http://onms-keycloak:8080/auth
+  realm: opennms
+  signatureAlgorithm: RS256
 
 graphql:
   spqr:
