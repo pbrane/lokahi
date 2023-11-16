@@ -1,19 +1,20 @@
 
 = Visualizations
-:description: Learn about the types of visualizations available in OpenNMS Lōkahi/Cloud: insights dashboard, top 10 applications and talkers, total network traffic.
+:description: Learn about the types of visualizations available in OpenNMS Lōkahi/Cloud: insights dashboard, top 10 applications and talkers, top nodes, total network traffic.
 
-The Insights Dashboard is the home page for your Horizon Stream instance.
-It displays statistics and visualizations that represent the current state of your monitored network.
-You can also see data visualizations on the xref:operation:flows/introduction.adoc[flows page], and on a per node basis by clicking the events/alarms icon on any node in your inventory.
+The insights dashboard displays statistics and visualizations that represent the current state of your monitored network.
+
+It also provides quick links to the xref:operation:inventory:introduction.adoc[inventory] and xref:operation:flows/introduction.adoc[flows] pages for additional data visualizations.
 
 == Statistics and visualizations
 
 The Insights Dashboard displays the following statistics and visualizations:
 
 * *Alert Status:* Number of alerts of each status (Critical, Major, and so on) and their incidence rate compared to the average for the selected time period (for example, "-15% Past 24 Hours").
+* *Node Reachability*: Percentage of nodes that OpenNMS can see and that respond to communication (ping, and so on).
+* *Top Nodes*: A sortable list of the most active monitored nodes on your network.
 * *Total Network Traffic:* A graph of inbound and outbound network traffic over the selected time period.
 * *Top 10 Applications:* A graph displaying the top 10 most used applications in your monitored network over the selected time period.
-* *Top 10 Talkers:* A graph displaying the top 10 most active applications in your monitored network over the selected time period.
 
 By default, information is shown for the last 24 hours.
 
