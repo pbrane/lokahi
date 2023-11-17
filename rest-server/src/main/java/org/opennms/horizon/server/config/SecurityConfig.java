@@ -29,6 +29,7 @@
 package org.opennms.horizon.server.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.opennms.horizon.server.web.BffGraphQLController;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,7 +58,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityFilterChain(
-        @Value("${graphql.spqr.http.endpoint:/graphql}") String graphQLEndpoint,
+        @Value(BffGraphQLController.GRAPHQL_ENDPOINT) String graphQLEndpoint,
         ServerHttpSecurity http,
         CorsConfigurationSource corsConfigurationSource,
         ReactiveJwtDecoder jwtDecoder
@@ -95,7 +96,7 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
-        @Value("${graphql.spqr.http.endpoint:/graphql}") String graphQLEndpoint,
+        @Value(BffGraphQLController.GRAPHQL_ENDPOINT) String graphQLEndpoint,
         BffProperties bffProperties
     ) {
         var source = new UrlBasedCorsConfigurationSource();
