@@ -30,41 +30,61 @@ Note that you cannot edit the location name after you save the location.
 The new location is saved.
 From the Locations list, you can edit the location (to add a Minion to it) or delete it.
 
-== Associate a Minion with a location
-To install a Minion on your system and associate it with a location, make sure your system meets the following requirements:
+== Deploy a Minion
+To deploy a Minion, you need to download the software bundle and install it locally.
+The bundle includes the following:
+
+* An encrypted Minion certificate with a decryption password
+* A Docker Compose file with a Minion container
+
+Deployment can take up to 10 minutes.
+
+=== Requirements
+
+Make sure your system meets the following requirements:
 
 * CPU: 3GHz quad core x86_64 and above
 * RAM: 8GB (physical) and above
 * Storage (disk space): 100GB with SSD and above
 * Docker environment with Docker Compose (installation instructions: https://docs.docker.com/desktop/install/mac-install/[Mac], https://docs.docker.com/desktop/install/linux-install/[Linux], https://docs.docker.com/desktop/install/windows-install/[Windows])
-* Access to a terminal window
-* Network Time Protocol (NTP) installed and configured
+* Access to a terminal window or command line interface
+* Synchronized system time (via NTP or Windows time service)
 
 NOTE: We recommend using Linux for production environments.
 Mac and Windows work as test environments for the Minion, but sending traps to the Minion does not work correctly.
 Traps will not be associated with the correct node, and xref:get-started/discovery/introduction.adoc#passive-discovery[passive discovery] will not be able to find the node that is sending traps.
 
-To associate a Minion with a location, follow these steps:
+To deploy a Minion, follow these steps:
 
 . Click *Locations* in the left navigation menu.
-. In the *Locations* list, click the vertical ellipsis (*⋮*) next to the location you want to add the Minion to.
+. In the *Locations* list, click the vertical ellipsis (*⋮*) next to the location where you want to deploy the Minion.
 . Click *Edit*.
-. Click *Download Certifcate*.
++
+NOTE: You can also deploy a Minion when you create a new location.
+Click *+Location*, fill in the fields, and click *Save*, and follow the steps in the rest of this procedure.
+. Click *Download Bundle*.
 . Create a permanent directory for the Minion on the device where you want to run it.
-. Copy the downloaded security certificate to the permanent directory.
-Do not change its name.
-. Copy the password in the *Unlock File Password* field.
-. Open the certificate file and, when prompted, enter the password in the field.
-. Open a terminal window.
-. In OpenNMS, copy the Docker command.
-. Paste the command into the terminal window.
-. Edit the `PATH_TO_DOWNLOADED_FILE` with the full path to the certificate file.
-. Run the command.
-. In OpenNMS, click *Save*.
+. Copy the downloaded bundle to the permanent directory and unzip it.
+. Open a terminal window, navigate to the bundle location, and type the following command: `docker compose up -d`.
+. In the OpenNMS UI, click *Save*.
 
 Your Minion will appear in the Locations screen once it is running and OpenNMS detects it.
 
 // do they click save after the Minion has been discovered or will it show up in the UI when it's been detected?
+
+== Regenerate a Minion certificate
+If at any point you are concerned your Minion might have been compromised, you may want to revoke the Minion's current security certificate and create a new one for it.
+
+To regenerate a Minion certificate, follow these steps:
+
+. Click *Locations* in the left navigation menu.
+. In the *Locations* list, click the vertical ellipsis (*⋮*) next to the location with the Minion whose certificate you want to revoke and recreate.
+. Click *Edit*.
+. Click the *Regenerate* button.
+. When prompted, click *Continue*.
+. Click *Save*.
+
+//is there anything else they need to do when they regenerate a certificate? Does the Minion reboot or do anything which might result in a gap in monitoring? I'd like to tell the users.
 
 == View Minion details
 

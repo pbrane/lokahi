@@ -32,10 +32,7 @@ image::flows/flows-node.png[Node card with events/alarms symbol circled, 300]
 
 == Shortcuts
 
-The Insights Dashboard includes shortcuts for the following functions through the *Quick Actions* button:
+The Insights Dashboard includes shortcuts for the following:
 
-* *Add Discovery:* Create a new xref:get-started/discovery/active.adoc[active] or xref:get-started/discovery/passive.adoc[passive discovery].
-* *Add Monitoring Policy:* Define a new xref:get-started/policies/create.adoc[monitoring policy].
-* *View Flows:* View visualizations of flows data collected from your monitored network.
-
-You can also view inventory by clicking the *inventory* link on the Total Network Traffic graph, and view flows by clicking the *flows* link on the Top 10 Applications graph.
+* The *Inventory* link on the Total Network Traffic graph navigates users to the Network Inventory page.
+* The *Flows* link on the Top 10 Applications graph navigates users to the Flows page.
