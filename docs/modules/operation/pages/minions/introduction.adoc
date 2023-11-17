@@ -12,6 +12,7 @@ The Minion's security certificate is closely tied to the location.
 
 This section describes management tasks for installed Minions, and how to deploy a Minion from the UI.
 
+[[create-location]]
 == Create a location
 A location defines the network area where you installed your Minion.
 
