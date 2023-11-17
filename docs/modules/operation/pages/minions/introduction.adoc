@@ -4,21 +4,21 @@
 
 A Minion is a lightweight, secure collector that monitors and communicates with the devices on your network, shares collected data, and connects your network with OpenNMS Cloud/Lōkahi.
 
-This section describes management tasks for installed Minions.
-If you have not yet installed at least one Minion, see <documentation> for instructions.
-
-Each Minion is associated with a location.
-A location defines a network area where you installed your Minion.
-The Minion's security certificate is closely tied to the location.
 With OpenNMS Cloud, you install your first Minion as part of the onboarding process.
-We create a location called "default" to associate with this Minion.
 
-Before you can add a Minion, you need to create a location.
+Each Minion is associated with a monitoring location.
+The monitoring location defines a network area where you installed your Minion (for example, Boston, Building 3).
+The Minion installed as part of onboarding belongs to the "default" location.
+The Minion's security certificate is closely tied to the location.
 
+This section describes management tasks for installed Minions, and how to deploy a Minion from the UI.
+
+[[create-location]]
 == Create a location
 A location defines the network area where you installed your Minion.
 
-Follow these steps to add a location:
+Note that specifying a physical address for the location is optional; if you do, the nodes associated with the location will appear on the map page.
+See xref:visualizations/introduction.adoc#geo-map[Geographical Map] in the visualizations chapter.
 
 . Click *Locations* in the left navigation menu.
 . Click the *+ Location* button.
