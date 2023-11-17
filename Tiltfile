@@ -624,7 +624,7 @@ k8s_resource(
 
 k8s_resource(
     'citus',
-    objects=['citus-issuer:issuer', 'citus-cert:certificate', 'citus-conf:configmap', 'citus:secret', 'citus-initial-sql:secret'],
+    objects=['citus-issuer:issuer', 'citus-cert:certificate', 'citus-conf:configmap', 'postgres:secret', 'citus-initial-sql:secret'],
     labels='citus',
     resource_deps=['cert-manager'],
 )

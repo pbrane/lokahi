@@ -117,7 +117,7 @@ OpenNMS:
     UseKubernetes: "true"
     DbName: "desenv"
     DbSchemaName: "minion_gateway"
-    DbHost: "citus"
+    DbHost: "postgres"
     Resources:
       Limits:
         Cpu: "2"
@@ -146,7 +146,7 @@ OpenNMS:
     Replicas: 1
     DbName: "desenv"
     DbSchemaName: "inventory"
-    DbHost: "citus"
+    DbHost: "postgres"
     Resources:
       Limits:
         Cpu: "2"
@@ -164,7 +164,7 @@ OpenNMS:
     Replicas: 1
     DbName: "desenv"
     DbSchemaName: "alert"
-    DbHost: "citus"
+    DbHost: "postgres"
     Resources:
       Limits:
         Cpu: "2"
@@ -181,7 +181,7 @@ OpenNMS:
     Replicas: 1
     DbName: "desenv"
     DbSchemaName: "notification"
-    DbHost: "citus"
+    DbHost: "postgres"
     Resources:
       Limits:
         Cpu: "2"
@@ -207,7 +207,7 @@ OpenNMS:
     Replicas: 1
     DbName: "desenv"
     DbSchemaName: "events"
-    DbHost: "citus"
+    DbHost: "postgres"
     Resources:
       Limits:
         Cpu: "2"
@@ -223,7 +223,7 @@ OpenNMS:
     Replicas: 1
     DbName: "desenv"
     DbSchemaName: "datachoices"
-    DbHost: "citus"
+    DbHost: "postgres"
     Resources:
       Limits:
         Cpu: "1"
@@ -294,7 +294,7 @@ Keycloak:
   TlsSecretName:
   DbSchemaName: "keycloak"
   DbName: "desenv"
-  DbHost: "citus"
+  DbHost: "postgres"
   Resources:
     Limits:
       Cpu: "1"
@@ -314,7 +314,7 @@ Grafana:
   Path: /grafana
   Port: 3000
   Replicas: 1
-  DbHost: "citus"
+  DbHost: "postgres"
   ServiceName: grafana
   ImageShortName: lokahi-grafana
   ImagePullPolicy: IfNotPresent

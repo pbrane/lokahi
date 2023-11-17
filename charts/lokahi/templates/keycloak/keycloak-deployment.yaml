@@ -48,7 +48,7 @@ spec:
           - -c
           - | 
             set -x;
-            while ! psql -U {{ .Values.Citus.AdminUser }} -h citus -c 'select 1' > /dev/null 2>&1; do
+            while ! psql -U {{ .Values.Citus.AdminUser }} -h postgres -c 'select 1'; do
               echo "Waiting for DB to be available"
               sleep 10
             done
@@ -91,12 +91,12 @@ spec:
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: citus
+                  name: postgres
                   key: keycloakUser
             - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: citus
+                  name: postgres
                   key: keycloakPwd
             - name: KEYCLOAK_ADMIN
               valueFrom:
