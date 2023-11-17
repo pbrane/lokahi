@@ -198,6 +198,23 @@ public class GraphQLAuthTest {
             )
             .expectBody()
             .isEmpty();
+    }
 
+
+    @Test
+    void anUnexpectedDecoderExceptionDoesNotLeakInternalDetails() {
+        when(mockJwtDecoder.decode(anyString())).thenThrow(new IllegalStateException("Could not obtain the keys"));
+
+        webClient.post()
+            .uri(webClient.getEndpoint())
+            .header(HttpHeaders.CONTENT_TYPE, webClient.getContentType().toString())
+            .header(HttpHeaders.AUTHORIZATION, "Bearer badvalue")
+            .bodyValue(GraphQLWebTestClient.createPayload(QUERY))
+            .exchange()
+            .expectStatus().is5xxServerError()
+            .expectBody()
+            .jsonPath("$.trace").doesNotExist()
+            .jsonPath("$.error").isEqualTo("Internal Server Error")
+            .jsonPath("$.message").isEqualTo("Internal Server Error");
     }
 }
