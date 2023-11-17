@@ -42,6 +42,9 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -56,12 +59,14 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityFilterChain(
         @Value("${graphql.spqr.http.endpoint:/graphql}") String graphQLEndpoint,
         ServerHttpSecurity http,
+        CorsConfigurationSource corsConfigurationSource,
         ReactiveJwtDecoder jwtDecoder
     ) {
         http
             // Disabled because by-default, it is not configured to work with
             // OAuth2
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource))
             .authorizeExchange((authorize) -> authorize
                 .pathMatchers(graphQLEndpoint).hasAuthority(USER_ROLE_AUTHORITY)
                 .anyExchange().permitAll()
@@ -86,5 +91,22 @@ public class SecurityConfig {
             jwt -> List.of(new SimpleGrantedAuthority(USER_ROLE_AUTHORITY))
         );
         return new ReactiveJwtAuthenticationConverterAdapter(authConverter);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+        @Value("${graphql.spqr.http.endpoint:/graphql}") String graphQLEndpoint,
+        BffProperties bffProperties
+    ) {
+        var source = new UrlBasedCorsConfigurationSource();
+
+        if (bffProperties.isCorsAllowed()) {
+            log.info("Allowing all CORS requests");
+            source.registerCorsConfiguration(
+                graphQLEndpoint,
+                new CorsConfiguration().applyPermitDefaultValues()
+            );
+        }
+        return source;
     }
 }
