@@ -266,7 +266,7 @@ OpenNMS:
 Citus:
   Enabled: true
   WorkersEnabled: true
-  Nodeport: 30007
+  ServiceName: postgres
   PgBouncerPort: 30099
   CoordinatorVolumeSize: 4Gi
   WorkerVolumeSize: 2Gi
