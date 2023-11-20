@@ -25,14 +25,16 @@
 </template>
 
 <script lang="ts" setup>
-import { TimeRange } from '@/types/graphql'
+import {Severity, TimeRange} from '@/types/graphql'
 
 defineProps<{
   isFilter?: boolean
   timeRange?: TimeRange
 }>()
 
-const severities = ['critical', 'major', 'minor', 'warning', 'indeterminate']
+const severities: Severity[] = [
+  Severity.Critical, Severity.Major, Severity.Minor, Severity.Warning, Severity.Indeterminate
+]
 
 // for setting CSS properties
 const gap = 1.5
