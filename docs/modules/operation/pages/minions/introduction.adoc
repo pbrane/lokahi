@@ -7,7 +7,7 @@ A Minion is a lightweight, secure collector that monitors and communicates with 
 With OpenNMS Cloud, you install your first Minion as part of the onboarding process.
 
 Each Minion is associated with a monitoring location.
-The monitoring location defines a network area where you installed your Minion (for example, Boston, Building 3).
+The monitoring location defines a network area where you installed your Minion (for example, "Boston" or "Building 3").
 The Minion installed as part of onboarding belongs to the "default" location.
 The Minion's security certificate is closely tied to the location.
 
@@ -17,25 +17,27 @@ This section describes management tasks for installed Minions, and how to deploy
 == Create a location
 A location defines the network area where you installed your Minion.
 
-Note that specifying a physical address for the location is optional; if you do, the nodes associated with the location will appear on the map page.
-See xref:visualizations/introduction.adoc#geo-map[Geographical Map] in the visualizations chapter.
-
 . Click *Locations* in the left navigation menu.
 . Click the *+ Location* button.
 . Type the location name in the field.
 +
 Note that you cannot edit the location name after you save the location.
+. (Optional) In the *Physical Address* field, type the street address for the location or the latitude and longitude to display nodes associated with the location on the xref:visualizations/introduction.adoc#geo-map[geographical map] page.
 . Click *Save*.
 
 The new location is saved.
-From the Locations list, you can edit the location (to add a Minion to it) or delete it.
 
+If you want to deploy a Minion, you can download the Minion software bundle, following the instructions in <<minion-deploy, Deploy a Minion>>.
+
+From the Locations list, you can edit the location (to add a Minion or specify a physical address) or delete it.
+
+[[minion-deploy]]
 == Deploy a Minion
 To deploy a Minion, you need to download the software bundle and install it locally.
 The bundle includes the following:
 
-* An encrypted Minion certificate with a decryption password
-* A Docker Compose file with a Minion container
+* Encrypted Minion certificate with a decryption password
+* Docker Compose file with a Minion container
 
 Deployment can take up to 10 minutes.
 
@@ -60,17 +62,16 @@ To deploy a Minion, follow these steps:
 . In the *Locations* list, click the vertical ellipsis (*⋮*) next to the location where you want to deploy the Minion.
 . Click *Edit*.
 +
-NOTE: You can also deploy a Minion when you create a new location.
-Click *+Location*, fill in the fields, and click *Save*, and follow the steps in the rest of this procedure.
+NOTE: You can also deploy a Minion when you <<create-location, create a new location>>.
 . Click *Download Bundle*.
 . Create a permanent directory for the Minion on the device where you want to run it.
 . Copy the downloaded bundle to the permanent directory and unzip it.
++
+NOTE: You can ignore the *Unlock File Password* field, as it is no longer required.
 . Open a terminal window, navigate to the bundle location, and type the following command: `docker compose up -d`.
-. In the OpenNMS UI, click *Save*.
 
-Your Minion will appear in the Locations screen once it is running and OpenNMS detects it.
-
-// do they click save after the Minion has been discovered or will it show up in the UI when it's been detected?
+Refresh the browser to view your Minion.
+It will appear in the Locations screen once it is running and OpenNMS detects it.
 
 == Regenerate a Minion certificate
 If at any point you are concerned your Minion might have been compromised, you may want to revoke the Minion's current security certificate and create a new one for it.
@@ -82,7 +83,6 @@ To regenerate a Minion certificate, follow these steps:
 . Click *Edit*.
 . Click the *Regenerate* button.
 . When prompted, click *Continue*.
-. Click *Save*.
 
 //is there anything else they need to do when they regenerate a certificate? Does the Minion reboot or do anything which might result in a gap in monitoring? I'd like to tell the users.
 
