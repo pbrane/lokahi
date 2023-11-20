@@ -50,7 +50,7 @@
 <script lang="ts" setup>
 import Add from '@featherds/icon/action/Add'
 import Cancel from '@featherds/icon/navigation/Cancel'
-import { TimeRange } from '@/types/graphql'
+import { Severity, TimeRange } from '@/types/graphql'
 import { useAlertsStore } from '@/store/Views/alertsStore'
 import { useAlertsQueries } from '@/store/Queries/alertsQueries'
 
@@ -58,7 +58,7 @@ const alertsStore = useAlertsStore()
 const alertsQueries = useAlertsQueries()
 
 const props = defineProps<{
-  severity: string
+  severity: Severity
   isFilter?: boolean
   timeRange?: TimeRange
 }>()
