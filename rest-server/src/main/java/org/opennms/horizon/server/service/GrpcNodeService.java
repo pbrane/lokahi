@@ -51,7 +51,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -120,7 +119,7 @@ public class GrpcNodeService {
 
     @GraphQLQuery
     public Flux<TopNNode> getTopNNode(@GraphQLEnvironment ResolutionEnvironment env, Integer timeRange, TimeRangeUnit timeRangeUnit) {
-        // see LOK-2206
-        return Flux.fromIterable(new ArrayList<>());
+        return Flux.fromIterable(client.listNodes(headerUtil.getAuthHeader(env)))
+            .flatMap(nodeDTO -> nodeStatusService.getTopNNode(nodeDTO, timeRange, timeRangeUnit, env));
     }
 }

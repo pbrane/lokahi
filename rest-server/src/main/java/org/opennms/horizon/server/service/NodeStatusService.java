@@ -48,7 +48,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,7 +145,7 @@ public class NodeStatusService {
             .getMetric(env, RESPONSE_TIME_METRIC, labels, TIME_RANGE_IN_SECONDS, TimeRangeUnit.SECOND);
     }
 
-    public NodeReachability getNodeReachability(NodeDTO node,
+    public Mono<NodeReachability> getNodeReachability(NodeDTO node,
                                                 Integer timeRange,
                                                 TimeRangeUnit timeRangeUnit,
                                                 ResolutionEnvironment env) {
@@ -156,29 +159,33 @@ public class NodeStatusService {
         request.setNodeId(node.getId());
         request.setMonitorType(Constants.DEFAULT_MONITOR_TYPE);
         request.setIpAddress(ipInterface.getIpAddress());
-
-        var monitorStatusProto = client.getMonitorStatus(request, headerUtil.getAuthHeader(env));
-        long firstObservationTime = monitorStatusProto.getFirstObservationTime();
-        var optionalParams = Map.of(Constants.FIRST_OBSERVATION_TIME, String.valueOf(firstObservationTime));
-        var future = tsdbMetricsService.
-            getCustomMetric(env, Constants.REACHABILITY_PERCENTAGE, labels, timeRange, timeRangeUnit, optionalParams).toFuture();
+        // Defaults to 24hr window for first observation time.
+        long firstObservationTime = Instant.now().minus(24, ChronoUnit.HOURS).toEpochMilli();
         try {
-            var timeSeriesResult = future.join();
-            return transformToNodeReachability(node.getId(), timeSeriesResult);
+            var monitorStatusProto = client.getMonitorStatus(request, headerUtil.getAuthHeader(env));
+            firstObservationTime = monitorStatusProto.getFirstObservationTime();
+        } catch (Exception e) {
+            LOG.warn("Exception while getting monitor status for request {}", request);
+        }
+        var optionalParams = Map.of(Constants.FIRST_OBSERVATION_TIME, String.valueOf(firstObservationTime));
+        try {
+            return tsdbMetricsService.
+                getCustomMetric(env, Constants.REACHABILITY_PERCENTAGE, labels, timeRange, timeRangeUnit, optionalParams)
+                .map(result -> transformToNodeReachability(node.getId(), result));
         } catch (Exception e) {
             LOG.warn("Failed to get reachability for node id {}", node.getId(), e);
         }
-        return new NodeReachability(node.getId(), 0);
+        return Mono.just(new NodeReachability(node.getId(), 0.0));
     }
 
     private NodeReachability transformToNodeReachability(long id, TimeSeriesQueryResult result) {
         if (isNull(result)) {
-            return new NodeReachability(id, 0);
+            return new NodeReachability(id, 0.0);
         }
         List<TSResult> tsResults = result.getData().getResult();
 
         if (isEmpty(tsResults)) {
-            return new NodeReachability(id, 0);
+            return new NodeReachability(id, 0.0);
         }
 
         for (TSResult tsResult : tsResults) {
@@ -196,46 +203,48 @@ public class NodeStatusService {
             var roundedValue = Math.min(reachability, 100.0);
             return new NodeReachability(id, roundedValue);
         }
-        return new NodeReachability(id, 0);
+        return new NodeReachability(id, 0.0);
     }
 
-    public NodeResponseTime getNodeAvgResponseTime(NodeDTO node, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
+    public Mono<NodeResponseTime> getNodeAvgResponseTime(NodeDTO node, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
         IpInterfaceDTO ipInterface = getPrimaryInterface(node);
         Map<String, String> labels = new HashMap<>();
         labels.put(NODE_ID_KEY, String.valueOf(node.getId()));
         labels.put(MONITOR_KEY, Constants.DEFAULT_MONITOR_TYPE);
         labels.put(INSTANCE_KEY, ipInterface.getIpAddress());
 
-        var future = tsdbMetricsService.getMetric(env,
-            AVG_RESPONSE_TIME, labels, timeRange, timeRangeUnit).toFuture();
         try {
-            var timeSeriesResult = future.join();
-            return transformToNodeResponseTime(node.getId(), timeSeriesResult);
+            return tsdbMetricsService.getMetric(env,
+                AVG_RESPONSE_TIME, labels, timeRange, timeRangeUnit).map(result ->
+                transformToNodeResponseTime(node.getId(), result));
         } catch (Exception e) {
             LOG.warn("Failed to get response time for node id {}", node.getId(), e);
         }
-        return new NodeResponseTime(node.getId(), 0);
+        return Mono.just(new NodeResponseTime(node.getId(), 0.0));
     }
 
-    public TopNNode getTopNNode(NodeDTO nodeDTO, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
-         var nodeReachability = getNodeReachability(nodeDTO, timeRange, timeRangeUnit, env);
-         var nodeResponseTime = getNodeAvgResponseTime(nodeDTO, timeRange, timeRangeUnit, env);
-         var topNNode = new TopNNode();
-         topNNode.setNodeLabel(nodeDTO.getNodeLabel());
-         topNNode.setLocation(nodeDTO.getLocation());
-         topNNode.setReachability(nodeReachability.getReachability());
-         topNNode.setAvgResponseTime(nodeResponseTime.getResponseTime());
-         return topNNode;
+    public Mono<TopNNode> getTopNNode(NodeDTO nodeDTO, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
+        Mono<NodeReachability> nodeReachability = getNodeReachability(nodeDTO, timeRange, timeRangeUnit, env);
+        Mono<NodeResponseTime>  nodeResponseTime = getNodeAvgResponseTime(nodeDTO, timeRange, timeRangeUnit, env);
+        Mono<Tuple2<NodeReachability, NodeResponseTime>> result = nodeReachability.zipWith(nodeResponseTime);
+        return result.map(tuple -> {
+            var topNNode = new TopNNode();
+            topNNode.setNodeLabel(nodeDTO.getNodeLabel());
+            topNNode.setLocation(nodeDTO.getLocation());
+            topNNode.setReachability(tuple.getT1().getReachability());
+            topNNode.setAvgResponseTime(tuple.getT2().getResponseTime());
+            return topNNode;
+        });
     }
 
     private NodeResponseTime transformToNodeResponseTime(long id, TimeSeriesQueryResult result) {
         if (isNull(result)) {
-            return new NodeResponseTime(id, 0);
+            return new NodeResponseTime(id, 0.0);
         }
         List<TSResult> tsResults = result.getData().getResult();
 
         if (isEmpty(tsResults)) {
-            return new NodeResponseTime(id, 0);
+            return new NodeResponseTime(id, 0.0);
         }
 
         for (TSResult tsResult : tsResults) {
@@ -253,7 +262,7 @@ public class NodeStatusService {
             Double responseTime = doubles.get(1);
             return new NodeResponseTime(id, responseTime);
         }
-        return new NodeResponseTime(id, 0);
+        return new NodeResponseTime(id, 0.0);
 
     }
 
