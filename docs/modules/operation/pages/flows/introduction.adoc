@@ -11,9 +11,10 @@ Persisting flows for long-term storage can aid in forensic analysis.
 
 By default, OpenNMS Cloud/Lōkahi displays the following flows data:
 
+* Node reachability
+* Top nodes
 * Total network traffic
 * Top 10 applications
-* Top 10 talkers
 
 You can see visualizations of this flows data on the Insights Dashboard and on the Flows page.
 
