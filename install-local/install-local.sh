@@ -25,7 +25,7 @@ IMAGE_TAG=${3:-local}
 IMAGE_PREFIX=${4:-opennms}
 KIND_CLUSTER_NAME=kind-test
 NAMESPACE=hs-instance
-TIMEOUT=${TIMEOUT:-10m0s}
+TIMEOUT=${TIMEOUT:-20m0s}
 
 LOAD_IMAGES_USING_KIND=${LOAD_IMAGES_USING_KIND:-}
 DEBUG_IMAGES=${DEBUG_IMAGES:-}
@@ -45,6 +45,11 @@ create_cluster() {
   kind create cluster --name $KIND_CLUSTER_NAME --config=./install-local-kind-config.yaml
   kubectl config use-context "kind-$KIND_CLUSTER_NAME"
   kubectl config get-contexts
+
+  echo ________________Installing cert-manager_________
+  kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+  kubectl rollout status deployment cert-manager --namespace cert-manager
+  kubectl rollout status deployment cert-manager-webhook --namespace cert-manager
 }
 
 cluster_ready_check () {

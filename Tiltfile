@@ -23,7 +23,7 @@
 ## 22 = mail-server
 ## 23 = zookeeper
 ## 24 = kafka
-## 25 = postgres
+## 25 = citus/postgres
 ## 26 = keycloak
 ## 27 = minion (classic)
 ## 28 = metric processor
@@ -389,7 +389,7 @@ jib_project(
     'notifications',
     'opennms-notifications',
     port_forwards=['15065:6565', '15050:5005', '15080:8080'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Vue.js App ###
@@ -455,7 +455,7 @@ jib_project_multi_module(
     'inventory',
     'opennms-inventory',
     port_forwards=['29080:8080', '29050:5005', '29065:6565'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Alert ###
@@ -465,7 +465,7 @@ jib_project(
     'alert',
     'opennms-alert',
     port_forwards=['32080:9090', '32050:5005', '32065:6565',  '32000:8080'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Metrics Processor ###
@@ -475,7 +475,7 @@ jib_project_multi_module(
     'metrics-processor',
     'opennms-metrics-processor',
     port_forwards=['28080:8080', '28050:5005'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Events ###
@@ -485,7 +485,7 @@ jib_project_multi_module(
     'events',
     'opennms-events',
     port_forwards=['30050:5005', '30080:8080', '30065:6565'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Minion Gateway ###
@@ -495,7 +495,7 @@ jib_project_multi_module(
     'minion-gateway',
     'opennms-minion-gateway',
     port_forwards=['16080:8080', '16050:5005'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### DataChoices ###
@@ -505,7 +505,7 @@ jib_project(
     'datachoices',
     'opennms-datachoices',
     port_forwards=['33080:9090', '33050:5005', '33065:6565'],
-    resource_deps=['shared-lib'],
+    resource_deps=['shared-lib', 'citus-worker'],
 )
 
 ### Minion ###
@@ -572,6 +572,7 @@ k8s_resource(
     new_name='keycloak',
     labels='keycloak',
     port_forwards=['26080:8080'],
+    resource_deps=['citus-worker'],
     links=[
       link('https://onmshs.local:1443/auth/admin/', 'Admin Console'),
       link('http://localhost:26080/auth', 'Welcome Page')
@@ -594,7 +595,7 @@ k8s_resource(
     'grafana',
     labels='z_dependencies',
     port_forwards=['18080:3000'],
-    resource_deps=['postgres'],
+    resource_deps=['citus-worker'],
 )
 
 ### Cortex ###
@@ -604,14 +605,35 @@ k8s_resource(
     port_forwards=['19000:9000'],
 )
 
-### Postgres ###
+### Citus/Postgres ###
 k8s_resource(
-    'postgres',
-    labels='z_dependencies',
+    'citus',
+    labels='citus',
     port_forwards=['25054:5432'],
+    resource_deps=['cert-manager'],
     links=[
-        link('jdbc:postgresql://localhost:25054/horizon_stream?user=postgres&password=any', name='JDBC URL'),
+        link('jdbc:postgresql://localhost:25054/horizon_stream?user=desenv&password=any', name='JDBC URL'),
     ]
+)
+
+k8s_resource(
+    'citus-worker',
+    labels='citus',
+    resource_deps=['citus'],
+)
+
+k8s_resource(
+    'citus',
+    objects=['citus-issuer:issuer', 'citus-cert:certificate', 'citus-conf:configmap', 'postgres:secret', 'citus-initial-sql:secret'],
+    labels='citus',
+    resource_deps=['cert-manager'],
+)
+
+k8s_resource(
+    'citus-worker',
+    objects=['citus-worker-conf:configmap'],
+    labels='citus',
+    resource_deps=['cert-manager'],
 )
 
 ### Kafka ###
