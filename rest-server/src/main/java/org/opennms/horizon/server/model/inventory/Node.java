@@ -52,4 +52,5 @@ public class Node {
     private String systemDescr;
     private String systemLocation;
     private String systemContact;
+    private String location;
 }

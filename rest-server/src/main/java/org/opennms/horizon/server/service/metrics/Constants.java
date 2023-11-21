@@ -35,6 +35,12 @@ import lombok.NoArgsConstructor;
 public final class Constants {
     public static final String AZURE_MONITOR_TYPE = "AZURE";
     public static final String AZURE_SCAN_TYPE = "AZURE_SCAN";
+    public static final String DEFAULT_MONITOR_TYPE = "ICMP";
+    public static final String NODE_ID_KEY = "node_id";
+    public static final String MONITOR_KEY = "monitor";
+    public static final String INSTANCE_KEY = "instance";
+    public static final String FIRST_OBSERVATION_TIME = "first_observation_time";
+
 
 
     public static final String QUERY_PREFIX = "query=";
@@ -50,6 +56,9 @@ public final class Constants {
     public static final String BW_IN_PERCENTAGE = "bw_util_network_in";
     public static final String BW_OUT_PERCENTAGE = "bw_util_network_out";
 
+    public static final String REACHABILITY_PERCENTAGE = "reachability_percentage";
+    public static final String AVG_RESPONSE_TIME = "avg_response_time_msec";
+
     public static final String QUERY_FOR_BW_IN_UTIL_PERCENTAGE = "(irate(ifHCInOctets%1$s[4m])*8) " +
         "/ (ifHighSpeed%1$s *1000000) * 100 unless ifHighSpeed%1$s == 0";
     public static final String QUERY_FOR_BW_OUT_UTIL_PERCENTAGE = "(irate(ifHCOutOctets%1$s[4m])*8) " +
@@ -62,19 +71,19 @@ public final class Constants {
     public static final String QUERY_FOR_NETWORK_ERRORS_OUT = "irate(ifOutErrors%s[4m])";
 
     // Total Network
-    public static final String TOTAL_NETWORK_BYTES_IN = "total_network_bytes_in";
-    public static final String TOTAL_NETWORK_BYTES_OUT = "total_network_bytes_out";
-    public static final String QUERY_FOR_TOTAL_NETWORK_BYTES_IN = """
-                sum(irate(ifHCInOctets[4m])) or vector(0) +
-                sum(sum_over_time(network_in_total_bytes[4m])) or vector(0)
+    public static final String TOTAL_NETWORK_BITS_IN = "total_network_bits_in";
+    public static final String TOTAL_NETWORK_BITS_OUT = "total_network_bits_out";
+    public static final String QUERY_FOR_TOTAL_NETWORK_BITS_IN = """
+                sum(irate(ifHCInOctets[4m]))*8 or vector(0) +
+                sum(sum_over_time(network_in_total_bytes[4m]))*8 or vector(0)
                     unless
                 count(irate(ifHCInOctets[4m])) == 0 and
                 count(sum_over_time(network_in_total_bytes[4m])) == 0
         """;
 
-    public static final String QUERY_FOR_TOTAL_NETWORK_BYTES_OUT = """
-                sum(irate(ifHCOutOctets[4m])) or vector(0) +
-                sum(sum_over_time(network_out_total_bytes[4m])) or vector(0)
+    public static final String QUERY_FOR_TOTAL_NETWORK_BITS_OUT = """
+                sum(irate(ifHCOutOctets[4m]))*8 or vector(0) +
+                sum(sum_over_time(network_out_total_bytes[4m]))*8 or vector(0)
                     unless
                 count(irate(ifHCOutOctets[4m])) == 0 and
                 count(sum_over_time(network_out_total_bytes[4m])) == 0
