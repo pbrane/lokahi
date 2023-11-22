@@ -49,6 +49,12 @@ import java.util.Map;
 @RestController
 public class BffGraphQLController extends GraphQLController<ServerWebExchange> {
 
+    /**
+     * The configuration property and default value as specified in the base
+     * {@link GraphQLController}.
+     */
+    public static final String GRAPHQL_ENDPOINT = "${graphql.spqr.http.endpoint:/graphql}";
+
     public BffGraphQLController(GraphQL graphQL, GraphQLReactiveExecutor executor) {
         super(graphQL, executor);
     }
