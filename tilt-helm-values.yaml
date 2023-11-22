@@ -19,6 +19,9 @@ Ingress:
 MailServer:
   Enabled: true
 
+Citus:
+  Enabled: true
+
 OpenNMS:
   global:
     openTelemetry:
