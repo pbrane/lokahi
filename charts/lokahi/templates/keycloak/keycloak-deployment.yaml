@@ -40,6 +40,7 @@ spec:
                 values:
                 - {{ .Values.NodeRestrictions.Value }}
       {{- end }}
+      {{- if .Values.Citus.Enabled }}
       initContainers:
         - name: wait-for-db
           image: postgres:16-alpine
@@ -53,6 +54,7 @@ spec:
               sleep 10
             done
             echo "Database is available"
+      {{- end }}
       containers:
         - name: keycloak
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.Keycloak) | quote }}

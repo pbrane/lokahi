@@ -264,7 +264,7 @@ OpenNMS:
     PrivateRepoEnabled: false
     CertificateManagerUrl: ""
 Citus:
-  Enabled: true
+  Enabled: false
   WorkersEnabled: true
   ServiceName: postgres
   PgBouncerPort: 30099

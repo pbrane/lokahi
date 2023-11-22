@@ -46,6 +46,7 @@ spec:
         - name: spring-boot-app-config-volume
           configMap:
             name: spring-boot-app-config
+      {{- if .Values.Citus.Enabled }}
       initContainers:
         - name: wait-for-db
           image: postgres:16-alpine
@@ -59,6 +60,7 @@ spec:
               sleep 10
             done
             echo "Database is available"
+      {{- end }}
       containers:
         - name: {{ .Values.OpenNMS.Alert.ServiceName }}
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Alert) | quote }}
