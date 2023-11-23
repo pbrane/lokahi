@@ -4,7 +4,7 @@
 
 == A
 [[glossary-active-discovery]]
-Active discovery:: Queries nodes and cloud APIs to detect the entities to monitor through ping sweeps (ICMP/SNMP) or querying the virtual machine list (Azure).
+Active discovery:: Queries nodes to detect the entities to monitor through ping sweeps (ICMP/SNMP) or querying the virtual machine list (Azure).
 
 == D
 [[glossary-discovery]]
