@@ -29,4 +29,4 @@ Rules are available only with the policy in which they were created.
 . Click *Save Rule*.
 . Click *Save Policy*.
 
-// Are there guidelines around conflicts with rules?
+Users should take care to test monitoring policies in a non-production or staging environment prior to rollout on production, particularly to make sure rules do not conflict.
