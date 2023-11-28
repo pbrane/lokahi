@@ -57,7 +57,7 @@ class TenantIdentifierResolver implements CurrentTenantIdentifierResolver, Hiber
 
     @EventListener(ApplicationReadyEvent.class)
     public void onReady() {
-//        // If we return null for tenant id during startup, we get an error, so only return null after the application is ready.
+        // If we return null for tenant id during startup, we get an error, so only return null after the application is ready.
         defaultTenantId = null;
     }
 
