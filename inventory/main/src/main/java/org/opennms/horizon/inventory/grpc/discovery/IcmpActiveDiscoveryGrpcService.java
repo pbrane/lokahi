@@ -62,7 +62,6 @@ public class IcmpActiveDiscoveryGrpcService extends IcmpActiveDiscoveryServiceGr
     private final TenantLookup tenantLookup;
     private final IcmpActiveDiscoveryService discoveryService;
     private final ScannerTaskSetService scannerTaskSetService;
-    private final MonitoringLocationService monitoringLocationService;
     private static final Integer MAX_RANGE_OF_IP_ADDRESSES_PER_DISCOVERY = 65536;
 
     @Override
@@ -77,7 +76,7 @@ public class IcmpActiveDiscoveryGrpcService extends IcmpActiveDiscoveryServiceGr
                 try {
                     var activeDiscoveryConfig = discoveryService.createActiveDiscovery(request, tenantId);
 
-                    validateActiveDiscovery(request, tenantId);
+                    validateActiveDiscovery(request);
 
                     responseObserver.onNext(activeDiscoveryConfig);
                     responseObserver.onCompleted();
@@ -123,7 +122,7 @@ public class IcmpActiveDiscoveryGrpcService extends IcmpActiveDiscoveryServiceGr
             var activeDiscovery = discoveryService.getDiscoveryById(request.getId(), tenant.get());
             IcmpActiveDiscoveryDTO activeDiscoveryConfig;
             try {
-                validateActiveDiscovery(request, tenant.get());
+                validateActiveDiscovery(request);
             } catch (LocationNotFoundException | IllegalArgumentException e) {
                 log.error("Exception while validating active discovery", e);
                 responseObserver.onError(StatusProto.toStatusRuntimeException(createInvalidDiscoveryInput(e.getMessage())));
@@ -147,11 +146,7 @@ public class IcmpActiveDiscoveryGrpcService extends IcmpActiveDiscoveryServiceGr
         }
     }
 
-    private void validateActiveDiscovery(IcmpActiveDiscoveryCreateDTO request, String tenantId) {
-        var location = monitoringLocationService.findByLocationIdAndTenantId(Long.parseLong(request.getLocationId()), tenantId);
-        if (location.isEmpty()) {
-            throw new LocationNotFoundException("Invalid location");
-        }
+    private void validateActiveDiscovery(IcmpActiveDiscoveryCreateDTO request) {
         var ipList = request.getIpAddressesList();
         for (var ipAddressEntry : ipList) {
             ipAddressEntry = ipAddressEntry.trim();
