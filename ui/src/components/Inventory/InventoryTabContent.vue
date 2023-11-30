@@ -45,8 +45,6 @@ defineProps({
   }
 })
 
-
-
 const tagStore = useTagStore()
 const inventoryStore = useInventoryStore()
 
@@ -67,7 +65,6 @@ const openModalForDeletingTags = (node: NewInventoryNode) => {
   tagStore.setActiveNode(node)
   tagStore.openModal()
 }
-
 
 const metricsAsTextBadges = (metrics?: RawMetric) => {
   const badges = []

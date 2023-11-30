@@ -20,7 +20,7 @@
             </AtomicAutocomplete>
             <FeatherTooltip :title="tagManagerTip" v-slot="{ attrs, on }">
               <FeatherButton class="save-tags-btn" v-bind="attrs" v-on="tagManagerTip ? on : null"
-                @click="() => tagStore.saveTagsToSelectedNodes()" :disabled="!inventoryStore.nodesSelected.length"
+                @click="saveTagsToSelectedNodes" :disabled="!inventoryStore.nodesSelected.length"
                 primary data-test="save-tags-button">
                 {{ `Save tags to node${inventoryStore.nodesSelected.length > 1 ? 's' : ''}` }}
               </FeatherButton>
@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
 import { useInventoryStore } from '@/store/Views/inventoryStore'
+import { useInventoryQueries } from '@/store/Queries/inventoryQueries'
 import { useTagQueries } from '@/store/Queries/tagQueries'
 import { useTagStore } from '@/store/Components/tagStore'
 import CancelIcon from '@featherds/icon/navigation/Cancel'
@@ -56,6 +57,7 @@ import AtomicAutocomplete from '../Common/AtomicAutocomplete.vue'
 import useAtomicAutocomplete from '@/composables/useAtomicAutocomplete'
 
 const inventoryStore = useInventoryStore()
+const inventoryQueries = useInventoryQueries()
 const tagQueries = useTagQueries()
 const tagStore = useTagStore()
 
@@ -77,6 +79,11 @@ const tagManagerTip = computed(() => {
   }
   return val
 })
+
+const saveTagsToSelectedNodes = async () => {
+  await tagStore.saveTagsToSelectedNodes()
+  await inventoryQueries.buildNetworkInventory()
+}
 </script>
 
 <style scoped lang="scss">

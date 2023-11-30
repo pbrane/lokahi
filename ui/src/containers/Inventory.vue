@@ -7,12 +7,10 @@
         data-test="page-header"
       />
     </div>
-
-    <InventoryTagModal
+    <TagsModal
       :visible="tagStore.isVisible"
-      :title="''"
       :node="tagStore.activeNode"
-      :closeModal="tagStore.closeModal"
+      :closeModal="closeModal"
     />
     <FeatherTabContainer
       class="tab-container"
@@ -142,10 +140,19 @@ import InventoryFilter from '@/components/Inventory/InventoryFilter.vue'
 import InventoryTabContent from '@/components/Inventory/InventoryTabContent.vue'
 import { MonitoredStates, InventoryItem } from '@/types'
 import { useInventoryStore } from '@/store/Views/inventoryStore'
+import { useInventoryQueries } from '@/store/Queries/inventoryQueries'
 import { FeatherTextBadge, BadgeTypes } from '@featherds/badge'
 import { useTagStore } from '@/store/Components/tagStore'
 
+const inventoryQueries = useInventoryQueries()
 const inventoryStore = useInventoryStore()
+const tagStore = useTagStore()
+
+const closeModal = () => {
+  tagStore.closeModal()
+  inventoryQueries.buildNetworkInventory()
+}
+
 const tabMonitoredContent = computed((): InventoryItem[] =>
   inventoryStore.nodes.filter((d) => d.monitoredState === MonitoredStates.MONITORED)
 )
@@ -155,7 +162,6 @@ const tabUnmonitoredContent = computed((): InventoryItem[] =>
 const tabDetectedContent = computed((): InventoryItem[] =>
   inventoryStore.nodes.filter((d) => d.monitoredState === MonitoredStates.DETECTED)
 )
-const tagStore = useTagStore()
 
 onMounted(async () => {
   inventoryStore.init()

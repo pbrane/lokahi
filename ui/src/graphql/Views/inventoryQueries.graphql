@@ -33,6 +33,7 @@ query FindAllNodesByNodeLabelSearch($labelSearchTerm: String!) {
     monitoredState
     monitoringLocationId
     nodeLabel
+    nodeAlias
     scanType
   }
   allMetrics: metric(name: "response_time_msec") {
@@ -68,6 +69,7 @@ query FindAllNodesByTags($tags: [String]) {
     monitoredState
     monitoringLocationId
     nodeLabel
+    nodeAlias
     scanType
   }
   allMetrics: metric(name: "response_time_msec") {

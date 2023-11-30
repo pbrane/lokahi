@@ -53,6 +53,10 @@ fragment NodeByIdParts on Query {
       publicIpAddress
       publicIpId
       location
+    },
+    tags {
+      id
+      name
     }
   }
 }

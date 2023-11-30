@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
-import { Tag } from '@/types/graphql'
+import { Node, Tag } from '@/types/graphql'
 import { useInventoryStore } from '../Views/inventoryStore'
 import { useNodeMutations } from '../Mutations/nodeMutations'
-import { useInventoryQueries } from '../Queries/inventoryQueries'
 import { NewInventoryNode } from '@/types'
 import useSnackbar from '@/composables/useSnackbar'
 import useModal from '@/composables/useModal'
@@ -22,7 +21,7 @@ export const useTagStore = defineStore('tagStore', () => {
     originalTags.value = [...inFilteredTags]
     filteredTags.value = [...inFilteredTags]
   }
-  const setActiveNode = (node: NewInventoryNode) => {
+  const setActiveNode = (node: NewInventoryNode | Node) => {
     activeNode.value = node
   }
 
@@ -36,10 +35,7 @@ export const useTagStore = defineStore('tagStore', () => {
       filteredTags.value = [...filteredTags.value].concat([tag])
     }
   }
-  const updateAllNodeTypes = async () => {
-    const inventoryQueries = useInventoryQueries()
-    inventoryQueries.buildNetworkInventory()
-  }
+
   const saveFilteredTagsToNode = async () => {
     const nodeMutations = useNodeMutations()
     const snackbar = useSnackbar()
@@ -54,11 +50,8 @@ export const useTagStore = defineStore('tagStore', () => {
     if (resultRemove.error){
       snackbar.showSnackbar({msg:resultRemove.error.message,error:true})
     }
-    if (!result.error && !resultRemove.error) {
-      await updateAllNodeTypes()
-      closeModal()
-    }
     isLoading.value = false
+    return !result.error && !resultRemove.error
   }
 
   const addNewTag = (newTag: Record<string, string>, skipTagEdit = false ) => {
@@ -99,7 +92,6 @@ export const useTagStore = defineStore('tagStore', () => {
     tagsSelected.value = selectAll ? tagsSelected.value : []
   }
 
-
   const resetState = () => {
     areAllTagsSelected.value = false
     tagsSelected.value = []
@@ -111,7 +103,6 @@ export const useTagStore = defineStore('tagStore', () => {
     const nodeMutations = useNodeMutations()
     const nodeIds = inventoryStore.nodesSelected.map((node) => node.id)
     await nodeMutations.addTagsToNodes({ nodeIds, tags })
-    await updateAllNodeTypes()
     tagsSelected.value = []
     inventoryStore.isTagManagerOpen = false
     inventoryStore.nodesSelected = []

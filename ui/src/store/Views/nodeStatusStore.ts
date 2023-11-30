@@ -70,6 +70,7 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
     isAzure: computed(() => fetchedData.value.node.scanType === AZURE_SCAN),
     fetchExporters,
     exporters,
-    node
+    node,
+    events: computed(() => fetchedData.value.events)
   }
 })
