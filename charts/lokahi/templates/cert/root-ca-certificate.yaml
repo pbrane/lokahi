@@ -9,7 +9,7 @@ metadata:
 type: kubernetes.io/tls
 data:
   # There is no existing certificate, lets generate a new one
-  {{ $ca := genCA (nospace (cat .Values.Host "-ca")) 14 }}
+  {{ $ca := genCA (nospace (cat .Values.hostname "-ca")) 14 }}
   ca.crt: >-
     {{ b64enc $ca.Cert }}
   tls.crt: >-
@@ -43,7 +43,7 @@ metadata:
     "helm.sh/resource-policy": keep
 type: kubernetes.io/tls
 data:
-  {{ $uiCert := genSignedCert .Values.Host nil (list .Values.Host) 14 $ca }}
+  {{ $uiCert := genSignedCert .Values.hostname nil (list .Values.hostname) 14 $ca }}
   ca.crt: >-
     {{b64enc $ca.Cert }}
   tls.crt: >-

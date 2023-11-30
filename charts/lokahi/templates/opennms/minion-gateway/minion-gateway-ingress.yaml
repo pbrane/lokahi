@@ -15,11 +15,11 @@ spec:
   {{- if .Values.TLS.Enabled }}
   tls:
     - hosts:
-      - "minion.{{ .Values.Host }}"
+      - "minion.{{ .Values.hostname }}"
       secretName: {{ .Values.OpenNMS.MinionGateway.TlsSecretName }}
   {{- end }}
   rules:
-    - host: "minion.{{ .Values.Host }}"
+    - host: "minion.{{ .Values.hostname }}"
       http:
         paths:
           - path: /
