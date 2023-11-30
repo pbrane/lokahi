@@ -44,8 +44,6 @@ const queries = useNodeStatusQueries()
 @use '@featherds/styles/themes/variables';
 
 .header {
-  margin-top: 40px;
-  margin-bottom: 40px;
   display: flex;
   flex-direction: column;
 

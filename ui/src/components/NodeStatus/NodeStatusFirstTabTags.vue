@@ -2,12 +2,10 @@
   <div class="tab-tags-container border">
     <div class="title-btn-wrapper">
       <div class="title">Tags</div>
-      <FeatherButton
+      <NodeStatusManageTagsCtrl
+        label="Manage"
         text
-        @click="openModal"
-      >
-        Manage
-      </FeatherButton>
+      />
     </div>
     <FeatherChipList label="Tags">
       <FeatherChip
@@ -24,7 +22,6 @@
 import { Tag } from '@/types/graphql'
 defineProps<{
   tags: Tag[]
-  openModal: () => void
 }>()
 </script>
 

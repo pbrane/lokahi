@@ -127,6 +127,7 @@ declare module '@vue/runtime-core' {
     NodeStatusFirstTab: typeof import('./src/components/NodeStatus/NodeStatusFirstTab.vue')['default']
     NodeStatusFirstTabGeneralInfo: typeof import('./src/components/NodeStatus/NodeStatusFirstTabGeneralInfo.vue')['default']
     NodeStatusFirstTabTags: typeof import('./src/components/NodeStatus/NodeStatusFirstTabTags.vue')['default']
+    NodeStatusManageTagsCtrl: typeof import('./src/components/NodeStatus/NodeStatusManageTagsCtrl.vue')['default']
     NodeStatusMetricsModal: typeof import('./src/components/NodeStatus/NodeStatusMetricsModal.vue')['default']
     NodeStatusPageHeader: typeof import('./src/components/NodeStatus/NodeStatusPageHeader.vue')['default']
     NoFocusMsg: typeof import('./src/components/Topology/NoFocusMsg.vue')['default']
