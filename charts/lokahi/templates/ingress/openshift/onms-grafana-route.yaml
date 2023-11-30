@@ -6,8 +6,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   host: {{ .Values.hostname }}.apps-crc.testing
-  path: {{ .Values.Grafana.Path }}  
+  path: {{ .Values.Grafana.path }}  
   to:
     kind: Service
-    name: {{ .Values.Grafana.ServiceName }}
+    name: {{ .Values.Grafana.serviceName }}
 {{- end }}

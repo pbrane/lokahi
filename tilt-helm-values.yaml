@@ -2,7 +2,7 @@ Namespace: tilt-instance
 hostname: onmshs.local
 HostIp: 127.0.0.1
 port: 1443
-Protocol: https
+protocol: https
 TLS:
   Enabled: True
   CertificateGeneration: false
@@ -24,60 +24,60 @@ OpenNMS:
     openTelemetry:
       otlpTracesEndpoint: "http://tempo:4317"
   Alert:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
-  API:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
+  api:
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
     CorsAllowed: true
-    PlaygroundGuiEnabled: true
-    IntrospectionEnabled: true
+    playgroundGuiEnabled: true
+    introspectionEnabled: true
   UI:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
     IngressAnnotations:
       nginx.ingress.kubernetes.io/configuration-snippet: ~
   MetricsProcessor:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
   Minion:
     Enabled: true
     addDefaultLocation: true
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
   MinionGateway:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
     IngressAnnotations:
       nginx.ingress.kubernetes.io/configuration-snippet: |
         # This adds the tenant-id and location to the response headers sent to the client so we can use them in
@@ -103,86 +103,86 @@ OpenNMS:
     Enabled: true
     CaSecretName: root-ca-certificate
     MtlsSecretName: client-root-ca-certificate
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
   MinionCertificateVerifier:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
   Inventory:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
   Notification:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
   Events:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
   DataChoices:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
   Core:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: 4Gi
-      Requests:
-        Cpu: '0'
-        Memory: 2Gi
+    resources:
+      limits:
+        cpu: '0'
+        memory: 4Gi
+      requests:
+        cpu: '0'
+        memory: 2Gi
 Grafana:
-  Resources:
-    Limits:
-      Cpu: 500m
-      Memory: 1Gi
-    Requests:
-      Cpu: 100m
-      Memory: 100Mi
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 100Mi
   autoAssignOrgRole: Admin  # https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#auto_assign_org_role
 Prometheus:
   Server:
-    Resources:
-      Limits:
-        Cpu: "1"
-        Memory: 512Mi
-      Requests:
-        Cpu: 100m
-        Memory: 100Mi
+    resources:
+      limits:
+        cpu: "1"
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
   PushGateway:
-    Resources:
-      Limits:
-        Cpu: "1"
-        Memory: 512Mi
-      Requests:
-        Cpu: 100m
-        Memory: 100Mi
+    resources:
+      limits:
+        cpu: "1"
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
 Kafka:
   LocalPort: 24092

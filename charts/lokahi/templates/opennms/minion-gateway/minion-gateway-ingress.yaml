@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
+  name: {{ .Values.OpenNMS.MinionGateway.serviceName }}
   namespace: {{ .Release.Namespace }}
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.TLS.Enabled }}"
@@ -26,7 +26,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
+                name: {{ .Values.OpenNMS.MinionGateway.serviceName }}
                 port:
                   number: 8990
 {{- end }}

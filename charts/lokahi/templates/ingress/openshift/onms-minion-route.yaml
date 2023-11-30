@@ -13,5 +13,5 @@ spec:
     insecureEdgeTerminationPolicy: None
   to:
     kind: Service
-    name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
+    name: {{ .Values.OpenNMS.MinionGateway.serviceName }}
 {{- end }}
