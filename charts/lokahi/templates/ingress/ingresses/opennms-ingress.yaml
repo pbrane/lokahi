@@ -16,7 +16,7 @@ spec:
       port:
         number: {{ .Values.OpenNMS.UI.Port }}
   rules:
-    - host: {{ .Values.Host }}
+    - host: {{ .Values.hostname }}
       http:
         paths:
           - path: {{ .Values.OpenNMS.UI.Path }}
@@ -59,7 +59,7 @@ spec:
   {{- if .Values.TLS.Enabled }}
   tls:
     - hosts:
-        -  {{.Values.Host }}
+        -  {{.Values.hostname }}
       secretName: {{ .Values.OpenNMS.UI.TlsSecretName }}
   {{- end }}
 {{- end }}

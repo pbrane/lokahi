@@ -67,3 +67,24 @@ by adding them as key/value pairs under <ServiceName>.env.
     name: {{ .kafkaSecretName }}
   {{- end }}
 {{- end }}
+
+{{/*
+SecurityContextConstraints apiVersion
+*/}}
+{{- define "scc.apiVersion" -}}
+{{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" -}}
+security.openshift.io/v1
+{{- end }}
+{{- end }}
+
+{{/*
+Are we running in an Red Hat OpenShift cluster?
+*/}}
+{{- define "onOpenShift" -}}
+{{- $sccApiVersion := include "scc.apiVersion" . -}}
+{{- if not (empty $sccApiVersion) }}
+{{- printf "true" -}}
+{{- else }}
+{{- printf "false" -}}
+{{- end }}
+{{- end }}

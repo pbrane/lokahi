@@ -63,7 +63,7 @@ spec:
           {{ toYaml .Values.OpenNMS.Minion.ExtraVolumes | nindent 8 }}
         {{- end }}
       initContainers:
-        {{ if not .Values.OpenShift }}
+        {{- if eq (include "onOpenShift" .) "true" }}
         - name: init-sysctl
           image: busybox
           command:
@@ -72,7 +72,7 @@ spec:
             - net.ipv4.ping_group_range=0 429496729
           securityContext:
             privileged: true
-        {{ end }}
+        {{- end }}
         {{- if .Values.OpenNMS.Minion.addDefaultLocation }}
         # This container is a development time helper which generates client certificate, key and signs it with
         # `Client CA` certificate which is running in cluster. It's a bit hacky, since it pulls CA private key
@@ -87,7 +87,7 @@ spec:
             - /scripts/init-create-test-location.sh
           env:
             - name: INGRESS_HOST_PORT
-              value: "{{ .Values.Host }}:{{ .Values.Port }}"
+              value: "{{ .Values.hostname }}:{{ .Values.port }}"
           securityContext:
             privileged: false
             runAsUser: 10001
@@ -120,7 +120,7 @@ spec:
             - name: MINION_GATEWAY_HOST
               value: "ingress-nginx-controller" # we're inside the cluster, so we need to talk to the internal service name
             - name: GRPC_CLIENT_OVERRIDE_AUTHORITY
-              value: "minion.{{ .Values.Host }}" # but the TLS certificate will have the external name, so expect that
+              value: "minion.{{ .Values.hostname }}" # but the TLS certificate will have the external name, so expect that
             - name: GRPC_CLIENT_TRUSTSTORE
               value: "/run/secrets/certificates/tls.crt"
             {{- end }}
