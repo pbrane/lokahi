@@ -29,6 +29,7 @@
 package org.opennms.horizon.inventory.service;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -201,7 +202,13 @@ public class NodeService {
         var node = nodeRepository.findByIdAndTenantId(request.getId(), tenantId)
             .orElseThrow(() -> new InventoryRuntimeException("Node with ID " + request.getId() + " not found"));
 
-        node.setNodeAlias(request.getNodeAlias());
+        if (request.hasNodeAlias()) {
+            String alias = request.getNodeAlias();
+            if (!StringUtil.isNullOrEmpty(alias) && !nodeRepository.findByNodeAliasAndTenantId(alias, tenantId).isEmpty()) {
+                throw new InventoryRuntimeException("Duplicate node alias with name " + alias);
+            }
+            node.setNodeAlias(request.getNodeAlias());
+        }
         return nodeRepository.save(node).getId();
     }
 

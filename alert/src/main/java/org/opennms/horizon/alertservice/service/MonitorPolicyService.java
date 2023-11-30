@@ -113,12 +113,10 @@ public class MonitorPolicyService {
                 String message = String.format("policy not found by id %s for tenant %s", request.getId(), tenantId);
                 log.warn(message);
                 throw new IllegalArgumentException(message);
-            } else {
-                if (!policy.get().getName().equals(request.getName())) {
-                    validatePolicyName(request, tenantId);
-                }
+            } else if (!policy.get().getName().equals(request.getName())) {
+                validatePolicyName(request, tenantId);
             }
-        } else {
+        } else if (!DEFAULT_POLICY.equals(request.getName())) {
             validatePolicyName(request, tenantId);
         }
 

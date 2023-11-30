@@ -35,6 +35,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
+import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
 import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.mapper.MonitoringLocationMapper;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
@@ -230,6 +231,30 @@ class MonitoringLocationServiceTest {
         verify(mapper, times(1)).modelToDTO(any(MonitoringLocation.class));
     }
 
+
+    @Test
+    void testUpsertWithExistingName() throws LocationNotFoundException {
+        // Mock data
+        final String location = "duplicate";
+        MonitoringLocationDTO monitoringLocationDTO = MonitoringLocationDTO.newBuilder()
+            .setLocation(location)
+            .setTenantId(TENANT_ID)
+            .build();
+        MonitoringLocation monitoringLocation = new MonitoringLocation();
+        monitoringLocation.setId(1L);
+        monitoringLocation.setLocation(location);
+        monitoringLocation.setTenantId(TENANT_ID);
+        when(modelRepo.findByLocationAndTenantId(location, TENANT_ID)).thenReturn(Optional.of(monitoringLocation));
+
+        // Test
+        var exception = assertThrows(InventoryRuntimeException.class, () -> monitoringLocationService.upsert(monitoringLocationDTO));
+
+        // Assertions
+        assertNotNull(exception);
+        assertEquals("Duplicate Location found with name duplicate", exception.getMessage());
+        verify(modelRepo, times(1)).findByLocationAndTenantId(location, TENANT_ID);
+    }
+
     @Test
     void testUpsertWithoutId() throws LocationNotFoundException {
         // Mock data
@@ -367,7 +392,3 @@ class MonitoringLocationServiceTest {
         verify(monitoringSystemRepository, never()).deleteAll(any());
     }
 }
-
-
-
-

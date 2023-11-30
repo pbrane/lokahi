@@ -57,6 +57,7 @@ public class IcmpActiveDiscoveryService implements ActiveDiscoveryValidationServ
 
     private final IcmpActiveDiscoveryRepository repository;
     private final ActiveDiscoveryRepository activeDiscoveryRepository;
+    private final MonitoringLocationService monitoringLocationService;
     private final IcmpActiveDiscoveryMapper mapper;
     private final TagService tagService;
 
@@ -148,6 +149,6 @@ public class IcmpActiveDiscoveryService implements ActiveDiscoveryValidationServ
 
     @Override
     public MonitoringLocationService getMonitoringLocationService() {
-        return null;
+        return monitoringLocationService;
     }
 }

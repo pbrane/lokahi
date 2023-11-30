@@ -49,7 +49,7 @@ public interface ActiveDiscoveryValidationService {
 
     default void validateLocation(String locationId, String tenantId) {
         if (getMonitoringLocationService().findByLocationIdAndTenantId(Long.parseLong(locationId), tenantId).isEmpty()) {
-            throw new LocationNotFoundException("Location not found with id " + locationId);
+            throw new LocationNotFoundException("Location not found with location " + locationId);
         }
     }
 }
