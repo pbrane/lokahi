@@ -40,6 +40,21 @@ spec:
                 values:
                 - {{ .Values.NodeRestrictions.Value }}
       {{- end }}
+      {{- if .Values.Citus.Enabled }}
+      initContainers:
+        - name: wait-for-db
+          image: postgres:16-alpine
+          args:
+          - /bin/sh
+          - -c
+          - | 
+            set -x;
+            while ! psql -U {{ .Values.Citus.AdminUser }} -h postgres -c 'select 1'; do
+              echo "Waiting for DB to be available"
+              sleep 10
+            done
+            echo "Database is available"
+      {{- end }}
       containers:
         - name: keycloak
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.Keycloak) | quote }}

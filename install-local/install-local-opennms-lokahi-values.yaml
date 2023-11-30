@@ -84,3 +84,5 @@ Postgres:
   Pvc: false
 MailServer:
   Enabled: true
+Citus:
+  Enabled: true

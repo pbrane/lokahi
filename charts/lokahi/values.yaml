@@ -115,7 +115,7 @@ OpenNMS:
     InternalGrpcPort: 8991
     Replicas: 1
     UseKubernetes: "true"
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "minion_gateway"
     DbHost: "postgres"
     Resources:
@@ -144,7 +144,7 @@ OpenNMS:
     ImageShortName: lokahi-inventory
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "inventory"
     DbHost: "postgres"
     Resources:
@@ -162,7 +162,7 @@ OpenNMS:
     ImageShortName: lokahi-alert
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "alert"
     DbHost: "postgres"
     Resources:
@@ -179,7 +179,7 @@ OpenNMS:
     ImageShortName: lokahi-notification
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "notification"
     DbHost: "postgres"
     Resources:
@@ -205,7 +205,7 @@ OpenNMS:
     ImageShortName: lokahi-events
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "events"
     DbHost: "postgres"
     Resources:
@@ -221,7 +221,7 @@ OpenNMS:
     ImageShortName: lokahi-datachoices
     ImagePullPolicy: IfNotPresent
     Replicas: 1
-    DbName: "horizon_stream"
+    DbName: "desenv"
     DbSchemaName: "datachoices"
     DbHost: "postgres"
     Resources:
@@ -263,14 +263,14 @@ OpenNMS:
         Memory: 1Gi
     PrivateRepoEnabled: false
     CertificateManagerUrl: ""
-Postgres:
-  Enabled: true
+Citus:
+  Enabled: false
+  WorkersEnabled: true
   ServiceName: postgres
-  Image: postgres:14.5-alpine
-  ImagePullPolicy: IfNotPresent
-  Replicas: 1
-  DbName: "horizon_stream"
-  DbHost: "postgres"
+  PgBouncerPort: 30099
+  CoordinatorVolumeSize: 4Gi
+  WorkerVolumeSize: 2Gi
+  AdminUser: desenv
   AdminPassword: notset
   OpenNMSPassword: notset
   KeycloakPassword: notset
@@ -281,8 +281,6 @@ Postgres:
   MinionGatewayPassword: notset
   NotificationPassword: notset
   GrafanaPassword: notset
-  Pvc: true 
-  VolumeSize: 10Gi
 Keycloak:
   Path: /auth
   ImageShortName: lokahi-keycloak
@@ -295,7 +293,7 @@ Keycloak:
   ServiceName: onms-keycloak
   TlsSecretName:
   DbSchemaName: "keycloak"
-  DbName: "horizon_stream"
+  DbName: "desenv"
   DbHost: "postgres"
   Resources:
     Limits:
@@ -316,6 +314,7 @@ Grafana:
   Path: /grafana
   Port: 3000
   Replicas: 1
+  DbHost: "postgres"
   ServiceName: grafana
   ImageShortName: lokahi-grafana
   ImagePullPolicy: IfNotPresent

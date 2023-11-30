@@ -2,8 +2,8 @@ name: release
 
 on:
   push:
-    branches:
-      - 'release'
+    tags:
+      - v*
   workflow_call:
     inputs:
       image-tag:
@@ -43,10 +43,7 @@ jobs:
           # workflow, neither the output nor the env variables seem to persist
           # to this job.
 
-          TAG=$(echo ${{ github.event.head_commit.message }} | awk '{ print $2 }')
-
-          echo "Head commit message: ${{ github.event.head_commit.message }}"
-          echo "Extracted tag: $TAG."
+          TAG="${{  github.ref_name }}"
           
           # Validate tag format
           # Format of commit message: RELEASE <tag> - <message>
