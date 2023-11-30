@@ -88,6 +88,7 @@ git commit -m "RELEASE $CURRENT_TAG - updated" $CHANGELOG
 git checkout release
 git merge --no-edit develop
 if [ $DRYRUN -eq 0 ]; then
+    git push origin develop
     git push origin release
 fi
 
