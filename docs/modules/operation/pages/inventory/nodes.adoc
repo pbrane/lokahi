@@ -93,6 +93,8 @@ To change the name of a node, follow these steps:
 == View detailed node information
 
 View detailed information about the node, including its SNMP and IP interfaces, events, and alarms by clicking the *!* symbol on the node card.
+Click on the *graph* symbol to see graphs of collected data.
+See xref:operation:visualizations/introduction.adoc#view-data-on-a-per-node-basis [View data on a per node basis] for details.
 
 == Search nodes
 You can search and filter nodes by tags or labels.
