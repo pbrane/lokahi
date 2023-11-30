@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
+  name: {{ .Values.OpenNMS.MinionGateway.serviceName }}
   labels:
     ignite-cluster: core
-    app: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
+    app: {{ .Values.OpenNMS.MinionGateway.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
-  replicas: {{ .Values.OpenNMS.MinionGateway.Replicas }}
+      app: {{ .Values.OpenNMS.MinionGateway.serviceName }}
+  replicas: {{ .Values.OpenNMS.MinionGateway.replicas }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
+        app: {{ .Values.OpenNMS.MinionGateway.serviceName }}
         ignite-cluster: core
       annotations:
         prometheus.io/scrape: "true"
@@ -23,9 +23,9 @@ spec:
         prometheus.io/path: "/actuator/prometheus"
         # roll the deployment when the Spring boot environment variable configmap changes
         checksum/spring-boot-env-configmap: {{ include (print $.Template.BasePath "/opennms/spring-boot-env-configmap.yaml") . | sha256sum }}
-        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.MinionGateway.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.MinionGateway.serviceName }}"
     spec:
-      serviceAccountName: {{ .Values.OpenNMS.MinionGateway.ServiceName }}-sa
+      serviceAccountName: {{ .Values.OpenNMS.MinionGateway.serviceName }}-sa
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:
         {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
@@ -55,9 +55,9 @@ spec:
           configMap:
             name: spring-boot-app-config
       containers:
-        - name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
+        - name: {{ .Values.OpenNMS.MinionGateway.serviceName }}
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.MinionGateway) | quote }}
-          imagePullPolicy: {{ .Values.OpenNMS.MinionGateway.ImagePullPolicy }}
+          imagePullPolicy: {{ .Values.OpenNMS.MinionGateway.imagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
               value: "-Djava.net.preferIPv4Stack=true -XX:MaxRAMPercentage=40 -javaagent:agent/opentelemetry-javaagent.jar -agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y -XX:MaxDirectMemorySize=768m"  # FIXME: Permanent debug port, enable only for dev mode
@@ -76,7 +76,7 @@ spec:
             - name: IGNITE_USE_KUBERNETES
               value: "{{ .Values.OpenNMS.MinionGateway.UseKubernetes }}"
             - name: IGNITE_KUBERNETES_SERVICE_NAME
-              value: "{{ .Values.OpenNMS.MinionGateway.ServiceName }}"
+              value: "{{ .Values.OpenNMS.MinionGateway.serviceName }}"
             - name: IGNITE_KUBERNETES_NAMESPACE
               value: "{{ .Release.Namespace }}"
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
@@ -130,12 +130,12 @@ spec:
             failureThreshold: 250
           resources:
             limits:
-              cpu: "{{ .Values.OpenNMS.MinionGateway.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.OpenNMS.MinionGateway.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.OpenNMS.MinionGateway.resources.limits.cpu }}"
+              memory: "{{ .Values.OpenNMS.MinionGateway.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.OpenNMS.MinionGateway.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.OpenNMS.MinionGateway.Resources.Requests.Memory }}"
-      {{- if .Values.OpenNMS.MinionGateway.PrivateRepoEnabled }}
+              cpu: "{{ .Values.OpenNMS.MinionGateway.resources.requests.cpu }}"
+              memory: "{{ .Values.OpenNMS.MinionGateway.resources.requests.memory }}"
+      {{- if .Values.OpenNMS.MinionGateway.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
       {{- end }}

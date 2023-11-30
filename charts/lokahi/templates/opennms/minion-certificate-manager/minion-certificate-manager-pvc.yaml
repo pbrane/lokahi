@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: minion-certificate-manager-pvc
   labels:
-    app: {{ .Values.OpenNMS.MinionCertificateManager.ServiceName }}
+    app: {{ .Values.OpenNMS.MinionCertificateManager.serviceName }}
 spec:
   accessModes:
     - ReadWriteOnce

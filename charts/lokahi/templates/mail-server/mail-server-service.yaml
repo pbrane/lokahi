@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.MailServer.ServiceName }}
+  name: {{ .Values.MailServer.serviceName }}
   labels:
-    app: {{ .Values.MailServer.ServiceName }}
+    app: {{ .Values.MailServer.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   type: ClusterIP
@@ -16,5 +16,5 @@ spec:
       protocol: TCP
       name: smtp
   selector:
-    app: {{ .Values.MailServer.ServiceName }}
+    app: {{ .Values.MailServer.serviceName }}
 {{- end }}

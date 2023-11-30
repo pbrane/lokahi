@@ -3,20 +3,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: {{ .Values.Grafana.ServiceName }}
-  name: {{ .Values.Grafana.ServiceName }}
+    app: {{ .Values.Grafana.serviceName }}
+  name: {{ .Values.Grafana.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.Grafana.ServiceName }}
+      app: {{ .Values.Grafana.serviceName }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.Grafana.ServiceName }}
+        app: {{ .Values.Grafana.serviceName }}
       annotations:
-        kubectl.kubernetes.io/default-container: "{{ .Values.Grafana.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.Grafana.serviceName }}"
     spec:
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:                                                                                    
@@ -40,7 +40,7 @@ spec:
       volumes:
         - name: grafana-config
           secret:
-            secretName: {{ .Values.Grafana.ServiceName }}
+            secretName: {{ .Values.Grafana.serviceName }}
             defaultMode: 420
       {{- if .Values.Citus.Enabled }}
       initContainers:
@@ -58,9 +58,9 @@ spec:
             echo "Database is available"
       {{- end }}
       containers:
-        - name: {{ .Values.Grafana.ServiceName }}
+        - name: {{ .Values.Grafana.serviceName }}
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.Grafana) | quote }}
-          imagePullPolicy: {{ .Values.Grafana.ImagePullPolicy }}
+          imagePullPolicy: {{ .Values.Grafana.imagePullPolicy }}
           ports:
             - containerPort: {{ .Values.Grafana.Port }}
           volumeMounts:
@@ -96,9 +96,9 @@ spec:
               port: {{ .Values.Grafana.Port }}
           resources:
             limits:
-              cpu: "{{ .Values.Grafana.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.Grafana.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.Grafana.resources.limits.cpu }}"
+              memory: "{{ .Values.Grafana.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.Grafana.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.Grafana.Resources.Requests.Memory }}"
+              cpu: "{{ .Values.Grafana.resources.requests.cpu }}"
+              memory: "{{ .Values.Grafana.resources.requests.memory }}"
 {{- end }}

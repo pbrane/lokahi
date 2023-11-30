@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app: keycloak
-  name: {{ .Values.Keycloak.ServiceName }}
+  name: {{ .Values.Keycloak.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   internalTrafficPolicy: Cluster
@@ -24,6 +24,6 @@ spec:
       protocol: TCP
       targetPort: 7800
   selector:
-    app: {{ .Values.Keycloak.ServiceName }}
+    app: {{ .Values.Keycloak.serviceName }}
   sessionAffinity: None
   type: ClusterIP

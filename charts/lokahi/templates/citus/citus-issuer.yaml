@@ -16,7 +16,7 @@ spec:
   secretName: citus-cert
   commonName: citus.default
   dnsNames:
-  - '*.{{ .Values.Citus.ServiceName }}.default.svc.cluster.local'
+  - '*.{{ .Values.Citus.serviceName }}.default.svc.cluster.local'
   issuerRef:
     name: citus-issuer
 

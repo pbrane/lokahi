@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.OpenNMS.DataChoices.ServiceName }}
+  name: {{ .Values.OpenNMS.DataChoices.serviceName }}
   labels:
-    app: {{ .Values.OpenNMS.DataChoices.ServiceName }}
+    app: {{ .Values.OpenNMS.DataChoices.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.OpenNMS.DataChoices.ServiceName }}
-  replicas: {{ .Values.OpenNMS.DataChoices.Replicas }}
+      app: {{ .Values.OpenNMS.DataChoices.serviceName }}
+  replicas: {{ .Values.OpenNMS.DataChoices.replicas }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.OpenNMS.DataChoices.ServiceName }}
+        app: {{ .Values.OpenNMS.DataChoices.serviceName }}
       annotations:
         # roll the deployment when the Spring boot environment variable configmap changes
         checksum/spring-boot-env-configmap: {{ include (print $.Template.BasePath "/opennms/spring-boot-env-configmap.yaml") . | sha256sum }}
-        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.DataChoices.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.DataChoices.serviceName }}"
     spec:
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:                                                                                    
@@ -59,9 +59,9 @@ spec:
             echo "Database is available"
       {{- end }}
       containers:
-        - name: {{ .Values.OpenNMS.DataChoices.ServiceName }}
+        - name: {{ .Values.OpenNMS.DataChoices.serviceName }}
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.DataChoices) | quote }}
-          imagePullPolicy: {{ .Values.OpenNMS.DataChoices.ImagePullPolicy }}
+          imagePullPolicy: {{ .Values.OpenNMS.DataChoices.imagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
               value: "-XX:MaxRAMPercentage=50 -javaagent:agent/opentelemetry-javaagent.jar -agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y"  # FIXME: Permanent debug port, enable only for dev mode
@@ -80,7 +80,7 @@ spec:
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "{{ .Values.OpenNMS.global.kafkaClient.bootstrapServers }}"
             - name: KEYCLOAK_BASE_URL
-              value: "http://{{ .Values.Keycloak.ServiceName }}:8080/auth/"
+              value: "http://{{ .Values.Keycloak.serviceName }}:8080/auth/"
             - name: KEYCLOAK_REALM
               value: "{{ .Values.Keycloak.RealmName }}"
             # Do not put any env variables below this. The lokahi.development.env include should be last
@@ -119,12 +119,12 @@ spec:
             failureThreshold: 250
           resources:
             limits:
-              cpu: "{{ .Values.OpenNMS.DataChoices.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.OpenNMS.DataChoices.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.OpenNMS.DataChoices.resources.limits.cpu }}"
+              memory: "{{ .Values.OpenNMS.DataChoices.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.OpenNMS.DataChoices.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.OpenNMS.DataChoices.Resources.Requests.Memory }}"
-      {{- if .Values.OpenNMS.DataChoices.PrivateRepoEnabled }}
+              cpu: "{{ .Values.OpenNMS.DataChoices.resources.requests.cpu }}"
+              memory: "{{ .Values.OpenNMS.DataChoices.resources.requests.memory }}"
+      {{- if .Values.OpenNMS.DataChoices.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
       {{- end }}

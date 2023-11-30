@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.Grafana.ServiceName }}
+  name: {{ .Values.Grafana.serviceName }}
   labels:
-    app: {{ .Values.Grafana.ServiceName }}
+    app: {{ .Values.Grafana.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   ports:
@@ -12,6 +12,6 @@ spec:
       protocol: TCP
       targetPort: {{ .Values.Grafana.Port }}
   selector:
-    app: {{ .Values.Grafana.ServiceName }}
+    app: {{ .Values.Grafana.serviceName }}
   type: ClusterIP
 {{- end }}

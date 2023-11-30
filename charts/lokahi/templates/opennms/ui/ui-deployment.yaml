@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.OpenNMS.UI.ServiceName }}
+  name: {{ .Values.OpenNMS.UI.serviceName }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Values.OpenNMS.UI.ServiceName }}
-    app.kubernetes.io/name: {{ .Values.OpenNMS.UI.ServiceName }}
+    app: {{ .Values.OpenNMS.UI.serviceName }}
+    app.kubernetes.io/name: {{ .Values.OpenNMS.UI.serviceName }}
   annotations:
     autoupdate: "true"
 spec:
-  replicas: {{ .Values.OpenNMS.UI.Replicas }}
+  replicas: {{ .Values.OpenNMS.UI.replicas }}
   selector:
     matchLabels:
-      app: {{ .Values.OpenNMS.UI.ServiceName }}
+      app: {{ .Values.OpenNMS.UI.serviceName }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.OpenNMS.UI.ServiceName }}
+        app: {{ .Values.OpenNMS.UI.serviceName }}
       annotations:
-        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.UI.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.UI.serviceName }}"
     spec:
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:                                                                                    
@@ -41,7 +41,7 @@ spec:
                 - {{ .Values.NodeRestrictions.Value }}                                                 
       {{- end }}
       terminationGracePeriodSeconds: 120
-      {{- if .Values.OpenNMS.UI.PrivateRepoEnabled }}
+      {{- if .Values.OpenNMS.UI.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
       {{- end }}
@@ -49,19 +49,19 @@ spec:
         - name: nginx-cache-volume
           emptyDir: {}
       containers:
-        - name: {{ .Values.OpenNMS.UI.ServiceName }}
+        - name: {{ .Values.OpenNMS.UI.serviceName }}
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.UI) | quote }}
-          imagePullPolicy: {{ .Values.OpenNMS.UI.ImagePullPolicy }}
+          imagePullPolicy: {{ .Values.OpenNMS.UI.imagePullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.OpenNMS.UI.Port }}
           resources:
             limits:
-              cpu: "{{ .Values.OpenNMS.UI.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.OpenNMS.UI.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.OpenNMS.UI.resources.limits.cpu }}"
+              memory: "{{ .Values.OpenNMS.UI.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.OpenNMS.UI.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.OpenNMS.UI.Resources.Requests.Memory }}"
+              cpu: "{{ .Values.OpenNMS.UI.resources.requests.cpu }}"
+              memory: "{{ .Values.OpenNMS.UI.resources.requests.memory }}"
           {{/*  TODO    livenessProbe:*/}}
           {{/*          readinessProbe:*/}}
           {{/*          startupProbe:*/}}

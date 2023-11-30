@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app: {{ .Values.Cortex.ServiceName }}
+    app: {{ .Values.Cortex.serviceName }}
   name: cortex-config-map
   namespace: {{ .Release.Namespace }}
 data:

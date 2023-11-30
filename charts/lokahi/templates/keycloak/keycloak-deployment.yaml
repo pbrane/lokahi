@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.Keycloak.ServiceName }}
+  name: {{ .Values.Keycloak.serviceName }}
   labels:
     app: keycloak
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.Keycloak.ServiceName }}
-  replicas: {{ .Values.Keycloak.Replicas }}
+      app: {{ .Values.Keycloak.serviceName }}
+  replicas: {{ .Values.Keycloak.replicas }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.Keycloak.ServiceName }}
+        app: {{ .Values.Keycloak.serviceName }}
       annotations:
         kubectl.kubernetes.io/default-container: "keycloak"
         prometheus.io/scrape: "true"
@@ -58,14 +58,14 @@ spec:
       containers:
         - name: keycloak
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.Keycloak) | quote }}
-          imagePullPolicy: "{{ .Values.Keycloak.ImagePullPolicy }}"
+          imagePullPolicy: "{{ .Values.Keycloak.imagePullPolicy }}"
           resources:
             limits:
-              cpu: "{{ .Values.Keycloak.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.Keycloak.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.Keycloak.resources.limits.cpu }}"
+              memory: "{{ .Values.Keycloak.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.Keycloak.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.Keycloak.Resources.Requests.Memory }}"
+              cpu: "{{ .Values.Keycloak.resources.requests.cpu }}"
+              memory: "{{ .Values.Keycloak.resources.requests.memory }}"
           args:
             - --import-realm
             {{- if .Values.OpenNMS.global.enableJsonLogging }}
@@ -80,9 +80,9 @@ spec:
               value: ispn
             - name: KC_HOSTNAME_URL # Required in prod-mod to terminate TLS at Ingress
             {{- if .Values.Keycloak.HostnamePort }}
-              value: "{{ .Values.Protocol }}://{{ .Values.hostname }}:{{ .Values.Keycloak.HostnamePort }}{{ .Values.Keycloak.Path }}"
+              value: "{{ .Values.protocol }}://{{ .Values.hostname }}:{{ .Values.Keycloak.HostnamePort }}{{ .Values.Keycloak.path }}"
             {{- else }}
-              value: "{{ .Values.Protocol }}://{{ .Values.hostname }}{{ .Values.Keycloak.Path }}"
+              value: "{{ .Values.protocol }}://{{ .Values.hostname }}{{ .Values.Keycloak.path }}"
             {{- end }}
             {{- if .Values.Keycloak.HostnameAdminUrl }}
             - name: KC_HOSTNAME_ADMIN_URL
@@ -104,22 +104,22 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: username
-                  name: {{ .Values.Keycloak.ServiceName }}-initial-admin
+                  name: {{ .Values.Keycloak.serviceName }}-initial-admin
             - name: KEYCLOAK_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   key: password
-                  name: {{ .Values.Keycloak.ServiceName }}-initial-admin
+                  name: {{ .Values.Keycloak.serviceName }}-initial-admin
             - name: KC_HOSTNAME_STRICT_BACKCHANNEL
               value: "false"
             - name: KC_HTTP_ENABLED
               value: "true"
             - name: KC_HTTP_RELATIVE_PATH
-              value: "{{ .Values.Keycloak.Path }}"
+              value: "{{ .Values.Keycloak.path }}"
             - name: KC_PROXY
               value: edge # Required in prod-mod to terminate TLS at Ingress
             - name: jgroups.dns.query
-              value: "{{ .Values.Keycloak.ServiceName }}.{{ .Release.Namespace }}"
+              value: "{{ .Values.Keycloak.serviceName }}.{{ .Release.Namespace }}"
             {{- if and .Values.TLS.Enabled .Values.Keycloak.TlsSecretName }}
             - name: KC_HTTPS_CERTIFICATE_FILE
               value: "/mnt/certificates/tls.crt"
@@ -173,7 +173,7 @@ spec:
           #    scheme: HTTP
           #    port: http
           #    {{- end }}
-          #    path: {{ .Values.Keycloak.Path }}/health/live
+          #    path: {{ .Values.Keycloak.path }}/health/live
           #  failureThreshold: 150
           #  periodSeconds: 5
           livenessProbe:
@@ -185,7 +185,7 @@ spec:
               scheme: HTTP
               port: http
               {{- end }}
-              path: {{ .Values.Keycloak.Path }}/health/live
+              path: {{ .Values.Keycloak.path }}/health/live
             failureThreshold: 150
             initialDelaySeconds: 20
             periodSeconds: 2
@@ -200,13 +200,13 @@ spec:
               scheme: HTTP
               port: http
               {{- end }}
-              path: {{ .Values.Keycloak.Path }}/health/ready
+              path: {{ .Values.Keycloak.path }}/health/ready
             failureThreshold: 250
             initialDelaySeconds: 20
             periodSeconds: 2
             successThreshold: 1
             timeoutSeconds: 1
-      {{- if .Values.Keycloak.PrivateRepoEnabled }}
+      {{- if .Values.Keycloak.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
       {{- end }}

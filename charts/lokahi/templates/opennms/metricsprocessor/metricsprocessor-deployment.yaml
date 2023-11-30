@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
+  name: {{ .Values.OpenNMS.MetricsProcessor.serviceName }}
   labels:
-    app: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
+    app: {{ .Values.OpenNMS.MetricsProcessor.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.OpenNMS.MetricsProcessor.Replicas }}
+  replicas: {{ .Values.OpenNMS.MetricsProcessor.replicas }}
   selector:
     matchLabels:
-      run: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
+      run: {{ .Values.OpenNMS.MetricsProcessor.serviceName }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        run: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
+        run: {{ .Values.OpenNMS.MetricsProcessor.serviceName }}
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
         # roll the deployment when the Spring boot environment variable configmap changes
         checksum/spring-boot-env-configmap: {{ include (print $.Template.BasePath "/opennms/spring-boot-env-configmap.yaml") . | sha256sum }}
-        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.MetricsProcessor.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.MetricsProcessor.serviceName }}"
     spec:
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:                                                                                    
@@ -47,9 +47,9 @@ spec:
           configMap:
             name: spring-boot-app-config
       containers:
-        - name: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
+        - name: {{ .Values.OpenNMS.MetricsProcessor.serviceName }}
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.MetricsProcessor) | quote }}
-          imagePullPolicy: {{ .Values.OpenNMS.MetricsProcessor.ImagePullPolicy }}
+          imagePullPolicy: {{ .Values.OpenNMS.MetricsProcessor.imagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
               value: "-XX:MaxRAMPercentage=50 -javaagent:agent/opentelemetry-javaagent.jar -agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y"  # FIXME: Permanent debug port, enable only for dev mode
@@ -60,7 +60,7 @@ spec:
             - name: GRPC_FLOW_TLS_ENABLED
               value: "{{ .Values.OpenNMS.MetricsProcessor.FlowTlsEnabled }}"
             - name: CORTEX_WRITE_URL
-              value: {{ .Values.CortexClient.Protocol }}://{{ .Values.CortexClient.HostWrite }}:{{ .Values.CortexClient.PortWrite }}{{ .Values.CortexClient.PathWrite }}
+              value: {{ .Values.CortexClient.Protocol }}://{{ .Values.CortexClient.HostWrite }}:{{ .Values.CortexClient.PortWrite }}{{ .Values.CortexClient.pathWrite }}
             # Do not put any env variables below this. The lokahi.development.env include should be last
             # in the 'env' section so variables can be overridden with Helm chart values when needed.
             {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.MetricsProcessor) | nindent 12 }}
@@ -96,12 +96,12 @@ spec:
             failureThreshold: 250
           resources:
             limits:
-              cpu: "{{ .Values.OpenNMS.MetricsProcessor.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.OpenNMS.MetricsProcessor.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.OpenNMS.MetricsProcessor.resources.limits.cpu }}"
+              memory: "{{ .Values.OpenNMS.MetricsProcessor.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.OpenNMS.MetricsProcessor.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.OpenNMS.MetricsProcessor.Resources.Requests.Memory }}"
-      {{- if .Values.OpenNMS.MetricsProcessor.PrivateRepoEnabled }}
+              cpu: "{{ .Values.OpenNMS.MetricsProcessor.resources.requests.cpu }}"
+              memory: "{{ .Values.OpenNMS.MetricsProcessor.resources.requests.memory }}"
+      {{- if .Values.OpenNMS.MetricsProcessor.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
       {{- end }}
