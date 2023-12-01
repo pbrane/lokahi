@@ -205,7 +205,7 @@ public class NodeService {
         if (request.hasNodeAlias()) {
             String alias = request.getNodeAlias();
             if (!StringUtil.isNullOrEmpty(alias) &&
-                nodeRepository.findByNodeAliasAndTenantId(alias, tenantId).stream().filter(n -> request.getId() != n.getId()).count() != 0) {
+                nodeRepository.findByNodeAliasAndTenantId(alias, tenantId).stream().anyMatch(n -> request.getId() != n.getId())) {
                 throw new InventoryRuntimeException("Duplicate node alias with name " + alias);
             }
             node.setNodeAlias(request.getNodeAlias());
