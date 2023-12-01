@@ -612,7 +612,7 @@ k8s_resource(
     port_forwards=['25054:5432'],
     resource_deps=['cert-manager'],
     links=[
-        link('jdbc:postgresql://localhost:25054/horizon_stream?user=desenv&password=any', name='JDBC URL'),
+        link('jdbc:postgresql://localhost:25054/desenv?user=desenv&password=any', name='JDBC URL'),
     ]
 )
 
