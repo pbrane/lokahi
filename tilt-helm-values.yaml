@@ -6,12 +6,12 @@ protocol: https
 tls:
   enabled: True
   certificateGeneration: false
-  Cert:
+  cert:
     Name: opennms-ui-certificate
 keycloak:
   adminPassword: admin
-  HostnamePort: 1443
-  HostnameAdminUrl: https://onmshs.local:1443/auth
+  hostnamePort: 1443
+  hostnameAdminUrl: https://onmshs.local:1443/auth
 
 ingress:
   enabled: false
@@ -42,7 +42,7 @@ OpenNMS:
       requests:
         cpu: '0'
         memory: '0'
-    CorsAllowed: true
+    corsAllowed: true
     playgroundGuiEnabled: true
     introspectionEnabled: true
   ui:
@@ -175,7 +175,7 @@ prometheus:
       requests:
         cpu: 100m
         memory: 100Mi
-  PushGateway:
+  pushGateway:
     resources:
       limits:
         cpu: "1"
@@ -184,4 +184,4 @@ prometheus:
         cpu: 100m
         memory: 100Mi
 kafka:
-  LocalPort: 24092
+  localPort: 24092

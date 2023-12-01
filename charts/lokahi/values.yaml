@@ -286,8 +286,8 @@ keycloak:
   imagePullPolicy: IfNotPresent
   port: 8080
   httpsPort: 8443
-  HostnamePort: ~
-  HostnameAdminUrl: ~
+  hostnamePort: ~
+  hostnameAdminUrl: ~
   replicas: 1
   serviceName: onms-keycloak
   tlsSecretName:
@@ -352,7 +352,7 @@ kafka:
   imagePullPolicy: IfNotPresent
   replicas: 1
   port: 9092
-  ControllerPort: 9093
+  controllerPort: 9093
   LocalPort: 59092
   resources:
     limits:

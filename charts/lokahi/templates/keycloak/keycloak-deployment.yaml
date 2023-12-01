@@ -79,14 +79,14 @@ spec:
             - name: KC_CACHE
               value: ispn
             - name: KC_HOSTNAME_URL # Required in prod-mod to terminate tls at ingress
-            {{- if .Values.keycloak.HostnamePort }}
-              value: "{{ .Values.protocol }}://{{ .Values.hostname }}:{{ .Values.keycloak.HostnamePort }}{{ .Values.keycloak.path }}"
+            {{- if .Values.keycloak.hostnamePort }}
+              value: "{{ .Values.protocol }}://{{ .Values.hostname }}:{{ .Values.keycloak.hostnamePort }}{{ .Values.keycloak.path }}"
             {{- else }}
               value: "{{ .Values.protocol }}://{{ .Values.hostname }}{{ .Values.keycloak.path }}"
             {{- end }}
-            {{- if .Values.keycloak.HostnameAdminUrl }}
+            {{- if .Values.keycloak.hostnameAdminUrl }}
             - name: KC_HOSTNAME_ADMIN_URL
-              value: "{{ .Values.keycloak.HostnameAdminUrl }}"
+              value: "{{ .Values.keycloak.hostnameAdminUrl }}"
             {{- end }}
             - name: KC_DB_URL
               value: "jdbc:postgresql://{{ .Values.keycloak.databaseHost }}:5432/{{ .Values.keycloak.databaseName }}?currentSchema={{ .Values.keycloak.databaseSchemaName }}"

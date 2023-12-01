@@ -12,10 +12,10 @@ spec:
       name: client
       protocol: TCP
       targetPort: {{ .Values.kafka.port }}
-    - port: {{ .Values.kafka.ControllerPort }}
+    - port: {{ .Values.kafka.controllerPort }}
       name: controller
       protocol: TCP
-      targetPort: {{ .Values.kafka.ControllerPort }}
+      targetPort: {{ .Values.kafka.controllerPort }}
   selector:
     app: {{ .Values.kafka.serviceName }}
   type: ClusterIP
