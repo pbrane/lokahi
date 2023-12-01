@@ -24,8 +24,8 @@ OpenNMS:
       Requests:
         Cpu: "0"
         Memory: "0"
-  Minion:
-    Enabled: true
+  minion:
+    enabled: true
     Resources:
       Limits:
         Cpu: "0"
@@ -33,7 +33,7 @@ OpenNMS:
       Requests:
         Cpu: "0"
         Memory: "0"
-  MinionGateway:
+  minionGateway:
     Resources:
       Limits:
         Cpu: "0"
@@ -41,7 +41,7 @@ OpenNMS:
       Requests:
         Cpu: "0"
         Memory: "0"
-  Inventory:
+  inventory:
     Resources:
       Limits:
         Cpu: "0"
@@ -57,7 +57,7 @@ OpenNMS:
       Requests:
         Cpu: "0"
         Memory: "0"
-  Notification: 
+  notification: 
     Resources:
       Limits:
         Cpu: "0"
@@ -65,7 +65,7 @@ OpenNMS:
       Requests:
         Cpu: "0"
         Memory: "0"
-  Events:
+  events:
     Resources:
       Limits:
         Cpu: "0"
@@ -73,16 +73,16 @@ OpenNMS:
       Requests:
         Cpu: "0"
         Memory: "0"
-Keycloak:
-  AdminUsername: admin
-  AdminPassword: admin
-Grafana:
-  Enabled: true
-Ingress:
-  Enabled: true
+keycloak:
+  adminUsername: admin
+  adminPassword: admin
+grafana:
+  enabled: true
+ingress:
+  enabled: true
 Postgres:
   Pvc: false
-MailServer:
-  Enabled: true
-Citus:
-  Enabled: true
+mailServer:
+  enabled: true
+citus:
+  enabled: true

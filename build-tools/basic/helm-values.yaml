@@ -2,14 +2,14 @@ Namespace: tilt-instance
 Host: onmshs.local
 HostIp: 127.0.0.1
 Port: 1443
-Protocol: https
-TLS:
-  Enabled: True
-  CertificateGeneration: true
+protocol: https
+tls:
+  enabled: True
+  certificateGeneration: true
   Cert:
     Name: opennms-ui-certificate
-Keycloak:
-  AdminPassword: admin
+keycloak:
+  adminPassword: admin
   HostnamePort: 1443
   HostnameAdminUrl: https://localhost:1443/auth
 
@@ -30,9 +30,9 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-    IngressAnnotations:
+    ingressAnnotations:
       cert-manager.io/cluster-issuer: opennms-ca
-  Minion:
+  minion:
     Resources:
       Limits:
         Cpu: '0'
@@ -40,7 +40,7 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-  MinionGateway:
+  minionGateway:
     SecretName: opennms-minion-gateway-certificate
     Resources:
       Limits:
@@ -49,10 +49,10 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-  MinionCertificateManager:
-    Enabled: true
-    CaSecretName: root-ca-certificate
-    MtlsSecretName: client-root-ca-certificate
+  minionCertificateManager:
+    enabled: true
+    caSecretName: root-ca-certificate
+    mtlsSecretName: client-root-ca-certificate
     Resources:
       Limits:
         Cpu: '0'
@@ -60,7 +60,7 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-  MinionCertificateVerifier:
+  minionCertificateVerifier:
     Resources:
       Limits:
         Cpu: '0'
@@ -68,7 +68,7 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-  Inventory:
+  inventory:
     Resources:
       Limits:
         Cpu: '0'
@@ -76,7 +76,7 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-  Notification:
+  notification:
     Resources:
       Limits:
         Cpu: '0'
@@ -84,7 +84,7 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-  Events:
+  events:
     Resources:
       Limits:
         Cpu: '0'
@@ -92,7 +92,7 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-  DataChoices:
+  dataChoices:
     Resources:
       Limits:
         Cpu: '0'
@@ -100,7 +100,7 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: '0'
-  Core:
+  core:
     Resources:
       Limits:
         Cpu: '0'
@@ -108,7 +108,7 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: 2Gi
-Grafana:
+grafana:
   Resources:
     Limits:
       Cpu: 500m
@@ -116,7 +116,7 @@ Grafana:
     Requests:
       Cpu: 100m
       Memory: 100Mi
-Prometheus:
+prometheus:
   Server:
     Resources:
       Limits:
@@ -133,5 +133,5 @@ Prometheus:
       Requests:
         Cpu: 100m
         Memory: 100Mi
-Kafka:
+kafka:
   LocalPort: 24092

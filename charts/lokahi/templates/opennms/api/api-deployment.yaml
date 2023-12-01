@@ -26,24 +26,24 @@ spec:
         checksum/spring-boot-env-configmap: {{ include (print $.Template.BasePath "/opennms/spring-boot-env-configmap.yaml") . | sha256sum }}
         kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.api.serviceName }}"
     spec:
-      {{ if .Values.NodeRestrictions.Enabled }}
+      {{ if .Values.nodeRestrictions.enabled }}
       nodeSelector:
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
+        {{ .Values.nodeRestrictions.key }}: {{ .Values.nodeRestrictions.value }}
       tolerations:
         - effect: "NoSchedule"
-          key: "{{ .Values.NodeRestrictions.Key }}"
+          key: "{{ .Values.nodeRestrictions.key }}"
           operator: "Equal"
-          value: {{ .Values.NodeRestrictions.Value }}
+          value: {{ .Values.nodeRestrictions.value }}
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 1
               preference:
                 matchExpressions:
-                  - key: "{{ .Values.NodeRestrictions.Key }}"
+                  - key: "{{ .Values.nodeRestrictions.key }}"
                     operator: In
                     values:
-                      - {{ .Values.NodeRestrictions.Value }}
+                      - {{ .Values.nodeRestrictions.value }}
       {{ end }}
       terminationGracePeriodSeconds: 120
       volumes:
@@ -60,7 +60,7 @@ spec:
             - name: SPRING_CACHE_CAFFEINE_SPEC
               value: "maximumSize=10000,expireAfterWrite=60s"
             - name: TSDB_URL
-              value: "{{ .Values.CortexClient.Protocol }}://{{ .Values.CortexClient.HostRead }}:{{ .Values.CortexClient.PortRead }}{{ .Values.CortexClient.pathRead }}"
+              value: "{{ .Values.cortexClient.protocol }}://{{ .Values.cortexClient.hostRead }}:{{ .Values.cortexClient.portRead }}{{ .Values.cortexClient.pathRead }}"
             - name: SPRING_WEBFLUX_BASE_PATH
               value: /api
             - name: GRAPHQL_SPQR_GUI_TARGET_ENDPOINT
@@ -73,16 +73,16 @@ spec:
               value: "false"
             {{- end }}
             - name: GRPC_URL_INVENTORY
-              value: "{{ .Values.OpenNMS.Inventory.serviceName }}:6565"
+              value: "{{ .Values.OpenNMS.inventory.serviceName }}:6565"
             - name: GRPC_URL_EVENTS
-              value: "{{ .Values.OpenNMS.Events.serviceName }}:6565"
+              value: "{{ .Values.OpenNMS.events.serviceName }}:6565"
             - name: GRPC_URL_NOTIFICATION
-              value: "{{ .Values.OpenNMS.Notification.serviceName }}:6565"
+              value: "{{ .Values.OpenNMS.notification.serviceName }}:6565"
             - name: GRPC_URL_ALERT
-              value: "{{ .Values.OpenNMS.Alert.serviceName }}:6565"
+              value: "{{ .Values.OpenNMS.alert.serviceName }}:6565"
             - name: GRPC_URL_MINION_CERTIFICATE_MANAGER
               value: {{ if or (eq .Values.OpenNMS.api.certificateManagerUrl "") (eq .Values.OpenNMS.api.certificateManagerUrl "dev")
-                }}"{{ .Values.OpenNMS.MinionCertificateManager.serviceName }}:8990"{{
+                }}"{{ .Values.OpenNMS.minionCertificateManager.serviceName }}:8990"{{
               else
                 }}"{{ .Values.OpenNMS.api.certificateManagerUrl }}"{{ end }}
             - name: GRPC_URL_FLOWS
@@ -90,7 +90,7 @@ spec:
             - name: GRPC_URL_FLOWS_TLS_ENABLED
               value: "{{ .Values.OpenNMS.api.flowsTlsEnabled }}"
             - name: PACKAGED_MINION_FILE
-              value: "{{ .Values.OpenNMS.api.packagedMinionFile }}"
+              value: "{{ .Values.OpenNMS.api.packagedminionFile }}"
             - name: MINION_ENDPOINT
               value: "{{ .Values.OpenNMS.api.minionEndpoint }}"
             {{- with .Values.OpenNMS.api.CorsAllowed }}

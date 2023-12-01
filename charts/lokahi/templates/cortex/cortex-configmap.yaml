@@ -1,19 +1,19 @@
-{{ if .Values.Cortex.Enabled }}
+{{ if .Values.cortex.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app: {{ .Values.Cortex.serviceName }}
+    app: {{ .Values.cortex.serviceName }}
   name: cortex-config-map
   namespace: {{ .Release.Namespace }}
 data:
   cortex.yml: |
-    # Configuration for running Cortex in single-process mode.
+    # Configuration for running cortex in single-process mode.
     # This should not be used in production.  It is only for getting started
     # and development.
         
     server:
-      http_listen_port: {{ .Values.Cortex.Port }}
+      http_listen_port: {{ .Values.cortex.port }}
 
       # Configure the server to allow messages up to 100MB.
       grpc_server_max_recv_msg_size: 104857600

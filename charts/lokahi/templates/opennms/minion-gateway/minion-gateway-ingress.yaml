@@ -1,22 +1,22 @@
-{{- if .Values.Ingress.DefaultEndpointsEnabled }}
+{{- if .Values.ingress.defaultEndpointsEnabled }}
 apiVersion: networking.k8s.io/v1
-kind: Ingress
+kind: ingress
 metadata:
-  name: {{ .Values.OpenNMS.MinionGateway.serviceName }}
+  name: {{ .Values.OpenNMS.minionGateway.serviceName }}
   namespace: {{ .Release.Namespace }}
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.TLS.Enabled }}"
+    nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.tls.enabled }}"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-    {{- range $Annotation, $Value := .Values.OpenNMS.MinionGateway.IngressAnnotations }}
+    {{- range $Annotation, $Value := .Values.OpenNMS.minionGateway.ingressAnnotations }}
     {{ $Annotation | quote }}: {{ $Value | quote }}
     {{- end }}
 spec:
   ingressClassName: nginx
-  {{- if .Values.TLS.Enabled }}
+  {{- if .Values.tls.enabled }}
   tls:
     - hosts:
       - "minion.{{ .Values.hostname }}"
-      secretName: {{ .Values.OpenNMS.MinionGateway.TlsSecretName }}
+      secretName: {{ .Values.OpenNMS.minionGateway.tlsSecretName }}
   {{- end }}
   rules:
     - host: "minion.{{ .Values.hostname }}"
@@ -26,7 +26,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.OpenNMS.MinionGateway.serviceName }}
+                name: {{ .Values.OpenNMS.minionGateway.serviceName }}
                 port:
                   number: 8990
 {{- end }}

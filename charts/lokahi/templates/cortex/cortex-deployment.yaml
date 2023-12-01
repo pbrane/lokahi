@@ -1,44 +1,44 @@
-{{ if .Values.Cortex.Enabled }}
+{{ if .Values.cortex.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.Cortex.serviceName }}
+  name: {{ .Values.cortex.serviceName }}
   labels:
-    app: {{ .Values.Cortex.serviceName }}
+    app: {{ .Values.cortex.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.Cortex.serviceName }}
+      app: {{ .Values.cortex.serviceName }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.Cortex.serviceName }}
+        app: {{ .Values.cortex.serviceName }}
       annotations:
         # roll the deployment when the cortex configmap changes
         checksum/cortex-configmap: {{ include (print $.Template.BasePath "/cortex/cortex-configmap.yaml") . | sha256sum }}
-        kubectl.kubernetes.io/default-container: "{{ .Values.Cortex.serviceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.cortex.serviceName }}"
     spec:
-      {{- if .Values.NodeRestrictions.Enabled }}
+      {{- if .Values.nodeRestrictions.enabled }}
       nodeSelector:
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
+        {{ .Values.nodeRestrictions.key }}: {{ .Values.nodeRestrictions.value }}
       tolerations:
         - effect: "NoSchedule"
-          key: "{{ .Values.NodeRestrictions.Key }}"
+          key: "{{ .Values.nodeRestrictions.key }}"
           operator: "Equal"
-          value: {{ .Values.NodeRestrictions.Value }}
+          value: {{ .Values.nodeRestrictions.value }}
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 1
               preference:
                 matchExpressions:
-                  - key: "{{ .Values.NodeRestrictions.Key }}"
+                  - key: "{{ .Values.nodeRestrictions.key }}"
                     operator: In
                     values:
-                      - {{ .Values.NodeRestrictions.Value }}
+                      - {{ .Values.nodeRestrictions.value }}
       {{- end }}
       volumes:
         - name: cortex-config-volume
@@ -47,18 +47,18 @@ spec:
         - name: cortex-rules-volume
           emptyDir: {}
       containers:
-        - name: {{ .Values.Cortex.serviceName }}
-          image: {{ .Values.Cortex.Image }}
+        - name: {{ .Values.cortex.serviceName }}
+          image: {{ .Values.cortex.image }}
           args: ["-config.file=/etc/cortex.yml"]
           ports:
-            - containerPort: {{ .Values.Cortex.Port }}
+            - containerPort: {{ .Values.cortex.port }}
           resources:
             limits:
-              cpu: {{ .Values.Cortex.resources.limits.cpu }}
-              memory: {{ .Values.Cortex.resources.limits.memory }}
+              cpu: {{ .Values.cortex.resources.limits.cpu }}
+              memory: {{ .Values.cortex.resources.limits.memory }}
             requests:
-              cpu: {{ .Values.Cortex.resources.requests.cpu }}
-              memory: {{ .Values.Cortex.resources.requests.memory }}
+              cpu: {{ .Values.cortex.resources.requests.cpu }}
+              memory: {{ .Values.cortex.resources.requests.memory }}
           volumeMounts:
             - name: cortex-config-volume
               mountPath: "/etc/cortex.yml"

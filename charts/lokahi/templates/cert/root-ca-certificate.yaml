@@ -1,4 +1,4 @@
-{{- if .Values.TLS.CertificateGeneration }}
+{{- if .Values.tls.certificateGeneration }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -15,12 +15,12 @@ data:
   tls.crt: >-
     {{ b64enc $ca.Cert }}
   tls.key: >-
-    {{ b64enc $ca.Key }}
+    {{ b64enc $ca.key }}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Values.OpenNMS.MinionGateway.TlsSecretName }}
+  name: {{ .Values.OpenNMS.minionGateway.tlsSecretName }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/resource-policy": keep
@@ -32,12 +32,12 @@ data:
   tls.crt: >-
     {{b64enc $mgCert.Cert }}
   tls.key: >-
-    {{b64enc $mgCert.Key }}
+    {{b64enc $mgCert.key }}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Values.OpenNMS.UI.TlsSecretName }}
+  name: {{ .Values.OpenNMS.ui.tlsSecretName }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/resource-policy": keep
@@ -49,6 +49,6 @@ data:
   tls.crt: >-
     {{b64enc $uiCert.Cert }}
   tls.key: >-
-    {{b64enc $uiCert.Key }}
+    {{b64enc $uiCert.key }}
 
 {{- end }}

@@ -1,9 +1,9 @@
-{{- if .Values.Prometheus.Enabled }}
+{{- if .Values.prometheus.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app: {{ .Values.Prometheus.serviceName }}
+    app: {{ .Values.prometheus.serviceName }}
   name: prometheus-config-map
   namespace: {{ .Release.Namespace }}
 data:
@@ -11,7 +11,7 @@ data:
     global:
       scrape_interval:     15s # By default, scrape targets every 15 seconds.
     # A scrape configuration containing exactly one endpoint to scrape:
-    # Here it's Prometheus itself.
+    # Here it's prometheus itself.
     scrape_configs:
       # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
       - job_name: 'kubernetes-internal-metrics'
