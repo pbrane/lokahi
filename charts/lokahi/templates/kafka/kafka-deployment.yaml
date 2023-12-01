@@ -76,9 +76,9 @@ spec:
             - name: client
               containerPort: {{ .Values.kafka.port }}
             - name: controller
-              containerPort: {{ .Values.kafka.ControllerPort }}
+              containerPort: {{ .Values.kafka.controllerPort }}
             - name: local
-              containerPort: {{ .Values.kafka.LocalPort }}
+              containerPort: {{ .Values.kafka.localPort }}
           livenessProbe:
             failureThreshold: 15
             initialDelaySeconds: 10
