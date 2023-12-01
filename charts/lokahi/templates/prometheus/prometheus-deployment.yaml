@@ -1,60 +1,60 @@
-{{- if .Values.Prometheus.Enabled }}
+{{- if .Values.prometheus.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.Prometheus.serviceName }}
+  name: {{ .Values.prometheus.serviceName }}
   labels:
-    app: {{ .Values.Prometheus.serviceName }}
+    app: {{ .Values.prometheus.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.Prometheus.replicas }}
+  replicas: {{ .Values.prometheus.replicas }}
   selector:
     matchLabels:
-      app: {{ .Values.Prometheus.serviceName }}
+      app: {{ .Values.prometheus.serviceName }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.Prometheus.serviceName }}
+        app: {{ .Values.prometheus.serviceName }}
       annotations:
-        kubectl.kubernetes.io/default-container: "{{ .Values.Prometheus.serviceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.prometheus.serviceName }}"
     spec:
-      serviceAccountName: {{ .Values.Prometheus.serviceName }}-sa
-      {{- if .Values.NodeRestrictions.Enabled }}
+      serviceAccountName: {{ .Values.prometheus.serviceName }}-sa
+      {{- if .Values.nodeRestrictions.enabled }}
       nodeSelector:
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
+        {{ .Values.nodeRestrictions.key }}: {{ .Values.nodeRestrictions.value }}
       tolerations:
         - effect: "NoSchedule"
-          key: "{{ .Values.NodeRestrictions.Key }}"
+          key: "{{ .Values.nodeRestrictions.key }}"
           operator: "Equal"
-          value: {{ .Values.NodeRestrictions.Value }}
+          value: {{ .Values.nodeRestrictions.value }}
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 1
               preference:
                 matchExpressions:
-                  - key: "{{ .Values.NodeRestrictions.Key }}"
+                  - key: "{{ .Values.nodeRestrictions.key }}"
                     operator: In
                     values:
-                      - {{ .Values.NodeRestrictions.Value }}
+                      - {{ .Values.nodeRestrictions.value }}
       {{- end }}
       volumes:
         - name: prometheus-config-volume
           configMap:
             name: prometheus-config-map
       containers:
-        - name: {{ .Values.Prometheus.serviceName }}
-          image: {{ .Values.Prometheus.Image }}
+        - name: {{ .Values.prometheus.serviceName }}
+          image: {{ .Values.prometheus.image }}
           ports:
-            - containerPort: {{ .Values.Prometheus.Port }}
+            - containerPort: {{ .Values.prometheus.port }}
           resources:
             limits:
-              cpu: {{ .Values.Prometheus.resources.limits.cpu }}
-              memory: {{ .Values.Prometheus.resources.limits.memory }}
+              cpu: {{ .Values.prometheus.resources.limits.cpu }}
+              memory: {{ .Values.prometheus.resources.limits.memory }}
             requests:
-              cpu: {{ .Values.Prometheus.resources.requests.cpu }}
-              memory: {{ .Values.Prometheus.resources.requests.memory }}
+              cpu: {{ .Values.prometheus.resources.requests.cpu }}
+              memory: {{ .Values.prometheus.resources.requests.memory }}
           volumeMounts:
             - name: prometheus-config-volume
               mountPath: "/etc/prometheus/prometheus.yml"

@@ -1,14 +1,14 @@
-{{- if .Values.OpenNMS.Minion.Enabled }}
+{{- if .Values.OpenNMS.minion.enabled }}
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ .Values.OpenNMS.Minion.serviceName }}-rb
+  name: {{ .Values.OpenNMS.minion.serviceName }}-rb
   labels:
-    app: {{ .Values.OpenNMS.Minion.serviceName }}
+    app: {{ .Values.OpenNMS.minion.serviceName }}
   namespace: {{ .Release.Namespace }}
 subjects:
 - kind: ServiceAccount
-  name: {{ .Values.OpenNMS.Minion.serviceName }}-sa
+  name: {{ .Values.OpenNMS.minion.serviceName }}-sa
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role

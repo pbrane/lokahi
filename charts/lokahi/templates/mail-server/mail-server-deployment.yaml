@@ -1,57 +1,57 @@
-{{- if .Values.MailServer.Enabled }}
+{{- if .Values.mailServer.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.MailServer.serviceName }}
+  name: {{ .Values.mailServer.serviceName }}
   labels:
-    app: {{ .Values.MailServer.serviceName }}
+    app: {{ .Values.mailServer.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.MailServer.serviceName }}
-  replicas: {{ .Values.MailServer.replicas }}
+      app: {{ .Values.mailServer.serviceName }}
+  replicas: {{ .Values.mailServer.replicas }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.MailServer.serviceName }}
+        app: {{ .Values.mailServer.serviceName }}
       annotations:
-        kubectl.kubernetes.io/default-container: "{{ .Values.MailServer.serviceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.mailServer.serviceName }}"
     spec:
-      {{- if .Values.NodeRestrictions.Enabled }}
+      {{- if .Values.nodeRestrictions.enabled }}
       nodeSelector:                                                                                    
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}                       
+        {{ .Values.nodeRestrictions.key }}: {{ .Values.nodeRestrictions.value }}                       
       tolerations:
         - effect: "NoSchedule"                                                                         
-          key: "{{ .Values.NodeRestrictions.Key }}"                                                    
+          key: "{{ .Values.nodeRestrictions.key }}"                                                    
           operator: "Equal"
-          value: {{ .Values.NodeRestrictions.Value }} 
+          value: {{ .Values.nodeRestrictions.value }} 
       affinity: 
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:                                             
           - weight: 1                                                                                  
             preference:                                                                                
               matchExpressions:                                                                        
-              - key: "{{ .Values.NodeRestrictions.Key }}"                                              
+              - key: "{{ .Values.nodeRestrictions.key }}"                                              
                 operator: In
                 values:                                                                                
-                - {{ .Values.NodeRestrictions.Value }}                                                 
+                - {{ .Values.nodeRestrictions.value }}                                                 
       {{- end }}
       containers:
-        - name: {{ .Values.MailServer.serviceName }}
-          imagePullPolicy: {{ .Values.MailServer.imagePullPolicy }}
-          image: {{ .Values.MailServer.Image }}
+        - name: {{ .Values.mailServer.serviceName }}
+          imagePullPolicy: {{ .Values.mailServer.imagePullPolicy }}
+          image: {{ .Values.mailServer.image }}
           ports:
             - name: http
-              containerPort: {{ .Values.MailServer.Port }}
+              containerPort: {{ .Values.mailServer.port }}
             - name: smtp
-              containerPort: {{ .Values.MailServer.SmtpPort }}
+              containerPort: {{ .Values.mailServer.smtpPort }}
           resources:
             limits:
-              cpu: "{{ .Values.MailServer.resources.limits.cpu }}"
-              memory: "{{ .Values.MailServer.resources.limits.memory }}"
+              cpu: "{{ .Values.mailServer.resources.limits.cpu }}"
+              memory: "{{ .Values.mailServer.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.MailServer.resources.requests.cpu }}"
-              memory: "{{ .Values.MailServer.resources.requests.memory }}"
+              cpu: "{{ .Values.mailServer.resources.requests.cpu }}"
+              memory: "{{ .Values.mailServer.resources.requests.memory }}"
 {{- end }}

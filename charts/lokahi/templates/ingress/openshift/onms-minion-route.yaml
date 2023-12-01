@@ -7,11 +7,11 @@ metadata:
 spec:
   host: "minion.{{ .Values.hostname }}.apps-crc.testing"
   port:
-    targetPort: {{ .Values.OpenNMS.MinionGateway.GrpcPort }}
+    targetPort: {{ .Values.OpenNMS.minionGateway.GrpcPort }}
   tls:
     termination: passthrough
     insecureEdgeTerminationPolicy: None
   to:
     kind: Service
-    name: {{ .Values.OpenNMS.MinionGateway.serviceName }}
+    name: {{ .Values.OpenNMS.minionGateway.serviceName }}
 {{- end }}
