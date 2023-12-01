@@ -91,9 +91,11 @@ public class MonitoringLocationService {
             && modelRepo.findByIdAndTenantId(dto.getId(), dto.getTenantId()).isEmpty()) {
             throw new LocationNotFoundException("Location not found with ID " + dto.getId());
         }
-        if (dto.hasField(MonitoringLocationDTO.getDescriptor().findFieldByNumber(MonitoringLocationDTO.LOCATION_FIELD_NUMBER))
-            && modelRepo.findByLocationAndTenantId(dto.getLocation(), dto.getTenantId()).isPresent()) {
-            throw new InventoryRuntimeException("Duplicate Location found with name " + dto.getLocation());
+        if (dto.hasField(MonitoringLocationDTO.getDescriptor().findFieldByNumber(MonitoringLocationDTO.LOCATION_FIELD_NUMBER))) {
+            var location = modelRepo.findByLocationAndTenantId(dto.getLocation(), dto.getTenantId());
+            if (location.isPresent() && location.get().getId() != dto.getId()) {
+                throw new InventoryRuntimeException("Duplicate Location found with name " + dto.getLocation());
+            }
         }
 
         MonitoringLocation model = mapper.dtoToModel(dto);

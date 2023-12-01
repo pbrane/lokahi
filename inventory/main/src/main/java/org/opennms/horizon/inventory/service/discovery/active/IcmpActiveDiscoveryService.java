@@ -87,9 +87,8 @@ public class IcmpActiveDiscoveryService implements ActiveDiscoveryValidationServ
                 throw new IllegalArgumentException("Discovery with Id" + request.getId() + " doesn't exist");
             }
             var discovery = optionalDiscovery.get();
-            if (!discovery.getName().equals(request.getName())) {
-                validateActiveDiscoveryName(request.getName(), tenantId);
-            }
+            validateActiveDiscoveryName(request.getName(), discovery.getId(), tenantId);
+
             if (!String.valueOf(discovery.getLocationId()).equals(request.getLocationId())) {
                 validateLocation(request.getLocationId(), tenantId);
             }

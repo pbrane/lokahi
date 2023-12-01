@@ -40,9 +40,14 @@ public interface ActiveDiscoveryValidationService {
     MonitoringLocationService getMonitoringLocationService();
 
     default void validateActiveDiscoveryName(String name, String tenantId) {
+        validateActiveDiscoveryName(name, -1 , tenantId);
+    }
+
+    default void validateActiveDiscoveryName(String name, long discoveryId, String tenantId) {
         Objects.requireNonNull(name);
         Objects.requireNonNull(tenantId);
-        if (!getActiveDiscoveryRepository().findByNameAndTenantId(name, tenantId).isEmpty()) {
+        if (getActiveDiscoveryRepository().findByNameAndTenantId(name, tenantId)
+            .stream().anyMatch(d -> d.getId() != discoveryId)) {
             throw new InventoryRuntimeException("Duplicate active discovery with name " + name);
         }
     }

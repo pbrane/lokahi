@@ -146,9 +146,9 @@ public class PassiveDiscoveryServiceTest {
     void testCreateDiscoveryDuplicateName() {
         final String tenantId = "test_tenant";
         final String name = "duplicate";
-        List<PassiveDiscovery> discoveries = new ArrayList<>();
-        discoveries.add(new PassiveDiscovery());
-        when(passiveDiscoveryRepository.findByTenantIdAndName(tenantId, name)).thenReturn(discoveries);
+        var discovery = new PassiveDiscovery();
+        discovery.setId(1L);
+        when(passiveDiscoveryRepository.findByTenantIdAndName(tenantId, name)).thenReturn(List.of(discovery));
 
         PassiveDiscoveryUpsertDTO upsertDTO = PassiveDiscoveryUpsertDTO.newBuilder().setName(name).build();
         var exception = assertThrows(InventoryRuntimeException.class, () -> passiveDiscoveryService.createDiscovery(tenantId, upsertDTO));

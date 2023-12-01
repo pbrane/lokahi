@@ -36,7 +36,6 @@ import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryCreateDTO;
 import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
 import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.mapper.discovery.AzureActiveDiscoveryMapper;
-import org.opennms.horizon.inventory.model.discovery.active.ActiveDiscovery;
 import org.opennms.horizon.inventory.model.discovery.active.IcmpActiveDiscovery;
 import org.opennms.horizon.inventory.repository.discovery.active.ActiveDiscoveryRepository;
 import org.opennms.horizon.inventory.repository.discovery.active.AzureActiveDiscoveryRepository;
@@ -44,7 +43,6 @@ import org.opennms.horizon.inventory.service.discovery.active.AzureActiveDiscove
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
 import org.opennms.horizon.shared.azure.http.AzureHttpClient;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertThrows;
@@ -93,13 +91,13 @@ class AzureActiveDiscoveryServiceTest {
     void testCreateDiscoveryDuplicateName() {
         final String tenantId = "test_tenant";
         final String name = "duplicate";
-        List<ActiveDiscovery> discoveries = new ArrayList<>();
-        discoveries.add(new IcmpActiveDiscovery());
-        when(activeDiscoveryRepository.findByNameAndTenantId(name, tenantId)).thenReturn(discoveries);
+        var discovery = new IcmpActiveDiscovery();
+        discovery.setId(1L);
+
+        when(activeDiscoveryRepository.findByNameAndTenantId(name, tenantId)).thenReturn(List.of(discovery));
 
         AzureActiveDiscoveryCreateDTO createDTO = AzureActiveDiscoveryCreateDTO.newBuilder().setName(name).build();
         var exception = assertThrows(InventoryRuntimeException.class, () -> azureActiveDiscoveryService.createActiveDiscovery(tenantId, createDTO));
-
         Assertions.assertEquals("Duplicate active discovery with name duplicate", exception.getMessage());
     }
 

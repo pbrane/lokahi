@@ -147,7 +147,7 @@ public class PassiveDiscoveryService {
     }
 
     private void validateDiscovery(String tenantId, PassiveDiscoveryUpsertDTO dto) {
-        if (!repository.findByTenantIdAndName(tenantId, dto.getName()).isEmpty()) {
+        if (repository.findByTenantIdAndName(tenantId, dto.getName()).stream().filter(d -> d.getId() != dto.getId()).count() != 0) {
             throw new InventoryRuntimeException("Duplicate passive discovery with name " + dto.getName());
         }
         var location = monitoringLocationService.findByLocationIdAndTenantId(Long.parseLong(dto.getLocationId()), tenantId);

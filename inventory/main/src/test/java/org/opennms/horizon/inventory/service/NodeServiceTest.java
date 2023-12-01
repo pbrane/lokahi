@@ -572,8 +572,11 @@ public class NodeServiceTest {
         testNode.setNodeAlias("AAA");
         when(mockNodeRepository.findByIdAndTenantId(testNode.getId(), testNode.getTenantId()))
             .thenReturn(Optional.of(testNode));
-        List<Node> nodes = new ArrayList<>();
-        nodes.add(new Node());
+
+        Node node2 = new Node();
+        node2.setId(99);
+        node2.setNodeAlias(updateNodeAlias);
+        List<Node> nodes = Arrays.asList(testNode, node2);
         when(mockNodeRepository.findByNodeAliasAndTenantId(updateNodeAlias, testNode.getTenantId()))
             .thenReturn(nodes);
 

@@ -72,6 +72,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 public class IcmpDiscoveryStepDefinitions {
@@ -122,11 +123,15 @@ public class IcmpDiscoveryStepDefinitions {
 
 
 
-    @Given("New Active Discovery with IpAddresses {string} and SNMP community as {string} at location named {string} with tags {string}")
-    public void newActiveDiscoveryWithIpAddressesAndSNMPCommunityAsAtLocationWithTags(String ipAddressStrings, String snmpReadCommunity,
-                                                                                      String location, String tags) {
+    @Given("New Active Discovery {string} with IpAddresses {string} and SNMP community as {string} at location named {string} with tags {string}")
+    public void newActiveDiscoveryWithIpAddressesAndSNMPCommunityAsAtLocationWithTags(String name,
+                                                                                      String ipAddressStrings,
+                                                                                      String snmpReadCommunity,
+                                                                                      String location,
+                                                                                      String tags) {
         var tagsList = tags.split(",");
         icmpDiscovery = IcmpActiveDiscoveryCreateDTO.newBuilder()
+            .setName(name)
             .addIpAddresses(ipAddressStrings).setSnmpConfig(SNMPConfigDTO.newBuilder()
                 .addReadCommunity(snmpReadCommunity).build())
             .addAllTags(Stream.of(tagsList).map(tag -> TagCreateDTO.newBuilder().setName(tag).build()).toList())
@@ -143,6 +148,17 @@ public class IcmpDiscoveryStepDefinitions {
             .setId(activeDiscoveryId)
             .addAllTags(Stream.of(tagsList).map(tag -> TagCreateDTO.newBuilder().setName(tag).build()).toList())
             .setLocationId(backgroundHelper.findLocationId(location)).build();
+    }
+
+    @Then("create Active Discovery check exception {string} message {string}")
+    public void createActiveDiscoveryCheckExceptionMessage(String className, String message) {
+        try {
+            backgroundHelper.getIcmpActiveDiscoveryServiceBlockingStub().createDiscovery(icmpDiscovery);
+            fail("No exception caught");
+        } catch (Exception ex) {
+            Assertions.assertEquals(ex.getClass().getSimpleName(), className);
+            Assertions.assertEquals(ex.getMessage(), message);
+        }
     }
 
     @Then("create Active Discovery and validate it's created active discovery with above details.")
