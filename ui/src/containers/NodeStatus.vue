@@ -21,7 +21,7 @@
         <IPInterfacesTable />
       </FeatherTabPanel>
       <FeatherTabPanel>
-        <EventsTable />
+        <NodeStatusThirdTab />
       </FeatherTabPanel>
     </FeatherTabContainer>
   </div>
