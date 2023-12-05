@@ -32,6 +32,7 @@ import io.leangen.graphql.execution.ResolutionEnvironment;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeInfo;
 import org.opennms.horizon.server.model.TSResult;
 import org.opennms.horizon.server.model.TimeRangeUnit;
 import org.opennms.horizon.server.model.TimeSeriesQueryResult;
@@ -61,6 +62,7 @@ import static org.opennms.horizon.server.service.metrics.Constants.AVG_RESPONSE_
 import static org.opennms.horizon.server.service.metrics.Constants.AZURE_MONITOR_TYPE;
 import static org.opennms.horizon.server.service.metrics.Constants.AZURE_SCAN_TYPE;
 import static org.opennms.horizon.server.service.metrics.Constants.INSTANCE_KEY;
+import static org.opennms.horizon.server.service.metrics.Constants.LOCATION_KEY;
 import static org.opennms.horizon.server.service.metrics.Constants.MONITOR_KEY;
 import static org.opennms.horizon.server.service.metrics.Constants.NODE_ID_KEY;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -83,12 +85,12 @@ public class NodeStatusService {
     public Mono<NodeStatus> getNodeStatus(NodeDTO node,  String monitorType, ResolutionEnvironment env) {
 
         if (AZURE_SCAN_TYPE.equals(node.getScanType())) {
-            return getStatusMetric(node.getId(), "azure-node-" + node.getId(), AZURE_MONITOR_TYPE, env)
+            return getStatusMetric(node.getId(), node.getLocation(), "azure-node-" + node.getId(), AZURE_MONITOR_TYPE, env)
                 .map(result -> getNodeStatus(node.getId(), result));
         } else {
             if (node.getIpInterfacesCount() > 0) {
                 IpInterfaceDTO ipInterface = getPrimaryInterface(node);
-                return getNodeStatusByInterface(node.getId(), monitorType, ipInterface, env);
+                return getNodeStatusByInterface(node.getId(), node.getLocation(), monitorType, ipInterface, env);
             }
         }
         return Mono.just(new NodeStatus(node.getId(), false));
@@ -105,10 +107,11 @@ public class NodeStatusService {
         return node.getIpInterfaces(0);
     }
 
-    private Mono<NodeStatus> getNodeStatusByInterface(long id, String monitorType, IpInterfaceDTO ipInterface, ResolutionEnvironment env) {
+    private Mono<NodeStatus> getNodeStatusByInterface(long id, String location, String monitorType,
+                                                      IpInterfaceDTO ipInterface, ResolutionEnvironment env) {
         String ipAddress = ipInterface.getIpAddress();
 
-        return getStatusMetric(id, ipAddress, monitorType, env)
+        return getStatusMetric(id, location, ipAddress, monitorType, env)
             .map(result -> getNodeStatus(id, result));
     }
 
@@ -140,30 +143,32 @@ public class NodeStatusService {
         return new NodeStatus(id, status);
     }
 
-    private Mono<TimeSeriesQueryResult> getStatusMetric(long id, String instance, String monitorType, ResolutionEnvironment env) {
+    private Mono<TimeSeriesQueryResult> getStatusMetric(long id, String location, String instance, String monitorType, ResolutionEnvironment env) {
         Map<String, String> labels = new HashMap<>();
         labels.put(NODE_ID_KEY, String.valueOf(id));
         labels.put(MONITOR_KEY, monitorType);
         labels.put(INSTANCE_KEY, instance);
+        labels.put(LOCATION_KEY, location);
 
         return tsdbMetricsService
             .getMetric(env, RESPONSE_TIME_METRIC, labels, TIME_RANGE_IN_SECONDS, TimeRangeUnit.SECOND);
     }
 
-    public Mono<NodeReachability> getNodeReachability(NodeDTO node,
+    public Mono<NodeReachability> getNodeReachability(NodeInfo nodeInfo,
                                                 Integer timeRange,
                                                 TimeRangeUnit timeRangeUnit,
                                                 ResolutionEnvironment env) {
-        IpInterfaceDTO ipInterface = getPrimaryInterface(node);
+
         Map<String, String> labels = new HashMap<>();
-        labels.put(NODE_ID_KEY, String.valueOf(node.getId()));
+        labels.put(NODE_ID_KEY, String.valueOf(nodeInfo.getId()));
         labels.put(MONITOR_KEY, Constants.DEFAULT_MONITOR_TYPE);
-        labels.put(INSTANCE_KEY, ipInterface.getIpAddress());
+        labels.put(INSTANCE_KEY, nodeInfo.getPrimaryIpAddress());
+        labels.put(LOCATION_KEY, nodeInfo.getLocationName());
 
         var request = new MonitoredServiceStatusRequest();
-        request.setNodeId(node.getId());
+        request.setNodeId(nodeInfo.getId());
         request.setMonitorType(Constants.DEFAULT_MONITOR_TYPE);
-        request.setIpAddress(ipInterface.getIpAddress());
+        request.setIpAddress(nodeInfo.getPrimaryIpAddress());
         // Defaults to 24hr window for first observation time.
         long firstObservationTime = Instant.now().minus(24, ChronoUnit.HOURS).toEpochMilli();
         try {
@@ -176,11 +181,11 @@ public class NodeStatusService {
         try {
             return tsdbMetricsService.
                 getCustomMetric(env, Constants.REACHABILITY_PERCENTAGE, labels, timeRange, timeRangeUnit, optionalParams)
-                .map(result -> transformToNodeReachability(node.getId(), result));
+                .map(result -> transformToNodeReachability(nodeInfo.getId(), result));
         } catch (Exception e) {
-            LOG.warn("Failed to get reachability for node id {}", node.getId(), e);
+            LOG.warn("Failed to get reachability for node id {}", nodeInfo.getId(), e);
         }
-        return Mono.just(new NodeReachability(node.getId(), 0.0));
+        return Mono.just(new NodeReachability(nodeInfo.getId(), 0.0));
     }
 
     private NodeReachability transformToNodeReachability(long id, TimeSeriesQueryResult result) {
@@ -211,36 +216,35 @@ public class NodeStatusService {
         return new NodeReachability(id, 0.0);
     }
 
-    public Mono<NodeResponseTime> getNodeAvgResponseTime(NodeDTO node, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
-        IpInterfaceDTO ipInterface = getPrimaryInterface(node);
+    public Mono<NodeResponseTime> getNodeAvgResponseTime(NodeInfo nodeInfo, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
         Map<String, String> labels = new HashMap<>();
-        labels.put(NODE_ID_KEY, String.valueOf(node.getId()));
+        labels.put(NODE_ID_KEY, String.valueOf(nodeInfo.getId()));
         labels.put(MONITOR_KEY, Constants.DEFAULT_MONITOR_TYPE);
-        labels.put(INSTANCE_KEY, ipInterface.getIpAddress());
+        labels.put(INSTANCE_KEY, nodeInfo.getPrimaryIpAddress());
+        labels.put(LOCATION_KEY, nodeInfo.getLocationName());
 
         try {
             return tsdbMetricsService.getMetric(env,
                 AVG_RESPONSE_TIME, labels, timeRange, timeRangeUnit).map(result ->
-                transformToNodeResponseTime(node.getId(), result));
+                transformToNodeResponseTime(nodeInfo.getId(), result));
         } catch (Exception e) {
-            LOG.warn("Failed to get response time for node id {}", node.getId(), e);
+            LOG.warn("Failed to get response time for node id {}", nodeInfo.getId(), e);
         }
-        return Mono.just(new NodeResponseTime(node.getId(), 0.0));
+        return Mono.just(new NodeResponseTime(nodeInfo.getId(), 0.0));
     }
 
-    public Mono<TopNNode> getTopNNode(NodeDTO nodeDTO, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
+    public Mono<TopNNode> getTopNNode(NodeInfo nodeInfo, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
 
-        Mono<NodeReachability> nodeReachability = getNodeReachability(nodeDTO, timeRange, timeRangeUnit, env);
-        Mono<NodeResponseTime> nodeResponseTime = getNodeAvgResponseTime(nodeDTO, timeRange, timeRangeUnit, env);
+        Mono<NodeReachability> nodeReachability = getNodeReachability(nodeInfo, timeRange, timeRangeUnit, env);
+        Mono<NodeResponseTime> nodeResponseTime = getNodeAvgResponseTime(nodeInfo, timeRange, timeRangeUnit, env);
         Mono<Tuple2<NodeReachability, NodeResponseTime>> result = nodeReachability.zipWith(nodeResponseTime);
 
         return result.map(tuple -> {
             var topNNode = new TopNNode();
-            topNNode.setNodeLabel(nodeDTO.getNodeLabel());
-            topNNode.setLocation(nodeDTO.getLocation());
-            // Round to 2 points after decimal
-            topNNode.setReachability(Math.round(tuple.getT1().getReachability() * 100.0) / 100.0);
-            topNNode.setAvgResponseTime(Math.round(tuple.getT2().getResponseTime() * 100.0) / 100.0);
+            topNNode.setNodeLabel(nodeInfo.getNodeLabel());
+            topNNode.setLocation(nodeInfo.getLocationName());
+            topNNode.setReachability(Math.round(tuple.getT1().getReachability()));
+            topNNode.setAvgResponseTime(Math.round(tuple.getT2().getResponseTime()));
             return topNNode;
         });
     }

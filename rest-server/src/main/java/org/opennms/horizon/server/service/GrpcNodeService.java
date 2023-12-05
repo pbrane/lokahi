@@ -143,16 +143,16 @@ public class GrpcNodeService {
                                       @GraphQLArgument(name = "page") Integer page,
                                       @GraphQLArgument(name = "sortBy") String sortBy,
                                       @GraphQLArgument(name = "sortAscending") boolean sortAscending) {
-        return Flux.fromIterable(client.listNodes(headerUtil.getAuthHeader(env)))
-            .flatMap(nodeDTO -> nodeStatusService.getTopNNode(nodeDTO, timeRange, timeRangeUnit, env))
+        return Flux.fromIterable(client.getNodeInfoList(headerUtil.getAuthHeader(env)).getNodeInfoList())
+            .flatMap(nodeInfo -> nodeStatusService.getTopNNode(nodeInfo, timeRange, timeRangeUnit, env))
             .sort(TopNNode.getComparator(sortBy, sortAscending))
             .skip((long) (page - 1) * pageSize)
             .take(pageSize);
     }
 
     @GraphQLQuery(name = "nodeCount")
-    public Mono<Integer> getNodeCount(@GraphQLEnvironment ResolutionEnvironment env) {
-        return Mono.just(client.listNodes(headerUtil.getAuthHeader(env)).size());
+    public Mono<Long> getNodeCount(@GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(client.getNodeCount(headerUtil.getAuthHeader(env)).getValue());
     }
 
     @GraphQLQuery(name = "downloadTopN")
@@ -163,8 +163,8 @@ public class GrpcNodeService {
                                            @GraphQLArgument(name = "sortAscending") boolean sortAscending,
                                            @GraphQLArgument(name = "downloadFormat") DownloadFormat downloadFormat) {
 
-        return Flux.fromIterable(client.listNodes(headerUtil.getAuthHeader(env)))
-            .flatMap(nodeDTO -> nodeStatusService.getTopNNode(nodeDTO, timeRange, timeRangeUnit, env))
+        return Flux.fromIterable(client.getNodeInfoList(headerUtil.getAuthHeader(env)).getNodeInfoList())
+            .flatMap(nodeInfo -> nodeStatusService.getTopNNode(nodeInfo, timeRange, timeRangeUnit, env))
             .sort(TopNNode.getComparator(sortBy, sortAscending)).collectList()
             .map(topNList -> {
                 try {

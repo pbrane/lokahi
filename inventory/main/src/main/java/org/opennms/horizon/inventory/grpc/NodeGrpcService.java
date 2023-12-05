@@ -49,6 +49,7 @@ import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.NodeIdList;
 import org.opennms.horizon.inventory.dto.NodeIdQuery;
+import org.opennms.horizon.inventory.dto.NodeInfoList;
 import org.opennms.horizon.inventory.dto.NodeLabelSearchQuery;
 import org.opennms.horizon.inventory.dto.NodeList;
 import org.opennms.horizon.inventory.dto.NodeServiceGrpc;
@@ -151,6 +152,20 @@ public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
             .map(nodeService::findByTenantId).orElseThrow();
         responseObserver.onNext(NodeList.newBuilder().addAllNodes(list).build());
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getNodeInfoList(Empty request,
+                                StreamObserver<NodeInfoList> responseObserver) {
+
+        var optionalTenant = tenantLookup.lookupTenantId(Context.current());
+        if (optionalTenant.isEmpty()) {
+            responseObserver.onError(StatusProto.toStatusRuntimeException(createTenantIdMissingStatus()));
+        } else {
+            var nodeInfoList = ipInterfaceService.getNodeInfoList(optionalTenant.get());
+            responseObserver.onNext(nodeInfoList);
+            responseObserver.onCompleted();
+        }
     }
 
     @Override
@@ -374,6 +389,19 @@ public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
             responseObserver.onNext(ipInterfaceDTO);
             responseObserver.onCompleted();
         }, () -> responseObserver.onError(StatusProto.toStatusRuntimeException(createStatusNotExits(request.getValue()))));
+    }
+
+    @Override
+    public void getNodeCount(Empty request,
+                             StreamObserver<Int64Value> responseObserver) {
+        var optional = tenantLookup.lookupTenantId(Context.current());
+        if (optional.isEmpty()) {
+            responseObserver.onError(StatusProto.toStatusRuntimeException(createTenantIdMissingStatus()));
+        } else {
+            long nodeCount = nodeService.getNodeCount(optional.get());
+            responseObserver.onNext(Int64Value.of(nodeCount));
+            responseObserver.onCompleted();
+        }
     }
 
     private Status createTenantIdMissingStatus() {

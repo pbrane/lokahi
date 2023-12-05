@@ -95,4 +95,7 @@ public interface NodeRepository extends JpaRepository<Node, Long> {
         "AND tag.name IN :tags")
     List<Node> findByTenantIdAndTagNamesIn(@Param("tenantId") String tenantId,
                                            @Param("tags") List<String> tags);
+
+
+    long countByTenantId(String tenantId);
 }

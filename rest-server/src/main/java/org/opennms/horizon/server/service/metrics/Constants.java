@@ -39,6 +39,7 @@ public final class Constants {
     public static final String NODE_ID_KEY = "node_id";
     public static final String MONITOR_KEY = "monitor";
     public static final String INSTANCE_KEY = "instance";
+    public static final String LOCATION_KEY = "location_id";
     public static final String FIRST_OBSERVATION_TIME = "first_observation_time";
 
 

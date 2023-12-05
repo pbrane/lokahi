@@ -104,6 +104,22 @@ message NodeIdList {
   repeated int64 ids = 1;
 }
 
+// concise node info
+message NodeInfo {
+   int64 id = 1;
+   string tenant_id = 2;
+   int64 location_id = 3;
+   string location_name = 4;
+   string node_label = 5;
+   optional string node_alias = 6;
+   string primary_ip_address = 7;
+}
+
+message NodeInfoList {
+  repeated NodeInfo node_info = 1;
+}
+
+
 service NodeService {
   rpc createNode(NodeCreateDTO) returns (NodeDTO) {};
   rpc updateNode(NodeUpdateDTO) returns (google.protobuf.Int64Value) {};
@@ -117,4 +133,6 @@ service NodeService {
   rpc startNodeScanByIds(NodeIdList) returns(google.protobuf.BoolValue) {};
   rpc getIpInterfaceById(google.protobuf.Int64Value) returns (IpInterfaceDTO) {};
   rpc getIpInterfaceFromQuery(NodeIdQuery) returns (IpInterfaceDTO) {};
+  rpc getNodeCount(google.protobuf.Empty) returns (google.protobuf.Int64Value) {};
+  rpc getNodeInfoList(google.protobuf.Empty) returns (NodeInfoList) {};
 }

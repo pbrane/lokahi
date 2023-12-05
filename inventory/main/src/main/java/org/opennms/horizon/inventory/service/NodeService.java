@@ -358,4 +358,8 @@ public class NodeService {
             .map(mapper::modelToDTO).toList();
     }
 
+    public long getNodeCount(String tenantId) {
+        return nodeRepository.countByTenantId(tenantId);
+    }
+
 }

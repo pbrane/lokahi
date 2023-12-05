@@ -3,7 +3,8 @@ package org.opennms.horizon.inventory.service;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.azure.api.AzureScanNetworkInterfaceItem;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
-import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
+import org.opennms.horizon.inventory.dto.NodeInfo;
+import org.opennms.horizon.inventory.dto.NodeInfoList;
 import org.opennms.horizon.inventory.mapper.IpInterfaceMapper;
 import org.opennms.horizon.inventory.model.AzureInterface;
 import org.opennms.horizon.inventory.model.IpInterface;
@@ -13,6 +14,7 @@ import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.node.scan.contract.IpInterfaceResult;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.InetAddress;
 import java.util.List;
@@ -119,5 +121,23 @@ public class IpInterfaceService {
                 }
                 modelRepo.save(ipInterface);
             });
+    }
+
+    public List<IpInterfaceDTO> getAllPrimaryInterfaces(String tenantId) {
+        return modelRepo.findByTenantIdAndSnmpPrimaryIsTrue(tenantId).stream().map(mapper::modelToDTO).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public NodeInfoList getNodeInfoList(String tenantId) {
+        var list = modelRepo.findByTenantIdAndSnmpPrimaryIsTrue(tenantId).stream()
+            .map(ipInterface -> NodeInfo.newBuilder().setId(ipInterface.getId())
+                .setTenantId(ipInterface.getTenantId())
+                .setNodeLabel(ipInterface.getNode().getNodeLabel())
+                .setLocationId(ipInterface.getNode().getMonitoringLocationId())
+                .setLocationName(ipInterface.getNode().getMonitoringLocation().getLocation()).build()).collect(Collectors.toList());
+
+        var builder = NodeInfoList.newBuilder();
+        list.forEach(builder::addNodeInfo);
+        return builder.build();
     }
 }
