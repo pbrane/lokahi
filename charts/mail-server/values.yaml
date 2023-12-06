@@ -5,20 +5,22 @@ OpenShift: false
 global:
  imagePullPolicy: IfNotPresent
  privateRepoEnabled: false
- image:
-  repository: opennms
-  tag: latest
- springBoot:
-  env: {}
- kafkaClient:
-  bootstrapServers: onms-kafka:9092
- enableJsonLogging: false
- openTelemetry:
-  otlpTracesEndpoint: null
-  env:
-   OTEL_PROPAGATORS: tracecontext,baggage,jaeger
 
 OpenNMS:
+  global:
+    image:
+      repository: opennms
+      tag: latest
+    springBoot:
+      env: {}
+    kafkaClient:
+      bootstrapServers: onms-kafka:9092
+    enableJsonLogging: false
+    openTelemetry:
+      otlpTracesEndpoint: null
+      env:
+        OTEL_PROPAGATORS: tracecontext,baggage,jaeger
+
   API:
     Path: /api
     ServiceName: opennms-rest-server
@@ -244,18 +246,18 @@ OpenNMS:
         Memory: 1Gi
     CertificateManagerUrl: ""
 citus:
-  enabled: false
-  adminUser: desenv
-  adminPassword: notset
-  openNMSPassword: notset
-  keycloakPassword: notset
-  inventoryPassword: notset
-  alertPassword: notset
-  eventsPassword: notset
-  dataChoicesPassword: notset
-  minionGatewayPassword: notset
-  notificationPassword: notset
-  grafanaPassword: notset
+  Enabled: false
+  AdminUser: desenv
+  AdminPassword: notset
+  OpenNMSPassword: notset
+  KeycloakPassword: notset
+  InventoryPassword: notset
+  AlertPassword: notset
+  EventsPassword: notset
+  DataChoicesPassword: notset
+  MinionGatewayPassword: notset
+  NotificationPassword: notset
+  GrafanaPassword: notset
 Keycloak:
   Path: /auth
   ImageShortName: lokahi-keycloak
@@ -289,6 +291,15 @@ Grafana:
   Replicas: 1
   DbHost: "postgres"
   ServiceName: grafana
+  ImageShortName: lokahi-grafana
+  InitContainerImage: busybox
+  Resources:
+    Limits:
+      Cpu: 500m
+      Memory: 1Gi
+    Requests:
+      Cpu: 100m
+      Memory: 100Mi
 Cortex:
   Enabled: true
   ServiceName: cortex
@@ -351,7 +362,13 @@ TLS:
   CertificateGeneration: false
 
 Ingress:
+  Enabled: true
   DefaultEndpointsEnabled: true
+  HttpPort: 80
+  HttpsPort: 443
+  ControllerImage: registry.k8s.io/ingress-nginx/controller:v1.7.0@sha256:7612338342a1e7b8090bef78f2a04fffcadd548ccaabe8a47bf7758ff549a5f7
+  SecretJobImage: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.1.1@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
+  WebhookPatchJobImage: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.1.1@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
 
 CustomErrors:
   Image: quay.io/kubernetes-ingress-controller/custom-error-pages:0.4

@@ -1,24 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.OpenNMS.DataChoices.ServiceName }}
+  name: {{ .Values.OpenNMS.MinionCertificateVerifier.ServiceName }}
   labels:
-    app: {{ .Values.OpenNMS.DataChoices.ServiceName }}
+    app: {{ .Values.OpenNMS.MinionCertificateVerifier.ServiceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.OpenNMS.DataChoices.ServiceName }}
-  replicas: {{ .Values.OpenNMS.DataChoices.Replicas }}
+      app: {{ .Values.OpenNMS.MinionCertificateVerifier.ServiceName }}
+  replicas: {{ .Values.OpenNMS.MinionCertificateVerifier.Replicas }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.OpenNMS.DataChoices.ServiceName }}
+        app: {{ .Values.OpenNMS.MinionCertificateVerifier.ServiceName }}
       annotations:
-        # roll the deployment when the Spring boot environment variable configmap changes
-        checksum/spring-boot-env-configmap: {{ include (print $.Template.BasePath "/opennms/spring-boot-env-configmap.yaml") . | sha256sum }}
-        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.DataChoices.ServiceName }}"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.MinionCertificateVerifier.ServiceName }}"
     spec:
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:                                                                                    
@@ -43,57 +44,27 @@ spec:
         - name: spring-boot-app-config-volume
           configMap:
             name: spring-boot-app-config
-      {{- if .Values.citus.enabled }}
-      initContainers:
-        - name: wait-for-db
-          image: postgres:16-alpine
-          args:
-          - /bin/sh
-          - -c
-          - | 
-            set -x;
-            while ! psql -U {{ .Values.citus.adminUser }} -h postgres -c 'select 1'; do
-              echo "Waiting for DB to be available"
-              sleep 10
-            done
-            echo "Database is available"
-      {{- end }}
       containers:
-        - name: {{ .Values.OpenNMS.DataChoices.ServiceName }}
-          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.DataChoices) | quote }}
+        - name: {{ .Values.OpenNMS.MinionCertificateVerifier.ServiceName }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.MinionCertificateVerifier) | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
               value: "-XX:MaxRAMPercentage=50 -javaagent:agent/opentelemetry-javaagent.jar -agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y"  # FIXME: Permanent debug port, enable only for dev mode
-            - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://{{ .Values.OpenNMS.DataChoices.DbHost }}:5432/{{ .Values.OpenNMS.DataChoices.DbName }}?currentSchema={{ .Values.OpenNMS.DataChoices.DbSchemaName }}"
-            - name: SPRING_DATASOURCE_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: postgres
-                  key: dataChoicesUsr
-            - name: SPRING_DATASOURCE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres
-                  key: dataChoicesPwd
-            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: "{{ .Values.global.kafkaClient.bootstrapServers }}"
-            - name: KEYCLOAK_BASE_URL
-              value: "http://{{ .Values.Keycloak.ServiceName }}:8080/auth/"
-            - name: KEYCLOAK_REALM
-              value: "{{ .Values.Keycloak.RealmName }}"
+            - name: GRPC_URL_MINION_CERTIFICATE_MANAGER
+              value: {{ if or (eq .Values.OpenNMS.MinionCertificateVerifier.CertificateManagerUrl "") (eq .Values.OpenNMS.MinionCertificateVerifier.CertificateManagerUrl "dev")
+                }}"{{ .Values.OpenNMS.MinionCertificateManager.ServiceName }}:8990"{{
+              else
+                }}"{{ .Values.OpenNMS.MinionCertificateVerifier.CertificateManagerUrl }}"{{ end }}
             # Do not put any env variables below this. The lokahi.development.env include should be last
             # in the 'env' section so variables can be overridden with Helm chart values when needed.
-            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.DataChoices) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.MinionCertificateVerifier) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env
           ports:
             - name: http
               containerPort: 8080
-            - name: grpc
-              containerPort: 6565
           volumeMounts:
             - name: spring-boot-app-config-volume
               mountPath: "/app/config"
@@ -119,11 +90,11 @@ spec:
             failureThreshold: 250
           resources:
             limits:
-              cpu: "{{ .Values.OpenNMS.DataChoices.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.OpenNMS.DataChoices.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.OpenNMS.MinionCertificateVerifier.Resources.Limits.Cpu }}"
+              memory: "{{ .Values.OpenNMS.MinionCertificateVerifier.Resources.Limits.Memory }}"
             requests:
-              cpu: "{{ .Values.OpenNMS.DataChoices.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.OpenNMS.DataChoices.Resources.Requests.Memory }}"
+              cpu: "{{ .Values.OpenNMS.MinionCertificateVerifier.Resources.Requests.Cpu }}"
+              memory: "{{ .Values.OpenNMS.MinionCertificateVerifier.Resources.Requests.Memory }}"
       {{- if .Values.global.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials

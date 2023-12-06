@@ -41,7 +41,7 @@ spec:
                 - {{ .Values.NodeRestrictions.Value }}                                                 
       {{- end }}
       terminationGracePeriodSeconds: 120
-      {{- if .Values.OpenNMS.UI.PrivateRepoEnabled }}
+      {{- if .Values.global.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
       {{- end }}
@@ -51,7 +51,7 @@ spec:
       containers:
         - name: {{ .Values.OpenNMS.UI.ServiceName }}
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.UI) | quote }}
-          imagePullPolicy: {{ .Values.OpenNMS.UI.ImagePullPolicy }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.OpenNMS.UI.Port }}

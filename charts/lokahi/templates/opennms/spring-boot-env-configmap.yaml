@@ -4,21 +4,21 @@ metadata:
   name: spring-boot-env
   namespace: {{ .Release.Namespace }}
 data:
-{{- if .Values.OpenNMS.global.enableJsonLogging }}
+{{- if .Values.global.enableJsonLogging }}
   SPRING_PROFILES_INCLUDE: default,json-logging
 {{- end }}
-{{- with .Values.OpenNMS.global.springBoot }}
+{{- with .Values.global.springBoot }}
   {{- range $key, $val := .env }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
 {{- end }}
-{{- if .Values.OpenNMS.global.openTelemetry.otlpTracesEndpoint }}
-  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: {{ .Values.OpenNMS.global.openTelemetry.otlpTracesEndpoint | toYaml }}
+{{- if .Values.global.openTelemetry.otlpTracesEndpoint }}
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: {{ .Values.global.openTelemetry.otlpTracesEndpoint | toYaml }}
 {{- else }}
   OTEL_TRACES_EXPORTER: "none"
 {{- end }}
   OTEL_METRICS_EXPORTER: "none"
-{{- with .Values.OpenNMS.global.openTelemetry }}
+{{- with .Values.global.openTelemetry }}
   {{- range $key, $val := .env }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}

@@ -246,16 +246,16 @@ OpenNMS:
 citus:
   enabled: false
   adminUser: desenv
-  adminPassword: notset
-  openNMSPassword: notset
-  keycloakPassword: notset
-  inventoryPassword: notset
-  alertPassword: notset
-  eventsPassword: notset
-  dataChoicesPassword: notset
-  minionGatewayPassword: notset
-  notificationPassword: notset
-  grafanaPassword: notset
+  AdminPassword: notset
+  OpenNMSPassword: notset
+  KeycloakPassword: notset
+  InventoryPassword: notset
+  AlertPassword: notset
+  EventsPassword: notset
+  DataChoicesPassword: notset
+  MinionGatewayPassword: notset
+  NotificationPassword: notset
+  GrafanaPassword: notset
 Keycloak:
   Path: /auth
   ImageShortName: lokahi-keycloak

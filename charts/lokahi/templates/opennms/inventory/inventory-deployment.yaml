@@ -46,7 +46,7 @@ spec:
         - name: spring-boot-app-config-volume
           configMap:
             name: spring-boot-app-config
-      {{- if .Values.Citus.Enabled }}
+      {{- if .Values.citus.enabled }}
       initContainers:
         - name: wait-for-db
           image: postgres:16-alpine
@@ -55,7 +55,7 @@ spec:
           - -c
           - | 
             set -x;
-            while ! psql -U {{ .Values.Citus.AdminUser }} -h postgres -c 'select 1'; do
+            while ! psql -U {{ .Values.citus.adminUser }} -h postgres -c 'select 1'; do
               echo "Waiting for DB to be available"
               sleep 10
             done
@@ -64,7 +64,7 @@ spec:
       containers:
         - name: {{ .Values.OpenNMS.Inventory.ServiceName }}
           image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Inventory) | quote }}
-          imagePullPolicy: {{ .Values.OpenNMS.Inventory.ImagePullPolicy }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
               value: "-XX:MaxRAMPercentage=50 -javaagent:agent/opentelemetry-javaagent.jar -agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y"  # FIXME: Permanent debug port, enable only for dev mode
@@ -81,7 +81,7 @@ spec:
                   name: postgres
                   key: inventoryPwd
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: "{{ .Values.OpenNMS.global.kafkaClient.bootstrapServers }}"
+              value: "{{ .Values.global.kafkaClient.bootstrapServers }}"
             - name: KEYCLOAK_BASE_URL
               value: "http://{{ .Values.Keycloak.ServiceName }}:8080/auth/"
             - name: KEYCLOAK_REALM
@@ -133,7 +133,7 @@ spec:
             requests:
               cpu: "{{ .Values.OpenNMS.Inventory.Resources.Requests.Cpu }}"
               memory: "{{ .Values.OpenNMS.Inventory.Resources.Requests.Memory }}"
-      {{- if .Values.OpenNMS.Inventory.PrivateRepoEnabled }}
+      {{- if .Values.global.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
       {{- end }}

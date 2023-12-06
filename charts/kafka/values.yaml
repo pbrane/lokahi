@@ -5,20 +5,22 @@ OpenShift: false
 global:
  imagePullPolicy: IfNotPresent
  privateRepoEnabled: false
- image:
-  repository: opennms
-  tag: latest
- springBoot:
-  env: {}
- kafkaClient:
-  bootstrapServers: onms-kafka:9092
- enableJsonLogging: false
- openTelemetry:
-  otlpTracesEndpoint: null
-  env:
-   OTEL_PROPAGATORS: tracecontext,baggage,jaeger
 
 OpenNMS:
+  global:
+    image:
+      repository: opennms
+      tag: latest
+    springBoot:
+      env: {}
+    kafkaClient:
+      bootstrapServers: onms-kafka:9092
+    enableJsonLogging: false
+    openTelemetry:
+      otlpTracesEndpoint: null
+      env:
+        OTEL_PROPAGATORS: tracecontext,baggage,jaeger
+
   API:
     Path: /api
     ServiceName: opennms-rest-server
@@ -244,18 +246,18 @@ OpenNMS:
         Memory: 1Gi
     CertificateManagerUrl: ""
 citus:
-  enabled: false
-  adminUser: desenv
-  adminPassword: notset
-  openNMSPassword: notset
-  keycloakPassword: notset
-  inventoryPassword: notset
-  alertPassword: notset
-  eventsPassword: notset
-  dataChoicesPassword: notset
-  minionGatewayPassword: notset
-  notificationPassword: notset
-  grafanaPassword: notset
+  Enabled: false
+  AdminUser: desenv
+  AdminPassword: notset
+  OpenNMSPassword: notset
+  KeycloakPassword: notset
+  InventoryPassword: notset
+  AlertPassword: notset
+  EventsPassword: notset
+  DataChoicesPassword: notset
+  MinionGatewayPassword: notset
+  NotificationPassword: notset
+  GrafanaPassword: notset
 Keycloak:
   Path: /auth
   ImageShortName: lokahi-keycloak
