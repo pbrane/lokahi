@@ -360,6 +360,68 @@ k8s_yaml(
     )
 )
 
+k8s_yaml(
+    helm(
+        'charts/citus',
+        values=['./tilt-helm-values.yaml'] + cfg.get('values', []),
+    )
+)
+
+k8s_yaml(
+    helm(
+        'charts/mail-server',
+        values=['./tilt-helm-values.yaml'] + cfg.get('values', []),
+    )
+)
+
+k8s_yaml(
+    helm(
+        'charts/grafana',
+        values=['./tilt-helm-values.yaml'] + cfg.get('values', []),
+    )
+)
+
+k8s_yaml(
+    helm(
+        'charts/ingress',
+        values=['./tilt-helm-values.yaml'] + cfg.get('values', []),
+    )
+)
+
+k8s_yaml(
+    helm(
+        'charts/kafka',
+        values=['./tilt-helm-values.yaml'] + cfg.get('values', []),
+    )
+)
+
+k8s_yaml(
+    helm(
+        'charts/keycloak',
+        values=['./tilt-helm-values.yaml'] + cfg.get('values', []),
+    )
+)
+
+k8s_yaml(
+    helm(
+        'charts/prometheus',
+        values=['./tilt-helm-values.yaml'] + cfg.get('values', []),
+    )
+)
+
+k8s_yaml(
+    helm(
+        'charts/cortex',
+        values=['./tilt-helm-values.yaml'] + cfg.get('values', []),
+    )
+)
+
+k8s_yaml(
+    helm(
+        'charts/minion',
+        values=['./tilt-helm-values.yaml'] + cfg.get('values', []),
+    )
+)
 # Builds #
 ## Shared ##
 local_resource(
