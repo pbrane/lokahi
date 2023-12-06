@@ -23,6 +23,7 @@ data:
     shared_preload_libraries = 'citus,pg_stat_statements'
   pg_hba.conf: |
     # TYPE  DATABASE        USER            ADDRESS                 METHOD
+    host    all             all             all                     trust
     # "local" is for Unix domain socket connections only
     local   all             all                                     trust
     # IPv4 local connections:

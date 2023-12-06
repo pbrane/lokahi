@@ -16,14 +16,34 @@ spec:
       name: citus-worker
       labels:
         app: citus-worker
+    {{- if (eq (include "onOpenShift" .) "true")  }}
+      annotations:
+        openshift.io/scc: citus-scc
+    {{- end }}
     spec:
+      {{- if (eq (include "onOpenShift" .) "true") }}
+      serviceAccountName: citus-sa
+      {{- end }}
       securityContext:
         fsGroup: 999
+      {{- if (eq (include "onOpenShift" .) "true")  }}
+        #runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      {{- end }}
       ##########################################
       #         reset key perm
       initContainers:
       - name: set-key-ownership
         image: alpine:3.16
+        {{- if eq (include "onOpenShift" .) "true" }}
+        securityContext:
+          fsGroup: 999
+          #runAsNonRoot: true
+          allowPrivilegeEscalation: true
+          seccompProfile:
+            type: RuntimeDefault
+        {{- end }}
         command:
         - sh
         - -c
@@ -39,6 +59,14 @@ spec:
           name: root-cert
       - name: init
         image: alpine:3.16
+        {{- if eq (include "onOpenShift" .) "true" }}
+        securityContext:
+          fsGroup: 999
+          #runAsNonRoot: true
+          allowPrivilegeEscalation: true
+          seccompProfile:
+            type: RuntimeDefault
+        {{- end }}
         command: ["sh", "-c", "chmod 777 /var/lib/postgresql"]
         volumeMounts:
           - mountPath: /var/lib/postgresql
@@ -47,6 +75,14 @@ spec:
       #         main container
       containers:
       - name: postgres
+        {{- if eq (include "onOpenShift" .) "true" }}
+        securityContext:
+          fsGroup: 999
+          #runAsNonRoot: true
+          allowPrivilegeEscalation: true
+          seccompProfile:
+            type: RuntimeDefault
+        {{- end }}
         image: citusdata/citus:12.1-alpine
         args:
         - sh

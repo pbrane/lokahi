@@ -1,23 +1,5 @@
-Host: onmshs
-Port: 443 #set depending on TLS.Enabled and the Ingress ports, do not change
-Protocol: https #set depending on TLS.Enabled, do not change
-OpenShift: false
-OpenNMS:
-  global:
-    image:
-      repository: opennms
-      tag: latest
-    springBoot:
-      env: {}
-    kafkaClient:
-      bootstrapServers: onms-kafka:9092
-    enableJsonLogging: false
-    openTelemetry:
-      otlpTracesEndpoint: null
-      env:
-        OTEL_PROPAGATORS: tracecontext,baggage,jaeger
 citus:
-  enabled: false
+  enabled: true
   workersEnabled: true
   serviceName: postgres
   PgBouncerPort: 30099

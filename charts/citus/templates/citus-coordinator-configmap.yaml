@@ -36,4 +36,5 @@ data:
     host    replication     all             ::1/128                 trust
     host    replication     all             samenet                 trust
     host    all             all             samenet                 trust
+    host    all             all             all                     trust
 {{- end }}
