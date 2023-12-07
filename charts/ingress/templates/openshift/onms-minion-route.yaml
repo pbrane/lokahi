@@ -1,4 +1,4 @@
-{{ if .Values.OpenShift }}
+{{- if eq (include "onOpenShift" .) "true" }}
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
@@ -7,7 +7,8 @@ metadata:
 spec:
   host: "minion.{{ .Values.Host }}"
   port:
-    targetPort: {{ .Values.OpenNMS.MinionGateway.GrpcPort }}
+    targetPort: 6565
+     # .Values.OpenNMS.MinionGateway.GrpcPort 
   tls:
     termination: passthrough
     insecureEdgeTerminationPolicy: None

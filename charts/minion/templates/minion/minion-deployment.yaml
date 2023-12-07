@@ -19,8 +19,13 @@ spec:
       annotations:
         linkerd.io/inject: enabled
         kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.Minion.ServiceName }}"
+    {{- if (eq (include "onOpenShift" .) "true")  }}
+        openshift.io/scc:  {{ .Values.OpenNMS.Minion.ServiceName }}-scc
+    {{- end }}
     spec:
+      {{- if (eq (include "onOpenShift" .) "true") }}
       serviceAccountName: {{ .Values.OpenNMS.Minion.ServiceName }}-sa
+      {{- end }}
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:                                                                                    
         {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}                       
@@ -63,7 +68,7 @@ spec:
           {{ toYaml .Values.OpenNMS.Minion.ExtraVolumes | nindent 8 }}
         {{- end }}
       initContainers:
-        {{ if not .Values.OpenShift }}
+        {{ if (eq (include "onOpenShift" .) "false")  }}
         - name: init-sysctl
           image: busybox
           command:
@@ -87,11 +92,25 @@ spec:
             - /scripts/init-create-test-location.sh
           env:
             - name: INGRESS_HOST_PORT
+             {{- if (eq (include "onOpenShift" .) "true")  }}
+              value: "{{ .Values.Host }}"
+             {{- else }}
               value: "{{ .Values.Host }}:{{ .Values.Port }}"
+             {{- end }}
+          {{- if (eq (include "onOpenShift" .) "false")  }}
           securityContext:
             privileged: false
             runAsUser: 10001
             runAsGroup: 10001
+          {{- else }}
+          securityContext:
+            fsGroup: 10001
+            runAsGroup: 10001
+            runAsNonRoot: false
+            allowPrivilegeEscalation: true
+            seccompProfile:
+              type: RuntimeDefault
+          {{- end }}
           volumeMounts:
             - name: certificate
               mountPath: "/cert"

@@ -31,7 +31,15 @@ spec:
         app.kubernetes.io/instance: ingress-nginx-{{ .Release.Namespace }}
       annotations:
         kubectl.kubernetes.io/default-container: "controller"
+    {{- if (eq (include "onOpenShift" .) "true")  }}
+        openshift.io/scc: controller-scc
+    {{- end }}
     spec:
+      {{- if (eq (include "onOpenShift" .) "true") }}
+      serviceAccountName: controller-sa
+      {{- else }}
+      serviceAccountName: ingress-nginx
+      {{- end }}
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:
         {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
@@ -96,11 +104,11 @@ spec:
           timeoutSeconds: 1
         name: controller
         ports:
-        - containerPort: {{ .Values.Ingress.HttpPort }}
+        - containerPort: 80 #{{ .Values.Ingress.HttpPort }}
           hostPort: {{ .Values.Ingress.HttpPort }}
           name: http
           protocol: TCP
-        - containerPort: {{ .Values.Ingress.HttpsPort }}
+        - containerPort: 443 #{{ .Values.Ingress.HttpsPort }}
           hostPort: {{ .Values.Ingress.HttpsPort }}
           name: https
           protocol: TCP
@@ -125,18 +133,23 @@ spec:
             cpu: 100m
             memory: 90Mi
         securityContext:
+          {{- if (eq (include "onOpenShift" .) "true")  }}
+          seccompProfile:
+           type: RuntimeDefault
+          {{- else }}
+          runAsUser: 101
           allowPrivilegeEscalation: true
           capabilities:
             add:
             - NET_BIND_SERVICE
             drop:
             - ALL
-          runAsUser: 101
+          {{- end }}
         volumeMounts:
         - mountPath: /usr/local/certificates/
           name: webhook-cert
           readOnly: true
-      serviceAccountName: ingress-nginx
+      
       terminationGracePeriodSeconds: 0
       volumes:
       - name: webhook-cert

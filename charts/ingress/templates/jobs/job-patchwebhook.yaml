@@ -16,7 +16,14 @@ spec:
         app.kubernetes.io/name: ingress-nginx-{{ .Release.Namespace }}
         app.kubernetes.io/instance: ingress-nginx-{{ .Release.Namespace }}
         app.kubernetes.io/component: admission-webhook-{{ .Release.Namespace }}
+    {{- if (eq (include "onOpenShift" .) "true")  }}
+      annotations:
+        openshift.io/scc: controller-scc
+    {{- end }}
     spec:
+      {{- if (eq (include "onOpenShift" .) "true") }}
+      serviceAccountName: controller-sa
+      {{- end }}
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:
         {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
@@ -58,8 +65,13 @@ spec:
         kubernetes.io/os: linux
       restartPolicy: OnFailure
       securityContext:
+      
         fsGroup: 2000
         runAsNonRoot: true
         runAsUser: 2000
+      {{- if (eq (include "onOpenShift" .) "true") }}
+      serviceAccountName: controller-sa
+      {{- else }}
       serviceAccountName: ingress-nginx-admission
+      {{- end }}
 {{- end }}

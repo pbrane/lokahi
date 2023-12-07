@@ -1,4 +1,4 @@
-{{ if .Values.OpenShift }}
+{{- if eq (include "onOpenShift" .) "true" }}
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
@@ -10,4 +10,10 @@ spec:
   to:
     kind: Service
     name: {{ .Values.Keycloak.ServiceName }}
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
 {{ end }}

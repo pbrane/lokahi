@@ -1,4 +1,4 @@
-{{ if .Values.OpenShift }}
+{{- if eq (include "onOpenShift" .) "true" }}
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:

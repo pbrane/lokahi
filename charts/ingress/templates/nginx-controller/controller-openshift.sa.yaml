@@ -1,0 +1,8 @@
+{{- if (eq (include "onOpenShift" .) "true") }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: controller-sa
+  namespace: {{ .Release.Namespace }}
+{{- end }}

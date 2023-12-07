@@ -19,4 +19,7 @@ subjects:
   - kind: ServiceAccount
     name: ingress-nginx
     namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: controller-sa
+    namespace: {{ .Release.Namespace }}
 {{- end }}
