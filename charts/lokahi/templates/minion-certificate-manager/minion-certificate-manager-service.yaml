@@ -1,0 +1,17 @@
+{{- if .Values.OpenNMS.MinionCertificateManager.Enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.OpenNMS.MinionCertificateManager.ServiceName }}
+  labels:
+    app: {{ .Values.OpenNMS.MinionCertificateManager.ServiceName }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8990
+      protocol: TCP
+      name: grpc
+  selector:
+    app: {{ .Values.OpenNMS.MinionCertificateManager.ServiceName }}
+{{- end }}
