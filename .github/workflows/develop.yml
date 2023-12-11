@@ -357,15 +357,14 @@ jobs:
       - name: update
         shell: bash
         run: |
+          git config --global user.email "${{ vars.GH_USER_EMAIL }}"
+          git config --global user.name "${{ vars.GH_USER_NAME }}"
 
-          git config --global user.email jaberry@opennms.com
-          git config --global user.name jaberry
-
-          git remote add hs https://github.com/OpenNMS-Cloud/lokahi.git
+          git remote add lokahi https://github.com/OpenNMS-Cloud/lokahi.git
 
           git checkout from-develop
 
-          git fetch hs develop
+          git fetch lokahi develop
           git reset --hard FETCH_HEAD
           git push
           git checkout trunk
