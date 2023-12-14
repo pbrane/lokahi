@@ -1,10 +1,12 @@
-Host: onmshs
+Host: sneaky.apps.onmsrhoslab1.eastus.aroapp.io
 Port: 443 #set depending on TLS.Enabled and the Ingress ports, do not change
 Protocol: https #set depending on TLS.Enabled, do not change
-OpenShift: false
 global:
  imagePullPolicy: IfNotPresent
  privateRepoEnabled: false
+
+openShift:
+ route: false
 
 OpenNMS:
   global:
@@ -14,7 +16,7 @@ OpenNMS:
     springBoot:
       env: {}
     kafkaClient:
-      bootstrapServers: onms-kafka:9092
+      bootstrapServers: onms-kafka.lokahi.svc.cluster.local:9092
     enableJsonLogging: false
     openTelemetry:
       otlpTracesEndpoint: null
@@ -37,7 +39,7 @@ OpenNMS:
     FlowsTlsEnabled: false
     CertificateManagerUrl: ""
     PackagedMinionFile: run-minion-docker-compose.yaml
-    MinionEndpoint: host.docker.internal
+    MinionEndpoint: minion.sneaky.apps.onmsrhoslab1.eastus.aroapp.io
     IntrospectionEnabled: false
     MaxAliasOccurrence: 5
     MaxComplexity: 60

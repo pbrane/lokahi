@@ -11,6 +11,9 @@ metadata:
   name: ingress-nginx-controller
   namespace: {{ .Release.Namespace }}
 spec:
+  {{- if eq (include "onOpenShift" .) "true" }}
+  serviceType: LoadBalancer
+  {{- end }}
   minReadySeconds: 0
   revisionHistoryLimit: 10
   selector:

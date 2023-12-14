@@ -12,7 +12,12 @@ metadata:
   name: ingress-nginx-controller
   namespace: {{ .Release.Namespace }}
 spec:
+  {{- if eq (include "onOpenShift" .) "true" }}
+  allocateLoadBalancerNodePorts: true
+  clusterIP: '' #Leave it empty to force LoadBalancer in OpenShift
+  {{- else }}
   clusterIP: None
+  {{- end }}
   ports:
     - appProtocol: http
       name: http
@@ -24,6 +29,10 @@ spec:
       port: {{ .Values.Ingress.HttpsPort }}
       protocol: TCP
       targetPort: https
+  {{- if eq (include "onOpenShift" .) "true" }}
+  sessionAffinity: None
+  type: LoadBalancer
+  {{- end }}
   selector:
     app.kubernetes.io/component: controller-{{ .Release.Namespace }}
     app.kubernetes.io/name: ingress-nginx-{{ .Release.Namespace }}

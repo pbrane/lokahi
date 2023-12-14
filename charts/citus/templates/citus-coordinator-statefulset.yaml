@@ -25,7 +25,6 @@ spec:
       securityContext:
         fsGroup: 999
       {{- if (eq (include "onOpenShift" .) "true")  }}
-        #runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
       {{- end }}
@@ -37,7 +36,6 @@ spec:
         {{- if eq (include "onOpenShift" .) "true" }}
         securityContext:
           fsGroup: 999
-          #runAsNonRoot: true
           allowPrivilegeEscalation: true
           seccompProfile:
             type: RuntimeDefault

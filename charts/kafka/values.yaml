@@ -14,7 +14,7 @@ OpenNMS:
     springBoot:
       env: {}
     kafkaClient:
-      bootstrapServers: onms-kafka:9092
+      bootstrapServers: onms-kafka.lokahi.svc.cluster.local:9092
     enableJsonLogging: false
     openTelemetry:
       otlpTracesEndpoint: null

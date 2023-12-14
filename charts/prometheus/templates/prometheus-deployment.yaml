@@ -18,8 +18,15 @@ spec:
         app: {{ .Values.Prometheus.ServiceName }}
       annotations:
         kubectl.kubernetes.io/default-container: "{{ .Values.Prometheus.ServiceName }}"
+    {{- if (eq (include "onOpenShift" .) "true")  }}
+        openshift.io/scc: {{ .Values.Prometheus.ServiceName }}-scc
+    {{- end }}
     spec:
+      {{- if (eq (include "onOpenShift" .) "true") }}
       serviceAccountName: {{ .Values.Prometheus.ServiceName }}-sa
+      {{- else }}
+      serviceAccountName: {{ .Values.Prometheus.ServiceName }}-sa
+      {{- end }}
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:
         {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
@@ -55,6 +62,16 @@ spec:
             requests:
               cpu: {{ .Values.Prometheus.Resources.Requests.Cpu }}
               memory: {{ .Values.Prometheus.Resources.Requests.Memory }}
+          {{- if (eq (include "onOpenShift" .) "true")  }}
+          securityContext:
+           fsGroup: 0
+           allowPrivilegeEscalation: true
+           seccompProfile:
+            type: RuntimeDefault
+           capabilities:
+            add:
+             - NET_BIND_SERVICE
+          {{- end }}
           volumeMounts:
             - name: prometheus-config-volume
               mountPath: "/etc/prometheus/prometheus.yml"

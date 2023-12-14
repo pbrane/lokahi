@@ -19,8 +19,8 @@ Ingress:
 MailServer:
   Enabled: true
 
-Citus:
-  Enabled: true
+citus:
+  enabled: true
 
 OpenNMS:
   global:
@@ -158,14 +158,14 @@ OpenNMS:
       Requests:
         Cpu: '0'
         Memory: 2Gi
-Grafana:
-  Resources:
-    Limits:
-      Cpu: 500m
-      Memory: 1Gi
-    Requests:
-      Cpu: 100m
-      Memory: 100Mi
+grafana:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 100Mi
 Prometheus:
   Server:
     Resources:
