@@ -92,11 +92,7 @@ spec:
             - /scripts/init-create-test-location.sh
           env:
             - name: INGRESS_HOST_PORT
-             {{- if (eq (include "onOpenShift" .) "true")  }}
-              value: "{{ .Values.Host }}"
-             {{- else }}
               value: "{{ .Values.Host }}:{{ .Values.Port }}"
-             {{- end }}
           {{- if (eq (include "onOpenShift" .) "false")  }}
           securityContext:
             privileged: false

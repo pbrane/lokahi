@@ -1,4 +1,4 @@
-Host: onmshs
+Host: sneaky.apps.onmsrhoslab1.eastus.aroapp.io
 Port: 443 #set depending on TLS.Enabled and the Ingress ports, do not change
 Protocol: https #set depending on TLS.Enabled, do not change
 OpenShift: false
@@ -11,7 +11,7 @@ global:
  springBoot:
   env: {}
  kafkaClient:
-  bootstrapServers: onms-kafka:9092
+  bootstrapServers: onms-kafka.lokahi.svc.cluster.local:9092
  enableJsonLogging: false
  openTelemetry:
   otlpTracesEndpoint: null
@@ -35,7 +35,7 @@ OpenNMS:
     FlowsTlsEnabled: false
     CertificateManagerUrl: ""
     PackagedMinionFile: run-minion-docker-compose.yaml
-    MinionEndpoint: host.docker.internal
+    MinionEndpoint: minion.sneaky.apps.onmsrhoslab1.eastus.aroapp.io
     IntrospectionEnabled: false
     MaxAliasOccurrence: 5
     MaxComplexity: 60
@@ -244,18 +244,18 @@ OpenNMS:
         Memory: 1Gi
     CertificateManagerUrl: ""
 citus:
-  Enabled: false
-  AdminUser: desenv
-  AdminPassword: notset
-  OpenNMSPassword: notset
-  KeycloakPassword: notset
-  InventoryPassword: notset
-  AlertPassword: notset
-  EventsPassword: notset
-  DataChoicesPassword: notset
-  MinionGatewayPassword: notset
-  NotificationPassword: notset
-  GrafanaPassword: notset
+  enabled: false
+  adminUser: desenv
+  adminPassword: notset
+  openNMSPassword: notset
+  keycloakPassword: notset
+  inventoryPassword: notset
+  alertPassword: notset
+  eventsPassword: notset
+  dataChoicesPassword: notset
+  minionGatewayPassword: notset
+  notificationPassword: notset
+  grafanaPassword: notset
 Keycloak:
   Path: /auth
   ImageShortName: lokahi-keycloak

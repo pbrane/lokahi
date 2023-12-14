@@ -1,7 +1,8 @@
+{{- if (eq (include "onOpenShift" .) "false") }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Values.Prometheus.ServiceName }}
+  name: {{ .Values.Prometheus.ServiceName }}-scc
   labels:
     app: {{ .Values.Prometheus.ServiceName }}
 rules:
@@ -18,3 +19,4 @@ rules:
     verbs: ["get"]
   - nonResourceURLs: ["/metrics"]
     verbs: ["get"]
+{{- end }}

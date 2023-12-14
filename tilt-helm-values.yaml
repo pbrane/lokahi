@@ -19,8 +19,8 @@ Ingress:
 MailServer:
   Enabled: true
 
-Citus:
-  Enabled: true
+citus:
+  enabled: true
 
 OpenNMS:
   global:

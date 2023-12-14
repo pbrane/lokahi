@@ -9,7 +9,9 @@ metadata:
     {{ $Annotation | quote }}: {{ $Value | quote }}
     {{- end }}
 spec:
+  {{- if eq (include "onOpenShift" .) "false" }}
   ingressClassName: nginx
+  {{- end }}
   defaultBackend:
     service:
       name: {{ .Values.OpenNMS.UI.ServiceName }}

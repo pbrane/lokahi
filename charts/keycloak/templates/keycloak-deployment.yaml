@@ -79,14 +79,10 @@ spec:
             - name: KC_CACHE
               value: ispn
             - name: KC_HOSTNAME_URL # Required in prod-mod to terminate TLS at Ingress
-            {{- if eq (include "onOpenShift" .) "true" }}
-              value: "{{ .Values.Keycloak.HostnameAdminUrl }}"
-            {{- else }}
             {{- if .Values.Keycloak.HostnamePort }}
               value: "{{ .Values.Protocol }}://{{ .Values.Host }}:{{ .Values.Keycloak.HostnamePort }}{{ .Values.Keycloak.Path }}"
             {{- else }}
-              value: "{{ .Values.Protocol }}://{{ .Values.Host }}{{ .Values.Keycloak.Path }}"
-            {{- end }}
+              value: "{{ .Values.Keycloak.HostnameAdminUrl }}"
             {{- end }}
             {{- if .Values.Keycloak.HostnameAdminUrl }}
             - name: KC_HOSTNAME_ADMIN_URL

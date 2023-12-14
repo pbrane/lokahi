@@ -188,8 +188,8 @@ install_helm_chart_custom_images () {
   if ! time helm upgrade -i lokahi ./../charts/lokahi \
   -f ./tmp/install-local-opennms-lokahi-custom-images-values.yaml \
   --namespace $NAMESPACE \
-  --set OpenNMS.global.image.repository=${IMAGE_PREFIX} \
-  --set OpenNMS.global.image.tag=${IMAGE_TAG} \
+  --set global.image.repository=${IMAGE_PREFIX} \
+  --set global.image.tag=${IMAGE_TAG} \
   --wait --timeout "${TIMEOUT}"; then
     helm_debug
   fi
