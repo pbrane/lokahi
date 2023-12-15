@@ -1,49 +1,49 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.OpenNMS.API.ServiceName }}
+  name: {{ .Values.openNMS.api.serviceName }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Values.OpenNMS.API.ServiceName }}
-    app.kubernetes.io/name: {{ .Values.OpenNMS.API.ServiceName }}
+    app: {{ .Values.openNMS.api.serviceName }}
+    app.kubernetes.io/name: {{ .Values.openNMS.api.serviceName }}
   annotations:
     autoupdate: "true"
 spec:
-  replicas: {{ .Values.OpenNMS.API.Replicas }}
+  replicas: {{ .Values.openNMS.api.replicas }}
   selector:
     matchLabels:
-      app: {{ .Values.OpenNMS.API.ServiceName }}
+      app: {{ .Values.openNMS.api.serviceName }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.OpenNMS.API.ServiceName }}
+        app: {{ .Values.openNMS.api.serviceName }}
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
         # roll the deployment when the Spring boot environment variable configmap changes
         checksum/spring-boot-env-configmap: {{ include (print $.Template.BasePath "/opennms/spring-boot-env-configmap.yaml") . | sha256sum }}
-        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.API.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.openNMS.api.serviceName }}"
     spec:
-      {{ if .Values.NodeRestrictions.Enabled }}
+      {{ if .Values.nodeRestrictions.enabled }}
       nodeSelector:
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}
+        {{ .Values.nodeRestrictions.key }}: {{ .Values.nodeRestrictions.value }}
       tolerations:
         - effect: "NoSchedule"
-          key: "{{ .Values.NodeRestrictions.Key }}"
+          key: "{{ .Values.nodeRestrictions.key }}"
           operator: "Equal"
-          value: {{ .Values.NodeRestrictions.Value }}
+          value: {{ .Values.nodeRestrictions.value }}
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 1
               preference:
                 matchExpressions:
-                  - key: "{{ .Values.NodeRestrictions.Key }}"
+                  - key: "{{ .Values.nodeRestrictions.key }}"
                     operator: In
                     values:
-                      - {{ .Values.NodeRestrictions.Value }}
+                      - {{ .Values.nodeRestrictions.value }}
       {{ end }}
       terminationGracePeriodSeconds: 120
       volumes:
@@ -51,8 +51,8 @@ spec:
           configMap:
             name: spring-boot-app-config
       containers:
-        - name: {{ .Values.OpenNMS.API.ServiceName }}
-          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.API) | quote }}
+        - name: {{ .Values.openNMS.api.serviceName }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.openNMS.api) | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -60,12 +60,12 @@ spec:
             - name: SPRING_CACHE_CAFFEINE_SPEC
               value: "maximumSize=10000,expireAfterWrite=60s"
             - name: TSDB_URL
-              value: "{{ .Values.CortexClient.Protocol }}://{{ .Values.CortexClient.HostRead }}:{{ .Values.CortexClient.PortRead }}{{ .Values.CortexClient.PathRead }}"
+              value: "{{ .Values.cortexClient.protocol }}://{{ .Values.cortexClient.hostRead }}:{{ .Values.cortexClient.portRead }}{{ .Values.cortexClient.pathRead }}"
             - name: SPRING_WEBFLUX_BASE_PATH
               value: /api
             - name: GRAPHQL_SPQR_GUI_TARGET_ENDPOINT
               value: /api/graphql
-            {{- if .Values.OpenNMS.API.PlaygroundGuiEnabled }}
+            {{- if .Values.openNMS.api.playgroundGuiEnabled }}
             - name: GRAPHQL_SPQR_GUI_ENABLED
               value: "true"
             {{- else }}
@@ -73,60 +73,60 @@ spec:
               value: "false"
             {{- end }}
             - name: GRPC_URL_INVENTORY
-              value: "{{ .Values.OpenNMS.Inventory.ServiceName }}:6565"
+              value: "{{ .Values.openNMS.inventory.serviceName }}:6565"
             - name: GRPC_URL_EVENTS
-              value: "{{ .Values.OpenNMS.Events.ServiceName }}:6565"
+              value: "{{ .Values.openNMS.events.serviceName }}:6565"
             - name: GRPC_URL_NOTIFICATION
-              value: "{{ .Values.OpenNMS.Notification.ServiceName }}:6565"
+              value: "{{ .Values.openNMS.notification.serviceName }}:6565"
             - name: GRPC_URL_ALERT
-              value: "{{ .Values.OpenNMS.Alert.ServiceName }}:6565"
+              value: "{{ .Values.openNMS.alert.serviceName }}:6565"
             - name: GRPC_URL_MINION_CERTIFICATE_MANAGER
-              value: {{ if or (eq .Values.OpenNMS.API.CertificateManagerUrl "") (eq .Values.OpenNMS.API.CertificateManagerUrl "dev")
-                }}"{{ .Values.OpenNMS.MinionCertificateManager.ServiceName }}:8990"{{
+              value: {{ if or (eq .Values.openNMS.api.certificateManagerUrl "") (eq .Values.openNMS.api.certificateManagerUrl "dev")
+                }}"{{ .Values.openNMS.minionCertificateManager.serviceName }}:8990"{{
               else
-                }}"{{ .Values.OpenNMS.API.CertificateManagerUrl }}"{{ end }}
+                }}"{{ .Values.openNMS.api.certificateManagerUrl }}"{{ end }}
             - name: GRPC_URL_FLOWS
-              value: "{{ .Values.OpenNMS.API.FlowsUrl }}"
+              value: "{{ .Values.openNMS.api.flowsUrl }}"
             - name: GRPC_URL_FLOWS_TLS_ENABLED
-              value: "{{ .Values.OpenNMS.API.FlowsTlsEnabled }}"
+              value: "{{ .Values.openNMS.api.flowsTlsEnabled }}"
             - name: PACKAGED_MINION_FILE
-              value: "{{ .Values.OpenNMS.API.PackagedMinionFile }}"
+              value: "{{ .Values.openNMS.api.packagedMinionFile }}"
             - name: MINION_ENDPOINT
-              value: "{{ .Values.OpenNMS.API.MinionEndpoint }}"
-            {{- with .Values.OpenNMS.API.CorsAllowed }}
+              value: "{{ .Values.openNMS.api.minionEndpoint }}"
+            {{- with .Values.openNMS.api.CorsAllowed }}
             - name: LOKAHI_BFF_CORS_ALLOWED
               value: "{{ . }}"
             {{- end }}
-            {{- if .Values.OpenNMS.API.IntrospectionEnabled }}
+            {{- if .Values.openNMS.api.introspectionEnabled }}
             - name: LOKAHI_BFF_INTROSPECTION_ENABLED
               value: "true"
             {{- else }}
             - name: LOKAHI_BFF_INTROSPECTION_ENABLED
               value: "false"
             {{- end }}
-            {{- with .Values.OpenNMS.API.MaxAliasOccurrence }}
+            {{- with .Values.openNMS.api.maxAliasOccurrence }}
             - name: LOKAHI_BFF_MAX_ALIAS_OCCURRENCE
               value: "{{ . }}"
             {{- end }}
-            {{- with .Values.OpenNMS.API.MaxComplexity }}
+            {{- with .Values.openNMS.api.maxComplexity }}
             - name: LOKAHI_BFF_MAX_COMPLEXITY
               value: "{{ . }}"
             {{- end }}
-            {{- with .Values.OpenNMS.API.MaxDirectiveOccurrence }}
+            {{- with .Values.openNMS.api.maxDirectiveOccurrence }}
             - name: LOKAHI_BFF_MAX_DIRECTIVE_OCCURRENCE
               value: "{{ . }}"
             {{- end }}
-            {{- with .Values.OpenNMS.API.MaxFieldOccurrence }}
+            {{- with .Values.openNMS.api.maxFieldOccurrence }}
             - name: LOKAHI_BFF_MAX_FIELD_OCCURRENCE
               value: "{{ . }}"
             {{- end }}
-            {{- with .Values.OpenNMS.API.MaxQueryDepth }}
+            {{- with .Values.openNMS.api.maxQueryDepth }}
             - name: LOKAHI_BFF_MAX_QUERY_DEPTH
               value: "{{ . }}"
             {{- end }}
             # Do not put any env variables below this. The lokahi.development.env include should be last
             # in the 'env' section so variables can be overridden with Helm chart values when needed.
-            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.API) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.openNMS.api) | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: spring-boot-env
@@ -160,11 +160,11 @@ spec:
             failureThreshold: 250
           resources:
             limits:
-              cpu: "{{ .Values.OpenNMS.API.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.OpenNMS.API.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.openNMS.api.resources.limits.cpu }}"
+              memory: "{{ .Values.openNMS.api.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.OpenNMS.API.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.OpenNMS.API.Resources.Requests.Memory }}"
+              cpu: "{{ .Values.openNMS.api.resources.requests.cpu }}"
+              memory: "{{ .Values.openNMS.api.resources.requests.memory }}"
       {{- if .Values.global.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials

@@ -5,9 +5,9 @@ metadata:
   name: opennms-grafana-route
   namespace: {{ .Release.Namespace }}
 spec:
-  host: {{ .Values.Host }}
-  path: {{ .Values.Grafana.Path }}  
+  host: {{ .Values.host }}
+  path: {{ .Values.grafana.path }}  
   to:
     kind: Service
-    name: {{ .Values.Grafana.ServiceName }}
+    name: {{ .Values.grafana.serviceName }}
 {{ end }}

@@ -1,12 +1,12 @@
-Host: onmshs
-Port: 443 #set depending on TLS.Enabled and the Ingress ports, do not change
-Protocol: https #set depending on TLS.Enabled, do not change
+host: onmshs
+Port: 443 #set depending on tls.enabled and the Ingress ports, do not change
+protocol: https #set depending on tls.enabled, do not change
 OpenShift: false
 global:
  imagePullPolicy: IfNotPresent
  privateRepoEnabled: false
 
-OpenNMS:
+openNMS:
   global:
     image:
       repository: opennms
@@ -37,7 +37,7 @@ OpenNMS:
     FlowsTlsEnabled: false
     CertificateManagerUrl: ""
     PackagedMinionFile: run-minion-docker-compose.yaml
-    MinionEndpoint: host.docker.internal
+    MinionEndpoint: minion.onmshs.local
     IntrospectionEnabled: false
     MaxAliasOccurrence: 5
     MaxComplexity: 60
@@ -248,7 +248,7 @@ OpenNMS:
 citus:
   Enabled: false
   AdminUser: desenv
-  AdminPassword: notset
+  adminPassword: notset
   OpenNMSPassword: notset
   KeycloakPassword: notset
   InventoryPassword: notset
@@ -258,13 +258,13 @@ citus:
   MinionGatewayPassword: notset
   NotificationPassword: notset
   GrafanaPassword: notset
-Keycloak:
+keycloak:
   Path: /auth
   ImageShortName: lokahi-keycloak
   Port: 8080
   HttpsPort: 8443
   HostnamePort: ~
-  HostnameAdminUrl: ~
+  hostnameAdminUrl: ~
   Replicas: 1
   ServiceName: onms-keycloak
   TlsSecretName:
@@ -279,7 +279,7 @@ Keycloak:
       Cpu: "1"
       Memory: 1Gi
   AdminUsername: admin
-  AdminPassword: notset
+  adminPassword: notset
   RealmName: opennms
   DynamicRealmConfig: true
   ConfigmapName: keycloak-realm-configmap
@@ -317,17 +317,17 @@ CortexClient:
   HostWrite: cortex
   PathRead: /prometheus/api/v1
   PathWrite: /api/v1/push
-  Protocol: http
+  protocol: http
   PortRead: 9000
   PortWrite: 9000
-Kafka:
+kafka:
   Enabled: true
   ServiceName: onms-kafka
   Image: bitnami/kafka:3.3.2-debian-11-r28 # latest 3.3.2 version not affected by https://github.com/bitnami/containers/issues/33271
   Replicas: 1
   Port: 9092
   ControllerPort: 9093
-  LocalPort: 59092
+  localPort: 59092
   Resources:
     Limits:
       Cpu: "2"
@@ -336,7 +336,7 @@ Kafka:
       Cpu: 500m
       Memory: 512Mi
   VolumeSize: 10Gi
-MailServer:
+mailServer:
   Enabled: false
   ServiceName: mail-server
   Image: mailhog/mailhog:v1.0.1
@@ -354,10 +354,10 @@ NodeRestrictions: # will be applied to every pod in the instance
   Enabled: false
   Key: kubernetes.azure.com/scalesetpriority
   Value: spot
-TLS:
+tls:
   Enabled: true
   # When Certificate Generation option is set to false you need to manually prepare secrets which are referred by
-  # this helm chart. This includes creation of TLS certificates for ingress but also for mutual tls between minions and
+  # this helm chart. This includes creation of tls certificates for ingress but also for mutual tls between minions and
   # minion-gateway service
   CertificateGeneration: false
 
@@ -374,7 +374,7 @@ CustomErrors:
   Image: quay.io/kubernetes-ingress-controller/custom-error-pages:0.4
   Debug: true
 
-Prometheus:
+prometheus:
   Enabled: true
   Path: /prometheus
   ServiceName: prometheus

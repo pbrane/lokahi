@@ -1,9 +1,9 @@
 {{- if (eq (include "onOpenShift" .) "true") }}
-{{- if .Values.Prometheus.Enabled }}
+{{- if .Values.prometheus.enabled }}
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ .Values.Prometheus.ServiceName }}-scc
+  name: {{ .Values.prometheus.serviceName }}-scc
 rules:
   - verbs:
       - use
@@ -12,6 +12,6 @@ rules:
     resources:
       - securitycontextconstraints
     resourceNames:
-      -  {{ .Values.Prometheus.ServiceName }}-scc
+      -  {{ .Values.prometheus.serviceName }}-scc
 {{- end }}
 {{- end }}

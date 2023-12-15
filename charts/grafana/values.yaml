@@ -1,6 +1,6 @@
-Host: onmshs.local
-port: 443 #set depending on TLS.enabled and the Ingress ports, do not change
-protocol: https #set depending on TLS.enabled, do not change
+host: onmshs.local
+port: 443 #set depending on tls.enabled and the Ingress ports, do not change
+protocol: https #set depending on tls.enabled, do not change
 global:
  imagePullPolicy: IfNotPresent
  image:

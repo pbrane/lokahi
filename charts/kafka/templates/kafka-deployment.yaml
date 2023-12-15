@@ -1,23 +1,23 @@
-{{ if .Values.Kafka.Enabled }}
+{{ if .Values.kafka.Enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.Kafka.ServiceName }}
+  name: {{ .Values.kafka.ServiceName }}
   labels:
     app: kafka
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.Kafka.ServiceName }}
-  replicas: {{ .Values.Kafka.Replicas }}
+      app: {{ .Values.kafka.ServiceName }}
+  replicas: {{ .Values.kafka.Replicas }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.Kafka.ServiceName }}
+        app: {{ .Values.kafka.ServiceName }}
       annotations:
-        kubectl.kubernetes.io/default-container: "{{ .Values.Kafka.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.kafka.ServiceName }}"
     spec:
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:                                                                                    
@@ -39,8 +39,8 @@ spec:
                 - {{ .Values.NodeRestrictions.Value }}                                                 
       {{- end }}
       containers:
-        - name: {{ .Values.Kafka.ServiceName }}
-          image: {{ .Values.Kafka.Image }}
+        - name: {{ .Values.kafka.ServiceName }}
+          image: {{ .Values.kafka.Image }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           env:
             - name: BITNAMI_DEBUG
@@ -58,27 +58,27 @@ spec:
             - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
               value: "CONTROLLER"
             - name: KAFKA_CFG_LISTENERS
-              value: "CLIENT://:{{ .Values.Kafka.Port }},CONTROLLER://:{{ .Values.Kafka.ControllerPort }},LOCALCLIENT://:{{ .Values.Kafka.LocalPort }}"
+              value: "CLIENT://:{{ .Values.kafka.Port }},CONTROLLER://:{{ .Values.kafka.ControllerPort }},LOCALCLIENT://:{{ .Values.kafka.localPort }}"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: "CLIENT://{{ .Values.Kafka.ServiceName }}:{{ .Values.Kafka.Port }},LOCALCLIENT://localhost:{{ .Values.Kafka.LocalPort }}"
+              value: "CLIENT://{{ .Values.kafka.ServiceName }}:{{ .Values.kafka.Port }},LOCALCLIENT://localhost:{{ .Values.kafka.localPort }}"
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
               value: "CLIENT"
             - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
-              value: "1@localhost:{{ .Values.Kafka.ControllerPort }}"
+              value: "1@localhost:{{ .Values.kafka.ControllerPort }}"
           resources:
             limits:
-              cpu: "{{ .Values.Kafka.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.Kafka.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.kafka.Resources.Limits.Cpu }}"
+              memory: "{{ .Values.kafka.Resources.Limits.Memory }}"
             requests:
-              cpu: "{{ .Values.Kafka.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.Kafka.Resources.Requests.Memory }}"
+              cpu: "{{ .Values.kafka.Resources.Requests.Cpu }}"
+              memory: "{{ .Values.kafka.Resources.Requests.Memory }}"
           ports:
             - name: client
-              containerPort: {{ .Values.Kafka.Port }}
+              containerPort: {{ .Values.kafka.Port }}
             - name: controller
-              containerPort: {{ .Values.Kafka.ControllerPort }}
+              containerPort: {{ .Values.kafka.ControllerPort }}
             - name: local
-              containerPort: {{ .Values.Kafka.LocalPort }}
+              containerPort: {{ .Values.kafka.localPort }}
           livenessProbe:
             failureThreshold: 15
             initialDelaySeconds: 10

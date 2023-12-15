@@ -1,11 +1,11 @@
-{{- if .Values.Ingress.DefaultEndpointsEnabled }}
+{{- if .Values.ingress.defaultEndpointsEnabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: opennms-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
-    {{- range $Annotation, $Value := .Values.OpenNMS.UI.IngressAnnotations }}
+    {{- range $Annotation, $Value := .Values.openNMS.ui.ingressAnnotations }}
     {{ $Annotation | quote }}: {{ $Value | quote }}
     {{- end }}
 spec:
@@ -14,54 +14,54 @@ spec:
   {{- end }}
   defaultBackend:
     service:
-      name: {{ .Values.OpenNMS.UI.ServiceName }}
+      name: {{ .Values.openNMS.ui.serviceName }}
       port:
-        number: {{ .Values.OpenNMS.UI.Port }}
+        number: {{ .Values.openNMS.ui.port }}
   rules:
-    - host: {{ .Values.Host }}
+    - host: {{ .Values.host }}
       http:
         paths:
-          - path: {{ .Values.OpenNMS.UI.Path }}
+          - path: {{ .Values.openNMS.ui.path }}
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.OpenNMS.UI.ServiceName }}
+                name: {{ .Values.openNMS.ui.serviceName }}
                 port:
-                  number: {{ .Values.OpenNMS.UI.Port }}
-          - path: {{ .Values.Keycloak.Path }}
+                  number: {{ .Values.openNMS.ui.port }}
+          - path: {{ .Values.keycloak.path }}
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.Keycloak.ServiceName }}
+                name: {{ .Values.keycloak.serviceName }}
                 port:
-                  number: {{ .Values.Keycloak.Port }}
-          - path: {{ .Values.OpenNMS.API.Path }}
+                  number: {{ .Values.keycloak.port }}
+          - path: {{ .Values.openNMS.api.path }}
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.OpenNMS.API.ServiceName }}
+                name: {{ .Values.openNMS.api.serviceName }}
                 port:
                   number: 9090
-          - path: {{ .Values.Grafana.Path }}
+          - path: {{ .Values.grafana.path }}
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.Grafana.ServiceName }}
+                name: {{ .Values.grafana.serviceName }}
                 port:
-                  number: {{ .Values.Grafana.Port }}
-          {{- if .Values.Prometheus.Enabled }}
-          - path: {{ .Values.Prometheus.Path }}
+                  number: {{ .Values.grafana.port }}
+          {{- if .Values.prometheus.enabled }}
+          - path: {{ .Values.prometheus.path }}
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.Prometheus.ServiceName }}
+                name: {{ .Values.prometheus.serviceName }}
                 port:
-                  number: {{ .Values.Prometheus.Port }}
+                  number: {{ .Values.prometheus.port }}
           {{- end }}
-  {{- if .Values.TLS.Enabled }}
+  {{- if .Values.tls.enabled }}
   tls:
     - hosts:
-        -  {{.Values.Host }}
-      secretName: {{ .Values.OpenNMS.UI.TlsSecretName }}
+        -  {{.Values.host }}
+      secretName: {{ .Values.openNMS.ui.tlsSecretName }}
   {{- end }}
 {{- end }}

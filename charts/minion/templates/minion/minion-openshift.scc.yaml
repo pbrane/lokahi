@@ -2,7 +2,7 @@
 ---
 kind: SecurityContextConstraints
 metadata:
-  name: {{ .Values.OpenNMS.Minion.ServiceName }}-scc
+  name: {{ .Values.openNMS.Minion.ServiceName }}-scc
   namespace: {{ .Release.Namespace }}
 allowHostDirVolumePlugin: false
 allowHostIPC: false
@@ -32,7 +32,7 @@ supplementalGroups:
   type: RunAsAny
 users:
 - default
-- {{ .Values.OpenNMS.Minion.ServiceName }}-sa
+- {{ .Values.openNMS.Minion.ServiceName }}-sa
 - serviceaccount:lokahi:opennms-minion-sa
 volumes:
 - configMap

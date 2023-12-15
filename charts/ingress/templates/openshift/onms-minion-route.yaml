@@ -5,14 +5,15 @@ metadata:
   name: opennms-minion-grpc-route
   namespace: {{ .Release.Namespace }}
 spec:
-  host: "minion.{{ .Values.Host }}"
+  host: "minion.{{ .Values.host }}"
   port:
     targetPort: 6565
-     # .Values.OpenNMS.MinionGateway.GrpcPort 
+     # .Values.openNMS.minionGateway.GrpcPort 
   tls:
     termination: passthrough
     insecureEdgeTerminationPolicy: None
   to:
     kind: Service
-    name: {{ .Values.OpenNMS.MinionGateway.ServiceName }}
+    name: {{ .Values.openNMS.minionGateway.serviceName }}
+    
 {{ end }}

@@ -5,11 +5,11 @@ metadata:
   name: opennms-api-route
   namespace: {{ .Release.Namespace }}
 spec:
-  host: {{ .Values.Host }}
-  path: {{ .Values.OpenNMS.API.Path }}  
+  host: {{ .Values.host }}
+  path: {{ .Values.openNMS.api.path }}  
   to:
     kind: Service
-    name: {{ .Values.OpenNMS.API.ServiceName }}
+    name: {{ .Values.openNMS.api.serviceName }}
   port:
     targetPort: http
   tls:

@@ -1,23 +1,23 @@
-{{- if .Values.MailServer.Enabled }}
+{{- if .Values.mailServer.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.MailServer.ServiceName }}
+  name: {{ .Values.mailServer.ServiceName }}
   labels:
-    app: {{ .Values.MailServer.ServiceName }}
+    app: {{ .Values.mailServer.ServiceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.MailServer.ServiceName }}
-  replicas: {{ .Values.MailServer.Replicas }}
+      app: {{ .Values.mailServer.ServiceName }}
+  replicas: {{ .Values.mailServer.Replicas }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.MailServer.ServiceName }}
+        app: {{ .Values.mailServer.ServiceName }}
       annotations:
-        kubectl.kubernetes.io/default-container: "{{ .Values.MailServer.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.mailServer.ServiceName }}"
     spec:
       {{- if .Values.NodeRestrictions.Enabled }}
       nodeSelector:                                                                                    
@@ -39,19 +39,19 @@ spec:
                 - {{ .Values.NodeRestrictions.Value }}                                                 
       {{- end }}
       containers:
-        - name: {{ .Values.MailServer.ServiceName }}
+        - name: {{ .Values.mailServer.ServiceName }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-          image: {{ .Values.MailServer.Image }}
+          image: {{ .Values.mailServer.Image }}
           ports:
             - name: http
-              containerPort: {{ .Values.MailServer.Port }}
+              containerPort: {{ .Values.mailServer.Port }}
             - name: smtp
-              containerPort: {{ .Values.MailServer.SmtpPort }}
+              containerPort: {{ .Values.mailServer.SmtpPort }}
           resources:
             limits:
-              cpu: "{{ .Values.MailServer.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.MailServer.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.mailServer.Resources.Limits.Cpu }}"
+              memory: "{{ .Values.mailServer.Resources.Limits.Memory }}"
             requests:
-              cpu: "{{ .Values.MailServer.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.MailServer.Resources.Requests.Memory }}"
+              cpu: "{{ .Values.mailServer.Resources.Requests.Cpu }}"
+              memory: "{{ .Values.mailServer.Resources.Requests.Memory }}"
 {{- end }}

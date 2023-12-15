@@ -3,7 +3,7 @@ lokahi.image: return the docker image name including tag for the service
 argument: a dictionary with Values and "thisService" rooted at the values
 for the service.
 example:
-	image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Alert) | quote }}
+	image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.openNMS.alert) | quote }}
 
 Precedence for image (first wins):
 1. thisService.Image
@@ -40,7 +40,7 @@ example:
 	  ... normal env settings should come first ...
 	  # Do not put any env variables below this. The lokahi.development.env include should be last
 	  # in the 'env' section so variables can be overridden with Helm chart values when needed.
-	  {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Events) | nindent 12 }}
+	  {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.openNMS.Events) | nindent 12 }}
 
 Note: when this is included, the the lokahi.development.env include should be last thing
 in the 'env' section so variables can be overridden with Helm chart values when needed

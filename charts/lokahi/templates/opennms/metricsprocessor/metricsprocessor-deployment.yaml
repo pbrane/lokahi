@@ -1,54 +1,54 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
+  name: {{ .Values.openNMS.metricsProcessor.serviceName }}
   labels:
-    app: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
+    app: {{ .Values.openNMS.metricsProcessor.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.OpenNMS.MetricsProcessor.Replicas }}
+  replicas: {{ .Values.openNMS.metricsProcessor.replicas }}
   selector:
     matchLabels:
-      run: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
+      run: {{ .Values.openNMS.metricsProcessor.serviceName }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        run: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
+        run: {{ .Values.openNMS.metricsProcessor.serviceName }}
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
         # roll the deployment when the Spring boot environment variable configmap changes
         checksum/spring-boot-env-configmap: {{ include (print $.Template.BasePath "/opennms/spring-boot-env-configmap.yaml") . | sha256sum }}
-        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.MetricsProcessor.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.openNMS.metricsProcessor.serviceName }}"
     spec:
-      {{- if .Values.NodeRestrictions.Enabled }}
+      {{- if .Values.nodeRestrictions.enabled }}
       nodeSelector:                                                                                    
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}                       
+        {{ .Values.nodeRestrictions.key }}: {{ .Values.nodeRestrictions.value }}                       
       tolerations:
         - effect: "NoSchedule"                                                                         
-          key: "{{ .Values.NodeRestrictions.Key }}"                                                    
+          key: "{{ .Values.nodeRestrictions.key }}"                                                    
           operator: "Equal"
-          value: {{ .Values.NodeRestrictions.Value }} 
+          value: {{ .Values.nodeRestrictions.value }} 
       affinity: 
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:                                             
           - weight: 1                                                                                  
             preference:                                                                                
               matchExpressions:                                                                        
-              - key: "{{ .Values.NodeRestrictions.Key }}"                                              
+              - key: "{{ .Values.nodeRestrictions.key }}"                                              
                 operator: In
                 values:                                                                                
-                - {{ .Values.NodeRestrictions.Value }}                                                 
+                - {{ .Values.nodeRestrictions.value }}                                                 
       {{- end }}
       volumes:
         - name: spring-boot-app-config-volume
           configMap:
             name: spring-boot-app-config
       containers:
-        - name: {{ .Values.OpenNMS.MetricsProcessor.ServiceName }}
-          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.MetricsProcessor) | quote }}
+        - name: {{ .Values.openNMS.metricsProcessor.serviceName }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.openNMS.metricsProcessor) | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -56,18 +56,18 @@ spec:
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "{{ .Values.global.kafkaClient.bootstrapServers }}"
             - name: GRPC_FLOW_INGESTOR_URL
-              value: "{{ .Values.OpenNMS.MetricsProcessor.FlowIngestorUrl }}"
+              value: "{{ .Values.openNMS.metricsProcessor.flowIngestorUrl }}"
             - name: GRPC_FLOW_TLS_ENABLED
-              value: "{{ .Values.OpenNMS.MetricsProcessor.FlowTlsEnabled }}"
+              value: "{{ .Values.openNMS.metricsProcessor.flowTlsEnabled }}"
             - name: CORTEX_WRITE_URL
-              value: {{ .Values.CortexClient.Protocol }}://{{ .Values.CortexClient.HostWrite }}:{{ .Values.CortexClient.PortWrite }}{{ .Values.CortexClient.PathWrite }}
+              value: {{ .Values.cortexClient.protocol }}://{{ .Values.cortexClient.hostWrite }}:{{ .Values.cortexClient.portWrite }}{{ .Values.cortexClient.pathWrite }}
             # Do not put any env variables below this. The lokahi.development.env include should be last
             # in the 'env' section so variables can be overridden with Helm chart values when needed.
-            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.MetricsProcessor) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.openNMS.metricsProcessor) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env
-          {{- include "lokahi.kafkaSecretFrom" .Values.OpenNMS.MetricsProcessor | indent 10 }}
+          {{- include "lokahi.kafkaSecretFrom" .Values.openNMS.metricsProcessor | indent 10 }}
           ports:
             - name: http
               containerPort: 8080
@@ -96,11 +96,11 @@ spec:
             failureThreshold: 250
           resources:
             limits:
-              cpu: "{{ .Values.OpenNMS.MetricsProcessor.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.OpenNMS.MetricsProcessor.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.openNMS.metricsProcessor.resources.limits.cpu }}"
+              memory: "{{ .Values.openNMS.metricsProcessor.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.OpenNMS.MetricsProcessor.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.OpenNMS.MetricsProcessor.Resources.Requests.Memory }}"
+              cpu: "{{ .Values.openNMS.metricsProcessor.resources.requests.cpu }}"
+              memory: "{{ .Values.openNMS.metricsProcessor.resources.requests.memory }}"
       {{- if .Values.global.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials

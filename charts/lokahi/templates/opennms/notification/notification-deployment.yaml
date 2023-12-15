@@ -1,46 +1,46 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.OpenNMS.Notification.ServiceName }}
+  name: {{ .Values.openNMS.notification.serviceName }}
   labels:
-    app: {{ .Values.OpenNMS.Notification.ServiceName }}
+    app: {{ .Values.openNMS.notification.serviceName }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.OpenNMS.Notification.ServiceName }}
-  replicas: {{ .Values.OpenNMS.Notification.Replicas }}
+      app: {{ .Values.openNMS.notification.serviceName }}
+  replicas: {{ .Values.openNMS.notification.replicas }}
   template:
     metadata:
       labels:
         appdomain: opennms
-        app: {{ .Values.OpenNMS.Notification.ServiceName }}
+        app: {{ .Values.openNMS.notification.serviceName }}
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
         # roll the deployment when the Spring boot environment variable configmap changes
         checksum/spring-boot-env-configmap: {{ include (print $.Template.BasePath "/opennms/spring-boot-env-configmap.yaml") . | sha256sum }}
-        kubectl.kubernetes.io/default-container: "{{ .Values.OpenNMS.Notification.ServiceName }}"
+        kubectl.kubernetes.io/default-container: "{{ .Values.openNMS.notification.serviceName }}"
     spec:
-      {{- if .Values.NodeRestrictions.Enabled }}
+      {{- if .Values.nodeRestrictions.enabled }}
       nodeSelector:                                                                                    
-        {{ .Values.NodeRestrictions.Key }}: {{ .Values.NodeRestrictions.Value }}                       
+        {{ .Values.nodeRestrictions.key }}: {{ .Values.nodeRestrictions.value }}                       
       tolerations:
         - effect: "NoSchedule"                                                                         
-          key: "{{ .Values.NodeRestrictions.Key }}"                                                    
+          key: "{{ .Values.nodeRestrictions.key }}"                                                    
           operator: "Equal"
-          value: {{ .Values.NodeRestrictions.Value }} 
+          value: {{ .Values.nodeRestrictions.value }} 
       affinity: 
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:                                             
           - weight: 1                                                                                  
             preference:                                                                                
               matchExpressions:                                                                        
-              - key: "{{ .Values.NodeRestrictions.Key }}"                                              
+              - key: "{{ .Values.nodeRestrictions.key }}"                                              
                 operator: In
                 values:                                                                                
-                - {{ .Values.NodeRestrictions.Value }}                                                 
+                - {{ .Values.nodeRestrictions.value }}                                                 
       {{- end }}
       volumes:
         - name: spring-boot-app-config-volume
@@ -62,8 +62,8 @@ spec:
             echo "Database is available"
       {{- end }}
       containers:
-        - name: {{ .Values.OpenNMS.Notification.ServiceName }}
-          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.OpenNMS.Notification) | quote }}
+        - name: {{ .Values.openNMS.notification.serviceName }}
+          image: {{ include "lokahi.image" (dict "Values" .Values "thisService" .Values.openNMS.notification) | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -71,7 +71,7 @@ spec:
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "{{ .Values.global.kafkaClient.bootstrapServers }}"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://{{ .Values.OpenNMS.Notification.DbHost }}:5432/{{ .Values.OpenNMS.Notification.DbName }}?currentSchema={{ .Values.OpenNMS.Notification.DbSchemaName }}"
+              value: "jdbc:postgresql://{{ .Values.openNMS.notification.dbHost }}:5432/{{ .Values.openNMS.notification.dbName }}?currentSchema={{ .Values.openNMS.notification.dbSchemaName }}"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -83,50 +83,50 @@ spec:
                   name: postgres
                   key: notificationPwd
             - name: SPRING_MAIL_FROM
-              value: "{{ .Values.OpenNMS.Notification.mailFrom }}"
+              value: "{{ .Values.openNMS.notification.mailFrom }}"
             - name: HORIZON_EMAIL_RETRY_DELAY
-              value: "{{ .Values.OpenNMS.Notification.retry.delay }}"
+              value: "{{ .Values.openNMS.notification.retry.delay }}"
             - name: HORIZON_EMAIL_RETRY_MAXDELAY
-              value: "{{ .Values.OpenNMS.Notification.retry.maxDelay }}"
+              value: "{{ .Values.openNMS.notification.retry.maxDelay }}"
             - name: HORIZON_EMAIL_RETRY_MULTIPLIER
-              value: "{{ .Values.OpenNMS.Notification.retry.multiplier }}"
+              value: "{{ .Values.openNMS.notification.retry.multiplier }}"
             - name: HORIZON_EMAIL_RETRY_MAX
-              value: "{{ .Values.OpenNMS.Notification.retry.max }}"
+              value: "{{ .Values.openNMS.notification.retry.max }}"
             - name: LOKAHI_BASEURL_URL
-              value: "{{ .Values.OpenNMS.Notification.baseUrl.url }}"
+              value: "{{ .Values.openNMS.notification.baseUrl.url }}"
             - name: LOKAHI_BASEURL_APPENDTENANTID
-              value: "{{ .Values.OpenNMS.Notification.baseUrl.appendTenantId }}"
-            {{- if .Values.OpenNMS.Notification.acsConnectionSecretName }}
+              value: "{{ .Values.openNMS.notification.baseUrl.appendTenantId }}"
+            {{- if .Values.openNMS.notification.acsConnectionSecretName }}
             - name: SPRING_MAIL_ACS_CONNECTION_STRING # spring.mail.acs-connection-string
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.OpenNMS.Notification.acsConnectionSecretName }}
+                  name: {{ .Values.openNMS.notification.acsConnectionSecretName }}
                   key: connection-string
             {{- else }}
             - name: SPRING_MAIL_HOST
-              value: "{{ .Values.OpenNMS.Notification.smtpHost }}"
+              value: "{{ .Values.openNMS.notification.smtpHost }}"
             - name: SPRING_MAIL_PORT
-              value: "{{ .Values.OpenNMS.Notification.smtpPort }}"
+              value: "{{ .Values.openNMS.notification.smtpPort }}"
             {{- end }}
             - name: HORIZON_KEYCLOAK_BASE_URL
-              value: "http://{{ .Values.Keycloak.ServiceName }}:{{ .Values.Keycloak.Port }}{{ .Values.Keycloak.Path }}/"
+              value: "http://{{ .Values.keycloak.serviceName }}:{{ .Values.keycloak.port }}{{ .Values.keycloak.path }}/"
             - name: HORIZON_KEYCLOAK_ADMIN_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.Keycloak.ServiceName }}-initial-admin
+                  name: {{ .Values.keycloak.serviceName }}-initial-admin
                   key: username
             - name: HORIZON_KEYCLOAK_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.Keycloak.ServiceName }}-initial-admin
+                  name: {{ .Values.keycloak.serviceName }}-initial-admin
                   key: password
             # Do not put any env variables below this. The lokahi.development.env include should be last
             # in the 'env' section so variables can be overridden with Helm chart values when needed.
-            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.OpenNMS.Notification) | nindent 12 }}
+            {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.openNMS.notification) | nindent 12 }}
           envFrom:
           - configMapRef:
               name: spring-boot-env
-          {{- include "lokahi.kafkaSecretFrom" .Values.OpenNMS.Notification | indent 10 }}
+          {{- include "lokahi.kafkaSecretFrom" .Values.openNMS.notification | indent 10 }}
           ports:
             - name: grpc
               containerPort: 6565
@@ -157,11 +157,11 @@ spec:
             failureThreshold: 250
           resources:
             limits:
-              cpu: "{{ .Values.OpenNMS.Notification.Resources.Limits.Cpu }}"
-              memory: "{{ .Values.OpenNMS.Notification.Resources.Limits.Memory }}"
+              cpu: "{{ .Values.openNMS.notification.resources.limits.cpu }}"
+              memory: "{{ .Values.openNMS.notification.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.OpenNMS.Notification.Resources.Requests.Cpu }}"
-              memory: "{{ .Values.OpenNMS.Notification.Resources.Requests.Memory }}"
+              cpu: "{{ .Values.openNMS.notification.resources.requests.cpu }}"
+              memory: "{{ .Values.openNMS.notification.resources.requests.memory }}"
       {{- if .Values.global.privateRepoEnabled }}
       imagePullSecrets:
         - name: image-credentials
