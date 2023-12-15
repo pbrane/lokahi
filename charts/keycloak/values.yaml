@@ -278,7 +278,7 @@ keycloak:
       Memory: 1Gi
   AdminUsername: admin
   adminPassword: notset
-  RealmName: opennms
+  realmName: opennms
   DynamicRealmConfig: true
   ConfigmapName: keycloak-realm-configmap
   Environment: {}

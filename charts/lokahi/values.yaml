@@ -247,7 +247,7 @@ keycloak:
   dbSchemaName: "keycloak"
   dbName: "desenv"
   dbHost: "postgres"
-  RealmName: opennms
+  realmName: opennms
 cortexClient:
   hostRead: cortex
   hostWrite: cortex

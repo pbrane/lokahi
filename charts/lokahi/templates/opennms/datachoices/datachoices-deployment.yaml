@@ -82,7 +82,7 @@ spec:
             - name: KEYCLOAK_BASE_URL
               value: "http://{{ .Values.keycloak.serviceName }}:8080/auth/"
             - name: KEYCLOAK_REALM
-              value: "{{ .Values.keycloak.RealmName }}"
+              value: "{{ .Values.keycloak.realmName }}"
             # Do not put any env variables below this. The lokahi.development.env include should be last
             # in the 'env' section so variables can be overridden with Helm chart values when needed.
             {{- include "lokahi.deployment.env" (dict "Values" .Values "thisService" .Values.openNMS.dataChoices) | nindent 12 }}

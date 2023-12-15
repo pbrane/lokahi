@@ -7,7 +7,7 @@ metadata:
 data:
   onms-realm.json: |
     {
-      "realm": "{{ .Values.keycloak.RealmName }}",
+      "realm": "{{ .Values.keycloak.realmName }}",
       "accessTokenLifespan": 6000,
       "enabled": true,
       "loginTheme": "lokahi",
