@@ -6,7 +6,6 @@ global:
  image:
   repository: opennms
   tag: latest
-
 citus:
   enabled: false
   adminUser: desenv
