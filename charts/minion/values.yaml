@@ -1,6 +1,5 @@
 host: onmshs
-Port: 443 #set depending on tls.enabled and the Ingress ports, do not change
-OpenShift: false
+port: 443 #set depending on tls.enabled and the Ingress ports, do not change
 global:
  image:
   repository: opennms
@@ -18,45 +17,45 @@ global:
    OTEL_PROPAGATORS: tracecontext,baggage,jaeger
 
 openNMS:
-  Minion:
-    Enabled: false
-    ServiceName: opennms-minion
-    ImageShortName: lokahi-minion
-    Replicas: 1
-    Port: 8181
-    SshPort: 8101
-    TrapsListenerPort: 1162
-    Netflow5ListenerPort: 8877
-    Netflow9ListenerPort: 4729
-    NetflowListenerPort: 9999
-    Resources:
-      Limits:
-        Cpu: "2"
-        Memory: 4Gi
-      Requests:
-        Cpu: "1"
-        Memory: 2Gi
-    ExtraVolumes: []
-    ExtraMounts: []
-    ExtraInitContainers: []
+  minion:
+    enabled: false
+    serviceName: opennms-minion
+    imageShortName: lokahi-minion
+    replicas: 1
+    port: 8181
+    sshPort: 8101
+    trapsListenerPort: 1162
+    netflow5ListenerPort: 8877
+    netflow9ListenerPort: 4729
+    netflowListenerPort: 9999
+    resources:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 2Gi
+    extraVolumes: []
+    extraMounts: []
+    extraInitContainers: []
     addDefaultLocation: false
-  MinionGateway:
-    ServiceName: opennms-minion-gateway
-    TlsSecretName: opennms-minion-gateway-certificate
-    ImageShortName: lokahi-minion-gateway
+  minionGateway:
+    serviceName: opennms-minion-gateway
+    tlsSecretName: opennms-minion-gateway-certificate
+    imageShortName: lokahi-minion-gateway
     InternalGrpcPort: 8991
-    Replicas: 1
+    replicas: 1
     UseKubernetes: "true"
     DbName: "desenv"
     DbSchemaName: "minion_gateway"
     DbHost: "postgres"
-    Resources:
-      Limits:
-        Cpu: "2"
-        Memory: 4Gi # MaxRAMPercentage=40 for heap (avg-usage=480MB) plus up to 2GB off-heap (4 Ignite Data Regions)
-      Requests:
-        Cpu: "1"
-        Memory: 2Gi
+    resources:
+      limits:
+        cpu: "2"
+        memory: 4Gi # MaxRAMPercentage=40 for heap (avg-usage=480MB) plus up to 2GB off-heap (4 Ignite Data Regions)
+      requests:
+        cpu: "1"
+        memory: 2Gi
     IngressAnnotations:
       nginx.ingress.kubernetes.io/proxy-body-size: "0" # To avoid HTTP 413 and "client intended to send too large chunked body: X bytes while sending request to upstream"
       nginx.ingress.kubernetes.io/auth-tls-secret: default/client-root-ca-certificate
@@ -71,52 +70,52 @@ openNMS:
         client_body_timeout "1200s";
     kafkaSecretName: ~
   MinionCertificateManager:
-    Enabled: false
-    ServiceName: opennms-minion-certificate-manager
+    enabled: false
+    serviceName: opennms-minion-certificate-manager
     CaSecretName: ""
     MtlsSecretName: opennms-minion-certificate
-    ImageShortName: lokahi-minion-certificate-manager
-    Replicas: 1
+    imageShortName: lokahi-minion-certificate-manager
+    replicas: 1
     VolumeSize: 1Gi
-    Resources:
-      Limits:
-        Cpu: "1"
-        Memory: 1Gi
-      Requests:
-        Cpu: "1"
-        Memory: 1Gi
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: "1"
+        memory: 1Gi
   MinionCertificateVerifier:
-    ServiceName: opennms-minion-certificate-verifier
-    ImageShortName: lokahi-minion-certificate-verifier
-    Replicas: 1
-    Resources:
-      Limits:
-        Cpu: "1"
-        Memory: 1Gi # MaxRAMPercentage=50,avg-usage=245MB
-      Requests:
-        Cpu: "1"
-        Memory: 1Gi
+    serviceName: opennms-minion-certificate-verifier
+    imageShortName: lokahi-minion-certificate-verifier
+    replicas: 1
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi # MaxRAMPercentage=50,avg-usage=245MB
+      requests:
+        cpu: "1"
+        memory: 1Gi
     CertificateManagerUrl: ""
 keycloak:
   Path: /auth
-  ImageShortName: lokahi-keycloak
-  Port: 8080
+  imageShortName: lokahi-keycloak
+  port: 8080
   HttpsPort: 8443
   HostnamePort: ~
   hostnameAdminUrl: ~
-  Replicas: 1
-  ServiceName: onms-keycloak
-  TlsSecretName:
+  replicas: 1
+  serviceName: onms-keycloak
+  tlsSecretName:
   DbSchemaName: "keycloak"
   DbName: "desenv"
   DbHost: "postgres"
-  Resources:
-    Limits:
-      Cpu: "1"
-      Memory: 2Gi
-    Requests:
-      Cpu: "1"
-      Memory: 1Gi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "1"
+      memory: 1Gi
   AdminUsername: admin
   adminPassword: notset
   realmName: opennms
@@ -124,16 +123,13 @@ keycloak:
   ConfigmapName: keycloak-realm-configmap
   Environment: {}
 
-NodeRestrictions: # will be applied to every pod in the instance
-  Enabled: false
-  Key: kubernetes.azure.com/scalesetpriority
-  Value: spot
+nodeRestrictions: # will be applied to every pod in the instance
+  enabled: false
+  key: kubernetes.azure.com/scalesetpriority
+  value: spot
 tls:
-  Enabled: true
+  enabled: true
   # When Certificate Generation option is set to false you need to manually prepare secrets which are referred by
   # this helm chart. This includes creation of tls certificates for ingress but also for mutual tls between minions and
   # minion-gateway service
   CertificateGeneration: false
-
-Ingress:
-  DefaultEndpointsEnabled: true

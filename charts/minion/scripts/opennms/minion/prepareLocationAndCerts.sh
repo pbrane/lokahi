@@ -3,10 +3,10 @@
 ##
 ## DESCRIPTION:
 ##	Prepare for running a minion by logging into the cluster, looking up the ID of the location name requested,
-##	and creating the location if is does not yet exist, then downloading the PKCS12 Minion certficiate.
+##	and creating the location if is does not yet exist, then downloading the PKCS12 minion certficiate.
 ##
 ## PROCESS:
-##	1. Extract the CA certificate from the cluster and save as the trust-store for the Minion (and curl commands)
+##	1. Extract the CA certificate from the cluster and save as the trust-store for the minion (and curl commands)
 ##	2. Login to the cluster
 ##	3. Lookup the location
 ##	4. If the location does not yet exist, create the location

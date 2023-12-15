@@ -51,7 +51,7 @@ openNMS:
     flowsTlsEnabled: false
     certificateManagerUrl: ""
     packagedMinionFile: run-minion-docker-compose.yaml
-    minionEndpoint: minion.onmshs.local
+    minionEndpoint: host.docker.internal
     introspectionEnabled: false
     maxAliasOccurrence: 5
     maxComplexity: 60

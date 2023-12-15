@@ -10,8 +10,8 @@ Precedence for image (first wins):
 2. global.image.repository + "/" + image short name + "/" + tag
 
 image short name:
-1. thisService.ImageShortName
-2. thisService.ServiceName
+1. thisService.imageShortName
+2. thisService.serviceName
 
 tag:
 1. global.image.tag
@@ -24,7 +24,7 @@ aren't versioning the chart yet.
 {{- if .thisService.Image -}}
 {{- .thisService.Image -}}
 {{- else -}}
-{{- $imageShortName := .thisService.ImageShortName | default .thisService.ServiceName -}}
+{{- $imageShortName := .thisService.imageShortName | default .thisService.serviceName -}}
 {{- $tag := .Values.global.image.tag | default "latest" -}}
 {{- printf "%s/%s:%s" .Values.global.image.repository $imageShortName $tag -}}
 {{- end -}}
@@ -44,12 +44,12 @@ example:
 
 Note: when this is included, the the lokahi.development.env include should be last thing
 in the 'env' section so variables can be overridden with Helm chart values when needed
-by adding them as key/value pairs under <ServiceName>.env.
+by adding them as key/value pairs under <serviceName>.env.
 */}}
 {{- define "lokahi.deployment.env" -}}
   {{- /* OpenTelemetry environment variables */ -}}
 - name: OTEL_SERVICE_NAME
-  value: {{ .thisService.ServiceName | quote }}
+  value: {{ .thisService.serviceName | quote }}
 - name: OTEL_RESOURCE_ATTRIBUTES
   value: {{ printf "service.version=%s" (regexReplaceAllLiteral ".*:" (include "lokahi.image" .) "") | quote }}
   {{- /* Other environment variables */ -}}

@@ -151,8 +151,8 @@ openNMS:
         Memory: 2Gi
     EncryptionKey: ~
     kafkaSecretName: ~
-  Alert:
-    ServiceName: opennms-alert
+  alert:
+    serviceName: opennms-alert
     ImageShortName: lokahi-alert
     Replicas: 1
     DbName: "desenv"

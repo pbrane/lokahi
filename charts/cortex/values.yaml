@@ -11,7 +11,7 @@ cortex:
   resources:
     limits:
       cpu: "1"
-      Memory: 512Mi
+      memory: 512Mi
     requests:
       cpu: 100m
       memory: 100Mi
