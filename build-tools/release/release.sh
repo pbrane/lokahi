@@ -79,17 +79,21 @@ CHANGELOG="CHANGELOG/changelog-$CURRENT_TAG.md"
 
 echo "Changes:" > $CHANGELOG
 # 2023-11-03: I removed --all because it kept on bringing in old merges
-git log $PREVIOUS_TAG..HEAD --oneline --graph | grep 'Merge pull request' | sed 's/| //g' >> $CHANGELOG
+# If there are no merge commits to the develop branch since the last
+# release, this will fail like this:
+#
+#   build-tools/release/release.sh: Error on line 82: sed 's/| //g' >> $CHANGELOG
+#   Error: Process completed with exit code 1.
+#
+git log $PREVIOUS_TAG..HEAD --oneline --graph | \
+    grep 'Merge pull request' | \
+    sed 's/| //g' >> $CHANGELOG
 
 git add $CHANGELOG
 git commit -m "RELEASE $CURRENT_TAG - updated" $CHANGELOG
 
-if [ $DRYRUN -eq 0 ]; then
-    git push origin release
-fi
-
-# Release has the release tag history.
 git tag $CURRENT_TAG
+
 if [ $DRYRUN -eq 0 ]; then
-    git push origin $CURRENT_TAG
+    git push origin release $CURRENT_TAG
 fi
