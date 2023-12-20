@@ -93,7 +93,9 @@ time {
 	echo "==="
 	echo "=== GRAFANA IMAGE"
 	echo "==="
-	docker build -t opennms/lokahi-grafana:local-basic grafana
+	docker build \
+		-t opennms/lokahi-grafana:local-basic \
+		grafana
 
 	echo ""
 	echo "==="
