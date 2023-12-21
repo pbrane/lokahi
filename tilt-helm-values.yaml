@@ -13,9 +13,6 @@ Keycloak:
   HostnamePort: 1443
   HostnameAdminUrl: https://onmshs.local:1443/auth
 
-Ingress:
-  Enabled: false
-
 MailServer:
   Enabled: true
 
