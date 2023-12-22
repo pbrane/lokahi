@@ -306,6 +306,10 @@ k8s_resource(
         link('https://onmshs.local:1443/grafana/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22tempo%22%7D,%22queryType%22:%22traceql%22,%22limit%22:20,%22query%22:%22%7B%7D%22%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D', 'Grafana - Explore Tempo'),
     ]
 )
+k8s_resource(
+    'tempo',
+    objects=['tempo:serviceaccount', 'tempo:configmap', ],
+)
 
 # Deployment #
 helm_repo('jetstack', 'https://charts.jetstack.io', labels=['z_dependencies'])
@@ -389,6 +393,12 @@ local_resource(
     resource_deps=['parent-pom'],
 )
 
+k8s_resource(
+    new_name='shared-kube',
+    objects=['spring-boot-app-config:configmap', 'spring-boot-env:configmap', 'opennms-ingress:ingress'],
+    labels='shared',
+)
+
 ## Microservices ##
 ### Notification ###
 jib_project(
@@ -465,6 +475,10 @@ jib_project_multi_module(
     port_forwards=['29080:8080', '29050:5005', '29065:6565'],
     resource_deps=['shared-lib', 'citus-worker'],
 )
+k8s_resource(
+    'inventory',
+    objects=['opennms-inventory-encryption-key:secret'],
+)
 
 ### Alert ###
 jib_project(
@@ -505,6 +519,10 @@ jib_project_multi_module(
     port_forwards=['16080:8080', '16050:5005'],
     resource_deps=['shared-lib', 'citus-worker'],
 )
+k8s_resource(
+    'minion-gateway',
+    objects=['opennms-minion-gateway-sa:serviceaccount', 'opennms-minion-gateway-rb:rolebinding', 'minion-gateway-ignite-config:configmap', 'opennms-minion-gateway:ingress' ],
+)
 
 ### DataChoices ###
 jib_project(
@@ -532,6 +550,10 @@ k8s_resource(
     trigger_mode=TRIGGER_MODE_MANUAL,
     resource_deps=['shared-lib'],
 )
+k8s_resource(
+    'minion',
+    objects=['opennms-minion-sa:serviceaccount', 'opennms-minion-rb:rolebinding', 'minion-scripts:configmap', 'role-endpoints:role'],
+)
 cmd_button(
     name='button-opennms-minion',
     text='Rollout restart minion',
@@ -553,6 +575,10 @@ jib_project(
     'opennms-minion-certificate-manager',
     port_forwards=['34089:8990', '34050:5005'],
     resource_deps=['shared-lib']
+)
+k8s_resource(
+    'minion-certificate-manager',
+    objects=['minion-certificate-manager-pvc:persistentvolumeclaim'],
 )
 
 # resource_name, image_name, base_path, k8s_resource_name, resource_deps=[], port_forwards=[], labels=None)
@@ -586,6 +612,10 @@ k8s_resource(
       link('http://localhost:26080/auth', 'Welcome Page')
     ]
 )
+k8s_resource(
+    'keycloak',
+    objects=['keycloak-realm-configmap:configmap', 'onms-keycloak-initial-admin:secret', ],
+)
 
 ### Email ###
 k8s_resource(
@@ -605,6 +635,10 @@ k8s_resource(
     port_forwards=['18080:3000'],
     resource_deps=['citus-worker'],
 )
+k8s_resource(
+    'grafana',
+    objects=['grafana:secret'],
+)
 
 ### Cortex ###
 k8s_resource(
@@ -614,6 +648,10 @@ k8s_resource(
     links=[
         link('https://onmshs.local:1443/grafana/explore?orgId=1&left=%7B%22datasource%22:%22EdAkOOOSk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%22,%22range%22:true,%22instant%22:true,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22EdAkOOOSk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D', 'Grafana - Explore Metrics'),
     ]
+)
+k8s_resource(
+    'cortex',
+    objects=['cortex-config-map:configmap'],
 )
 
 ### Citus/Postgres ###
@@ -659,6 +697,10 @@ k8s_resource(
     links=[
         link('https://onmshs.local:1443/grafana/explore?orgId=1&left=%7B%22datasource%22:%22zK0kOddIk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%22,%22range%22:true,%22instant%22:true,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22zK0kOddIk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D', 'Grafana - Explore Internal Metrics'),
     ]
+)
+k8s_resource(
+    'prometheus',
+    objects=['prometheus-sa:serviceaccount', 'prometheus:clusterrole', 'prometheus:clusterrolebinding', 'prometheus-config-map:configmap'],
 )
 
 ### Others ###
