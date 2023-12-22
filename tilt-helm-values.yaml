@@ -96,6 +96,9 @@ OpenNMS:
         grpc_set_header 'traceparent' $opentelemetry_context_traceparent; # This doesn't get sent downstream normally. :(
         opentelemetry_attribute "user" "$authHeader0";
         opentelemetry_attribute "location" "$authHeader1";
+    env:
+      DEBUG_SPAN_FULL_MESSAGE: "true"
+      DEBUG_SPAN_CONTENT: "true"
   MinionCertificateManager:
     Enabled: true
     CaSecretName: root-ca-certificate

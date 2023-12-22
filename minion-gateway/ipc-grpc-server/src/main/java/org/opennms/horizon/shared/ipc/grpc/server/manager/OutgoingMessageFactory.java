@@ -28,11 +28,13 @@
 
 package org.opennms.horizon.shared.ipc.grpc.server.manager;
 
-import io.grpc.stub.StreamObserver;
 import org.opennms.cloud.grpc.minion.CloudToMinionMessage;
+
+import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.trace.SpanContext;
 
 public interface OutgoingMessageFactory {
 
-    void create(String systemId, String tenantId, String location, StreamObserver<CloudToMinionMessage> streamObserver);
+    void create(String systemId, String tenantId, String location, SpanContext streamSpan, StreamObserver<CloudToMinionMessage> streamObserver);
 
 }
