@@ -409,18 +409,18 @@ if is_devmode_enabled(uiDevmodeKey):
         'VITE_KEYCLOAK_URL': 'https://onmshs.local:1443/auth'
     }
     local_resource(
-        'vuejs-ui:dev',
+        'ui:dev',
         cmd='yarn install',
         dir='ui',
         serve_cmd='yarn run dev',
         serve_dir='ui',
         serve_env=serve_env,
-        labels=['vuejs-app'],
+        labels=['ui'],
         links=[
-            link('http://onmshs.local:8080/', 'Web UI (dev server)')
+            link('http://onmshs.local:8080/', 'Web UI (yarn run dev)')
         ]
     )
-    create_devmode_toggle_btn(uiDevmodeKey, resource='vuejs-ui:dev')
+    create_devmode_toggle_btn(uiDevmodeKey, resource='ui:dev')
 
 #### UI - Production container ####
 docker_build(
@@ -431,23 +431,23 @@ docker_build(
 
 k8s_resource(
     'opennms-ui',
-    new_name='vuejs-ui:prod',
-    labels=['vuejs-app'],
+    new_name='ui:prod',
+    labels=['ui'],
     trigger_mode=TRIGGER_MODE_MANUAL if is_devmode_enabled(uiDevmodeKey) else TRIGGER_MODE_AUTO,
     links=[
         link('https://onmshs.local:1443/', 'Web UI (prod container)')
     ],
 )
 
-create_devmode_toggle_btn(uiDevmodeKey, resource='vuejs-ui:prod')
+create_devmode_toggle_btn(uiDevmodeKey, resource='ui:prod')
 
 #### BFF ####
 jib_project(
-    'vuejs-bff',
+    'rest-server',
     'opennms/lokahi-rest-server',
     'rest-server',
     'opennms-rest-server',
-    labels=['vuejs-app'],
+    labels=['rest-server'],
     port_forwards=['13080:9090', '13050:5005'],
     links=[
       link('https://onmshs.local:1443/api/graphql', 'GraphQL Endpoint'),
