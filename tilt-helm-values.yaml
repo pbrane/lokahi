@@ -163,6 +163,7 @@ Grafana:
     Requests:
       Cpu: 100m
       Memory: 100Mi
+  autoAssignOrgRole: Admin  # https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#auto_assign_org_role
 Prometheus:
   Server:
     Resources:

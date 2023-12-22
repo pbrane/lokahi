@@ -302,6 +302,9 @@ k8s_resource(
     'tempo',
     labels=['0_useful'],
     port_forwards=port_forward(3100, name='Tempo HTTP API'), # https://grafana.com/docs/tempo/latest/api_docs/
+    links=[
+        link('https://onmshs.local:1443/grafana/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22tempo%22%7D,%22queryType%22:%22traceql%22,%22limit%22:20,%22query%22:%22%7B%7D%22%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D', 'Grafana - Explore Tempo'),
+    ]
 )
 
 # Deployment #
@@ -608,6 +611,9 @@ k8s_resource(
     'cortex',
     labels='z_dependencies',
     port_forwards=['19000:9000'],
+    links=[
+        link('https://onmshs.local:1443/grafana/explore?orgId=1&left=%7B%22datasource%22:%22EdAkOOOSk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%22,%22range%22:true,%22instant%22:true,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22EdAkOOOSk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D', 'Grafana - Explore Metrics'),
+    ]
 )
 
 ### Citus/Postgres ###
@@ -654,6 +660,9 @@ k8s_resource(
     'prometheus',
     labels='z_dependencies',
     port_forwards=['32090:9090'],
+    links=[
+        link('https://onmshs.local:1443/grafana/explore?orgId=1&left=%7B%22datasource%22:%22zK0kOddIk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%22,%22range%22:true,%22instant%22:true,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22zK0kOddIk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D', 'Grafana - Explore Internal Metrics'),
+    ]
 )
 
 ### Others ###
