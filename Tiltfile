@@ -619,7 +619,7 @@ k8s_resource(
 ### Citus/Postgres ###
 k8s_resource(
     'citus',
-    labels='citus',
+    labels='z_dependencies',
     port_forwards=['25054:5432'],
     resource_deps=['cert-manager'],
     links=[
@@ -629,22 +629,18 @@ k8s_resource(
 
 k8s_resource(
     'citus-worker',
-    labels='citus',
+    labels='z_dependencies',
     resource_deps=['citus'],
 )
 
 k8s_resource(
     'citus',
     objects=['citus-issuer:issuer', 'citus-cert:certificate', 'citus-conf:configmap', 'postgres:secret', 'citus-initial-sql:secret'],
-    labels='citus',
-    resource_deps=['cert-manager'],
 )
 
 k8s_resource(
     'citus-worker',
     objects=['citus-worker-conf:configmap'],
-    labels='citus',
-    resource_deps=['cert-manager'],
 )
 
 ### Kafka ###
