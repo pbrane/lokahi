@@ -22,7 +22,7 @@ Citus:
 OpenNMS:
   global:
     openTelemetry:
-      otlpTracesEndpoint: "http://jaeger-collector:4317"
+      otlpTracesEndpoint: "http://tempo:4317"
   Alert:
     Resources:
       Limits:

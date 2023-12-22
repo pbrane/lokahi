@@ -46,7 +46,7 @@ devmode_list = cfg.get('devmode', [])
 
 secret_settings(disable_scrub=True)  ## TODO: update secret values so we can reenable scrub
 load('ext://uibutton', 'cmd_button', 'location')
-load('ext://helm_remote', 'helm_remote') # for simple charts like jaeger and cert-manager
+load('ext://helm_remote', 'helm_remote') # for simple charts like tempo and cert-manager
 load('ext://helm_resource', 'helm_resource', 'helm_repo') # for charts that we want to have resources for
 
 cmd_button(name='reload-certificates',
@@ -291,12 +291,17 @@ ssl_check('onmshs.local', 1443, tries=300, deps=certs, resource_deps=['ingress-n
 
 
 # Deployment #
-# https://github.com/jaegertracing/helm-charts/tree/main/charts/jaeger
-helm_remote('jaeger', version='0.71.0', repo_url='https://jaegertracing.github.io/helm-charts', values='tilt-jaeger-values.yaml')
+# https://github.com/grafana/helm-charts/tree/main/charts/tempo
+helm_remote('tempo', version='1.7.1', repo_url='https://grafana.github.io/helm-charts',
+    set=[
+        'tempo.metricsGenerator.enabled=True',
+        'tempo.metricsGenerator.remoteWriteUrl=http://prometheus:9090/prometheus/api/v1/write',
+    ]
+)
 k8s_resource(
-    'jaeger',
+    'tempo',
     labels=['0_useful'],
-    port_forwards=port_forward(16686, name='Jaeger UI'),
+    port_forwards=port_forward(3100, name='Tempo HTTP API'), # https://grafana.com/docs/tempo/latest/api_docs/
 )
 
 # Deployment #
