@@ -353,7 +353,7 @@ kafka:
   replicas: 1
   port: 9092
   controllerPort: 9093
-  LocalPort: 59092
+  localPort: 59092
   resources:
     limits:
       cpu: "2"

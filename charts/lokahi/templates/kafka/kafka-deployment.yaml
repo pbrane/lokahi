@@ -58,13 +58,13 @@ spec:
             - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
               value: "CONTROLLER"
             - name: KAFKA_CFG_LISTENERS
-              value: "CLIENT://:{{ .Values.kafka.port }},CONTROLLER://:{{ .Values.kafka.ControllerPort }},LOCALCLIENT://:{{ .Values.kafka.LocalPort }}"
+              value: "CLIENT://:{{ .Values.kafka.port }},CONTROLLER://:{{ .Values.kafka.controllerPort }},LOCALCLIENT://:{{ .Values.kafka.localPort }}"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: "CLIENT://{{ .Values.kafka.serviceName }}:{{ .Values.kafka.port }},LOCALCLIENT://localhost:{{ .Values.kafka.LocalPort }}"
+              value: "CLIENT://{{ .Values.kafka.serviceName }}:{{ .Values.kafka.port }},LOCALCLIENT://localhost:{{ .Values.kafka.localPort }}"
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
               value: "CLIENT"
             - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
-              value: "1@localhost:{{ .Values.kafka.ControllerPort }}"
+              value: "1@localhost:{{ .Values.kafka.controllerPort }}"
           resources:
             limits:
               cpu: "{{ .Values.kafka.resources.limits.cpu }}"
