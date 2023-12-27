@@ -281,13 +281,30 @@ def get_toggled_devmode_list(resource_name, original_list):
 def is_devmode_enabled(devmode_key):
     return devmode_key in devmode_list;
 
+
+# Setup certificates #
 load_certificate_authority('root-ca-certificate', 'opennms-ca', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 generate_certificate('opennms-minion-gateway-certificate', 'minion.onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 generate_certificate('opennms-ui-certificate', 'onmshs.local', 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt')
 load_certificate_authority('client-root-ca-certificate', 'client-ca', 'target/tmp/client-ca.key', 'target/tmp/client-ca.crt')
-ssl_check('onmshs.local', 1443, check_http=False) # Skip HTTP checks since the ingress isn't up yet
-certs = [ 'target/tmp/server-ca.key', 'target/tmp/server-ca.crt', 'target/tmp/client-ca.key', 'target/tmp/client-ca.crt' ]
-ssl_check('onmshs.local', 1443, tries=300, deps=certs, resource_deps=['ingress-nginx']) # We'll do the HTTP checks later once ingress-nginx is up
+
+# Do a quick sanity check on certificates, but skip HTTP checks for now since the ingress, etc. aren't up yet
+ssl_check('onmshs.local', 1443, check_http=False)
+
+# We wait to do the full HTTP checks once ingress-nginx, UI, and minion-gateway are up
+ssl_check('onmshs.local', 1443, tries=300,
+    deps=[
+        'target/tmp/server-ca.key',
+        'target/tmp/server-ca.crt',
+        'target/tmp/client-ca.key',
+        'target/tmp/client-ca.crt',
+    ],
+    resource_deps=[
+        'ingress-nginx',
+        'ui:prod',
+        'minion-gateway',
+    ]
+)
 
 
 # Deployment #
