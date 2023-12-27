@@ -78,7 +78,7 @@ spec:
               value: kubernetes
             - name: KC_CACHE
               value: ispn
-            - name: KC_HOSTNAME_URL # Required in prod-mod to terminate tls at ingress
+            - name: KC_HOSTNAME_URL # Required in prod-mod to terminate TLS at Ingress
             {{- if .Values.keycloak.hostnamePort }}
               value: "{{ .Values.protocol }}://{{ .Values.hostname }}:{{ .Values.keycloak.hostnamePort }}{{ .Values.keycloak.path }}"
             {{- else }}
@@ -117,7 +117,7 @@ spec:
             - name: KC_HTTP_RELATIVE_PATH
               value: "{{ .Values.keycloak.path }}"
             - name: KC_PROXY
-              value: edge # Required in prod-mod to terminate tls at ingress
+              value: edge # Required in prod-mod to terminate TLS at Ingress
             - name: jgroups.dns.query
               value: "{{ .Values.keycloak.serviceName }}.{{ .Release.Namespace }}"
             {{- if and .Values.tls.enabled .Values.keycloak.tlsSecretName }}

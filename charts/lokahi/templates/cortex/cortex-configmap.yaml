@@ -8,7 +8,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   cortex.yml: |
-    # Configuration for running cortex in single-process mode.
+    # Configuration for running Cortex in single-process mode.
     # This should not be used in production.  It is only for getting started
     # and development.
         
