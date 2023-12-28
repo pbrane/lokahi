@@ -654,7 +654,7 @@ k8s_resource(
 )
 k8s_resource(
     'grafana',
-    objects=['grafana:secret'],
+    objects=['grafana:secret', 'grafana-dashboards:configmap'],
 )
 
 ### Cortex ###
