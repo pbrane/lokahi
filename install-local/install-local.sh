@@ -203,6 +203,7 @@ install_helm_chart () {
   if ! time helm upgrade -i lokahi ./../charts/lokahi \
       -f ./tmp/install-local-lokahi-values.yaml \
       --namespace $NAMESPACE \
+      --create-namespace \
       --set OpenNMS.global.image.repository=${IMAGE_PREFIX} \
       --set OpenNMS.global.image.tag=${IMAGE_TAG} \
       --wait --timeout "${TIMEOUT}"; then
@@ -257,8 +258,7 @@ if [ $CONTEXT == "local" ]; then
   echo
   echo ________________Installing Lokahi________________
   echo
-  install_nginx
-  time helm upgrade -i lokahi ./../charts/lokahi -f ./tmp/install-local-lokahi-values.yaml --namespace $NAMESPACE --wait --timeout "${TIMEOUT}"
+  install_helm_chart
 
   cluster_ready_check
 
@@ -304,8 +304,7 @@ elif [ $CONTEXT == "existing-k8s" ]; then
   echo
   echo ________________Installing Lokahi________________
   echo
-  install_nginx
-  time helm upgrade -i lokahi ./../charts/lokahi -f ./tmp/install-local-lokahi-values.yaml --namespace $NAMESPACE --create-namespace --wait --timeout "${TIMEOUT}"
+  install_helm_chart
 
   cluster_ready_check
 

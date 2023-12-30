@@ -1,8 +1,5 @@
 hostname: onmshs
 OpenNMS:
-  global:
-    image:
-      tag: local
   api:
     resources:
       limits:
