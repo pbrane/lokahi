@@ -4,110 +4,110 @@ OpenNMS:
     image:
       tag: local
   core:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   API:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   MetricsProcessor:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   UI:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   minion:
-    Resources:
-      Limits:
-        Cpu: '0'
-        Memory: '0'
-      Requests:
-        Cpu: '0'
-        Memory: '0'
+    resources:
+      limits:
+        cpu: '0'
+        memory: '0'
+      requests:
+        cpu: '0'
+        memory: '0'
     enabled: true
     addDefaultLocation: true
   minionGateway:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
     ingressAnnotations:
       nginx.ingress.kubernetes.io/auth-tls-secret: $NAMESPACE/client-root-ca-certificate
       nginx.ingress.kubernetes.io/auth-url: "http://opennms-minion-certificate-verifier.$NAMESPACE.svc.cluster.local:8080/certificate/debug"
       nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: true
   minionCertificateVerifier:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   minionCertificateManager:
     caSecretName: root-ca-certificate
     mtlsSecretName: client-root-ca-certificate
     enabled: true
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   inventory:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   alert:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   notification: 
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   events:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
 keycloak:
   adminUsername: admin
   adminPassword: admin

@@ -1,78 +1,78 @@
 Host: onmshs
 OpenNMS:
   API:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   MetricsProcessor:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   UI:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   minion:
     enabled: true
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   minionGateway:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   inventory:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   Alarm:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   notification: 
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
   events:
-    Resources:
-      Limits:
-        Cpu: "0"
-        Memory: "0"
-      Requests:
-        Cpu: "0"
-        Memory: "0"
+    resources:
+      limits:
+        cpu: "0"
+        memory: "0"
+      requests:
+        cpu: "0"
+        memory: "0"
 keycloak:
   adminUsername: admin
   adminPassword: admin
