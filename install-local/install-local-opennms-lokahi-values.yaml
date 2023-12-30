@@ -1,4 +1,4 @@
-Host: onmshs
+hostname: onmshs
 OpenNMS:
   api:
     resources:

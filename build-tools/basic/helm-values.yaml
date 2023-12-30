@@ -1,7 +1,7 @@
 Namespace: tilt-instance
-Host: onmshs.local
+hostname: onmshs.local
 HostIp: 127.0.0.1
-Port: 1443
+port: 1443
 protocol: https
 tls:
   enabled: True
