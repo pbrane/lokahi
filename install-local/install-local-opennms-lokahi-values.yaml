@@ -1,6 +1,6 @@
 Host: onmshs
 OpenNMS:
-  API:
+  api:
     resources:
       limits:
         cpu: "0"
@@ -8,7 +8,7 @@ OpenNMS:
       requests:
         cpu: "0"
         memory: "0"
-  MetricsProcessor:
+  metricsprocessor:
     resources:
       limits:
         cpu: "0"
@@ -16,7 +16,7 @@ OpenNMS:
       requests:
         cpu: "0"
         memory: "0"
-  UI:
+  ui:
     resources:
       limits:
         cpu: "0"
