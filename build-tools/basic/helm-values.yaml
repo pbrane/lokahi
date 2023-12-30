@@ -117,21 +117,12 @@ grafana:
       cpu: 100m
       memory: 100Mi
 prometheus:
-  Server:
-    resources:
-      limits:
-        cpu: "1"
-        memory: 512Mi
-      requests:
-        cpu: 100m
-        memory: 100Mi
-  pushGateway:
-    resources:
-      limits:
-        cpu: "1"
-        memory: 512Mi
-      requests:
-        cpu: 100m
-        memory: 100Mi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
 kafka:
   LocalPort: 24092
