@@ -80,8 +80,6 @@ grafana:
   enabled: true
 ingress:
   enabled: true
-Postgres:
-  Pvc: false
 mailServer:
   enabled: true
 citus:
