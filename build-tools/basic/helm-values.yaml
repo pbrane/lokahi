@@ -125,4 +125,4 @@ prometheus:
       cpu: 100m
       memory: 100Mi
 kafka:
-  LocalPort: 24092
+  localPort: 24092
