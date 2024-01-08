@@ -131,6 +131,8 @@
                         <feature>flows</feature>
                     </bootFeatures>
                     <libraries>
+                        <library>mvn:net.java.dev.jna/jna/${jna.version};type:=boot;export:=false</library>
+                        <library>mvn:net.java.dev.jna/jna-platform/${jna.version};type:=boot;export:=false</library>
                     </libraries>
                     <framework />
                 </configuration>
