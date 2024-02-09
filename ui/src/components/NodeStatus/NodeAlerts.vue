@@ -49,9 +49,8 @@ const alertData = ref<any[]>([
   { id: 1, type: 'Custom Severity 90', severity: 'Critical', date: '2/28/2023', time: '04:15.10 am est' },
   { id: 2, type: 'Custom Severity 90', severity: 'Critical', date: '2/28/2023', time: '04:15.10 am est' },
   { id: 3, type: 'Custom Severity 90', severity: 'Critical', date: '2/28/2023', time: '04:15.10 am est' },
-  { id: 4, type: 'Custom Severity 80', severity: 'Major', date: '2/28/2023', time: '04:15.10 am est' },
+  { id: 4, type: 'Custom Severity 80', severity: 'Major', date: '2/28/2023', time: '04:15.10 am est' }
 ])
-
 </script>
 
 <style lang="scss" scoped>
