@@ -97,7 +97,7 @@ public class TestContainerRunnerClassRule extends ExternalResource {
 
     private void startPostgresqlContainer() {
         postgreSQLContainer
-                .withDatabaseName("event")
+                .withDatabaseName("events")
                 .withUsername("ignite")
                 .withPassword("ignite")
                 .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("POSTGRES"))
