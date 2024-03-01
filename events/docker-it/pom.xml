@@ -30,16 +30,38 @@
 
     <artifactId>events-docker-it</artifactId>
 
-    <name>OpenNMS Lokahi :: Events:: Docker IT</name>
+    <name>OpenNMS Lokahi :: Events :: Docker IT</name>
     <description>Docker build-time Integration Tests for the OpenNMS Events.
 
         Test Containers are used to spin up containers and exercise the public endpoints.</description>
+    <properties>
+        <application.docker.image.name>opennms/lokahi-events</application.docker.image.name>
+    </properties>
     <dependencies>
         <dependency>
-            <groupId>org.opennms.lokahi.shared</groupId>
-            <artifactId>ipc-grpc-contract</artifactId>
+            <groupId>org.opennms.lokahi.events</groupId>
+            <artifactId>persistence</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.lokahi.events</groupId>
+            <artifactId>traps</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.lokahi.events</groupId>
+            <artifactId>consumer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.lokahi.events</groupId>
+            <artifactId>grpc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.lokahi.shared</groupId>
+            <artifactId>grpc-common-constants</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -60,6 +82,11 @@
         </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
             <artifactId>cucumber-junit</artifactId>
             <scope>test</scope>
         </dependency>
@@ -68,7 +95,6 @@
             <artifactId>cucumber-picocontainer</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
@@ -108,6 +134,11 @@
             <artifactId>jna</artifactId>
             <version>5.12.1</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite-api</artifactId>
+            <version>1.9.1</version>
         </dependency>
 
     </dependencies>

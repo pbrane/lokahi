@@ -21,11 +21,33 @@
  */
 package org.opennms.horizon.events.stepdefs;
 
+import io.cucumber.java.en.Given;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opennms.horizon.events.EventsBackgroundHelper;
+
+import java.util.List;
+
 
 @RequiredArgsConstructor
 @Slf4j
 public class EventTestSteps {
+    private List<org.opennms.horizon.events.proto.Event> events;
+    private EventsBackgroundHelper backgroundHelper;
 
+    public EventTestSteps(EventsBackgroundHelper backgroundHelper) {
+        this.backgroundHelper = backgroundHelper;
+    }
+    @Given("[Event] External GRPC Port in system property {string}")
+    public void externalGRPCPortInSystemProperty(String propertyName) {
+        backgroundHelper.externalGRPCPortInSystemProperty(propertyName);
+    }
+    @Given("[Event] Grpc TenantId {string}")
+    public void grpcTenantId(String tenantId) {
+        backgroundHelper.grpcTenantId(tenantId);
+    }
+    @Given("[Event] Create Grpc Connection for Events")
+    public void createGrpcConnectionForEvents() {
+        backgroundHelper.createGrpcConnectionForEvents();
+    }
 }
