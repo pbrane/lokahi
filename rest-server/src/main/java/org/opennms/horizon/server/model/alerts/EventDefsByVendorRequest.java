@@ -23,17 +23,10 @@ package org.opennms.horizon.server.model.alerts;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.opennms.horizon.alerts.proto.EventType;
 
 @Getter
 @Setter
-public class AlertEventDefinition {
-    private Long id;
-    private String uei;
-    private String name;
-    private String reductionKey;
-    private String clearKey;
+public class EventDefsByVendorRequest {
     private EventType eventType;
     private String vendor;
-    private String enterpriseId;
 }
