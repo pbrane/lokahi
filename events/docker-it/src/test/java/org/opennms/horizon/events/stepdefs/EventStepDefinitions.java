@@ -31,11 +31,11 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
-public class EventTestSteps {
+public class EventStepDefinitions {
     private List<org.opennms.horizon.events.proto.Event> events;
     private EventsBackgroundHelper backgroundHelper;
 
-    public EventTestSteps(EventsBackgroundHelper backgroundHelper) {
+    public EventStepDefinitions(EventsBackgroundHelper backgroundHelper) {
         this.backgroundHelper = backgroundHelper;
     }
     @Given("[Event] External GRPC Port in system property {string}")
