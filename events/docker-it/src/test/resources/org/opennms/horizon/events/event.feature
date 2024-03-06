@@ -5,3 +5,6 @@ Feature: Event Service Basic Functionality
     Given [Event] External GRPC Port in system property "application-external-grpc-port"
     Given [Event] Grpc TenantId "event-tenant-stream"
     Given [Event] Create Grpc Connection for Events
+
+    Scenario: Trap being sent
+      Given Trap consumer has a record

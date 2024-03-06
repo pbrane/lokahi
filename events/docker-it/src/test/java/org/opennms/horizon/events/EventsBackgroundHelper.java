@@ -28,6 +28,7 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
 import lombok.Getter;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
+import org.opennms.horizon.events.traps.TrapsConsumer;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,7 @@ public class EventsBackgroundHelper {
     private static final String LOCALHOST = "localhost";
     private String tenantId;
     private EventServiceGrpc.EventServiceBlockingStub eventServiceBlockingStub;
+    private TrapsConsumer trapsConsumer;
 
     private Integer externalGrpcPort;
     private final Map<String, String> grpcHeaders = new TreeMap<>();
@@ -77,5 +79,9 @@ public class EventsBackgroundHelper {
         this.tenantId = tenantId;
         grpcHeaders.put(GrpcConstants.TENANT_ID_KEY, tenantId);
         LOG.info("Using tenantId={}", tenantId);
+    }
+
+    public void setTrapConsumerForRecords() {
+        trapsConsumer = new TrapsConsumer();
     }
 }

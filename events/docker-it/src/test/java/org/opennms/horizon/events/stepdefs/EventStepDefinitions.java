@@ -32,7 +32,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class EventStepDefinitions {
-    private List<org.opennms.horizon.events.proto.Event> events;
     private EventsBackgroundHelper backgroundHelper;
 
     public EventStepDefinitions(EventsBackgroundHelper backgroundHelper) {
@@ -49,5 +48,10 @@ public class EventStepDefinitions {
     @Given("[Event] Create Grpc Connection for Events")
     public void createGrpcConnectionForEvents() {
         backgroundHelper.createGrpcConnectionForEvents();
+    }
+
+    @Given("Trap consumer has a record")
+    public void trapConsumerHasARecord() {
+        backgroundHelper.setTrapConsumerForRecords();
     }
 }
