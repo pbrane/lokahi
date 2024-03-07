@@ -37,9 +37,11 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.dataloader.DataLoader;
 import org.opennms.horizon.server.config.DataLoaderFactory;
+import org.opennms.horizon.server.mapper.IpInterfaceMapper;
 import org.opennms.horizon.server.mapper.NodeMapper;
 import org.opennms.horizon.server.model.TimeRangeUnit;
 import org.opennms.horizon.server.model.inventory.DownloadFormat;
+import org.opennms.horizon.server.model.inventory.IpInterface;
 import org.opennms.horizon.server.model.inventory.MonitoringLocation;
 import org.opennms.horizon.server.model.inventory.Node;
 import org.opennms.horizon.server.model.inventory.NodeCreate;
@@ -61,6 +63,7 @@ public class GrpcNodeService {
 
     private final InventoryClient client;
     private final NodeMapper mapper;
+    private final IpInterfaceMapper ipInterfaceMapper;
     private final ServerHeaderUtil headerUtil;
     private final NodeStatusService nodeStatusService;
 
@@ -215,5 +218,17 @@ public class GrpcNodeService {
             return new TopNResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
         }
         throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
+    }
+
+    @GraphQLQuery(name = "listIpInterfacesByNodeSearch")
+    public Flux<IpInterface> searchIpInterfacesByNodeAndSearchTerm(
+            @GraphQLEnvironment ResolutionEnvironment env,
+            @GraphQLArgument(name = "nodeId") Long nodeId,
+            @GraphQLArgument(name = "searchTerm") String searchTerm) {
+
+        return Flux.fromIterable(
+                client.searchIpInterfacesByNodeAndSearchTerm(nodeId, searchTerm, headerUtil.getAuthHeader(env)).stream()
+                        .map(ipInterfaceMapper::protoToIpInterface)
+                        .toList());
     }
 }
