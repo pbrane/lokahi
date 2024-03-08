@@ -34,6 +34,7 @@ import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryCreateDTO;
 import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryDTO;
 import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryServiceGrpc;
 import org.opennms.horizon.inventory.dto.ActiveDiscoveryDTO;
+import org.opennms.horizon.inventory.dto.ActiveDiscoveryList;
 import org.opennms.horizon.inventory.dto.ActiveDiscoveryServiceGrpc;
 import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryCreateDTO;
 import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryDTO;
@@ -235,6 +236,14 @@ public class InventoryClient {
         return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
                 .getNodeById(Int64Value.of(id));
+    }
+
+    public ActiveDiscoveryList getDiscoveriesByNode(long id, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .getDiscoveriesByNode(Int64Value.of(id));
     }
 
     public List<MonitoringLocationDTO> listLocations(String accessToken) {

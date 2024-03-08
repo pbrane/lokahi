@@ -66,6 +66,7 @@ import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
 import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.mapper.IpInterfaceMapper;
 import org.opennms.horizon.inventory.mapper.NodeMapper;
+import org.opennms.horizon.inventory.mapper.discovery.ActiveDiscoveryMapper;
 import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.Node;
@@ -74,6 +75,7 @@ import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
 import org.opennms.horizon.inventory.repository.TagRepository;
+import org.opennms.horizon.inventory.repository.discovery.active.ActiveDiscoveryRepository;
 import org.opennms.horizon.inventory.service.taskset.CollectorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
@@ -89,10 +91,12 @@ public class NodeServiceTest {
     private NodeRepository mockNodeRepository;
     private MonitoringLocationRepository mockMonitoringLocationRepository;
     private IpInterfaceRepository mockIpInterfaceRepository;
+    private ActiveDiscoveryRepository activeDiscoveryRepository;
     private ConfigUpdateService mockConfigUpdateService;
     private TagService tagService;
     private TagRepository tagRepository;
     private TagPublisher mockTagPublisher;
+    private ActiveDiscoveryMapper activeDiscoveryMapper;
 
     @BeforeEach
     void prepareTest() {
@@ -102,16 +106,18 @@ public class NodeServiceTest {
         mockNodeRepository = mock(NodeRepository.class);
         mockMonitoringLocationRepository = mock(MonitoringLocationRepository.class);
         mockIpInterfaceRepository = mock(IpInterfaceRepository.class);
+        activeDiscoveryRepository = mock(ActiveDiscoveryRepository.class);
         mockConfigUpdateService = mock(ConfigUpdateService.class);
         tagService = mock(TagService.class);
         tagRepository = mock(TagRepository.class);
         mockTagPublisher = mock(TagPublisher.class);
+        activeDiscoveryMapper = mock(ActiveDiscoveryMapper.class);
 
         nodeService = new NodeService(
                 mockNodeRepository,
                 mockMonitoringLocationRepository,
                 mockIpInterfaceRepository,
-                mockConfigUpdateService,
+                activeDiscoveryRepository,
                 mock(CollectorTaskSetService.class),
                 mock(MonitorTaskSetService.class),
                 mock(ScannerTaskSetService.class),
@@ -120,7 +126,8 @@ public class NodeServiceTest {
                 nodeMapper,
                 mockTagPublisher,
                 tagRepository,
-                ipInterfaceMapper);
+                ipInterfaceMapper,
+                activeDiscoveryMapper);
 
         Node node = new Node();
         doReturn(node).when(mockNodeRepository).save(any(node.getClass()));
@@ -397,11 +404,12 @@ public class NodeServiceTest {
                 NodeInfoResult.newBuilder().setSystemName("x-system-name-x").build();
         NodeMapper nodeMapper = mock(NodeMapper.class);
         IpInterfaceMapper ipInterfaceMapper = mock(IpInterfaceMapper.class);
+        activeDiscoveryMapper = mock(ActiveDiscoveryMapper.class);
         nodeService = new NodeService(
                 mockNodeRepository,
                 mockMonitoringLocationRepository,
                 mockIpInterfaceRepository,
-                mockConfigUpdateService,
+                activeDiscoveryRepository,
                 mock(CollectorTaskSetService.class),
                 mock(MonitorTaskSetService.class),
                 mock(ScannerTaskSetService.class),
@@ -410,7 +418,8 @@ public class NodeServiceTest {
                 nodeMapper,
                 mockTagPublisher,
                 tagRepository,
-                ipInterfaceMapper);
+                ipInterfaceMapper,
+                activeDiscoveryMapper);
 
         //
         // Execute
@@ -434,11 +443,12 @@ public class NodeServiceTest {
                 NodeInfoResult.newBuilder().setSystemName("").build();
         NodeMapper nodeMapper = mock(NodeMapper.class);
         IpInterfaceMapper ipInterfaceMapper = mock(IpInterfaceMapper.class);
+        activeDiscoveryMapper = mock(ActiveDiscoveryMapper.class);
         nodeService = new NodeService(
                 mockNodeRepository,
                 mockMonitoringLocationRepository,
                 mockIpInterfaceRepository,
-                mockConfigUpdateService,
+                activeDiscoveryRepository,
                 mock(CollectorTaskSetService.class),
                 mock(MonitorTaskSetService.class),
                 mock(ScannerTaskSetService.class),
@@ -447,7 +457,8 @@ public class NodeServiceTest {
                 nodeMapper,
                 mockTagPublisher,
                 tagRepository,
-                ipInterfaceMapper);
+                ipInterfaceMapper,
+                activeDiscoveryMapper);
 
         //
         // Execute
@@ -472,11 +483,12 @@ public class NodeServiceTest {
                 NodeInfoResult.newBuilder().setSystemName("x-system-name-x").build();
         NodeMapper nodeMapper = mock(NodeMapper.class);
         IpInterfaceMapper ipInterfaceMapper = mock(IpInterfaceMapper.class);
+        activeDiscoveryMapper = mock(ActiveDiscoveryMapper.class);
         nodeService = new NodeService(
                 mockNodeRepository,
                 mockMonitoringLocationRepository,
                 mockIpInterfaceRepository,
-                mockConfigUpdateService,
+                activeDiscoveryRepository,
                 mock(CollectorTaskSetService.class),
                 mock(MonitorTaskSetService.class),
                 mock(ScannerTaskSetService.class),
@@ -485,7 +497,8 @@ public class NodeServiceTest {
                 nodeMapper,
                 mockTagPublisher,
                 tagRepository,
-                ipInterfaceMapper);
+                ipInterfaceMapper,
+                activeDiscoveryMapper);
 
         //
         // Execute
@@ -503,11 +516,12 @@ public class NodeServiceTest {
     public void testUpdateMonitoredStatus() {
         NodeMapper nodeMapper = mock(NodeMapper.class);
         IpInterfaceMapper ipInterfaceMapper = mock(IpInterfaceMapper.class);
+        activeDiscoveryMapper = mock(ActiveDiscoveryMapper.class);
         nodeService = new NodeService(
                 mockNodeRepository,
                 mockMonitoringLocationRepository,
                 mockIpInterfaceRepository,
-                mockConfigUpdateService,
+                activeDiscoveryRepository,
                 mock(CollectorTaskSetService.class),
                 mock(MonitorTaskSetService.class),
                 mock(ScannerTaskSetService.class),
@@ -516,7 +530,8 @@ public class NodeServiceTest {
                 nodeMapper,
                 mockTagPublisher,
                 tagRepository,
-                ipInterfaceMapper);
+                ipInterfaceMapper,
+                activeDiscoveryMapper);
 
         final var testNode = new Node();
         testNode.setTenantId("onms");

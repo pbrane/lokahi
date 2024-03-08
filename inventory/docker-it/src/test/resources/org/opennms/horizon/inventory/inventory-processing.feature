@@ -8,6 +8,7 @@ Feature: Inventory Processing
     Given Create Grpc Connection for Inventory
     Given [Common] Create "MINION" Location
     Given [Common] Create "MINION-2" Location
+    Given [Common] Create "MINION-D" Location
 
   Scenario: Send an Heartbeat Message to Inventory and verify Minion and location are added
     Given Minion at location named "MINION" with system ID "MINION-TEST-1"
@@ -81,5 +82,10 @@ Feature: Inventory Processing
     Then verify node has IpInterface with ipAddress "192.168.1.48"
 
 
-
-
+  Scenario: Validate Discovery Scan processing adds discovery id to node
+    Given Minion at location named "MINION-D" with system ID "MINION-TEST-2"
+    Given New Active Discovery "stream-snmp" with IpAddress "192.168.1.44" and SNMP community as "stream-snmp" at location named "MINION-D"
+    Then create Active Discovery and validate it's created active discovery with given details.
+    Given Discovery Scan results with IpAddress "192.168.1.44"
+    Then Send discovery scan results to kafka topic "task-set.results" with location "MINION-D"
+    Then verify that node is created for "192.168.1.44" and location named "MINION-D" with discoveryId

@@ -41,6 +41,7 @@ import org.opennms.horizon.server.config.DataLoaderFactory;
 import org.opennms.horizon.server.mapper.IpInterfaceMapper;
 import org.opennms.horizon.server.mapper.NodeMapper;
 import org.opennms.horizon.server.mapper.SnmpInterfaceMapper;
+import org.opennms.horizon.server.mapper.discovery.ActiveDiscoveryMapper;
 import org.opennms.horizon.server.model.TimeRangeUnit;
 import org.opennms.horizon.server.model.inventory.DownloadFormat;
 import org.opennms.horizon.server.model.inventory.IpInterface;
@@ -53,6 +54,7 @@ import org.opennms.horizon.server.model.inventory.SnmpInterface;
 import org.opennms.horizon.server.model.inventory.SnmpInterfaceResponse;
 import org.opennms.horizon.server.model.inventory.TopNNode;
 import org.opennms.horizon.server.model.inventory.TopNResponse;
+import org.opennms.horizon.server.model.inventory.discovery.active.ActiveDiscovery;
 import org.opennms.horizon.server.model.status.NodeStatus;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
@@ -72,6 +74,7 @@ public class GrpcNodeService {
     private final InventoryClient client;
     private final NodeMapper mapper;
     private final IpInterfaceMapper ipInterfaceMapper;
+    private final ActiveDiscoveryMapper activeDiscoveryMapper;
     private final ServerHeaderUtil headerUtil;
     private final NodeStatusService nodeStatusService;
     private final SnmpInterfaceMapper snmpInterfaceMapper;
@@ -115,6 +118,15 @@ public class GrpcNodeService {
     public Mono<Node> findNodeById(
             @GraphQLArgument(name = "id") Long id, @GraphQLEnvironment ResolutionEnvironment env) {
         return Mono.just(mapper.protoToNode(client.getNodeById(id, headerUtil.getAuthHeader(env))));
+    }
+
+    @GraphQLQuery(name = "getDiscoveriesByNode")
+    public Flux<ActiveDiscovery> getDiscoveriesByNode(
+            @GraphQLArgument(name = "id") Long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(
+                client.getDiscoveriesByNode(id, headerUtil.getAuthHeader(env)).getActiveDiscoveriesList().stream()
+                        .map(activeDiscoveryMapper::dtoToActiveDiscovery)
+                        .toList());
     }
 
     @GraphQLMutation
