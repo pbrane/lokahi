@@ -27,17 +27,15 @@ import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
-import lombok.Getter;
-import org.opennms.horizon.events.proto.EventServiceGrpc;
-import org.opennms.horizon.events.traps.TrapsConsumer;
-import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import lombok.Getter;
+import org.opennms.horizon.events.proto.EventServiceGrpc;
+import org.opennms.horizon.shared.constants.GrpcConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Getter
 public class EventsBackgroundHelper {
@@ -62,25 +60,29 @@ public class EventsBackgroundHelper {
         ManagedChannel managedChannel = channelBuilder.usePlaintext().build();
         managedChannel.getState(true);
         eventServiceBlockingStub = EventServiceGrpc.newBlockingStub(managedChannel)
-            .withInterceptors(prepareGrpcHeaderInterceptor())
-            .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
+                .withInterceptors(prepareGrpcHeaderInterceptor())
+                .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
     }
+
     private ClientInterceptor prepareGrpcHeaderInterceptor() {
         return MetadataUtils.newAttachHeadersInterceptor(prepareGrpcHeaders());
     }
+
     private Metadata prepareGrpcHeaders() {
         Metadata result = new Metadata();
         result.put(GrpcConstants.AUTHORIZATION_BYPASS_KEY, String.valueOf(true));
         result.put(GrpcConstants.TENANT_ID_BYPASS_KEY, tenantId);
         return result;
     }
+
     public void grpcTenantId(String tenantId) {
         Objects.requireNonNull(tenantId);
         this.tenantId = tenantId;
         grpcHeaders.put(GrpcConstants.TENANT_ID_KEY, tenantId);
         LOG.info("Using tenantId={}", tenantId);
     }
-    public int getEventCount(){
+
+    public int getEventCount() {
         return eventServiceBlockingStub.listEvents(Empty.newBuilder().build()).getEventsCount();
     }
 }
