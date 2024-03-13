@@ -22,11 +22,15 @@
 package org.opennms.horizon.events.stepdefs;
 
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.events.EventsBackgroundHelper;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 @RequiredArgsConstructor
@@ -50,8 +54,12 @@ public class EventStepDefinitions {
         backgroundHelper.createGrpcConnectionForEvents();
     }
 
-    @Given("Trap consumer has a record")
-    public void trapConsumerHasARecord() {
-        backgroundHelper.setTrapConsumerForRecords();
+    @Then("verify there are {int} events")
+    public void verifyThereAreEvents(int arg0) {
+        if (arg0 < 0) {
+            fail("Events can't be in negative");
+        } else {
+            assertEquals(arg0, backgroundHelper.getEventCount());
+        }
     }
 }

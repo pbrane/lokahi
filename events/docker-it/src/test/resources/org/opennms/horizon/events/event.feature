@@ -6,5 +6,5 @@ Feature: Event Service Basic Functionality
     Given [Event] Grpc TenantId "event-tenant-stream"
     Given [Event] Create Grpc Connection for Events
 
-    Scenario: Trap being sent
-      Given Trap consumer has a record
+    Scenario: Get event numbers
+      Then verify there are 0 events

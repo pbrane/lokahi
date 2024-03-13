@@ -21,6 +21,7 @@
  */
 package org.opennms.horizon.events;
 
+import com.google.protobuf.Empty;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
@@ -45,7 +46,6 @@ public class EventsBackgroundHelper {
     private static final String LOCALHOST = "localhost";
     private String tenantId;
     private EventServiceGrpc.EventServiceBlockingStub eventServiceBlockingStub;
-    private TrapsConsumer trapsConsumer;
 
     private Integer externalGrpcPort;
     private final Map<String, String> grpcHeaders = new TreeMap<>();
@@ -80,8 +80,7 @@ public class EventsBackgroundHelper {
         grpcHeaders.put(GrpcConstants.TENANT_ID_KEY, tenantId);
         LOG.info("Using tenantId={}", tenantId);
     }
-
-    public void setTrapConsumerForRecords() {
-        trapsConsumer = new TrapsConsumer();
+    public int getEventCount(){
+        return eventServiceBlockingStub.listEvents(Empty.newBuilder().build()).getEventsCount();
     }
 }
