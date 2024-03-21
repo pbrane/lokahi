@@ -100,12 +100,12 @@ public class EventsBackgroundHelper {
         return eventServiceBlockingStub.listEvents(Empty.newBuilder().build()).getEventsCount();
     }
 
-    public void initializeTrapProducer(String topic) {
+    public void initializeTrapProducer(String topic, String bootstrapServer) {
         this.trapProducer = new TrapProducer();
 
         // Kafka producer configuration properties
         Map<String, Object> producerProps = new HashMap<>();
-        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getProperty(bootstrapServer));
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
 

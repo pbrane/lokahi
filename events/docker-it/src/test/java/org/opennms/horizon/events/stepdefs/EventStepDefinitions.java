@@ -74,8 +74,8 @@ public class EventStepDefinitions {
         backgroundHelper.searchEventWithLocation(eventsCount, nodeId, location);
     }
 
-    @Given("Initialize Trap Producer With Topic {string}")
-    public void initializeTrapProducerWithTopic(String topic) {
-        backgroundHelper.initializeTrapProducer(topic);
+    @Given("Initialize Trap Producer With Topic {string} and BootstrapServer {string}")
+    public void initializeTrapProducerWithTopicAndBootstrapServer(String topic, String bootstrapServer) {
+        backgroundHelper.initializeTrapProducer(topic, bootstrapServer);
     }
 }
