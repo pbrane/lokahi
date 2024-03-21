@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.events.EventsBackgroundHelper;
@@ -61,5 +62,20 @@ public class EventStepDefinitions {
         } else {
             assertEquals(arg0, backgroundHelper.getEventCount());
         }
+    }
+
+    @When("Send Trap Data to Kafka Listener via Producer with TenantId {string} and LocationId {string}")
+    public void sendTrapDataToKafkaListenerViaProducerWithTenantIdAndLocationId(String tenantId, String locationId) {
+        backgroundHelper.sendTrapDataToKafkaListenerViaProducerWithTenantIdAndLocationId(tenantId, locationId);
+    }
+
+    @Then("Check If There are {int} Events with NodeId {int} and Location {string}")
+    public void checkIfThereAreEventsWithNodeIdAndLocation(int eventsCount, int nodeId, String location) {
+        backgroundHelper.searchEventWithLocation(eventsCount, nodeId, location);
+    }
+
+    @Given("Initialize Trap Producer With Topic {string}")
+    public void initializeTrapProducerWithTopic(String topic) {
+        backgroundHelper.initializeTrapProducer(topic);
     }
 }
