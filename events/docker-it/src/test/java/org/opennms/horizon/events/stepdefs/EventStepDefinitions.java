@@ -21,20 +21,26 @@
  */
 package org.opennms.horizon.events.stepdefs;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.opennms.horizon.events.EventsBackgroundHelper;
+import org.opennms.horizon.inventory.dto.MonitoringLocationCreateDTO;
+import org.opennms.horizon.inventory.dto.NodeCreateDTO;
+import org.opennms.horizon.inventory.dto.NodeDTO;
 
 @RequiredArgsConstructor
 @Slf4j
 public class EventStepDefinitions {
     private EventsBackgroundHelper backgroundHelper;
+
+    private NodeDTO node;
 
     public EventStepDefinitions(EventsBackgroundHelper backgroundHelper) {
         this.backgroundHelper = backgroundHelper;
@@ -64,18 +70,43 @@ public class EventStepDefinitions {
         }
     }
 
-    @When("Send Trap Data to Kafka Listener via Producer with TenantId {string} and LocationId {string}")
-    public void sendTrapDataToKafkaListenerViaProducerWithTenantIdAndLocationId(String tenantId, String locationId) {
-        backgroundHelper.sendTrapDataToKafkaListenerViaProducerWithTenantIdAndLocationId(tenantId, locationId);
+    @When("Send Trap Data to Kafka Listener via Producer with TenantId {string} and Location {string}")
+    public void sendTrapDataToKafkaListenerViaProducerWithTenantIdAndLocationId(String tenantId, String location) {
+        backgroundHelper.sendTrapDataToKafkaListenerViaProducerWithTenantIdAndLocationId(
+                tenantId, /*backgroundHelper.findLocationId(location)*/ location);
     }
 
     @Then("Check If There are {int} Events with NodeId {int} and Location {string}")
     public void checkIfThereAreEventsWithNodeIdAndLocation(int eventsCount, int nodeId, String location) {
-        backgroundHelper.searchEventWithLocation(eventsCount, nodeId, location);
+        backgroundHelper.searchEventWithLocation(eventsCount, Integer.getInteger(node.getId() + ""), location);
     }
 
     @Given("Initialize Trap Producer With Topic {string} and BootstrapServer {string}")
     public void initializeTrapProducerWithTopicAndBootstrapServer(String topic, String bootstrapServer) {
         backgroundHelper.initializeTrapProducer(topic, bootstrapServer);
+    }
+
+    @Given("[Common] Create {string} Location")
+    public void createLocation(String location) {
+        var locationServiceBlockingStub = backgroundHelper.getMonitoringLocationStub();
+        try {
+            var locationDto = locationServiceBlockingStub.createLocation(MonitoringLocationCreateDTO.newBuilder()
+                    .setLocation(location)
+                    .build());
+            Assertions.assertNotNull(locationDto);
+        } catch (StatusRuntimeException e) {
+            // catch duplicate location
+        }
+    }
+
+    @When("Add a device with IP address = {string} with label {string} and location {string}")
+    public void addADeviceWithIPAddressWithLabelAndLocation(String ipAddress, String label, String location) {
+        var nodeServiceBlockingStub = backgroundHelper.getNodeServiceBlockingStub();
+        node = nodeServiceBlockingStub.createNode(NodeCreateDTO.newBuilder()
+                .setLabel(label)
+                .setLocationId(location)
+                .setManagementIp(ipAddress)
+                .build());
+        assertNotNull(node);
     }
 }

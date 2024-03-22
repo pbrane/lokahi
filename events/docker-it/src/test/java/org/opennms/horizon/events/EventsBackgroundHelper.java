@@ -41,10 +41,10 @@ import org.opennms.horizon.events.proto.EventServiceGrpc;
 import org.opennms.horizon.events.proto.EventsSearchBy;
 import org.opennms.horizon.events.traps.TrapProducer;
 import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
-import org.opennms.horizon.grpc.traps.contract.TrapLogDTO;
+import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
+import org.opennms.horizon.inventory.dto.MonitoringLocationServiceGrpc;
+import org.opennms.horizon.inventory.dto.NodeServiceGrpc;
 import org.opennms.horizon.shared.constants.GrpcConstants;
-import org.opennms.horizon.shared.grpc.traps.contract.mapper.TenantLocationSpecificTrapLogDTOMapper;
-import org.opennms.horizon.shared.grpc.traps.contract.mapper.impl.TenantLocationSpecificTrapLogDTOMapperImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -57,6 +57,8 @@ public class EventsBackgroundHelper {
     private static final String LOCALHOST = "localhost";
     private String tenantId;
     private EventServiceGrpc.EventServiceBlockingStub eventServiceBlockingStub;
+    private MonitoringLocationServiceGrpc.MonitoringLocationServiceBlockingStub monitoringLocationStub;
+    private NodeServiceGrpc.NodeServiceBlockingStub nodeServiceBlockingStub;
     private TrapProducer trapProducer;
 
     private Integer externalGrpcPort;
@@ -75,7 +77,13 @@ public class EventsBackgroundHelper {
         managedChannel.getState(true);
         eventServiceBlockingStub = EventServiceGrpc.newBlockingStub(managedChannel)
                 .withInterceptors(prepareGrpcHeaderInterceptor())
-                .withDeadlineAfter(DEADLINE_DURATION + 10000, TimeUnit.SECONDS);
+                .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
+        monitoringLocationStub = MonitoringLocationServiceGrpc.newBlockingStub(managedChannel)
+                .withInterceptors(prepareGrpcHeaderInterceptor())
+                .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
+        nodeServiceBlockingStub = NodeServiceGrpc.newBlockingStub(managedChannel)
+                .withInterceptors(prepareGrpcHeaderInterceptor())
+                .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
     }
 
     private ClientInterceptor prepareGrpcHeaderInterceptor() {
@@ -121,11 +129,12 @@ public class EventsBackgroundHelper {
     }
 
     public void sendTrapDataToKafkaListenerViaProducerWithTenantIdAndLocationId(String tenantId, String locationId) {
-        TenantLocationSpecificTrapLogDTOMapper tenantLocationSpecificTrapLogDTOMapper =
-                new TenantLocationSpecificTrapLogDTOMapperImpl();
         TenantLocationSpecificTrapLogDTO tenantLocationSpecificTrapLogDTO =
-                tenantLocationSpecificTrapLogDTOMapper.mapBareToTenanted(
-                        tenantId, locationId, TrapLogDTO.newBuilder().build());
+                TenantLocationSpecificTrapLogDTO.newBuilder()
+                        .setLocationId(locationId)
+                        .setTenantId(tenantId)
+                        .build();
+        LOG.info("Tenant data: {}", tenantLocationSpecificTrapLogDTO);
         this.trapProducer.sendTrap(tenantLocationSpecificTrapLogDTO);
     }
 
@@ -139,5 +148,14 @@ public class EventsBackgroundHelper {
 
         assertNotNull(searchEvents);
         assertEquals(eventsCount, searchEvents.size());
+    }
+
+    public String findLocationId(String locationName) {
+        return monitoringLocationStub.listLocations(Empty.newBuilder().build()).getLocationsList().stream()
+                .filter(loc -> locationName.equals(loc.getLocation()))
+                .findFirst()
+                .map(MonitoringLocationDTO::getId)
+                .map(String::valueOf)
+                .orElseThrow(() -> new IllegalArgumentException("Location " + locationName + " not found"));
     }
 }
