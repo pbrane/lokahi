@@ -33,22 +33,15 @@ import io.grpc.stub.MetadataUtils;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
 import org.opennms.horizon.events.proto.EventsSearchBy;
-import org.opennms.horizon.events.traps.TrapProducer;
-import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationServiceGrpc;
 import org.opennms.horizon.inventory.dto.NodeServiceGrpc;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
 
 @Getter
 public class EventsBackgroundHelper {
@@ -59,10 +52,11 @@ public class EventsBackgroundHelper {
     private EventServiceGrpc.EventServiceBlockingStub eventServiceBlockingStub;
     private MonitoringLocationServiceGrpc.MonitoringLocationServiceBlockingStub monitoringLocationStub;
     private NodeServiceGrpc.NodeServiceBlockingStub nodeServiceBlockingStub;
-    private TrapProducer trapProducer;
 
     private Integer externalGrpcPort;
     private final Map<String, String> grpcHeaders = new TreeMap<>();
+    private String bootstrapServer;
+    private String topic;
 
     public void externalGRPCPortInSystemProperty(String propertyName) {
         String value = System.getProperty(propertyName);
@@ -79,8 +73,8 @@ public class EventsBackgroundHelper {
                 .withInterceptors(prepareGrpcHeaderInterceptor())
                 .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
         monitoringLocationStub = MonitoringLocationServiceGrpc.newBlockingStub(managedChannel)
-                .withInterceptors(prepareGrpcHeaderInterceptor())
-                .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
+            .withInterceptors(prepareGrpcHeaderInterceptor())
+            .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
         nodeServiceBlockingStub = NodeServiceGrpc.newBlockingStub(managedChannel)
                 .withInterceptors(prepareGrpcHeaderInterceptor())
                 .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
@@ -109,33 +103,8 @@ public class EventsBackgroundHelper {
     }
 
     public void initializeTrapProducer(String topic, String bootstrapServer) {
-        this.trapProducer = new TrapProducer();
-
-        // Kafka producer configuration properties
-        Map<String, Object> producerProps = new HashMap<>();
-        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getProperty(bootstrapServer));
-        producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
-
-        // Create a Kafka producer factory
-        DefaultKafkaProducerFactory<String, byte[]> producerFactory = new DefaultKafkaProducerFactory<>(producerProps);
-
-        // Create a Kafka template using the producer factory
-        KafkaTemplate<String, byte[]> kafkaTemplate = new KafkaTemplate<>(producerFactory);
-
-        // Set the Kafka template and topic in the trap producer
-        this.trapProducer.setKafkaTemplate(kafkaTemplate);
-        this.trapProducer.setTopic(topic);
-    }
-
-    public void sendTrapDataToKafkaListenerViaProducerWithTenantIdAndLocationId(String tenantId, String locationId) {
-        TenantLocationSpecificTrapLogDTO tenantLocationSpecificTrapLogDTO =
-                TenantLocationSpecificTrapLogDTO.newBuilder()
-                        .setLocationId(locationId)
-                        .setTenantId(tenantId)
-                        .build();
-        LOG.info("Tenant data: {}", tenantLocationSpecificTrapLogDTO);
-        this.trapProducer.sendTrap(tenantLocationSpecificTrapLogDTO);
+        this.topic = topic;
+        this.bootstrapServer = bootstrapServer;
     }
 
     public void searchEventWithLocation(int eventsCount, int nodeId, String location) {
