@@ -21,28 +21,26 @@
  */
 package org.opennms.horizon.events.stepdefs;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.google.protobuf.Empty;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.grpc.StatusRuntimeException;
+import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.Assertions;
 import org.opennms.horizon.events.EventsBackgroundHelper;
 import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationCreateDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
-
-import java.util.Properties;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class EventStepDefinitions {
@@ -79,21 +77,24 @@ public class EventStepDefinitions {
         var locationServiceBlockingStub = backgroundHelper.getMonitoringLocationStub();
         String locationId = "";
         try {
-            locationId = locationServiceBlockingStub.listLocations(Empty.newBuilder().build()).getLocationsList().stream()
-                .filter(loc -> location.equals(loc.getLocation()))
-                .findFirst()
-                .map(MonitoringLocationDTO::getId)
-                .map(String::valueOf)
-                .orElseThrow(() -> new IllegalArgumentException("Location " + location + " not found"));;
+            locationId =
+                    locationServiceBlockingStub.listLocations(Empty.newBuilder().build()).getLocationsList().stream()
+                            .filter(loc -> location.equals(loc.getLocation()))
+                            .findFirst()
+                            .map(MonitoringLocationDTO::getId)
+                            .map(String::valueOf)
+                            .orElseThrow(() -> new IllegalArgumentException("Location " + location + " not found"));
+            ;
         } catch (StatusRuntimeException e) {
             // catch duplicate location
         }
         TenantLocationSpecificTrapLogDTO tenantLocationSpecificTrapLogDTO =
-            TenantLocationSpecificTrapLogDTO.newBuilder()
-                .setLocationId(locationId)
-                .setTenantId(tenantId)
-                .build();
-        var producerRecord = new ProducerRecord<String, byte[]>(backgroundHelper.getTopic(), tenantLocationSpecificTrapLogDTO.toByteArray());
+                TenantLocationSpecificTrapLogDTO.newBuilder()
+                        .setLocationId(locationId)
+                        .setTenantId(tenantId)
+                        .build();
+        var producerRecord = new ProducerRecord<String, byte[]>(
+                backgroundHelper.getTopic(), tenantLocationSpecificTrapLogDTO.toByteArray());
 
         Properties producerConfig = new Properties();
         producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, backgroundHelper.getBootstrapServer());
@@ -132,12 +133,14 @@ public class EventStepDefinitions {
         var locationServiceBlockingStub = backgroundHelper.getMonitoringLocationStub();
         String locationId = "";
         try {
-            locationId = locationServiceBlockingStub.listLocations(Empty.newBuilder().build()).getLocationsList().stream()
-                .filter(loc -> location.equals(loc.getLocation()))
-                .findFirst()
-                .map(MonitoringLocationDTO::getId)
-                .map(String::valueOf)
-                .orElseThrow(() -> new IllegalArgumentException("Location " + location + " not found"));;
+            locationId =
+                    locationServiceBlockingStub.listLocations(Empty.newBuilder().build()).getLocationsList().stream()
+                            .filter(loc -> location.equals(loc.getLocation()))
+                            .findFirst()
+                            .map(MonitoringLocationDTO::getId)
+                            .map(String::valueOf)
+                            .orElseThrow(() -> new IllegalArgumentException("Location " + location + " not found"));
+            ;
         } catch (StatusRuntimeException e) {
             // catch duplicate location
         }

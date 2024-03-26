@@ -73,8 +73,8 @@ public class EventsBackgroundHelper {
                 .withInterceptors(prepareGrpcHeaderInterceptor())
                 .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
         monitoringLocationStub = MonitoringLocationServiceGrpc.newBlockingStub(managedChannel)
-            .withInterceptors(prepareGrpcHeaderInterceptor())
-            .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
+                .withInterceptors(prepareGrpcHeaderInterceptor())
+                .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
         nodeServiceBlockingStub = NodeServiceGrpc.newBlockingStub(managedChannel)
                 .withInterceptors(prepareGrpcHeaderInterceptor())
                 .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
