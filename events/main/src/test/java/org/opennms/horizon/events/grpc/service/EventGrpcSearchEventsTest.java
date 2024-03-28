@@ -118,7 +118,7 @@ public class EventGrpcSearchEventsTest extends GrpcTestBase {
                 .setSearchTerm(TEST_LOG_MESSAGE)
                 .build();
 
-        EventLog eventLog1 = serviceStub.searchEvents(searchEventByNodeIdAndLogMessage);
+        var eventLog1 = serviceStub.searchEvents(searchEventByNodeIdAndLogMessage);
         List<org.opennms.horizon.events.proto.Event> searchEvents1 = eventLog1.getEventsList();
 
         assertNotNull(searchEvents1);
@@ -134,7 +134,7 @@ public class EventGrpcSearchEventsTest extends GrpcTestBase {
                 .setSearchTerm(TEST_DESCRIPTION)
                 .build();
 
-        EventLog eventLog2 = serviceStub.searchEvents(searchEventByNodeIdAndDescription);
+        var eventLog2 = serviceStub.searchEvents(searchEventByNodeIdAndDescription);
         List<org.opennms.horizon.events.proto.Event> searchEvents2 = eventLog2.getEventsList();
 
         assertNotNull(searchEvents2);
@@ -150,7 +150,7 @@ public class EventGrpcSearchEventsTest extends GrpcTestBase {
                 .setSearchTerm(TEST_LOCATION_NAME)
                 .build();
 
-        EventLog eventLog3 = serviceStub.searchEvents(searchEventByNodeIdAndLocationName);
+        var eventLog3 = serviceStub.searchEvents(searchEventByNodeIdAndLocationName);
         List<org.opennms.horizon.events.proto.Event> searchEvents3 = eventLog3.getEventsList();
 
         assertNotNull(searchEvents3);
@@ -166,7 +166,7 @@ public class EventGrpcSearchEventsTest extends GrpcTestBase {
                 .setSearchTerm(TEST_IP_ADDRESS)
                 .build();
 
-        EventLog eventLog4 = serviceStub.searchEvents(searchEventByNodeIdAndIpAddress);
+        var eventLog4 = serviceStub.searchEvents(searchEventByNodeIdAndIpAddress);
         List<org.opennms.horizon.events.proto.Event> searchEvents4 = eventLog4.getEventsList();
 
         assertNotNull(searchEvents4);
@@ -182,7 +182,7 @@ public class EventGrpcSearchEventsTest extends GrpcTestBase {
                 .setSearchTerm("127.0.0.1")
                 .build();
 
-        EventLog eventLog5 = serviceStub.searchEvents(searchEventByNodeIdAndIpAddressNotExist);
+        var eventLog5 = serviceStub.searchEvents(searchEventByNodeIdAndIpAddressNotExist);
         List<org.opennms.horizon.events.proto.Event> searchEvents5 = eventLog5.getEventsList();
 
         assertNotNull(searchEvents5);
@@ -247,5 +247,57 @@ public class EventGrpcSearchEventsTest extends GrpcTestBase {
         assertEquals(TEST_TRAP_OID, snmpInfo.getTrapOid());
         assertEquals(TEST_COMMUNITY, snmpInfo.getCommunity());
         assertEquals(TEST_GENERIC, snmpInfo.getGeneric());
+    }
+
+    @Test
+    void testPaginationSearchEventsByNodeIdAndDifferentSearchTerm() throws UnknownHostException {
+        setupGrpc();
+        initStub();
+
+        for (int index = 0; index < 5; index++) {
+            populateEventDatabase(1);
+        }
+
+        EventsSearchBy searchEventByNodeIdAndLogMessage = EventsSearchBy.newBuilder()
+                .setNodeId(1)
+                .setSearchTerm(TEST_LOG_MESSAGE)
+                .setPage(0)
+                .setPageSize(2)
+                .setSortBy("id")
+                .setSortAscending(true)
+                .build();
+
+        EventLogListResponse eventLog1 = serviceStub.searchEvents(searchEventByNodeIdAndLogMessage);
+
+        assertNotNull(eventLog1);
+        assertEquals(2, eventLog1.getEventsCount());
+
+        EventsSearchBy searchEventByNodeIdAndDescription = EventsSearchBy.newBuilder()
+                .setNodeId(1)
+                .setSearchTerm(TEST_DESCRIPTION)
+                .setPage(1)
+                .setPageSize(2)
+                .setSortBy("id")
+                .setSortAscending(true)
+                .build();
+
+        EventLogListResponse eventLog2 = serviceStub.searchEvents(searchEventByNodeIdAndDescription);
+
+        assertNotNull(eventLog2);
+        assertEquals(2, eventLog2.getEventsCount());
+
+        EventsSearchBy searchEventByNodeIdAndLocationName = EventsSearchBy.newBuilder()
+                .setNodeId(1)
+                .setSearchTerm(TEST_DESCRIPTION)
+                .setPage(2)
+                .setPageSize(2)
+                .setSortBy("id")
+                .setSortAscending(true)
+                .build();
+
+        EventLogListResponse eventLog3 = serviceStub.searchEvents(searchEventByNodeIdAndLocationName);
+
+        assertNotNull(eventLog3);
+        assertEquals(1, eventLog3.getEventsCount());
     }
 }

@@ -22,12 +22,13 @@
 package org.opennms.horizon.events.persistence.service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opennms.horizon.events.persistence.mapper.EventMapper;
 import org.opennms.horizon.events.persistence.repository.EventRepository;
 import org.opennms.horizon.events.proto.Event;
+import org.opennms.horizon.events.proto.EventLogListResponse;
 import org.opennms.horizon.events.proto.EventsSearchBy;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -52,13 +53,25 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
-    public List<Event> searchEvents(String tenantId, EventsSearchBy searchBy) {
+    public EventLogListResponse searchEvents(String tenantId, EventsSearchBy searchBy, Pageable pageRequest) {
 
-        return eventRepository
-                .findByNodeIdAndSearchTermAndTenantId(tenantId, searchBy.getNodeId(), searchBy.getSearchTerm())
-                .stream()
+        var eventPage = eventRepository.findByNodeIdAndSearchTermAndTenantId(
+                tenantId, searchBy.getNodeId(), searchBy.getSearchTerm(), pageRequest);
+
+        List<Event> events = eventPage.getContent().stream()
                 .map(eventMapper::modelToDtoWithParams)
-                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+
+        EventLogListResponse.Builder responseBuilder =
+                EventLogListResponse.newBuilder().addAllEvents(events);
+
+        if (eventPage.hasNext()) {
+            responseBuilder.setNextPage(eventPage.nextPageable().getPageNumber());
+        }
+
+        responseBuilder.setLastPage(eventPage.getTotalPages() - 1);
+        responseBuilder.setTotalEvents(eventPage.getTotalElements());
+
+        return responseBuilder.build();
     }
 }
