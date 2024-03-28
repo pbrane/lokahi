@@ -36,6 +36,7 @@ import org.opennms.azure.contract.AzureCollectorRequest;
 import org.opennms.azure.contract.AzureCollectorResourcesRequest;
 import org.opennms.horizon.azure.api.AzureScanItem;
 import org.opennms.horizon.inventory.model.IpInterface;
+import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.model.SnmpInterface;
 import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
@@ -53,7 +54,6 @@ import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -65,21 +65,20 @@ public class CollectorTaskSetService {
     private final SnmpCollectorConfig snmpCollectorConfig;
 
     public TaskDefinition getCollectorTask(
-            MonitorType monitorType, IpInterface ipInterface, long nodeId, SnmpConfiguration snmpConfiguration) {
+            MonitorType monitorType, IpInterface ipInterface, Node node, SnmpConfiguration snmpConfiguration) {
         if (MonitorType.SNMP.equals(monitorType)) {
-            return addSnmpCollectorTask(ipInterface, nodeId, snmpConfiguration);
+            return addSnmpCollectorTask(ipInterface, node, snmpConfiguration);
         }
         return null;
     }
 
     public TaskDefinition addSnmpCollectorTask(
-            IpInterface ipInterface, long nodeId, SnmpConfiguration snmpConfiguration) {
+            IpInterface ipInterface, Node node, SnmpConfiguration snmpConfiguration) {
         String monitorTypeValue = MonitorType.SNMP.name();
-        final var node = this.nodeRepository.getReferenceById(nodeId);
         String ipAddress = InetAddressUtils.toIpAddrString(ipInterface.getIpAddress());
 
-        List<SnmpInterface> snmpInterfaces = getSnmpInterfaces(nodeId);
-        List<IpInterface> ipInterfaces = getIpInterfaces(nodeId);
+        List<SnmpInterface> snmpInterfaces = getSnmpInterfaces(node.getId());
+        List<IpInterface> ipInterfaces = getIpInterfaces(node.getId());
 
         Map<Integer, IpInterface> ifIndexMap = new HashMap<>();
         for (IpInterface anInterface : ipInterfaces) {
@@ -108,7 +107,7 @@ public class CollectorTaskSetService {
 
         SnmpCollectorRequest.Builder requestBuilder = SnmpCollectorRequest.newBuilder()
                 .setHost(ipAddress)
-                .setNodeId(nodeId)
+                .setNodeId(node.getId())
                 .addAllSnmpInterface(snmpInterfaceElements);
         if (snmpConfiguration != null) {
             requestBuilder.setAgentConfig(snmpConfiguration);
@@ -153,11 +152,11 @@ public class CollectorTaskSetService {
 
         Any configuration = Any.pack(requestBuilder.build());
 
-        String taskId = identityForIpTask(nodeId, ipAddress, name);
+        String taskId = identityForIpTask(node.getId(), ipAddress, name);
         TaskDefinition.Builder builder = TaskDefinition.newBuilder()
                 .setType(TaskType.COLLECTOR)
                 .setPluginName(pluginName)
-                .setNodeId(nodeId)
+                .setNodeId(node.getId())
                 .setId(taskId)
                 .setConfiguration(configuration)
                 .setSchedule(TaskUtils.DEFAULT_SCHEDULE);

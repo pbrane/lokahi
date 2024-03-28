@@ -98,6 +98,10 @@ public class SnmpCollectorConfig {
 
     // TODO LOK-2403: factor in ifType
     public Stream<Part> findMatchingParts(final String systemObjId) {
+        if (systemObjId == null) {
+            return Stream.empty();
+        }
+
         // Find all matching system-defs in all configurations
         final var systemDefs = this.configurations.stream()
                 .flatMap(configuration -> configuration.getSystemDefs().stream()

@@ -290,8 +290,7 @@ public class ScannerResponseService {
                 ipInterfaceService.createOrUpdateFromScanResult(tenantId, node, ipIfResult, ifIndexSNMPMap);
             }
             result.getDetectorResultList()
-                    .forEach(detectorResult ->
-                            processDetectorResults(tenantId, locationId, node.getId(), detectorResult));
+                    .forEach(detectorResult -> processDetectorResults(tenantId, locationId, node, detectorResult));
         } else {
             log.error(
                     "Error while process node scan results, tenantId={}; locationId={}; node with id {} doesn't exist",
@@ -301,7 +300,7 @@ public class ScannerResponseService {
         }
     }
 
-    private void processDetectorResults(String tenantId, Long locationId, long nodeId, ServiceResult serviceResult) {
+    private void processDetectorResults(String tenantId, Long locationId, Node node, ServiceResult serviceResult) {
 
         log.info("Received Detector tenantId={}; locationId={}; response={}", serviceResult, tenantId, locationId);
 
@@ -318,8 +317,9 @@ public class ScannerResponseService {
                 MonitorType monitorType =
                         MonitorType.valueOf(serviceResult.getService().name());
 
-                taskSetHandler.sendMonitorTask(locationId, monitorType, ipInterface, nodeId, monitoredService.getId());
-                taskSetHandler.sendCollectorTask(locationId, monitorType, ipInterface, nodeId);
+                taskSetHandler.sendMonitorTask(
+                        locationId, monitorType, ipInterface, node.getId(), monitoredService.getId());
+                taskSetHandler.sendCollectorTask(locationId, monitorType, ipInterface, node);
 
             } else {
                 log.info(
