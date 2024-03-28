@@ -117,7 +117,7 @@ public class CucumberRunnerIT {
                 .withEnv("SPRING_DATASOURCE_URL", jdbcUrl)
                 .withEnv("SPRING_DATASOURCE_USERNAME", postgreSQLContainer.getUsername())
                 .withEnv("SPRING_DATASOURCE_PASSWORD", postgreSQLContainer.getPassword())
-                .withEnv("INVENTORY_ENCRYPTION_KEY", RandomStringUtils.randomAlphanumeric(32))
+                .withEnv("EVENT_ENCRYPTION_KEY", RandomStringUtils.randomAlphanumeric(32))
                 // Uncomment to get Hibernate SQL logging
                 // .withEnv("logging.level.org.hibernate.SQL", "DEBUG")
                 // .withEnv("logging.level.org.hibernate.orm.jdbc.bind", "TRACE")
