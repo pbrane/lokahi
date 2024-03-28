@@ -36,8 +36,13 @@ jobs:
           else
               DRYRUN=""
           fi
+          if [ "${{ github.event.inputs.version }}" != '' ]; then
+              NEWVERSION=${{github.event.inputs.version}}"
+          else:
+              NEWVERSION=""
+          fi
 
           git config --global user.email "${{ vars.GH_USER_EMAIL }}"
           git config --global user.name "${{ vars.GH_USER_NAME }}"
 
-          build-tools/release/release.sh $DRYRUN
+          build-tools/release/release.sh $DRYRUN $NEWVERSION
