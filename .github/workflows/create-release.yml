@@ -38,7 +38,7 @@ jobs:
           fi
           if [ "${{ github.event.inputs.version }}" != '' ]; then
               NEWVERSION="${{github.event.inputs.version}}"
-          else:
+          else
               NEWVERSION=""
           fi
 
