@@ -31,7 +31,6 @@
         >
           <thead>
             <tr>
-              <th></th>
               <FeatherSortHeader
                 v-for="col of columns"
                 :key="col.label"
@@ -52,26 +51,29 @@
               v-for="policy in store.monitoringPolicies"
               :key="policy.id"
               class="policies-table-row"
-              @click="() => onSelectPolicy(policy.id)"
             >
               <td>
-                <div class="check-circle">
+                <div class="action">
+                 <span class="check-circle"  @click="() => onSelectPolicy(policy.id)">
                   <FeatherTooltip
-                    :title="'Enabled'"
+                    :title="policy?.enabled ? 'Enabled':'Disabled'"
                     v-slot="{ attrs, on }"
                   >
                     <FeatherIcon
                       v-bind="attrs"
                       v-on="on"
-                      :icon="CheckCircle"
-                      :class="{ enabled: true }"
+                      :icon="policy?.enabled ? CheckCircle : Circle"
+                      :class="{ 'enabled': policy?.enabled }"
                       class="enabled-icon"
                       data-test="check-icon"
                     />
                   </FeatherTooltip>
-                </div>
+                 </span>
+                  <span @click.stop class="policy-name">
+                    {{ policy.name }}
+                  </span>
+               </div>
               </td>
-              <td>{{ policy.name }}</td>
               <td>{{ policy.memo }}</td>
               <td>{{ policy.rules?.length || 0 }}</td>
               <td>{{ '--' }}</td>
@@ -94,6 +96,7 @@
 <script setup lang="ts">
 import { SORT } from '@featherds/table'
 import CheckCircle from '@featherds/icon/action/CheckCircle'
+import Circle from '@/assets/circle.svg'
 import DownloadFile from '@featherds/icon/action/DownloadFile'
 import Refresh from '@featherds/icon/navigation/Refresh'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
@@ -155,10 +158,6 @@ const onRefresh = () => {
   store.getMonitoringPolicies()
 }
 
-// onMounted(async () => await store.getTopNNodes())
-onMounted(() => {
-  console.log('In MonitoringPoliciesTable v1')
-})
 </script>
 
 <style lang="scss" scoped>
@@ -171,6 +170,7 @@ onMounted(() => {
 .monitoring-policies-table-wrapper {
   margin-bottom: 20px;
   width: 100%;
+  overflow-x: hidden;
 
   .card {
     height: 442px;
@@ -204,14 +204,18 @@ onMounted(() => {
   .container {
     display: block;
     overflow-x: auto;
-    margin: 0px 20px;
-
     table {
       width: 100%;
       @include table.table;
       thead {
         background: var(variables.$background);
         text-transform: uppercase;
+      }
+      .action{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 20px;
       }
       td {
         white-space: nowrap;
@@ -223,14 +227,18 @@ onMounted(() => {
 
       tr.policies-table-row {
         cursor: pointer;
+        transition: background-color 0.3s ease;
+        &:hover{
+          background-color: var(variables.$shade-4)
+        }
       }
+
     }
   }
 }
 
 .check-circle {
-  width: 4%;
-
+  margin-top: 5px;
   .enabled-icon {
     width: 1.5rem;
     height: 1.5rem;
