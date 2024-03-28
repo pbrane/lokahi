@@ -21,13 +21,12 @@
  */
 package org.opennms.horizon.minion.taskset.worker.impl;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
@@ -71,8 +70,8 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
         this.resultProcessor = resultProcessor;
         this.monitorRegistry = monitorRegistry;
         this.executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
-            .setNameFormat("monitor-service-response-handler")
-            .build());
+                .setNameFormat("monitor-service-response-handler")
+                .build());
     }
 
     // ========================================
@@ -139,10 +138,12 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
             if (monitor != null) {
                 // TBD888: populate host, or stop?
                 MonitoredService monitoredService = configureMonitoredService(taskDefinition);
-               CompletableFuture.runAsync(() -> {
-                    monitor.poll(monitoredService, taskDefinition.getConfiguration())
-                        .whenCompleteAsync(this::handleExecutionComplete, executor);
-                }, executor);
+                CompletableFuture.runAsync(
+                        () -> {
+                            monitor.poll(monitoredService, taskDefinition.getConfiguration())
+                                    .whenCompleteAsync(this::handleExecutionComplete, executor);
+                        },
+                        executor);
             } else {
                 log.info("Skipping service monitor execution; monitor not found: monitor="
                         + taskDefinition.getPluginName());
