@@ -104,13 +104,13 @@ public class EventsBackgroundHelper {
 
     public void initializeTrapProducer(String topic, String bootstrapServer) {
         this.topic = topic;
-        this.bootstrapServer = bootstrapServer;
+        this.bootstrapServer = System.getProperty(bootstrapServer);
     }
 
     public void searchEventWithLocation(int eventsCount, int nodeId, String location) {
         EventsSearchBy searchEventByLocationName = EventsSearchBy.newBuilder()
-                .setNodeId(nodeId)
-                .setSearchTerm(location)
+                // .setNodeId(nodeId)
+                // .setSearchTerm(location)
                 .build();
         List<Event> searchEvents =
                 eventServiceBlockingStub.searchEvents(searchEventByLocationName).getEventsList();
