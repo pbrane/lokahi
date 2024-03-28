@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.grpc.StatusRuntimeException;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -34,13 +33,10 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.opennms.cloud.grpc.minion.Identity;
 import org.opennms.horizon.events.EventsBackgroundHelper;
 import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapDTO;
-import org.opennms.horizon.inventory.dto.MonitoringLocationCreateDTO;
-import org.opennms.horizon.inventory.dto.NodeCreateDTO;
-import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +44,6 @@ import org.slf4j.LoggerFactory;
 public class EventStepDefinitions {
     private final EventsBackgroundHelper backgroundHelper;
     private static final Logger LOG = LoggerFactory.getLogger(EventStepDefinitions.class);
-    private NodeDTO node;
-
-    private String locationId;
 
     @Given("[Event] External GRPC Port in system property {string}")
     public void externalGRPCPortInSystemProperty(String propertyName) {
@@ -101,14 +94,11 @@ public class EventStepDefinitions {
                 .build();*/
         TenantLocationSpecificTrapLogDTO tenantLocationSpecificTrapLogDTO =
                 TenantLocationSpecificTrapLogDTO.newBuilder()
-                        .setTenantId("event-tenant-stream")
-                        .setLocationId("x-location-x")
-                        .setIdentity(Identity.newBuilder()
-                                .setSystemId("x-system-id-x")
-                                .build())
+                        .setTenantId(tenantId)
+                        .setLocationId(location)
                         .setTrapAddress("127.0.0.1")
                         .addTrapDTO(TrapDTO.newBuilder()
-                                .setAgentAddress("x-agent-address-x")
+                                .setAgentAddress("127.0.0.1")
                                 .build())
                         .build();
         LOG.info("Trap data {}", tenantLocationSpecificTrapLogDTO.toString());
@@ -120,6 +110,7 @@ public class EventStepDefinitions {
         producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
         producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getCanonicalName());
         try (KafkaProducer<String, byte[]> kafkaProducer = new KafkaProducer<>(producerConfig)) {
+            producerRecord.headers().add(GrpcConstants.TENANT_ID_KEY, tenantId.getBytes());
             kafkaProducer.send(producerRecord);
         } catch (Exception e) {
             LOG.error(e.toString());
@@ -136,44 +127,10 @@ public class EventStepDefinitions {
         backgroundHelper.initializeTrapProducer(topic, bootstrapServer);
     }
 
-    @Given("Create {string} Location")
-    public void createLocation(String location) {
-        var locationServiceBlockingStub = backgroundHelper.getMonitoringLocationStub();
-        try {
-            var locationDto = locationServiceBlockingStub.createLocation(MonitoringLocationCreateDTO.newBuilder()
-                    .setLocation(location)
-                    .build());
-            assertEquals(1L, locationDto.getId());
-            this.locationId = String.valueOf(locationDto.getId());
-            LOG.info("LocationID: {}", this.locationId);
-        } catch (StatusRuntimeException e) {
-            LOG.error(e.toString());
-        }
-    }
-
-    @When("[Common] Add a device with IP address = {string} with label {string} and location {string}")
-    public void addADeviceWithIPAddressWithLabelAndLocation(String ipAddress, String label, String location) {
-        /*var locationServiceBlockingStub = backgroundHelper.getMonitoringLocationStub();
-        String locationId = null;
-        try {
-            locationId =
-                    locationServiceBlockingStub.listLocations(Empty.newBuilder().build()).getLocationsList().stream()
-                            .filter(loc -> location.equals(loc.getLocation()))
-                            .findFirst()
-                            .map(MonitoringLocationDTO::getId)
-                            .map(String::valueOf)
-                            .orElseThrow(() -> new IllegalArgumentException("Location " + location + " not found"));
-            assertNotNull(locationId);
-            LOG.info("Location {} and Location Id {}", location, locationId);
-        } catch (StatusRuntimeException e) {
-            // catch duplicate location
-        }*/
-        var nodeServiceBlockingStub = backgroundHelper.getNodeServiceBlockingStub();
-        node = nodeServiceBlockingStub.createNode(NodeCreateDTO.newBuilder()
-                .setLabel(label)
-                .setLocationId(this.locationId)
-                .setManagementIp(ipAddress)
-                .build());
-        assertNotNull(node);
+    @Given("Tenant id {string}")
+    @Given("Tenant {string}")
+    @Given("A new tenant named {string}")
+    public String useSpecifiedTenantId(String tenantId) {
+        return backgroundHelper.useSpecifiedTenantId(tenantId);
     }
 }

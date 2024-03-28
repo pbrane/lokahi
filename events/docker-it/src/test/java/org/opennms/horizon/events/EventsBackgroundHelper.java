@@ -33,12 +33,10 @@ import io.grpc.stub.MetadataUtils;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
+import org.junit.ClassRule;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
 import org.opennms.horizon.events.proto.EventsSearchBy;
-import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
-import org.opennms.horizon.inventory.dto.MonitoringLocationServiceGrpc;
-import org.opennms.horizon.inventory.dto.NodeServiceGrpc;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,14 +48,14 @@ public class EventsBackgroundHelper {
     private static final String LOCALHOST = "localhost";
     private String tenantId;
     private EventServiceGrpc.EventServiceBlockingStub eventServiceBlockingStub;
-    private MonitoringLocationServiceGrpc.MonitoringLocationServiceBlockingStub monitoringLocationStub;
-    private NodeServiceGrpc.NodeServiceBlockingStub nodeServiceBlockingStub;
 
     private Integer externalGrpcPort;
     private final Map<String, String> grpcHeaders = new TreeMap<>();
     private String bootstrapServer;
     private String topic;
-
+    private final DynamicTenantIdInterceptor dynamicTenantIdInterceptor = new DynamicTenantIdInterceptor(
+        // Pull private key directly from container
+        CucumberRunnerIT.getJwtKeyPair());
     public void externalGRPCPortInSystemProperty(String propertyName) {
         String value = System.getProperty(propertyName);
         externalGrpcPort = Integer.parseInt(value);
@@ -70,12 +68,6 @@ public class EventsBackgroundHelper {
         ManagedChannel managedChannel = channelBuilder.usePlaintext().build();
         managedChannel.getState(true);
         eventServiceBlockingStub = EventServiceGrpc.newBlockingStub(managedChannel)
-                .withInterceptors(prepareGrpcHeaderInterceptor())
-                .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
-        monitoringLocationStub = MonitoringLocationServiceGrpc.newBlockingStub(managedChannel)
-                .withInterceptors(prepareGrpcHeaderInterceptor())
-                .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
-        nodeServiceBlockingStub = NodeServiceGrpc.newBlockingStub(managedChannel)
                 .withInterceptors(prepareGrpcHeaderInterceptor())
                 .withDeadlineAfter(DEADLINE_DURATION, TimeUnit.SECONDS);
     }
@@ -119,12 +111,10 @@ public class EventsBackgroundHelper {
         assertEquals(eventsCount, searchEvents.size());
     }
 
-    public String findLocationId(String locationName) {
-        return monitoringLocationStub.listLocations(Empty.newBuilder().build()).getLocationsList().stream()
-                .filter(loc -> locationName.equals(loc.getLocation()))
-                .findFirst()
-                .map(MonitoringLocationDTO::getId)
-                .map(String::valueOf)
-                .orElseThrow(() -> new IllegalArgumentException("Location " + locationName + " not found"));
+    public String useSpecifiedTenantId(String tenantId) {
+        this.tenantId = tenantId;
+        dynamicTenantIdInterceptor.setTenantId(tenantId);
+        LOG.info("New tenant-id is {}", tenantId);
+        return tenantId;
     }
 }
