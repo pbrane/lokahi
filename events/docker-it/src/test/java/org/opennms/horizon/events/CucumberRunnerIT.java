@@ -21,18 +21,10 @@
  */
 package org.opennms.horizon.events;
 
-import static io.cucumber.core.options.Constants.*;
-
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.BeforeAll;
-
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.time.Duration;
-
 import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.ClassRule;
 import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectClasspathResource;
@@ -45,6 +37,12 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
+
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.time.Duration;
+
+import static io.cucumber.core.options.Constants.*;
 
 @Suite
 @IncludeEngines("cucumber")

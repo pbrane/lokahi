@@ -21,25 +21,20 @@
  */
 package org.opennms.horizon.events;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.google.protobuf.Empty;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
 import lombok.Getter;
-import org.junit.ClassRule;
-import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
-import org.opennms.horizon.events.proto.EventsSearchBy;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 public class EventsBackgroundHelper {
@@ -82,7 +77,6 @@ public class EventsBackgroundHelper {
     public void grpcTenantId(String tenantId) {
         Objects.requireNonNull(tenantId);
         this.tenantId = tenantId;
-        //grpcHeaders.put(GrpcConstants.TENANT_ID_KEY, tenantId);
         LOG.info("Using tenantId={}", tenantId);
     }
 
@@ -93,20 +87,5 @@ public class EventsBackgroundHelper {
     public void initializeTrapProducer(String topic, String bootstrapServer) {
         this.topic = topic;
         this.bootstrapServer = System.getProperty(bootstrapServer);
-    }
-
-    public List<Event> searchEventWithLocation(int eventsCount, int nodeId, String location) {
-        EventsSearchBy searchEventByLocationName = EventsSearchBy.newBuilder()
-                // .setNodeId(nodeId)
-                // .setSearchTerm(location)
-                .build();
-        return eventServiceBlockingStub.searchEvents(searchEventByLocationName).getEventsList();
-    }
-
-    public String useSpecifiedTenantId(String tenantId) {
-        this.tenantId = tenantId;
-        //dynamicTenantIdInterceptor.setTenantId(tenantId);
-        LOG.info("New tenant-id is {}", tenantId);
-        return tenantId;
     }
 }

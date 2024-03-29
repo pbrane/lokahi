@@ -21,32 +21,35 @@
  */
 package org.opennms.horizon.events.stepdefs;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-
-import java.util.List;
-import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.hamcrest.Matchers;
 import org.opennms.horizon.events.EventsBackgroundHelper;
-import org.opennms.horizon.events.proto.Event;
+import org.opennms.horizon.events.proto.EventsSearchBy;
 import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapDTO;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.*;
+
 @RequiredArgsConstructor
 public class EventStepDefinitions {
     private final EventsBackgroundHelper backgroundHelper;
     private static final Logger LOG = LoggerFactory.getLogger(EventStepDefinitions.class);
+    private String tenantId;
 
     @Given("[Event] External GRPC Port in system property {string}")
     public void externalGRPCPortInSystemProperty(String propertyName) {
@@ -55,6 +58,7 @@ public class EventStepDefinitions {
 
     @Given("[Event] Grpc TenantId {string}")
     public void grpcTenantId(String tenantId) {
+        this.tenantId = tenantId;
         backgroundHelper.grpcTenantId(tenantId);
     }
 
@@ -74,27 +78,6 @@ public class EventStepDefinitions {
 
     @When("Send Trap Data to Kafka Listener via Producer with TenantId {string} and Location {string}")
     public void sendTrapDataToKafkaListenerViaProducerWithTenantIdAndLocationId(String tenantId, String location) {
-        /*var locationServiceBlockingStub = backgroundHelper.getMonitoringLocationStub();
-        String locationId = null;
-        try {
-            locationId =
-                    locationServiceBlockingStub.listLocations(Empty.newBuilder().build()).getLocationsList().stream()
-                            .filter(loc -> location.equals(loc.getLocation()))
-                            .findFirst()
-                            .map(MonitoringLocationDTO::getId)
-                            .map(String::valueOf)
-                            .orElseThrow(() -> new IllegalArgumentException("Location " + location + " not found"));
-            assertNotNull(locationId);
-            System.out.println("Location Id" + locationId);
-            LOG.info("Location {} Location Id {}", location, locationId);
-        } catch (StatusRuntimeException e) {
-            LOG.error(e.toString());
-        }*/
-        /*TenantLocationSpecificTrapLogDTO tenantLocationSpecificTrapLogDTO =
-        TenantLocationSpecificTrapLogDTO.newBuilder()
-                //.setLocationId(this.locationId)
-                .setTenantId(tenantId)
-                .build();*/
         TenantLocationSpecificTrapLogDTO tenantLocationSpecificTrapLogDTO =
                 TenantLocationSpecificTrapLogDTO.newBuilder()
                         .setTenantId(tenantId)
@@ -104,7 +87,6 @@ public class EventStepDefinitions {
                                 .setAgentAddress("127.0.0.1")
                                 .build())
                         .build();
-        LOG.info("Trap data {}", tenantLocationSpecificTrapLogDTO.toString());
         var producerRecord = new ProducerRecord<String, byte[]>(
                 backgroundHelper.getTopic(), tenantLocationSpecificTrapLogDTO.toByteArray());
 
@@ -120,23 +102,30 @@ public class EventStepDefinitions {
         }
     }
 
-    @Then("Check If There are {int} Events with Location {string}")
-    public void checkIfThereAreEventsWithLocation(int eventsCount, String location) {
-        List<Event> searchEvents = backgroundHelper.searchEventWithLocation(eventsCount, 1, location);
-
-        assertNotNull(searchEvents);
-        assertEquals(eventsCount, searchEvents.size());
+    @Then("Check If There are any events with Location {string}")
+    public void checkIfThereAreAnyEventsWithLocation(String location) {
+        EventsSearchBy searchEventByLocationName = EventsSearchBy.newBuilder()
+            .build();
+        await().atMost(10, TimeUnit.SECONDS)
+            .pollDelay(1, TimeUnit.SECONDS)
+            .pollInterval(2, TimeUnit.SECONDS)
+            .until(
+                () ->
+                    backgroundHelper.getEventServiceBlockingStub()
+                        .searchEvents(searchEventByLocationName)
+                        .getEventsList()
+                        .stream()
+                        .anyMatch(event -> event.getTenantId().equals(this.tenantId)),
+                Matchers.is(true));
+        assertTrue(backgroundHelper.getEventServiceBlockingStub()
+            .searchEvents(searchEventByLocationName)
+            .getEventsList()
+            .stream()
+            .anyMatch(event -> event.getTenantId().equals(this.tenantId)));
     }
 
     @Given("Initialize Trap Producer With Topic {string} and BootstrapServer {string}")
     public void initializeTrapProducerWithTopicAndBootstrapServer(String topic, String bootstrapServer) {
         backgroundHelper.initializeTrapProducer(topic, bootstrapServer);
-    }
-
-    @Given("Tenant id {string}")
-    @Given("Tenant {string}")
-    @Given("A new tenant named {string}")
-    public String useSpecifiedTenantId(String tenantId) {
-        return backgroundHelper.useSpecifiedTenantId(tenantId);
     }
 }
