@@ -21,9 +21,14 @@
  */
 package org.opennms.horizon.events.stepdefs;
 
+import static com.jayway.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -38,12 +43,6 @@ import org.opennms.horizon.grpc.traps.contract.TrapDTO;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static com.jayway.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class EventStepDefinitions {
@@ -104,24 +103,26 @@ public class EventStepDefinitions {
 
     @Then("Check If There are any events with Location {string}")
     public void checkIfThereAreAnyEventsWithLocation(String location) {
-        EventsSearchBy searchEventByLocationName = EventsSearchBy.newBuilder()
-            .build();
+        EventsSearchBy searchEventByLocationName = EventsSearchBy.newBuilder().build();
         await().atMost(10, TimeUnit.SECONDS)
-            .pollDelay(1, TimeUnit.SECONDS)
-            .pollInterval(2, TimeUnit.SECONDS)
-            .until(
-                () ->
-                    backgroundHelper.getEventServiceBlockingStub()
+                .pollDelay(1, TimeUnit.SECONDS)
+                .pollInterval(2, TimeUnit.SECONDS)
+                .until(
+                        () ->
+                                backgroundHelper
+                                        .getEventServiceBlockingStub()
+                                        .searchEvents(searchEventByLocationName)
+                                        .getEventsList()
+                                        .stream()
+                                        .anyMatch(event -> event.getTenantId().equals(this.tenantId)),
+                        Matchers.is(true));
+        assertTrue(
+                backgroundHelper
+                        .getEventServiceBlockingStub()
                         .searchEvents(searchEventByLocationName)
                         .getEventsList()
                         .stream()
-                        .anyMatch(event -> event.getTenantId().equals(this.tenantId)),
-                Matchers.is(true));
-        assertTrue(backgroundHelper.getEventServiceBlockingStub()
-            .searchEvents(searchEventByLocationName)
-            .getEventsList()
-            .stream()
-            .anyMatch(event -> event.getTenantId().equals(this.tenantId)));
+                        .anyMatch(event -> event.getTenantId().equals(this.tenantId)));
     }
 
     @Given("Initialize Trap Producer With Topic {string} and BootstrapServer {string}")

@@ -27,14 +27,13 @@ import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 @Getter
 public class EventsBackgroundHelper {
@@ -47,6 +46,7 @@ public class EventsBackgroundHelper {
     private Integer externalGrpcPort;
     private String bootstrapServer;
     private String topic;
+
     public void externalGRPCPortInSystemProperty(String propertyName) {
         String value = System.getProperty(propertyName);
         externalGrpcPort = Integer.parseInt(value);

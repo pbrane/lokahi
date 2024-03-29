@@ -21,8 +21,13 @@
  */
 package org.opennms.horizon.events;
 
+import static io.cucumber.core.options.Constants.*;
+
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.BeforeAll;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.time.Duration;
 import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.platform.suite.api.ConfigurationParameter;
@@ -37,12 +42,6 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
-
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.time.Duration;
-
-import static io.cucumber.core.options.Constants.*;
 
 @Suite
 @IncludeEngines("cucumber")
@@ -61,6 +60,7 @@ public class CucumberRunnerIT {
     private static KafkaContainer kafkaContainer;
     private static Network network;
     private static final String dockerImage = System.getProperty("application.docker.image");
+
     @Getter
     private static KeyPair jwtKeyPair;
 
@@ -152,5 +152,4 @@ public class CucumberRunnerIT {
         System.setProperty("application-external-http-port", String.valueOf(externalHttpPort));
         System.setProperty("application-external-http-base-url", "http://localhost:" + externalHttpPort);
     }
-
 }
