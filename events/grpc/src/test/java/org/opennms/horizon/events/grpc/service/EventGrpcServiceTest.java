@@ -35,6 +35,7 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.stub.MetadataUtils;
 import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -44,14 +45,16 @@ import org.keycloak.common.VerificationException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.opennms.horizon.events.grpc.client.InventoryClient;
-import org.opennms.horizon.events.grpc.config.GrpcTenantLookupImpl;
-import org.opennms.horizon.events.grpc.config.TenantLookup;
 import org.opennms.horizon.events.persistence.service.EventService;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventLog;
+import org.opennms.horizon.events.proto.EventLogListResponse;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
 import org.opennms.horizon.events.proto.EventsSearchBy;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.DirtiesContext;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -61,8 +64,6 @@ class EventGrpcServiceTest extends AbstractGrpcUnitTest {
     private EventGrpcService eventGrpcService;
     private InventoryClient mockInventoryClient;
     private ManagedChannel channel;
-    protected TenantLookup tenantLookup = new GrpcTenantLookupImpl();
-
     public static final String TEST_TENANTID = "test-tenant";
     public static final long TEST_NODEID = 1L;
 
@@ -72,7 +73,7 @@ class EventGrpcServiceTest extends AbstractGrpcUnitTest {
     public void prepareTest() throws VerificationException, IOException {
         mockEventService = Mockito.mock(EventService.class);
         mockInventoryClient = Mockito.mock(InventoryClient.class);
-        eventGrpcService = new EventGrpcService(mockEventService, mockInventoryClient, tenantLookup);
+        eventGrpcService = new EventGrpcService(mockEventService, mockInventoryClient);
 
         startServer(eventGrpcService);
         channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
@@ -176,10 +177,16 @@ class EventGrpcServiceTest extends AbstractGrpcUnitTest {
 
     @Test
     void testSearchEventsByNodeIdAndSearchTerm() throws VerificationException {
+        Pageable pageRequest = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "id"));
         var searchBY = EventsSearchBy.newBuilder()
                 .setNodeId(TEST_NODEID)
                 .setSearchTerm(SEARCH_TERM)
+                .setPageSize(5)
+                .setPage(1)
+                .setSortBy("id")
+                .setSortAscending(true)
                 .build();
+
         Event e1 = Event.newBuilder()
                 .setNodeId(TEST_NODEID)
                 .setTenantId(TEST_TENANTID)
@@ -198,13 +205,17 @@ class EventGrpcServiceTest extends AbstractGrpcUnitTest {
                 .setDescription("desc1")
                 .setIpAddress("127.0.0.1")
                 .build();
-        Mockito.when(mockEventService.searchEvents(TEST_TENANTID, searchBY)).thenReturn(List.of(e1, e2));
 
-        EventLog result = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createHeaders()))
+        EventLogListResponse listEventLogsResponse =
+                EventLogListResponse.newBuilder().addAllEvents(List.of(e1, e2)).build();
+        Mockito.when(mockEventService.searchEvents(TEST_TENANTID, searchBY, pageRequest))
+                .thenReturn(listEventLogsResponse);
+
+        EventLogListResponse result = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createHeaders()))
                 .searchEvents(searchBY);
 
         assertThat(result.getEventsList()).hasSize(2);
-        Mockito.verify(mockEventService, Mockito.times(1)).searchEvents(tenantId, searchBY);
+        Mockito.verify(mockEventService, Mockito.times(1)).searchEvents(tenantId, searchBY, pageRequest);
 
         Mockito.verify(spyInterceptor).verifyAccessToken(authHeader);
         Mockito.verify(spyInterceptor)
@@ -228,6 +239,24 @@ class EventGrpcServiceTest extends AbstractGrpcUnitTest {
 
         assertThat(statusException.getStatus().getCode().value()).isEqualTo(Code.UNAUTHENTICATED_VALUE);
         Mockito.verify(spyInterceptor).verifyAccessToken("Bearer fake");
+        Mockito.verify(spyInterceptor)
+                .interceptCall(
+                        ArgumentMatchers.any(ServerCall.class),
+                        ArgumentMatchers.any(Metadata.class),
+                        ArgumentMatchers.any(ServerCallHandler.class));
+    }
+
+    @Test
+    void testGetEventsByNodeIdAuthWithoutTenantID() throws NoSuchElementException, VerificationException {
+        var nodeId = UInt64Value.of(TEST_NODEID);
+        var stubWithHeader = stub.withInterceptors(
+                MetadataUtils.newAttachHeadersInterceptor(createHeaders(authHeaderWithoutTenantId)));
+
+        var statusException =
+                Assertions.assertThrows(StatusRuntimeException.class, () -> stubWithHeader.getEventsByNodeId(nodeId));
+
+        assertThat(statusException.getStatus().getCode().value()).isEqualTo(Code.NOT_FOUND.getNumber());
+        Mockito.verify(spyInterceptor).verifyAccessToken(authHeaderWithoutTenantId);
         Mockito.verify(spyInterceptor)
                 .interceptCall(
                         ArgumentMatchers.any(ServerCall.class),

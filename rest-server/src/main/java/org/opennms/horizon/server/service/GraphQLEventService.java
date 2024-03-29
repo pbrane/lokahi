@@ -73,20 +73,40 @@ public class GraphQLEventService {
     public Flux<Event> searchEvents(
             @GraphQLArgument(name = "nodeId") Long nodeId,
             @GraphQLArgument(name = "searchTerm") String searchTerm,
+            @GraphQLArgument(name = "pageSize") Integer pageSize,
+            @GraphQLArgument(name = "page") int page,
+            @GraphQLArgument(name = "sortBy") String sortBy,
+            @GraphQLArgument(name = "sortAscending") boolean sortAscending,
             @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(client.searchEvents(nodeId, searchTerm, headerUtil.getAuthHeader(env)).stream()
-                .map(mapper::protoToEvent)
-                .toList());
+        return Flux.fromIterable(
+                client
+                        .searchEvents(
+                                nodeId,
+                                searchTerm,
+                                pageSize,
+                                page,
+                                sortBy,
+                                sortAscending,
+                                headerUtil.getAuthHeader(env))
+                        .stream()
+                        .map(mapper::protoToEvent)
+                        .toList());
     }
 
-    @GraphQLQuery(name = "downloadEvents")
-    public Mono<SearchEventsResponse> downloadEvents(
+    @GraphQLQuery(name = "downloadEventsByNodeId")
+    public Mono<SearchEventsResponse> downloadEventsByNodeId(
             @GraphQLEnvironment ResolutionEnvironment env,
-            @GraphQLArgument(name = "searchTerm") String searchTerm,
             @GraphQLArgument(name = "nodeId") Long nodeId,
+            @GraphQLArgument(name = "searchTerm") String searchTerm,
+            @GraphQLArgument(name = "pageSize") Integer pageSize,
+            @GraphQLArgument(name = "page") int page,
+            @GraphQLArgument(name = "sortBy") String sortBy,
+            @GraphQLArgument(name = "sortAscending") boolean sortAscending,
             @GraphQLArgument(name = "downloadFormat") DownloadFormat downloadFormat) {
 
-        List<Event> events = client.searchEvents(nodeId, searchTerm, headerUtil.getAuthHeader(env)).stream()
+        List<Event> events = client
+                .searchEvents(nodeId, searchTerm, pageSize, page, sortBy, sortAscending, headerUtil.getAuthHeader(env))
+                .stream()
                 .map(mapper::protoToEvent)
                 .toList();
 

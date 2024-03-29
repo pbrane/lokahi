@@ -11,6 +11,10 @@ on:
         description: 'What version to tag as; default is a new patch version'
         required: false
         type: string
+      previousVersion:
+        description: 'Previous version we should compare against'
+        required: false
+        type: string
   pull_request:
     paths:
       - '.github/workflows/create-release.yml'
@@ -36,8 +40,20 @@ jobs:
           else
               DRYRUN=""
           fi
+          
+          if [ "${{ github.event.inputs.previousVersion }}" != '' ]; then
+              OLDVERSION="${{github.event.inputs.previousVersion}}"
+          else
+              OLDVERSION=""
+          fi
+
+          if [ "${{ github.event.inputs.version }}" != '' ]; then
+              NEWVERSION="${{github.event.inputs.version}}"
+          else
+              NEWVERSION=""
+          fi
 
           git config --global user.email "${{ vars.GH_USER_EMAIL }}"
           git config --global user.name "${{ vars.GH_USER_NAME }}"
 
-          build-tools/release/release.sh $DRYRUN
+          build-tools/release/release.sh $DRYRUN $OLDVERSION $NEWVERSION

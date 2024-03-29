@@ -19,15 +19,29 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.events.grpc.config;
+package org.opennms.horizon.inventory.snmp.config;
 
-import io.grpc.Context;
-import java.util.Optional;
-import org.opennms.horizon.shared.constants.GrpcConstants;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Data;
 
-public class GrpcTenantLookupImpl implements TenantLookup {
-    @Override
-    public Optional<String> lookupTenantId(Context context) {
-        return Optional.ofNullable(GrpcConstants.TENANT_ID_CONTEXT_KEY.get());
+@XmlRootElement(name = "collect", namespace = "http://xmlns.opennms.org/xsd/config/datacollection")
+@XmlAccessorType(XmlAccessType.NONE)
+@Data
+public class Collect {
+
+    @XmlElement(name = "includeGroup")
+    private List<String> includeGroups = new ArrayList<>();
+
+    public void addIncludeGroup(final String includeGroup) throws IndexOutOfBoundsException {
+        this.includeGroups.add(includeGroup);
+    }
+
+    public boolean removeIncludeGroup(final String includeGroup) {
+        return this.includeGroups.remove(includeGroup);
     }
 }

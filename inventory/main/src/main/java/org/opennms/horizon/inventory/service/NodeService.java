@@ -282,8 +282,7 @@ public class NodeService {
                 var monitorTask =
                         monitorTaskSetService.getMonitorTask(monitorType, ipInterface, node.getId(), ms.getId(), null);
                 Optional.ofNullable(monitorTask).ifPresent(tasks::add);
-                var collectorTask =
-                        collectorTaskSetService.getCollectorTask(monitorType, ipInterface, node.getId(), null);
+                var collectorTask = collectorTaskSetService.getCollectorTask(monitorType, ipInterface, node, null);
                 Optional.ofNullable(collectorTask).ifPresent(tasks::add);
             });
         });

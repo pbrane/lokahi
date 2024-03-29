@@ -19,11 +19,17 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.events.grpc.config;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import io.grpc.Context;
-import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.opennms.horizon.inventory.snmp.SnmpCollectorConfig;
 
-public interface TenantLookup {
-    Optional<String> lookupTenantId(Context context);
+public class LoadTest {
+
+    @Test
+    public void testLoadConfig() throws Exception {
+        final var config = SnmpCollectorConfig.load();
+
+        assertThat(config.getConfigurations()).isNotEmpty();
+    }
 }
