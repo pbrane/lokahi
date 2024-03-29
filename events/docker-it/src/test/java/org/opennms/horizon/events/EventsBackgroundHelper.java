@@ -50,12 +50,8 @@ public class EventsBackgroundHelper {
     private EventServiceGrpc.EventServiceBlockingStub eventServiceBlockingStub;
 
     private Integer externalGrpcPort;
-    private final Map<String, String> grpcHeaders = new TreeMap<>();
     private String bootstrapServer;
     private String topic;
-    private final DynamicTenantIdInterceptor dynamicTenantIdInterceptor = new DynamicTenantIdInterceptor(
-        // Pull private key directly from container
-        CucumberRunnerIT.getJwtKeyPair());
     public void externalGRPCPortInSystemProperty(String propertyName) {
         String value = System.getProperty(propertyName);
         externalGrpcPort = Integer.parseInt(value);
@@ -86,7 +82,7 @@ public class EventsBackgroundHelper {
     public void grpcTenantId(String tenantId) {
         Objects.requireNonNull(tenantId);
         this.tenantId = tenantId;
-        grpcHeaders.put(GrpcConstants.TENANT_ID_KEY, tenantId);
+        //grpcHeaders.put(GrpcConstants.TENANT_ID_KEY, tenantId);
         LOG.info("Using tenantId={}", tenantId);
     }
 
@@ -99,21 +95,17 @@ public class EventsBackgroundHelper {
         this.bootstrapServer = System.getProperty(bootstrapServer);
     }
 
-    public void searchEventWithLocation(int eventsCount, int nodeId, String location) {
+    public List<Event> searchEventWithLocation(int eventsCount, int nodeId, String location) {
         EventsSearchBy searchEventByLocationName = EventsSearchBy.newBuilder()
                 // .setNodeId(nodeId)
                 // .setSearchTerm(location)
                 .build();
-        List<Event> searchEvents =
-                eventServiceBlockingStub.searchEvents(searchEventByLocationName).getEventsList();
-
-        assertNotNull(searchEvents);
-        assertEquals(eventsCount, searchEvents.size());
+        return eventServiceBlockingStub.searchEvents(searchEventByLocationName).getEventsList();
     }
 
     public String useSpecifiedTenantId(String tenantId) {
         this.tenantId = tenantId;
-        dynamicTenantIdInterceptor.setTenantId(tenantId);
+        //dynamicTenantIdInterceptor.setTenantId(tenantId);
         LOG.info("New tenant-id is {}", tenantId);
         return tenantId;
     }
