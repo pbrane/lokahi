@@ -25,20 +25,20 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.UInt64Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.Context;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.events.grpc.client.InventoryClient;
-import org.opennms.horizon.events.grpc.config.TenantLookup;
 import org.opennms.horizon.events.persistence.service.EventService;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventLog;
 import org.opennms.horizon.events.proto.EventLogListResponse;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
 import org.opennms.horizon.events.proto.EventsSearchBy;
+import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -51,7 +51,6 @@ import org.springframework.stereotype.Component;
 public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
     private final EventService eventService;
     private final InventoryClient inventoryClient;
-    private final TenantLookup tenantLookup;
 
     public static final int PAGE_SIZE_DEFAULT = 10;
     public static final String SORT_BY_DEFAULT = "id";
@@ -59,7 +58,7 @@ public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
 
     @Override
     public void listEvents(Empty request, StreamObserver<EventLog> responseObserver) {
-        String tenantId = tenantLookup.lookupTenantId(Context.current()).orElseThrow();
+        String tenantId = Objects.requireNonNull(GrpcConstants.TENANT_ID_CONTEXT_KEY.get());
 
         List<Event> events = eventService.findEvents(tenantId);
         EventLog eventList =
@@ -71,7 +70,7 @@ public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
 
     @Override
     public void getEventsByNodeId(UInt64Value nodeId, StreamObserver<EventLog> responseObserver) {
-        String tenantId = tenantLookup.lookupTenantId(Context.current()).orElseThrow();
+        String tenantId = Objects.requireNonNull(GrpcConstants.TENANT_ID_CONTEXT_KEY.get());
 
         try {
             inventoryClient.getNodeById(tenantId, nodeId.getValue());
@@ -101,7 +100,7 @@ public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
     @Override
     public void searchEvents(EventsSearchBy request, StreamObserver<EventLogListResponse> responseObserver) {
 
-        String tenantId = tenantLookup.lookupTenantId(Context.current()).orElseThrow();
+        String tenantId = Objects.requireNonNull(GrpcConstants.TENANT_ID_CONTEXT_KEY.get());
         int pageSize = request.getPageSize() != 0 ? request.getPageSize() : PAGE_SIZE_DEFAULT;
         int page = request.getPage();
 
