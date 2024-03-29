@@ -25,10 +25,7 @@ import static io.cucumber.core.options.Constants.*;
 
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.BeforeAll;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.time.Duration;
-import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;
@@ -61,14 +58,10 @@ public class CucumberRunnerIT {
     private static Network network;
     private static final String dockerImage = System.getProperty("application.docker.image");
 
-    @Getter
-    private static KeyPair jwtKeyPair;
-
     @BeforeAll
     @SuppressWarnings({"unchecked"})
     public static void before() throws Throwable {
         network = Network.newNetwork();
-        jwtKeyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
         kafkaContainer = new KafkaContainer(
                         DockerImageName.parse("confluentinc/cp-kafka").withTag(confluentPlatformVersion))
                 .withNetwork(network)
@@ -124,9 +117,6 @@ public class CucumberRunnerIT {
                 .withEnv("SPRING_DATASOURCE_USERNAME", postgreSQLContainer.getUsername())
                 .withEnv("SPRING_DATASOURCE_PASSWORD", postgreSQLContainer.getPassword())
                 .withEnv("EVENT_ENCRYPTION_KEY", RandomStringUtils.randomAlphanumeric(32))
-                // Uncomment to get Hibernate SQL logging
-                // .withEnv("logging.level.org.hibernate.SQL", "DEBUG")
-                // .withEnv("logging.level.org.hibernate.orm.jdbc.bind", "TRACE")
                 .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("APPLICATION"));
 
         if (!enableDebuggingPort5005) {
