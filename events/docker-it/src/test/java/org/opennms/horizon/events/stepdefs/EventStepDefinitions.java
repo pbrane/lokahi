@@ -26,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+
+import java.util.List;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -34,6 +36,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.opennms.horizon.events.EventsBackgroundHelper;
+import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapDTO;
 import org.opennms.horizon.shared.constants.GrpcConstants;
@@ -119,7 +122,10 @@ public class EventStepDefinitions {
 
     @Then("Check If There are {int} Events with Location {string}")
     public void checkIfThereAreEventsWithLocation(int eventsCount, String location) {
-        backgroundHelper.searchEventWithLocation(eventsCount, 1, location);
+        List<Event> searchEvents = backgroundHelper.searchEventWithLocation(eventsCount, 1, location);
+
+        assertNotNull(searchEvents);
+        assertEquals(eventsCount, searchEvents.size());
     }
 
     @Given("Initialize Trap Producer With Topic {string} and BootstrapServer {string}")
