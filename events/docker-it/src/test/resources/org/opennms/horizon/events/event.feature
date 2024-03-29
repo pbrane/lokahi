@@ -9,4 +9,4 @@ Feature: Event Service Basic Functionality
   Scenario:
     Given Initialize Trap Producer With Topic "traps" and BootstrapServer "kafka.bootstrap-servers"
     When Send Trap Data to Kafka Listener via Producer with TenantId "event-tenant-stream" and Location "1"
-    Then Check If There are any events with Location "Default"
+    Then Check If There are any events

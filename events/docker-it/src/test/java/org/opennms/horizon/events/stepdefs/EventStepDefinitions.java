@@ -101,8 +101,8 @@ public class EventStepDefinitions {
         }
     }
 
-    @Then("Check If There are any events with Location {string}")
-    public void checkIfThereAreAnyEventsWithLocation(String location) {
+    @Then("Check If There are any events")
+    public void checkIfThereAreAnyEvents() {
         EventsSearchBy searchEventByLocationName = EventsSearchBy.newBuilder().build();
         await().atMost(10, TimeUnit.SECONDS)
                 .pollDelay(1, TimeUnit.SECONDS)
