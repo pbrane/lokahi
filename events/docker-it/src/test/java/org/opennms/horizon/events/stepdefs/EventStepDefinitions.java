@@ -114,7 +114,7 @@ public class EventStepDefinitions {
                                         .searchEvents(searchEventByLocationName)
                                         .getEventsList()
                                         .stream()
-                                        .anyMatch(event -> event.getTenantId().equals(this.tenantId)),
+                                        .anyMatch(event -> event.getTenantId().equals(this.tenantId) && event.getUei().equals("uei.opennms.org/generic/traps/SNMP_Cold_Start")),
                         Matchers.is(true));
         assertTrue(
                 backgroundHelper
