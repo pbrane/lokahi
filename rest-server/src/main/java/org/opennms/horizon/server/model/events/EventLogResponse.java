@@ -19,20 +19,19 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.server.mapper;
+package org.opennms.horizon.server.model.events;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.opennms.horizon.server.model.events.Event;
-import org.opennms.horizon.server.model.events.EventLogResponse;
+import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
-@Mapper(componentModel = "spring")
-public interface EventMapper {
+@Getter
+@Setter
+public class EventLogResponse {
 
-    @Mapping(source = "parametersList", target = "eventParams")
-    @Mapping(source = "producedTimeMs", target = "producedTime")
-    @Mapping(source = "databaseId", target = "id")
-    Event protoToEvent(org.opennms.horizon.events.proto.Event eventProto);
-
-    EventLogResponse protoToEventLogResponse(org.opennms.horizon.events.proto.EventLogListResponse eventProto);
+    private String tenantId;
+    private List<Event> eventsList;
+    private long nextPage;
+    private long lastPage;
+    private long totalEvents;
 }

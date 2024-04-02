@@ -32,8 +32,10 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.opennms.horizon.events.proto.EventLogListResponse;
 import org.opennms.horizon.server.mapper.EventMapper;
 import org.opennms.horizon.server.model.events.Event;
+import org.opennms.horizon.server.model.events.EventLogResponse;
 import org.opennms.horizon.server.model.inventory.DownloadFormat;
 import org.opennms.horizon.server.model.inventory.SearchEventsResponse;
 import org.opennms.horizon.server.service.grpc.EventsClient;
@@ -70,7 +72,7 @@ public class GraphQLEventService {
     }
 
     @GraphQLQuery(name = "searchEvents")
-    public Flux<Event> searchEvents(
+    public Mono<EventLogResponse> searchEvents(
             @GraphQLArgument(name = "nodeId") Long nodeId,
             @GraphQLArgument(name = "searchTerm") String searchTerm,
             @GraphQLArgument(name = "pageSize") Integer pageSize,
@@ -78,19 +80,9 @@ public class GraphQLEventService {
             @GraphQLArgument(name = "sortBy") String sortBy,
             @GraphQLArgument(name = "sortAscending") boolean sortAscending,
             @GraphQLEnvironment ResolutionEnvironment env) {
-        return Flux.fromIterable(
-                client
-                        .searchEvents(
-                                nodeId,
-                                searchTerm,
-                                pageSize,
-                                page,
-                                sortBy,
-                                sortAscending,
-                                headerUtil.getAuthHeader(env))
-                        .stream()
-                        .map(mapper::protoToEvent)
-                        .toList());
+        return Mono.just(client.searchEvents(
+                        nodeId, searchTerm, pageSize, page, sortBy, sortAscending, headerUtil.getAuthHeader(env)))
+                .map(mapper::protoToEventLogResponse);
     }
 
     @GraphQLQuery(name = "downloadEventsByNodeId")
@@ -104,14 +96,14 @@ public class GraphQLEventService {
             @GraphQLArgument(name = "sortAscending") boolean sortAscending,
             @GraphQLArgument(name = "downloadFormat") DownloadFormat downloadFormat) {
 
-        List<Event> events = client
-                .searchEvents(nodeId, searchTerm, pageSize, page, sortBy, sortAscending, headerUtil.getAuthHeader(env))
-                .stream()
-                .map(mapper::protoToEvent)
-                .toList();
-
+        EventLogListResponse eventLogListResponse = client.searchEvents(
+                nodeId, searchTerm, pageSize, page, sortBy, sortAscending, headerUtil.getAuthHeader(env));
         try {
-            return Mono.just(generateDownloadableEventsResponse(events, downloadFormat));
+            return Mono.just(generateDownloadableEventsResponse(
+                    eventLogListResponse.getEventsList().stream()
+                            .map(mapper::protoToEvent)
+                            .toList(),
+                    downloadFormat));
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to download search events.");
         }
