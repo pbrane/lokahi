@@ -10,7 +10,6 @@
           >Create Policy
         </FeatherButton>
       </div>
-      <div class="policies-content">
         <section class="feather-row">
           <div :class="isEditing ? 'feather-col-8' : 'feather-col-12'">
             <MonitoringPoliciesTable
@@ -25,7 +24,6 @@
         </section>
      </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -54,7 +52,7 @@ onMounted(() => store.getMonitoringPolicies())
 }
 
 .content {
-  width: 88%;
+  width: 86%;
   margin-right: var(variables.$spacing-l);
   margin-left: var(variables.$spacing-l);
 }
@@ -66,25 +64,4 @@ onMounted(() => store.getMonitoringPolicies())
   align-items: center;
 }
 
-.policies-content {
-  background: var(variables.$surface);
-  padding: var(variables.$spacing-l);
-  border-radius: vars.$border-radius-surface;
-  border: 1px solid var(variables.$border-on-surface);
-}
-
-
-/*
-.full-page-container {
-  display: flex;
-  flex-direction: column;
-  max-width: 2000px;
-}
-
-:deep(hr) {
-  width: 100%;
-  border: 1px solid var(variables.$shade-4);
-  margin: var(variables.$spacing-xl) 0px;
-}
-*/
 </style>

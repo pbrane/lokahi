@@ -10,7 +10,7 @@
 .table-card {
   background: var(variables.$surface);
   width: 100%;
-  padding: 25px 10px 25px 10px;
+  padding: 25px 0px;
   border-radius: 5px;
   display: inline-block;
 }

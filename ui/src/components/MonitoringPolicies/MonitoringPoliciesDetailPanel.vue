@@ -31,39 +31,57 @@
       <div class="card">
         <div class="sub-title">STATUS</div>
         <div class="toggle-wrapper">
-          <span>Enabled</span>
           <FeatherListSwitch
             class="basic-switch"
             v-model="isEnabled"
           />
+          <span>Active</span>
         </div>
       </div>
       <div class="card">
         <div class="sub-title">TAGS</div>
         <FeatherChipList condensed label="Tags" class="tag-chip-list" data-test="tag-chip-list">
-          <FeatherChip v-for="(tag, index) in tags" :key="index" class="pointer">
-            <template v-slot:icon>
-              <FeatherIcon :icon="Cancel" />
-            </template>
-            {{ tag.name }}
+          <FeatherChip v-for="(tag, index) in store.selectedPolicy?.tags" :key="index" class="pointer" active>
+            {{ tag }}
           </FeatherChip>
         </FeatherChipList>
       </div>
       <div class="card">
         <div class="sub-title">ALERT RULES</div>
         <div class="alert-rules-wrapper">
-          <div class="alert-rule" v-for="rule in store.selectedPolicy?.rules" :key="rule.id">
-            <div class="headline">
-              <span>{{ rule.name }}</span>
+          <div class="alert-rule" v-for="(rule,index) in store.selectedPolicy?.rules?.slice(0,6)" :key="rule.id">
+            <div v-if="index < 5">
+              <div class="headline">
+                <span>{{ rule.name }}</span>
+              </div>
+              <div>
+                <span>Rule Description</span>
+              </div>
             </div>
-            <div>
-              <span>Rule Description</span>
-            </div>
+            <span v-else  v-html="monitoringPolicyRules" class="rules"/>
           </div>
         </div>
       </div>
+      <div class="card">
+        <FeatherButton
+          class="delete"
+          secondary
+          @click="openModal"
+        >
+          <FeatherIcon :icon="icons.deleteIcon" />
+          DELETE
+        </FeatherButton>
+     </div>
     </div>
   </div>
+  <DeleteConfirmationModal
+    :name = "store.selectedPolicy?.name"
+    :isVisible = "isVisible"
+    :customMsg = "deleteMsg"
+    :noteMsg = "noteMsg"
+    :closeModal="onCloseModal"
+    :deleteHandler="removePolicy"
+  />
 </template>
 
 <script setup lang="ts">
@@ -71,15 +89,16 @@ import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStor
 import ContentCopy from '@featherds/icon/action/ContentCopy'
 import Cancel from '@featherds/icon/navigation/Cancel'
 import Edit from '@featherds/icon/action/Edit'
-import { TagSelectItem } from '@/types'
+import Delete from '@featherds/icon/action/Delete'
+import useModal from '@/composables/useModal'
 
 const store = useMonitoringPoliciesStore()
+
+const { openModal, closeModal, isVisible } = useModal()
+
 const isEnabled = ref(false)
-const tags = ref<TagSelectItem[]>([
-  { id: '1', name: 'default' },
-  { id: '2', name: 'tag1' },
-  { id: '3', name: 'tag2' }
-])
+
+const noteMsg = ref('<b>Deleting this policy may cause these nodes to not be monitored, which means we will stop sending alerts</b>')
 
 const emit = defineEmits<{
   (e: 'onClose'): void
@@ -88,8 +107,22 @@ const emit = defineEmits<{
 const icons = markRaw({
   Cancel,
   ContentCopy,
-  Edit
+  Edit,
+  deleteIcon: Delete
 })
+
+const monitoringPolicyRules = computed(() => {
+  const length = store.selectedPolicy?.rules?.length || 0
+  if (length > 5) {
+    return `Plus ${length - 5} other rules`
+  } else {
+    return ''
+  }
+})
+
+const deleteMsg = computed(() =>
+  `Deleting monitoring policy ${store.selectedPolicy?.name} removes ${store.numOfAlertsForRule} associated alerts. Do you wish to proceed?`
+)
 
 const onEdit = () => {
   console.log('onEdit clicked')
@@ -100,7 +133,17 @@ const onCopy = () => {
 }
 
 const onClose = () => {
-  console.log('close clicked')
+  emit('onClose')
+  store.clearSelectedPolicy()
+}
+
+const onCloseModal = () => {
+  closeModal()
+  emit('onClose')
+}
+
+const removePolicy = () => {
+  store.removePolicy()
   emit('onClose')
 }
 </script>
@@ -114,7 +157,6 @@ const onClose = () => {
   display: flex;
   flex: 1;
   flex-direction: column;
-  background: var(variables.$surface);
   padding: var(variables.$spacing-l);
 
   .policy-form-title-container {
@@ -135,22 +177,41 @@ const onClose = () => {
 .policy-details-card-wrapper {
   display: flex;
   flex-direction: column;
-
   .card {
+    padding: 15px 0px;
+    .rules {
+      margin-top: 5px;
+    }
+    .delete {
+      &:focus {
+        border: none
+      }
+    }
   }
 }
 
 .sub-title {
   @include typography.button;
-  color: var(variables.$secondary-variant);
+  color: var(variables.$primary-text-on-surface);
 }
 
 .toggle-wrapper {
-  text-align: left;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 5px;
+  :deep(.feather-list-item) {
+  padding: 0px !important;
+  &:deep(hover) {
+    background: none !important;
+  }
+ }
 }
 
 .headline {
   font-size: 1rem;
   font-weight: 600;
+  margin: 10px 0px;
 }
+
 </style>

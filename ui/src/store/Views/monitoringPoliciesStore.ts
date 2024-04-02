@@ -25,7 +25,7 @@ type TState = {
   monitoringPolicies: MonitorPolicy[],
   numOfAlertsForPolicy: number
   numOfAlertsForRule: number
-  validationErrors: any
+  validationErrors: any,
 }
 
 const defaultPolicy: Policy = {
@@ -90,6 +90,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
   }),
   actions: {
     // used for initial population of policies
+
     async getMonitoringPolicies() {
       const queries = useMonitoringPoliciesQueries()
       await queries.listMonitoringPolicies()
@@ -108,6 +109,9 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     displayPolicyForm(policy?: Policy) {
       this.selectedPolicy = policy ? cloneDeep(policy) : cloneDeep(defaultPolicy)
       this.selectedRule = undefined
+    },
+    clearSelectedPolicy() {
+      this.selectedPolicy = undefined
     },
     async displayRuleForm(rule?: PolicyRule) {
       this.selectedRule = rule ? cloneDeep(rule) : await getDefaultRule()
@@ -282,6 +286,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.getMonitoringPolicies()
       this.selectedRule = undefined
       this.selectedPolicy = undefined
+      this.clearSelectedPolicy()
     },
     async countAlerts() {
       const { getAlertCountByPolicyId } = useMonitoringPoliciesQueries()
