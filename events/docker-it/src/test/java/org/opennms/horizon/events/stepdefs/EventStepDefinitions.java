@@ -49,6 +49,7 @@ public class EventStepDefinitions {
     private final EventsBackgroundHelper backgroundHelper;
     private static final Logger LOG = LoggerFactory.getLogger(EventStepDefinitions.class);
     private String tenantId;
+    private String uei = "uei.opennms.org/generic/traps/SNMP_Cold_Start";
 
     @Given("[Event] External GRPC Port in system property {string}")
     public void externalGRPCPortInSystemProperty(String propertyName) {
@@ -115,8 +116,7 @@ public class EventStepDefinitions {
                                         .getEventsList()
                                         .stream()
                                         .anyMatch(event -> event.getTenantId().equals(this.tenantId)
-                                                && event.getUei()
-                                                        .equals("uei.opennms.org/generic/traps/SNMP_Cold_Start")),
+                                                && event.getUei().equals(uei)),
                         Matchers.is(true));
         assertTrue(
                 backgroundHelper
@@ -125,7 +125,7 @@ public class EventStepDefinitions {
                         .getEventsList()
                         .stream()
                         .anyMatch(event -> event.getTenantId().equals(this.tenantId)
-                                && event.getUei().equals("uei.opennms.org/generic/traps/SNMP_Cold_Start")));
+                                && event.getUei().equals(uei)));
     }
 
     @Given("Initialize Trap Producer With Topic {string} and BootstrapServer {string}")
