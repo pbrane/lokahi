@@ -26,7 +26,6 @@ import static io.cucumber.core.options.Constants.*;
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.BeforeAll;
 import java.time.Duration;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectClasspathResource;
@@ -116,7 +115,6 @@ public class CucumberRunnerIT {
                 .withEnv("SPRING_DATASOURCE_URL", jdbcUrl)
                 .withEnv("SPRING_DATASOURCE_USERNAME", postgreSQLContainer.getUsername())
                 .withEnv("SPRING_DATASOURCE_PASSWORD", postgreSQLContainer.getPassword())
-                .withEnv("EVENT_ENCRYPTION_KEY", RandomStringUtils.randomAlphanumeric(32))
                 .withLogConsumer(new Slf4jLogConsumer(LOG).withPrefix("APPLICATION"));
 
         if (!enableDebuggingPort5005) {
