@@ -23,7 +23,6 @@ package org.opennms.horizon.minion.taskset.worker.impl;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -139,16 +138,8 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
             if (monitor != null) {
                 // TBD888: populate host, or stop?
                 MonitoredService monitoredService = configureMonitoredService(taskDefinition);
-                CompletableFuture<ServiceMonitorResponse> future = CompletableFuture.supplyAsync(
-                        () -> {
-                            try {
-                                return monitor.poll(monitoredService, taskDefinition.getConfiguration())
-                                        .get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        executor);
+                CompletableFuture<ServiceMonitorResponse> future =
+                        monitor.poll(monitoredService, taskDefinition.getConfiguration());
                 future.whenCompleteAsync(this::handleExecutionComplete, executor);
 
             } else {

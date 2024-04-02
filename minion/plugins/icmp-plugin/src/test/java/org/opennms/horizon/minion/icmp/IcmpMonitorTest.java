@@ -92,16 +92,11 @@ public class IcmpMonitorTest {
     @Test
     public void testPollThroughThreadPoll() {
         icmpMonitor = getIcmpMonitor(false, false);
-        CompletableFuture.runAsync(
-                () -> {
-                    icmpMonitor
-                            .poll(monitoredService, testConfig)
-                            .whenCompleteAsync(
-                                    (response, throwable) -> {
-                                        assertEquals(Status.Up, response.getStatus());
-                                        assertTrue(response.getResponseTime() > 0.0);
-                                    },
-                                    executor);
+        CompletableFuture<ServiceMonitorResponse> future = icmpMonitor.poll(monitoredService, testConfig);
+        future.whenCompleteAsync(
+                (response, throwable) -> {
+                    assertEquals(Status.Up, response.getStatus());
+                    assertTrue(response.getResponseTime() > 0.0);
                 },
                 executor);
     }
@@ -122,18 +117,14 @@ public class IcmpMonitorTest {
     @Test
     public void testTimeOutThroughThreadPoll() {
         icmpMonitor = getIcmpMonitor(false, true);
-        CompletableFuture.runAsync(
-                () -> {
-                    icmpMonitor
-                            .poll(monitoredService, testConfig)
-                            .whenCompleteAsync(
-                                    (response, throwable) -> {
-                                        assertNotNull(response); // Ensure the response is not null
-                                        assertEquals(Status.Unknown, response.getStatus());
-                                        assertEquals("timeout", response.getReason());
-                                        assertEquals(0.0d, response.getResponseTime(), 0);
-                                    },
-                                    executor);
+
+        CompletableFuture<ServiceMonitorResponse> future = icmpMonitor.poll(monitoredService, testConfig);
+        future.whenCompleteAsync(
+                (response, throwable) -> {
+                    assertNotNull(response); // Ensure the response is not null
+                    assertEquals(Status.Unknown, response.getStatus());
+                    assertEquals("timeout", response.getReason());
+                    assertEquals(0.0d, response.getResponseTime(), 0);
                 },
                 executor);
     }
@@ -154,18 +145,13 @@ public class IcmpMonitorTest {
     @Test
     public void testErrorThroughThreadPoll() {
         icmpMonitor = getIcmpMonitor(true, false);
-        CompletableFuture.runAsync(
-                () -> {
-                    icmpMonitor
-                            .poll(monitoredService, testConfig)
-                            .whenCompleteAsync(
-                                    (response, throwable) -> {
-                                        assertNotNull(response); // Ensure the response is not null
-                                        assertEquals(Status.Down, response.getStatus());
-                                        assertEquals("Failed to ping", response.getReason());
-                                        assertEquals(0.0d, response.getResponseTime(), 0);
-                                    },
-                                    executor);
+        CompletableFuture<ServiceMonitorResponse> future = icmpMonitor.poll(monitoredService, testConfig);
+        future.whenCompleteAsync(
+                (response, throwable) -> {
+                    assertNotNull(response); // Ensure the response is not null
+                    assertEquals(Status.Down, response.getStatus());
+                    assertEquals("Failed to ping", response.getReason());
+                    assertEquals(0.0d, response.getResponseTime(), 0);
                 },
                 executor);
     }
