@@ -89,7 +89,6 @@ public class IcmpMonitorTest {
         assertTrue(serviceMonitorResponse.getResponseTime() > 0.0);
     }
 
-
     @Test
     public void testTimeout() throws Exception {
         icmpMonitor = getIcmpMonitor(false, true);
@@ -103,7 +102,6 @@ public class IcmpMonitorTest {
         assertEquals(0.0d, serviceMonitorResponse.getResponseTime(), 0);
     }
 
-
     @Test
     public void testError() throws Exception {
         icmpMonitor = getIcmpMonitor(true, false);
@@ -116,5 +114,4 @@ public class IcmpMonitorTest {
         assertEquals("Failed to ping", serviceMonitorResponse.getReason());
         assertEquals(0.0d, serviceMonitorResponse.getResponseTime(), 0);
     }
-
 }
