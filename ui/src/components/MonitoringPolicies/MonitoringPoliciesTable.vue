@@ -50,11 +50,12 @@
             <tr
               v-for="policy in store.monitoringPolicies"
               :key="policy.id"
-              class="policies-table-row"
+              :class="{'policies-table-row':true,'active': policy.id === store.selectedPolicy?.id }"
+              @click="() => onSelectPolicy(policy.id)"
             >
               <td>
                 <div class="action">
-                 <span class="check-circle"  @click="() => onSelectPolicy(policy.id)">
+                 <span class="check-circle">
                   <FeatherTooltip
                     :title="policy?.enabled ? 'Enabled':'Disabled'"
                     v-slot="{ attrs, on }"
@@ -130,17 +131,14 @@ const sort = reactive({
 
 const sortChanged = (sortObj: Record<string, string>) => {
   // store.setTopNNodesTableSort(sortObj)
-
   for (const prop in sort) {
     sort[prop] = SORT.NONE
   }
-
   sort[sortObj.property] = sortObj.value
 }
 
 const onSelectPolicy = (id: string) => {
   console.log(`onSelectPolicy, id: ${id}`)
-
   const selectedPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(id))
 
   if (selectedPolicy) {
@@ -173,8 +171,6 @@ const onRefresh = () => {
   overflow-x: hidden;
 
   .card {
-    height: 442px;
-
     .header {
       display: flex;
       justify-content: space-between;
@@ -207,6 +203,9 @@ const onRefresh = () => {
     table {
       width: 100%;
       @include table.table;
+      .active {
+        background-color: var(variables.$shade-4)
+      }
       thead {
         background: var(variables.$background);
         text-transform: uppercase;
@@ -221,7 +220,6 @@ const onRefresh = () => {
         white-space: nowrap;
         div {
           border-radius: 5px;
-          padding: 0px 5px 0px 5px;
         }
       }
 

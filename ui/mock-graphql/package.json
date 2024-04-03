@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^3.3.1",
-    "nodemon": "^2.0.22",
+    "nodemon": "3.1.0",
     "ts-node": "^10.8.2"
   }
 }
