@@ -26,11 +26,8 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Any;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -51,10 +48,6 @@ public class IcmpMonitorTest {
     IcmpMonitorRequest testEchoRequest;
     Any testConfig;
     IcmpMonitor icmpMonitor;
-    private ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
-            .setNameFormat("monitor-service-response-handler")
-            .build());
-    ;
 
     @Before
     public void setUp() throws Exception {
