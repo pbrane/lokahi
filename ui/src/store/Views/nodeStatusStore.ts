@@ -3,7 +3,7 @@ import { FLOWS_ENABLED } from '@/constants'
 import { useNodeStatusQueries } from '@/store/Queries/nodeStatusQueries'
 import { AZURE_SCAN, DeepPartial } from '@/types'
 import { AlertsFilters, AlertsSort, EventsFilters, Pagination } from '@/types/alerts'
-import { DownloadCsvVariables, DownloadFormat, Exporter, ListAlertResponse, ListEventResponse, NodeUpdateInput, RequestCriteriaInput, TimeRange } from '@/types/graphql'
+import { DownloadCSVEventVariables, DownloadCsvVariables, DownloadFormat, Exporter, ListAlertResponse, ListEventResponse, NodeUpdateInput, RequestCriteriaInput, TimeRange } from '@/types/graphql'
 import { cloneDeep } from 'lodash'
 import { defineStore } from 'pinia'
 import { useNodeMutations } from '../Mutations/nodeMutations'
@@ -136,7 +136,11 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
   }
 
   const downloadEvents = async (searchTerm: string) => {
-    const queryVariables: DownloadCsvVariables = {
+    const queryVariables: DownloadCSVEventVariables = {
+      page: eventsPagination.value.page > 0 ? eventsPagination.value.page - 1 : 0,
+      pageSize: eventsPagination.value.pageSize,
+      sortBy: eventsFilter.value.sortBy,
+      sortAscending: eventsFilter.value.sortAscending,
       nodeId: nodeId.value,
       searchTerm: searchTerm || '',
       downloadFormat: DownloadFormat.Csv

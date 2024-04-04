@@ -1,5 +1,5 @@
 import { AlertsFilters, EventsFilters, Pagination, Variables } from '@/types/alerts'
-import { AlertsByNodeDocument, DownloadAlertsByNodeDocument, DownloadCsvVariables, DownloadEventsDocument, DownloadFormat, DownloadIpInterfacesDocument, DownloadSNMPInterfacesDocument, FindExportersForNodeStatusDocument, ListAlertResponse, ListEventResponse, ListNodeEventsDocument, ListNodeStatusDocument, Node, RequestCriteriaInput } from '@/types/graphql'
+import { AlertsByNodeDocument, DownloadAlertsByNodeDocument, DownloadCSVEventVariables, DownloadCsvVariables, DownloadEventsDocument, DownloadFormat, DownloadIpInterfacesDocument, DownloadSNMPInterfacesDocument, FindExportersForNodeStatusDocument, ListAlertResponse, ListEventResponse, ListNodeEventsDocument, ListNodeStatusDocument, Node, RequestCriteriaInput } from '@/types/graphql'
 import { defineStore } from 'pinia'
 import { useQuery } from 'villus'
 import { defaultListAlertResponse } from './alertsQueries'
@@ -126,7 +126,7 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
     return data.value?.downloadRecentAlertsByNode?.alertsBytes || []
   }
 
-  const downloadEvents = async (requestCriteria: DownloadCsvVariables) => {
+  const downloadEvents = async (requestCriteria: DownloadCSVEventVariables) => {
     const { execute, data } = useQuery({
       query: DownloadEventsDocument,
       variables: requestCriteria,
@@ -135,7 +135,7 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
     })
     await execute()
 
-    return data.value?.downloadEvents?.searchEventsBytes || []
+    return data.value?.downloadEventsByNodeId?.searchEventsBytes || []
   }
 
   return {

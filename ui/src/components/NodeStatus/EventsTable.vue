@@ -90,7 +90,6 @@ import useSpinner from '@/composables/useSpinner'
 const { startSpinner, stopSpinner } = useSpinner()
 const nodeStatusStore = useNodeStatusStore()
 const searchEvents = ref('')
-const searchableAttributes = ['uei', 'ipAddress', 'producedTime']
 const eventSearchedData = ref([] as Event[])
 const searchLabel = 'Search Events'
 const icons = markRaw({
