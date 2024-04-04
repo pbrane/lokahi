@@ -21,6 +21,11 @@
  */
 package org.opennms.horizon.minion.taskset.worker.impl;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.opennms.horizon.minion.plugin.api.registries.CollectorRegistry;
 import org.opennms.horizon.minion.plugin.api.registries.DetectorRegistry;
 import org.opennms.horizon.minion.plugin.api.registries.ListenerFactoryRegistry;
@@ -48,6 +53,8 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
     private final CollectorRegistry collectorRegistry;
     private final ScannerRegistry scannerRegistry;
 
+    private ExecutorService executor;
+
     // ========================================
     // Constructor
     // ----------------------------------------
@@ -68,6 +75,9 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
         this.monitorRegistry = monitorRegistry;
         this.collectorRegistry = collectorRegistry;
         this.scannerRegistry = scannerRegistry;
+        this.executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+                .setNameFormat("monitor-service-response-handler")
+                .build());
     }
 
     // ========================================
@@ -82,8 +92,7 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
                 return new TaskExecutorLocalScannerServiceImpl(taskDefinition, scannerRegistry, resultProcessor);
 
             case MONITOR:
-                return new TaskExecutorLocalMonitorServiceImpl(
-                        scheduler, taskDefinition, resultProcessor, monitorRegistry);
+                return createAndGetMonitorServiceInThreadPool(taskDefinition);
 
             case LISTENER:
                 TaskListenerRetryable listenerService =
@@ -101,5 +110,37 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
             default:
                 throw new RuntimeException("unrecognized taskDefinition type " + taskDefinition.getType());
         }
+    }
+
+    private TaskExecutorLocalService createAndGetMonitorServiceInThreadPool(TaskDefinition taskDefinition) {
+        // Create CompletableFuture for asynchronous task creation
+        TaskExecutorLocalService taskExecutorLocalService = null;
+        CompletableFuture<TaskExecutorLocalService> future = CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        // Create the service instance
+                        return new TaskExecutorLocalMonitorServiceImpl(
+                                scheduler, taskDefinition, resultProcessor, monitorRegistry);
+                    } catch (Exception e) {
+                        throw new RuntimeException(
+                                "Failed to get the TaskExecutorLocalMonitorService instance of  taskDefinition type "
+                                        + taskDefinition.getType());
+                    }
+                },
+                executor);
+
+        try {
+            // Wait for the future to complete and return the result
+            taskExecutorLocalService = future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(
+                    "Failed to get the TaskExecutorLocalMonitorService instance of  taskDefinition type "
+                            + taskDefinition.getType());
+        }
+        return taskExecutorLocalService;
+    }
+
+    public void close() {
+        executor.shutdown();
     }
 }

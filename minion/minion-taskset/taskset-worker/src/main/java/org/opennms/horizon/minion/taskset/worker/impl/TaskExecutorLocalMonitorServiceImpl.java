@@ -21,10 +21,7 @@
  */
 package org.opennms.horizon.minion.taskset.worker.impl;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
@@ -46,7 +43,6 @@ import org.slf4j.LoggerFactory;
  *  problems due to serialization/deserialization.
  */
 public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalService {
-    private ExecutorService executor;
     private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskExecutorLocalMonitorServiceImpl.class);
 
     private Logger log = DEFAULT_LOGGER;
@@ -69,9 +65,6 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
         this.scheduler = scheduler;
         this.resultProcessor = resultProcessor;
         this.monitorRegistry = monitorRegistry;
-        this.executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
-                .setNameFormat("monitor-service-response-handler")
-                .build());
     }
 
     // ========================================
@@ -140,7 +133,7 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
                 MonitoredService monitoredService = configureMonitoredService(taskDefinition);
                 CompletableFuture<ServiceMonitorResponse> future =
                         monitor.poll(monitoredService, taskDefinition.getConfiguration());
-                future.whenCompleteAsync(this::handleExecutionComplete, executor);
+                future.whenCompleteAsync(this::handleExecutionComplete);
 
             } else {
                 log.info("Skipping service monitor execution; monitor not found: monitor="
