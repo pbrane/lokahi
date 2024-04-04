@@ -51,6 +51,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASS }}
 
       - name: Generate Docker metadata
+        if: ${{ github.actor != 'dependabot' }}
         id: docker-metadata
         uses: docker/metadata-action@v4.3.0
         with:
