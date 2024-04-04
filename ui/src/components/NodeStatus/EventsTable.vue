@@ -26,8 +26,8 @@
             <FeatherButton
               primary
               icon="Refresh"
-              @click="nodeStatusQueries.fetchEvents"
-            >
+              @click="refresh"
+              >
               <FeatherIcon :icon="icons.Refresh"/>
             </FeatherButton>
           </div>
@@ -49,15 +49,15 @@
               </FeatherSortHeader>
           </tr>
         </thead>
-        <TransitionGroup name="data-table" tag="tbody" v-if="hasEvents && pageInfo.total">
-          <tr v-for="event in paginatedEvents" :key="event.id as number" data-test="data-item">
+        <TransitionGroup name="data-table" tag="tbody" v-if="hasEvents && nodeStatusStore.eventsPagination.total">
+          <tr v-for="event in eventSearchedData" :key="event.id as number" data-test="data-item">
             <td>{{ fnsFormat(event.producedTime, 'M/dd/yyyy HH:mm:ssxxx') }}</td>
             <td>{{ event.uei }}</td>
             <td>{{ event.ipAddress }}</td>
           </tr>
         </TransitionGroup>
       </table>
-      <div v-if="!hasEvents || pageInfo.total === 0">
+      <div v-if="!hasEvents || nodeStatusStore.eventsPagination.total === 0">
         <EmptyList
           :content="emptyListContent"
           data-test="empty-list"
@@ -65,13 +65,13 @@
       </div>
     </div>
         <FeatherPagination
-          v-model="pageInfo.page"
-          :pageSize="pageInfo.pageSize"
-          :total="pageInfo.total"
+          v-model="nodeStatusStore.eventsPagination.page"
+          :pageSize="nodeStatusStore.eventsPagination.pageSize"
+          :total="nodeStatusStore.eventsPagination.total"
           @update:modelValue="onPageChanged"
           @update:pageSize="onPageSizeChanged"
           data-test="pagination"
-          v-if="hasEvents && pageInfo.total"
+          v-if="hasEvents && nodeStatusStore.eventsPagination.total"
         />
   </div>
   </TableCard>
@@ -81,147 +81,102 @@
 import DownloadFile from '@featherds/icon/action/DownloadFile'
 import Refresh from '@featherds/icon/navigation/Refresh'
 import { useNodeStatusStore } from '@/store/Views/nodeStatusStore'
-import { useNodeStatusQueries } from '@/store/Queries/nodeStatusQueries'
 import { format as fnsFormat } from 'date-fns'
 import { SORT } from '@featherds/table'
 import Search from '@featherds/icon/action/Search'
-import { sortBy } from 'lodash'
 import { Event } from '@/types/graphql'
+import useSpinner from '@/composables/useSpinner'
 
-const nodeStatusQueries = useNodeStatusQueries()
-
+const { startSpinner, stopSpinner } = useSpinner()
 const nodeStatusStore = useNodeStatusStore()
-
 const searchEvents = ref('')
-
 const searchableAttributes = ['uei', 'ipAddress', 'producedTime']
-
-const eventSearchedData = ref([] as any[])
-
-const paginatedEvents = ref([] as any[])
-
+const eventSearchedData = ref([] as Event[])
+const searchLabel = 'Search Events'
 const icons = markRaw({
   DownloadFile,
   Refresh,
   Search
 })
-
-const searchLabel = 'Search Events'
-
 const columns = [
-  { id: 'time', label: 'Time' },
-  { id: 'uei', label: 'UEI' },
-  { id: 'Ipaddress', label: 'IP Address' }
+  { id: 'producedTime', label: 'Time' },
+  { id: 'eventUei', label: 'UEI' },
+  { id: 'ipAddress', label: 'IP Address' }
 ]
-
 const emptyListContent = {
   msg: 'No results found.'
 }
-
 const sort: Record<string, string>  = reactive({
-  time: SORT.NONE,
-  uei: SORT.NONE,
-  Ipaddress: SORT.NONE
+  producedTime: SORT.NONE,
+  eventUei: SORT.NONE,
+  ipAddress: SORT.NONE
 })
-
-const pageInfo = reactive({
-  page: 1,
-  pageSize: 10,
-  total: 0
-})
-
 const eventData = computed(() => {
-  const events = nodeStatusStore.fetchedEventsData.events as any || ([] as Event[])
-  pageInfo.total = events.length || 0
+  const events = nodeStatusStore.fetchEventsByNodeData.eventsList as Event[] || ([] as Event[])
   return {
     events
   }
 })
 const hasEvents = computed(() => eventData.value.events.length > 0)
-
 const updateEvents = () => {
   if (hasEvents.value) {
-    eventSearchedData.value = [...eventData.value.events] as any[]
-    pageInfo.total = eventData.value.events.length || 0
-    updatePaginatedEvents(eventSearchedData.value, pageInfo.page, pageInfo.pageSize)
+    eventSearchedData.value = [...eventData.value.events] as Event[]
   }
 }
-
-onBeforeMount(() => {
-  updateEvents()
+const fetchEventsByNodeList = async () => {
+  startSpinner()
+  await nodeStatusStore.getEventsByNode()
+  stopSpinner()
+}
+onMounted(async () => {
+  await fetchEventsByNodeList()
 })
-
 watch(() => eventData.value, () => {
   updateEvents()
 })
-
-const updatePaginatedEvents = (events: Array<any>, pageNumber: number, pageSize: number) => {
-  const startIndex = (pageNumber - 1) * pageSize
-  const endIndex = startIndex + pageSize
-  paginatedEvents.value = events.slice(startIndex, endIndex)
-}
-
 const onPageChanged = (v: number) => {
-  if (hasEvents) {
-    updatePaginatedEvents(eventData.value.events, v, pageInfo.pageSize)
-  }
+  startSpinner()
+  nodeStatusStore.setEventsByNodePage(v)
+  stopSpinner()
 }
-
 const onPageSizeChanged = (v: number) => {
-  if (hasEvents) {
-    pageInfo.pageSize = v
-    updatePaginatedEvents(eventData.value.events, pageInfo.page, v)
-  }
+  startSpinner()
+  nodeStatusStore.setEventsByNodePageSize(v)
+  stopSpinner()
 }
-
 const sortChanged = (sortObj: Record<string, string>) => {
-
-  let sorted = [...eventData.value.events] as any
-
+  startSpinner()
   if (sortObj.value === 'asc' || sortObj.value === 'desc') {
-    sorted = sortBy(sorted, sortObj.property)
+    const sortAscending  = sortObj.value === 'asc' ? true : false
+    nodeStatusStore.eventsSortChanged({ sortAscending, sortBy: sortObj.property })
 
-    if (sortObj.value === 'desc') {
-      sorted.reverse()
-    }
+  } else {
+    const sortAscending  = true
+    const sortByAlerts = { sortAscending, sortBy: 'id' }
+    nodeStatusStore.eventsSortChanged(sortByAlerts)
   }
 
-  pageInfo.page = 1
-  pageInfo.total = sorted?.length
-
-  updatePaginatedEvents(sorted, pageInfo.page, pageInfo.pageSize)
   for (const prop in sort) {
     sort[prop] = SORT.NONE
   }
   sort[sortObj.property] = sortObj.value
+  stopSpinner()
 }
-
 const onSearchChanged = (searchTerm: any) => {
-  let searchObjects
-
-  if (searchTerm === '') {
-    searchObjects = [...eventSearchedData.value]
-  } else {
-    const searchItem = searchTerm.toLowerCase()
-    searchObjects = eventSearchedData.value.filter((item: any) => {
-      return searchableAttributes.some((attribute) => {
-        const value = String(item[attribute]).toLowerCase()
-        return value.includes(searchItem)
-      })
-    })
-  }
-
-  eventData.value.events = [...searchObjects]
-  pageInfo.page = 1
-  pageInfo.total = searchObjects?.length
-
-  updatePaginatedEvents(searchObjects, pageInfo.page, pageInfo.pageSize)
+  startSpinner()
+  nodeStatusStore.eventsSearchChanged(searchTerm)
+  stopSpinner()
 }
-
 const download = () => {
+  startSpinner()
   nodeStatusStore?.downloadEvents(searchEvents.value)
+  stopSpinner()
 }
-
+const refresh = async () => {
+  nodeStatusStore.eventsPagination.page = 1
+  nodeStatusStore.eventsPagination.pageSize = 10
+  fetchEventsByNodeList()
+}
 </script>
 
 <style lang="scss" scoped>
