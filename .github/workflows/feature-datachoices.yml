@@ -36,6 +36,7 @@ jobs:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
 
       - name: Log in to the Container registry
+        if: ${{ github.actor != 'dependabot' }}
         uses: docker/login-action@v2
         with:
           registry: ${{ env.IMAGE_REGISTRY }}
@@ -43,6 +44,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate Docker metadata
+        if: ${{ github.actor != 'dependabot' }}
         id: docker-metadata
         uses: docker/metadata-action@v4.3.0
         with:
@@ -71,6 +73,7 @@ jobs:
           working-directory: 'datachoices'
 
       - name: Jib Maven build, scan, and push
+        if: ${{ github.actor != 'dependabot' }}
         uses: ./.github/actions/jib-maven-sonar
         with:
           working-directory: 'datachoices'
