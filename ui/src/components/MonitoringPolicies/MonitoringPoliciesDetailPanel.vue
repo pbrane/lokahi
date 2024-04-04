@@ -8,7 +8,7 @@
       <div>
         <FeatherButton
           icon="Edit"
-          @click="onEdit"
+          @click="onEdit(store.selectedPolicy?.id )"
         >
           <FeatherIcon :icon="icons.Edit" />
         </FeatherButton>
@@ -91,6 +91,8 @@ import Cancel from '@featherds/icon/navigation/Cancel'
 import Edit from '@featherds/icon/action/Edit'
 import Delete from '@featherds/icon/action/Delete'
 import useModal from '@/composables/useModal'
+import { TagSelectItem } from '@/types'
+import router from '@/router'
 
 const store = useMonitoringPoliciesStore()
 
@@ -124,8 +126,10 @@ const deleteMsg = computed(() =>
   `Deleting monitoring policy ${store.selectedPolicy?.name} removes ${store.numOfAlertsForRule} associated alerts. Do you wish to proceed?`
 )
 
-const onEdit = () => {
-  console.log('onEdit clicked')
+const onEdit = (id: number) => {  
+  if (id) {
+    router.push(`/monitoring-policies-new/${id}`)
+  }
 }
 
 const onCopy = () => {

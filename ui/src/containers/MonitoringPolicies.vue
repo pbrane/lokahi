@@ -11,14 +11,14 @@
         </FeatherButton>
       </div>
         <section class="feather-row">
-          <div :class="isEditing ? 'feather-col-8' : 'feather-col-12'">
+          <div :class="displayDetails ? 'feather-col-8' : 'feather-col-12'">
             <MonitoringPoliciesTable
-              @policy-selected="isEditing = true"
+              @policy-selected="displayDetails = true"
             />
           </div>
-          <div v-if="isEditing" class="feather-col-4">
+          <div v-if="displayDetails" class="feather-col-4">
             <MonitoringPoliciesDetailPanel
-              @on-close="isEditing = false"
+              @on-close="displayDetails = false"
             />
           </div>
         </section>
@@ -27,13 +27,15 @@
 </template>
 
 <script setup lang="ts">
+import router from '@/router'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 
-const isEditing = ref(false)
+const displayDetails = ref(false)
 const store = useMonitoringPoliciesStore()
 
 const onCreatePolicy = () => {
   console.log('onCreatePolicy clicked')
+  router.push('/monitoring-policies-new/create')
 }
 
 onMounted(() => store.getMonitoringPolicies())

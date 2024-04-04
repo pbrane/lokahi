@@ -1,10 +1,49 @@
 <template>
   <div class="monitoring-policies-edit-panel">
-    Monitoring Policies Edit Panel
+    <div class="page-headline1">Monitoring Policies</div>
+    <FeatherTabContainer class="mt-2 ">
+      <template v-slot:tabs>
+        <FeatherTab>Basic Information</FeatherTab>
+        <FeatherTab>Alert Rules</FeatherTab>
+      </template>
+      <FeatherTabPanel class="bg-white mt-0 p-2">
+        <!-- copy Initial from Here -->
+        <MonitoringPolicyBasicInformationEditAddForm />
+        <div class="d-flex justify-content-end mt-2">
+          <FeatherButton text @click="handleCancel">Cancel</FeatherButton>
+          <FeatherButton primary>Next</FeatherButton>
+        </div>
+      </FeatherTabPanel>
+      <FeatherTabPanel>TODO</FeatherTabPanel>
+    </FeatherTabContainer>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
+import { useTagQueries } from '@/store/Queries/tagQueries'
+import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { TagSelectItem } from '@/types'
+import { Policy } from '@/types/policies'
+import BasicAutocomplete from '../Common/BasicAutocomplete.vue'
+import router from '@/router'
+
+const store = useMonitoringPoliciesStore()
+const route = useRoute()
+
+const handleCancel = () => {
+  router.push('/monitoring-policies-new/')
+}
+const deleteMsg = computed(() =>
+  `Deleting monitoring policy ${store.selectedPolicy?.name} removes ${store.numOfAlertsForPolicy} associated alerts. Do you wish to proceed?`
+)
+
+watchEffect(() => {
+  if (store.monitoringPolicies.length > 0 && route?.params?.id) {
+    const filteredPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(route.params.id))
+    store.displayPolicyForm(filteredPolicy as Policy)
+    }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -12,4 +51,46 @@
 @use '@featherds/styles/mixins/typography';
 @use '@/styles/vars.scss';
 
+.monitoring-policies-edit-panel {
+  max-width: 1222px;
+  margin: 2% auto;
+}
+
+.bg-white {
+  margin-bottom: var(--feather-spacing-l);
+  background: var(--feather-surface);
+  padding: 30px
+}
+
+.page-headline1 {
+  @include typography.headline1;
+}
+
+.page-headline2 {
+  @include typography.headline2;
+}
+
+.page-headline3 {
+  @include typography.headline3;
+}
+
+.mt-2 {
+  margin-top: var(variables.$spacing-m);
+}
+
+.p-2 {
+  padding: var(variables.$spacing-m);
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.justify-content-end {
+  justify-content: end;
+}
 </style>

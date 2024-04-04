@@ -115,6 +115,7 @@ declare module '@vue/runtime-core' {
     MonitoringPoliciesCardLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesCardLegacy.vue')['default']
     MonitoringPoliciesCardThresholdConditionTableLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesCardThresholdConditionTableLegacy.vue')['default']
     MonitoringPoliciesDetailPanel: typeof import('./src/components/MonitoringPolicies/MonitoringPoliciesDetailPanel.vue')['default']
+    MonitoringPolicyBasicInformationEditAddForm: typeof import('./src/components/MonitoringPolicies/MonitoringPolicyBasicInformationEditAddForm.vue')['default']
     MonitoringPoliciesEditPanel: typeof import('./src/components/MonitoringPolicies/MonitoringPoliciesEditPanel.vue')['default']
     MonitoringPoliciesEventConditionLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesEventConditionLegacy.vue')['default']
     MonitoringPoliciesExistingItemsLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesExistingItemsLegacy.vue')['default']
