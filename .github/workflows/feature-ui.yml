@@ -37,7 +37,7 @@ jobs:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
 
       - name: Set up Docker Buildx
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.actor != 'dependabot' }}
         uses: docker/setup-buildx-action@v2
 
       - name: Log in to the Container registry
