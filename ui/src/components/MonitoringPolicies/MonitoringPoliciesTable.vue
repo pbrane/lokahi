@@ -12,14 +12,14 @@
               icon="Download"
               @click="onDownload"
             >
-              <FeatherIcon :icon="icons.DownloadFile"> </FeatherIcon>
+              <FeatherIcon :icon="icons.DownloadFile"/>
             </FeatherButton>
             <FeatherButton
               primary
               icon="Refresh"
               @click="onRefresh"
             >
-              <FeatherIcon :icon="icons.Refresh"> </FeatherIcon>
+              <FeatherIcon :icon="icons.Refresh"/>
             </FeatherButton>
           </div>
         </div>
@@ -192,6 +192,9 @@ const onRefresh = () => {
         }
         .btns {
           margin-right: 15px;
+          :deep(:focus) {
+              outline: none;
+          }
         }
       }
     }
