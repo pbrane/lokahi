@@ -22,8 +22,6 @@
 package org.opennms.horizon.minion.taskset.worker.impl;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.opennms.horizon.minion.plugin.api.registries.CollectorRegistry;
@@ -93,7 +91,7 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
 
             case MONITOR:
                 return new TaskExecutorLocalMonitorServiceImpl(
-                scheduler, taskDefinition, resultProcessor, monitorRegistry,executor);
+                        scheduler, taskDefinition, resultProcessor, monitorRegistry, executor);
 
             case LISTENER:
                 TaskListenerRetryable listenerService =
@@ -112,7 +110,6 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
                 throw new RuntimeException("unrecognized taskDefinition type " + taskDefinition.getType());
         }
     }
-
 
     public void close() {
         executor.shutdown();
