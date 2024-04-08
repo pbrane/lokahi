@@ -92,7 +92,8 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
                 return new TaskExecutorLocalScannerServiceImpl(taskDefinition, scannerRegistry, resultProcessor);
 
             case MONITOR:
-                return createAndGetMonitorServiceInThreadPool(taskDefinition);
+                return new TaskExecutorLocalMonitorServiceImpl(
+                scheduler, taskDefinition, resultProcessor, monitorRegistry,executor);
 
             case LISTENER:
                 TaskListenerRetryable listenerService =
@@ -112,33 +113,6 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
         }
     }
 
-    private TaskExecutorLocalService createAndGetMonitorServiceInThreadPool(TaskDefinition taskDefinition) {
-        // Create CompletableFuture for asynchronous task creation
-        TaskExecutorLocalService taskExecutorLocalService = null;
-        CompletableFuture<TaskExecutorLocalService> future = CompletableFuture.supplyAsync(
-                () -> {
-                    try {
-                        // Create the service instance
-                        return new TaskExecutorLocalMonitorServiceImpl(
-                                scheduler, taskDefinition, resultProcessor, monitorRegistry);
-                    } catch (Exception e) {
-                        throw new RuntimeException(
-                                "Failed to get the TaskExecutorLocalMonitorService instance of  taskDefinition type "
-                                        + taskDefinition.getType());
-                    }
-                },
-                executor);
-
-        try {
-            // Wait for the future to complete and return the result
-            taskExecutorLocalService = future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(
-                    "Failed to get the TaskExecutorLocalMonitorService instance of  taskDefinition type "
-                            + taskDefinition.getType());
-        }
-        return taskExecutorLocalService;
-    }
 
     public void close() {
         executor.shutdown();
