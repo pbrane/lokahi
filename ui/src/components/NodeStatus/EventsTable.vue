@@ -47,13 +47,54 @@
               >
                 {{ col.label }}
               </FeatherSortHeader>
+              <th>Action</th>
           </tr>
         </thead>
         <TransitionGroup name="data-table" tag="tbody" v-if="hasEvents && nodeStatusStore.eventsPagination.total">
-          <tr v-for="event in eventSearchedData" :key="event.id as number" data-test="data-item">
-            <td>{{ fnsFormat(event.producedTime, 'M/dd/yyyy HH:mm:ssxxx') }}</td>
+          <tr v-for="event in eventSearchedData" :key="event.id as number" data-test="data-item" @click="() => onEventSelected(event.id)">
+            <td>
+              <div class="date-time">
+                {{ fnsFormat(event.producedTime, 'M/dd/yyyy HH:mm:ssxxx') }}
+              </div>
+              <div class="description" v-if="enableDetails(event)">
+                <h5>Description:</h5>
+                <p>{{ event.description || 'Not Available' }}</p>
+              </div>
+            </td>
+            <td>
+              <PillColor
+                :item="showSeverity('warning')"
+                data-test="severity-label"
+              />
+            </td>
             <td>{{ event.uei }}</td>
+            <td>{{ event.label || 'Local' }}</td>
             <td>{{ event.ipAddress }}</td>
+            <td>
+              <div class="action-template">
+                <FeatherButton
+                  primary
+                  icon="Edit"
+                  @click="editEvent(event)"
+                >
+                  <FeatherIcon :icon="icons.AddNote"/>
+                </FeatherButton>
+                <FeatherButton
+                  primary
+                  icon="ExpandMore"
+                  v-if="!enableDetails(event)"
+                >
+                  <FeatherIcon :icon="icons.ExpandMore"/>
+                </FeatherButton>
+                <FeatherButton
+                  primary
+                  icon="ExpandLess"
+                  v-if="enableDetails(event)"
+                >
+                  <FeatherIcon :icon="icons.ExpandLess"/>
+                </FeatherButton>
+              </div>
+            </td>
           </tr>
         </TransitionGroup>
       </table>
@@ -80,6 +121,9 @@
 <script lang="ts" setup>
 import DownloadFile from '@featherds/icon/action/DownloadFile'
 import Refresh from '@featherds/icon/navigation/Refresh'
+import ExpandMore from '@featherds/icon/navigation/ExpandMore'
+import ExpandLess from '@featherds/icon/navigation/ExpandLess'
+import AddNote from '@featherds/icon/action/AddNote'
 import { useNodeStatusStore } from '@/store/Views/nodeStatusStore'
 import { format as fnsFormat } from 'date-fns'
 import { SORT } from '@featherds/table'
@@ -91,15 +135,21 @@ const { startSpinner, stopSpinner } = useSpinner()
 const nodeStatusStore = useNodeStatusStore()
 const searchEvents = ref('')
 const eventSearchedData = ref([] as Event[])
+const eventDetailsData = ref([] as Event[])
 const searchLabel = 'Search Events'
 const icons = markRaw({
   DownloadFile,
   Refresh,
-  Search
+  Search,
+  AddNote,
+  ExpandMore,
+  ExpandLess
 })
 const columns = [
   { id: 'producedTime', label: 'Time' },
+  { id: 'severity', label: 'Severity' },
   { id: 'eventUei', label: 'UEI' },
+  { id: 'eventLabel', label: 'Event Label'},
   { id: 'ipAddress', label: 'IP Address' }
 ]
 const emptyListContent = {
@@ -176,6 +226,26 @@ const refresh = async () => {
   nodeStatusStore.eventsPagination.pageSize = 10
   fetchEventsByNodeList()
 }
+const showSeverity = (value: any) => {
+  return { style: value as string }
+}
+const onEventSelected = (id: number) => {
+  const existingIndex = eventDetailsData.value.findIndex(event => event.id === id)
+  if (existingIndex !== -1) {
+    eventDetailsData.value.splice(existingIndex, 1)
+  } else {
+    const selectedRecentAlert = eventSearchedData.value?.find(event => event.id === id)
+    if (selectedRecentAlert) {
+      eventDetailsData.value.push(selectedRecentAlert)
+    }
+  }
+}
+const enableDetails = (event: Event) => {
+  return eventDetailsData.value.length > 0 && eventDetailsData.value.filter(eventDetail => eventDetail.id === event.id).length
+}
+const editEvent = (event: Event) => {
+  console.log(event)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -225,15 +295,23 @@ const refresh = async () => {
       background: var(variables.$background);
       text-transform: uppercase;
     }
-    td {
-      white-space: nowrap;
-      div {
-        border-radius: 5px;
-        padding: 0px 5px 0px 5px;
+    td:has(.description) {
+      width: 30% !important;
+      padding: 5px 0px;
+
+      .description {
+        padding: 10px 0px;
       }
     }
   }
 }
+
+.action-template {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .feather-pagination {
   border: none;
   padding: 20px 0px;
