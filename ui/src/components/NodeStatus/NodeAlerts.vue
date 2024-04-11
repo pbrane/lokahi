@@ -4,10 +4,10 @@
       <h3 data-test="heading" class="feather-col-6">Recent Alerts</h3>
       <div class="btns feather-col-6">
         <FeatherButton primary icon="Download">
-          <FeatherIcon :icon="icons.DownloadFile" @click.prevent="nodeStatusStore.downloadAlertsByNodesToCsv"/>
+          <FeatherIcon :icon="icons.DownloadFile" @click.prevent="nodeStatusStore.downloadAlertsByNodesToCsv" />
         </FeatherButton>
         <FeatherButton primary icon="Refresh" @click="fetchAlertsByNodeList">
-          <FeatherIcon :icon="icons.Refresh"/>
+          <FeatherIcon :icon="icons.Refresh" />
         </FeatherButton>
       </div>
     </section>
@@ -15,75 +15,87 @@
       <TableCard>
         <div class="container">
           <table class="data-table" aria-label="Recent Alerts Table" data-test="data-table">
-              <thead>
-                  <tr>
-                      <FeatherSortHeader
-                        v-for="col of columns"
-                        :key="col.label"
-                        scope="col"
-                        :property="col.id"
-                        :sort="(sort as any)[col.id]"
-                        v-on:sort-changed="sortChanged(col.id, $event)"
-                      >
-                        {{ col.label }}
-                      </FeatherSortHeader>
-                      <th/> <th/>
-                  </tr>
+            <thead>
+              <tr>
+                <FeatherSortHeader
+                  v-for="col of columns"
+                  :key="col.label"
+                  scope="col"
+                  :property="col.id"
+                  :sort="(sort as any)[col.id]"
+                  v-on:sort-changed="sortChanged(col.id, $event)"
+                >
+                  {{ col.label }}
+                </FeatherSortHeader>
+                <th>Acked</th>
+                <th />
+              </tr>
             </thead>
-            <TransitionGroup name="data-table" tag="tbody" v-if="isAlertsLength">
-              <tr v-for="alert in alertsData" :key="alert?.databaseId as string" data-test="data-item" @click="() => onRecentAlertSelected(alert?.databaseId)">
-                <td>
+            <TransitionGroup name="data-table" tag="tbody" v-if="hasAlerts">
+              <tr
+                v-for="alert in alertsData"
+                :key="alert?.databaseId as string"
+                class="alert-table-row"
+                data-test="data-item"
+              >
+                <td class="alert-details-wrapper">
                   <div class="name headline alert-type" data-test="name">{{ alert?.type || alert?.label || 'Unknown' }}</div>
-                  <div class="alertsDetails" data-test="description" v-for="recentAlert in alertsDetails" :key="recentAlert?.databaseId as string">
-                    <div  v-if="isAlertsDetailsLength && recentAlert?.databaseId === alert?.databaseId">
-                      <div>Location: {{ recentAlert.location }}</div>
-                      <div>Description: {{ recentAlert.description }}</div>
-                      <div>Started: {{ fnsFormat(recentAlert.firstEventTimeMs, 'HH:mm:ssxxx') }}</div>
-                      <div>RuleName: {{ recentAlert.ruleNameList?.join(', ') }}</div>
-                      <div>PolicyName: {{ recentAlert.policyNameList?.join(', ') }}</div>
-                    </div>
+                  <div v-if="isRowExpanded(alert.databaseId)">
+                    <div>Location: {{ alert.location }}</div>
+                    <div>Description: {{ alert.description }}</div>
+                    <div>Started: {{ fnsFormat(alert.firstEventTimeMs, 'HH:mm:ssxxx') }}</div>
+                    <div>RuleName: {{ alert.ruleNameList?.join(', ') }}</div>
+                    <div>PolicyName: {{ alert.policyNameList?.join(', ') }}</div>
                   </div>
                 </td>
                 <td>
-                  <PillColor :item="showSeverity(alert?.severity)" data-test="severity-label"/>
+                  <PillColor :item="showSeverity(alert?.severity)" data-test="severity-label" />
                 </td>
                 <td class="date-time">
-                  <div class="date headline" data-test="date"><span>{{ fnsFormat(alert.lastUpdateTimeMs, 'M/dd/yyyy') }}</span></div>
-                  <div class="time" data-test="time"><span>{{ fnsFormat(alert.lastUpdateTimeMs, 'HH:mm:ssxxx') }}</span></div>
+                  <div class="date headline" data-test="date">
+                    <span>{{ fnsFormat(alert.lastUpdateTimeMs, 'M/dd/yyyy') }}</span>
+                  </div>
+                  <div class="time" data-test="time">
+                    <span>{{ fnsFormat(alert.lastUpdateTimeMs, 'HH:mm:ssxxx') }}</span>
+                  </div>
                 </td>
                 <td>
                   <div class="check-circle">
                     <FeatherTooltip :title="alert.acknowledged ? Ack : UnAck" v-slot="{ attrs, on }">
                       <FeatherIcon
-                      v-bind="attrs"
-                      v-on="on"
-                      :icon="icons.CheckCircle"
-                      :class="{ acknowledged: alert.acknowledged }"
-                      class="acknowledged-icon"
-                      data-test="check-icon"/>
+                        v-bind="attrs"
+                        v-on="on"
+                        :icon="icons.CheckCircle"
+                        :class="{ acknowledged: alert.acknowledged }"
+                        class="acknowledged-icon"
+                        data-test="check-icon"
+                      />
                     </FeatherTooltip>
                   </div>
                 </td>
                 <td>
-                  <FeatherExpansionPanel/>
+                  <a href="#" class="expand-wrapper" @click.prevent="() => onExpandRow(alert.databaseId)">
+                    <FeatherIcon :icon="icons.ArrowDropDown" :class="{ invertArrow: expandedIds.has(alert.databaseId) }" />
+                  </a>
                 </td>
               </tr>
             </TransitionGroup>
           </table>
-          <div v-if="!isAlertsLength || total === 0">
-            <EmptyList :content="emptyListContent" data-test="empty-list"/>
+          <div v-if="!hasAlerts || total === 0">
+            <EmptyList :content="emptyListContent" data-test="empty-list" />
           </div>
         </div>
         <div>
-          <div class="alert-list-bottom" v-if="isAlertsLength">
+          <div class="alert-list-bottom" v-if="hasAlerts">
             <FeatherPagination
-            v-model="page"
-            :pageSize="pageSize"
-            :total="total"
-            :pageSizes="[10, 20, 50]"
-            @update:model-value="onPageChanged"
-            @update:pageSize="onPageSizeChanged"
-            data-test="pagination"/>
+              v-model="page"
+              :pageSize="pageSize"
+              :total="total"
+              :pageSizes="[10, 20, 50]"
+              @update:model-value="onPageChanged"
+              @update:pageSize="onPageSizeChanged"
+              data-test="pagination"
+            />
           </div>
         </div>
       </TableCard>
@@ -92,23 +104,33 @@
 </template>
 
 <script lang="ts" setup>
-import DownloadFile from '@featherds/icon/action/DownloadFile'
-import Refresh from '@featherds/icon/navigation/Refresh'
+import { format as fnsFormat } from 'date-fns'
 import CheckCircle from '@featherds/icon/action/CheckCircle'
+import DownloadFile from '@featherds/icon/action/DownloadFile'
+import ArrowDropDown from '@featherds/icon/navigation/ArrowDropDown'
+import ExpandLess from '@featherds/icon/navigation/ExpandLess'
+import ExpandMore from '@featherds/icon/navigation/ExpandMore'
+import Refresh from '@featherds/icon/navigation/Refresh'
 import { SORT } from '@featherds/table'
+import useSpinner from '@/composables/useSpinner'
 import { useNodeStatusStore } from '@/store/Views/nodeStatusStore'
 import { IAlert } from '@/types/alerts'
-import { format as fnsFormat } from 'date-fns'
-import useSpinner from '@/composables/useSpinner'
 import { Ack, UnAck } from '../Alerts/alerts.constants'
 
-const icons = markRaw({ DownloadFile, Refresh, CheckCircle })
-
-const alertsData = ref<IAlert[]>([])
-const alertsDetails = ref<IAlert[]>([])
+const icons = markRaw({
+  ArrowDropDown,
+  CheckCircle,
+  DownloadFile,
+  ExpandLess,
+  ExpandMore,
+  Refresh
+})
 
 const { startSpinner, stopSpinner } = useSpinner()
 const nodeStatusStore = useNodeStatusStore()
+
+const alertsData = ref<IAlert[]>([])
+const expandedIds = ref(new Set<number>())
 
 const columns = [
   { id: 'type', label: 'Alert Type' },
@@ -119,12 +141,40 @@ const columns = [
 const emptyListContent = {
   msg: 'No results found.'
 }
+
 const sort = reactive({
   alertType: SORT.NONE,
   severity: SORT.NONE,
   data: SORT.NONE,
   time: SORT.ASCENDING
 }) as any
+
+const page = computed(() => nodeStatusStore.alertsPagination.page || 1)
+const pageSize = computed(() => nodeStatusStore.alertsPagination.pageSize)
+const total = computed(() => nodeStatusStore.alertsPagination.total)
+const data = computed(() => nodeStatusStore.fetchAlertsByNodeData || [])
+
+const hasAlerts = computed(() => {
+  return (data.value?.alerts || []).length > 0
+})
+
+const isRowExpanded = (id: any) => {
+  const num = id ? Number(id) : 0
+
+  return num && expandedIds.value.has(num)
+}
+
+const onExpandRow = (id: any) => {
+  const num = id ? Number(id) : 0
+
+  if (num) {
+    if (expandedIds.value.has(num)) {
+      expandedIds.value.delete(num)
+    } else {
+      expandedIds.value.add(num)
+    }
+  }
+}
 
 const sortChanged = (columnId: string, sortObj: Record<string, string>) => {
   startSpinner()
@@ -149,19 +199,10 @@ const showSeverity = (value: any) => ({ style: value as string })
 
 const fetchAlertsByNodeList = async () => {
   startSpinner()
+  expandedIds.value.clear()
   await nodeStatusStore.getAlertsByNode()
   stopSpinner()
 }
-
-onMounted(() => {
-  fetchAlertsByNodeList()
-})
-
-const page = computed(() => nodeStatusStore.alertsPagination.page || 1)
-const pageSize = computed(() => nodeStatusStore.alertsPagination.pageSize)
-const total = computed(() => nodeStatusStore.alertsPagination.total)
-const data = computed(() => nodeStatusStore.fetchAlertsByNodeData || [])
-const isAlertsDetailsLength = computed(() => alertsDetails.value.length > 0)
 
 const onPageChanged = (p: number) => {
   startSpinner()
@@ -173,46 +214,51 @@ const onPageSizeChanged = (p: number) => {
   nodeStatusStore.setAlertsByNodePageSize(p)
 }
 
-const isAlertsLength = computed(() => {
-  const alerts = data.value?.alerts || []
-  return alerts.length > 0
+onMounted(() => {
+  fetchAlertsByNodeList()
 })
 
 watch(() => nodeStatusStore.fetchAlertsByNodeData, () => {
-  if (isAlertsLength.value) {
+  if (hasAlerts.value) {
     const alerts = data.value?.alerts || []
     alertsData.value = [...alerts]
   }
   stopSpinner()
 })
-
-const onRecentAlertSelected = (id: number) => {
-  const existingIndex = alertsDetails.value.findIndex(alert => alert?.databaseId === id)
-
-  if (existingIndex !== -1) {
-    alertsDetails.value.splice(existingIndex, 1)
-  } else {
-    const selectedRecentAlert = data.value.alerts?.find(({ databaseId }) => databaseId === id)
-    if (selectedRecentAlert) {
-      alertsDetails.value.push(selectedRecentAlert)
-    }
-  }
-}
-
-
 </script>
 
 <style lang="scss" scoped>
-@use '@featherds/styles/themes/variables';
-@use '@/styles/vars';
-@use '@/styles/mediaQueriesMixins';
-@use '@featherds/styles/mixins/typography';
-@use '@featherds/table/scss/table';
-@use '@/styles/_transitionDataTable';
+@use "@featherds/styles/themes/variables";
+@use "@/styles/vars";
+@use "@/styles/mediaQueriesMixins";
+@use "@featherds/styles/mixins/typography";
+@use "@featherds/table/scss/table";
+@use "@/styles/_transitionDataTable";
 
 .headline {
   font-size: 1rem;
   font-weight: 600;
+}
+
+.container table tr.alert-table-row {
+  vertical-align: top;
+
+  td {
+    padding-bottom: 0.3rem;
+    padding-top: 0.3rem;
+
+    &.alert-details-wrapper {
+      width: 18rem;
+    }
+  }
+}
+
+.expand-wrapper {
+  font-size: 2em;
+}
+
+.invert-arrow {
+  transform: scaleY(-1);
 }
 
 .main-section {
@@ -250,21 +296,21 @@ const onRecentAlertSelected = (id: number) => {
     thead {
       background: var(variables.$background);
       text-transform: uppercase;
-      }
+    }
     tr {
-      cursor: pointer;
       box-shadow: 0 1px 0 0 var(--feather-border-on-surface);
-      .alertsDetails {
-        margin: 5px 0;
-      }
+
       .date-time {
         width: 15%;
       }
+
       td {
         white-space: nowrap;
         box-shadow: none;
         margin-top: var(variables.$spacing-s);
-        .description, .alert-type{
+
+        .description,
+        .alert-type {
           margin-top: var(variables.$spacing-s);
         }
       }
@@ -274,10 +320,12 @@ const onRecentAlertSelected = (id: number) => {
 
 .check-circle {
   width: 4%;
+
   .acknowledged-icon {
     width: 1.5rem;
     height: 1.5rem;
     color: var(variables.$shade-3);
+
     &.acknowledged {
       color: var(variables.$success);
     }
@@ -315,5 +363,4 @@ const onRecentAlertSelected = (id: number) => {
     width: 90%;
   }
 }
-
 </style>
