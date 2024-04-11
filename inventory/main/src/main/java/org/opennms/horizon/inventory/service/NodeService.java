@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.opennms.horizon.inventory.component.NodeKafkaProducer;
 import org.opennms.horizon.inventory.component.TagPublisher;
 import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryDTO;
 import org.opennms.horizon.inventory.dto.ActiveDiscoveryDTO;
@@ -106,6 +107,7 @@ public class NodeService {
     private final TagRepository tagRepository;
     private final IpInterfaceMapper ipInterfaceMapper;
     private final ActiveDiscoveryMapper discoveryMapper;
+    private final NodeKafkaProducer nodeKafkaProducer;
 
     @Transactional(readOnly = true)
     public List<NodeDTO> findByTenantId(String tenantId) {
@@ -171,7 +173,7 @@ public class NodeService {
                 node.setIpInterfaces(List.of(ipInterface));
             }
         } catch (DataIntegrityViolationException e) {
-            LOG.error("Ip address already exists for a given location :", e.getMessage());
+            LOG.error("Ip address already exists for a given location", e);
             throw new DBConstraintsException("Ip address already exists for a given location :" + e.getMessage());
         }
     }
@@ -336,6 +338,7 @@ public class NodeService {
         return nodeRepository.countDistinctNodes(tenantId);
     }
 
+    @Transactional
     public void updateNodeInfo(Node node, NodeInfoResult nodeInfo) {
         mapper.updateFromNodeInfo(nodeInfo, node);
 
@@ -353,6 +356,7 @@ public class NodeService {
         }
 
         nodeRepository.save(node);
+        updateNodeInKafka(node.getId(), node.getTenantId());
     }
 
     private Boolean isValidInetAddress(String ipAddress) {
@@ -428,5 +432,14 @@ public class NodeService {
                 .stream()
                 .map(ipInterfaceMapper::modelToDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public void updateNodeInKafka(long nodeId, String tenantId) {
+        var optionalNode = getByIdAndTenantId(nodeId, tenantId);
+        if (optionalNode.isPresent()) {
+            var nodeDTO = optionalNode.get();
+            nodeKafkaProducer.updateNodeInKafka(nodeDTO);
+        }
     }
 }

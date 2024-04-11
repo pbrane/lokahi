@@ -55,6 +55,7 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.opennms.horizon.inventory.component.NodeKafkaProducer;
 import org.opennms.horizon.inventory.component.TagPublisher;
 import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
@@ -112,6 +113,7 @@ public class NodeServiceTest {
         tagRepository = mock(TagRepository.class);
         mockTagPublisher = mock(TagPublisher.class);
         activeDiscoveryMapper = mock(ActiveDiscoveryMapper.class);
+        var nodeKafkaProducer = mock(NodeKafkaProducer.class);
 
         nodeService = new NodeService(
                 mockNodeRepository,
@@ -127,7 +129,8 @@ public class NodeServiceTest {
                 mockTagPublisher,
                 tagRepository,
                 ipInterfaceMapper,
-                activeDiscoveryMapper);
+                activeDiscoveryMapper,
+                nodeKafkaProducer);
 
         Node node = new Node();
         doReturn(node).when(mockNodeRepository).save(any(node.getClass()));
@@ -419,7 +422,8 @@ public class NodeServiceTest {
                 mockTagPublisher,
                 tagRepository,
                 ipInterfaceMapper,
-                activeDiscoveryMapper);
+                activeDiscoveryMapper,
+                mock(NodeKafkaProducer.class));
 
         //
         // Execute
@@ -458,7 +462,8 @@ public class NodeServiceTest {
                 mockTagPublisher,
                 tagRepository,
                 ipInterfaceMapper,
-                activeDiscoveryMapper);
+                activeDiscoveryMapper,
+                mock(NodeKafkaProducer.class));
 
         //
         // Execute
@@ -498,7 +503,8 @@ public class NodeServiceTest {
                 mockTagPublisher,
                 tagRepository,
                 ipInterfaceMapper,
-                activeDiscoveryMapper);
+                activeDiscoveryMapper,
+                mock(NodeKafkaProducer.class));
 
         //
         // Execute
@@ -531,7 +537,8 @@ public class NodeServiceTest {
                 mockTagPublisher,
                 tagRepository,
                 ipInterfaceMapper,
-                activeDiscoveryMapper);
+                activeDiscoveryMapper,
+                mock(NodeKafkaProducer.class));
 
         final var testNode = new Node();
         testNode.setTenantId("onms");

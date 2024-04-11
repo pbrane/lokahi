@@ -249,7 +249,7 @@ public class ScannerResponseService {
                         tenantId,
                         locationId);
             } catch (DataIntegrityViolationException e) {
-                log.error("Ip address already exists for a given location", e.getMessage());
+                log.error("Ip address already exists for a given location ", e);
             }
         }
     }
@@ -275,7 +275,6 @@ public class ScannerResponseService {
         if (nodeOpt.isPresent()) {
             Node node = nodeOpt.get();
             Map<Integer, SnmpInterface> ifIndexSNMPMap = new HashMap<>();
-            nodeService.updateNodeInfo(node, result.getNodeInfo());
 
             IpInterface ipInterface = ipInterfaceService.getPrimaryInterfaceForNode(node.getId());
             snmpConfigService.saveOrUpdateSnmpConfig(
@@ -294,6 +293,7 @@ public class ScannerResponseService {
             }
             result.getDetectorResultList()
                     .forEach(detectorResult -> processDetectorResults(tenantId, locationId, node, detectorResult));
+            nodeService.updateNodeInfo(node, result.getNodeInfo());
         } else {
             log.error(
                     "Error while process node scan results, tenantId={}; locationId={}; node with id {} doesn't exist",

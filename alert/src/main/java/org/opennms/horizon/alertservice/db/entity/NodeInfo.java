@@ -21,33 +21,30 @@
  */
 package org.opennms.horizon.alertservice.db.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import java.util.List;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import lombok.ToString;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
-@Entity
-public class Node {
-    @Id
+@ToString
+public class NodeInfo {
+    // Azure related stuff and Monitored State are not included
     private long id;
-
-    @Column(name = "tenant_id")
     private String tenantId;
-
-    @Column(name = "node_label")
     private String nodeLabel;
-
-    @Column(name = "monitoring_location_id")
+    private long createTime;
     private long monitoringLocationId;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "node_info", columnDefinition = "jsonb")
-    private NodeInfo nodeInfo;
+    private List<IpInterface> ipInterfacesList;
+    private String objectId;
+    private String systemName;
+    private String systemDescr;
+    private String systemLocation;
+    private String systemContact;
+    private List<SnmpInterface> snmpInterfacesList;
+    private List<NodeTag> tagsList;
+    private String location;
+    private String nodeAlias;
+    private List<Long> discoveryIdsList;
 }

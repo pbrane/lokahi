@@ -26,6 +26,7 @@ import jakarta.persistence.PostUpdate;
 import lombok.Setter;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.mapper.NodeMapper;
 import org.opennms.horizon.inventory.model.Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,18 +43,20 @@ public class NodeKafkaProducer {
     @Setter // Testability
     private KafkaTemplate<String, byte[]> kafkaTemplate;
 
+    @Autowired
+    @Setter // Testability
+    private NodeMapper nodeMapper;
+
     @PostUpdate
     @PostPersist
     public void sendNode(Node node) {
-        // Not all fields are included in this proto, since the Alerts service doesn't care about all of them.
-        NodeDTO proto = NodeDTO.newBuilder()
-                .setId(node.getId())
-                .setTenantId(node.getTenantId())
-                .setNodeLabel(node.getNodeLabel())
-                .setMonitoringLocationId(node.getMonitoringLocationId())
-                .build();
+        NodeDTO nodeDTO = nodeMapper.modelToDTO(node);
+        var producerRecord = new ProducerRecord<String, byte[]>(topic, nodeDTO.toByteArray());
+        kafkaTemplate.send(producerRecord);
+    }
 
-        var producerRecord = new ProducerRecord<String, byte[]>(topic, proto.toByteArray());
+    public void updateNodeInKafka(NodeDTO nodeDTO) {
+        var producerRecord = new ProducerRecord<String, byte[]>(topic, nodeDTO.toByteArray());
         kafkaTemplate.send(producerRecord);
     }
 }

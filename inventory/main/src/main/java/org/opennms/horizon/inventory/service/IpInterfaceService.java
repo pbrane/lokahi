@@ -136,36 +136,35 @@ public class IpInterfaceService {
     }
 
     // TODO: is this executed inside a transaction?  If not, there is a race condition in this code (find-then-save).
-    public void createOrUpdateFromScanResult(
+    public IpInterface createOrUpdateFromScanResult(
             String tenantId, Node node, IpInterfaceResult result, Map<Integer, SnmpInterface> ifIndexSNMPMap) {
-        modelRepo
-                .findByNodeIdAndTenantIdAndIpAddress(
-                        node.getId(), tenantId, InetAddressUtils.getInetAddress(result.getIpAddress()))
-                .ifPresentOrElse(
-                        ipInterface -> {
-                            ipInterface.setHostname(result.getIpHostName());
-                            ipInterface.setNetmask(result.getNetmask());
-                            var snmpInterface = ifIndexSNMPMap.get(result.getIfIndex());
-                            if (snmpInterface != null) {
-                                ipInterface.setSnmpInterface(snmpInterface);
-                            }
-                            ipInterface.setIfIndex(result.getIfIndex());
-                            modelRepo.save(ipInterface);
-                        },
-                        () -> {
-                            IpInterface ipInterface = mapper.fromScanResult(result);
 
-                            ipInterface.setNode(node);
-                            ipInterface.setTenantId(tenantId);
-                            ipInterface.setSnmpPrimary(false);
-                            ipInterface.setHostname(result.getIpHostName());
-                            ipInterface.setIfIndex(result.getIfIndex());
-                            ipInterface.setLocation(node.getMonitoringLocation());
-                            var snmpInterface = ifIndexSNMPMap.get(result.getIfIndex());
-                            if (snmpInterface != null) {
-                                ipInterface.setSnmpInterface(snmpInterface);
-                            }
-                            modelRepo.save(ipInterface);
-                        });
+        var ipInterfaceOptional = modelRepo.findByNodeIdAndTenantIdAndIpAddress(
+                node.getId(), tenantId, InetAddressUtils.getInetAddress(result.getIpAddress()));
+        if (ipInterfaceOptional.isPresent()) {
+            var ipInterface = ipInterfaceOptional.get();
+            ipInterface.setHostname(result.getIpHostName());
+            ipInterface.setNetmask(result.getNetmask());
+            var snmpInterface = ifIndexSNMPMap.get(result.getIfIndex());
+            if (snmpInterface != null) {
+                ipInterface.setSnmpInterface(snmpInterface);
+            }
+            ipInterface.setIfIndex(result.getIfIndex());
+            return modelRepo.save(ipInterface);
+        } else {
+            IpInterface ipInterface = mapper.fromScanResult(result);
+
+            ipInterface.setNode(node);
+            ipInterface.setTenantId(tenantId);
+            ipInterface.setSnmpPrimary(false);
+            ipInterface.setHostname(result.getIpHostName());
+            ipInterface.setIfIndex(result.getIfIndex());
+            ipInterface.setLocation(node.getMonitoringLocation());
+            var snmpInterface = ifIndexSNMPMap.get(result.getIfIndex());
+            if (snmpInterface != null) {
+                ipInterface.setSnmpInterface(snmpInterface);
+            }
+            return modelRepo.save(ipInterface);
+        }
     }
 }
