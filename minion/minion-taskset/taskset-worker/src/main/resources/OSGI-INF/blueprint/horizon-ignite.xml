@@ -63,7 +63,7 @@
   <reference id="collectorRegistry" interface="org.opennms.horizon.minion.plugin.api.registries.CollectorRegistry" />
   <reference id="scannerRegistry" interface="org.opennms.horizon.minion.plugin.api.registries.ScannerRegistry" />
 
-  <bean id="workflowExecutorLocalServiceFactory" class="org.opennms.horizon.minion.taskset.worker.impl.TaskExecutorLocalServiceFactoryImpl">
+  <bean id="workflowExecutorLocalServiceFactory" class="org.opennms.horizon.minion.taskset.worker.impl.TaskExecutorLocalServiceFactoryImpl" destroy-method="close">
     <argument ref="opennmsScheduler"/>
     <argument ref="workflowExecutionResultProcessor"/>
     <argument ref="listenerFactoryRegistry"/>
