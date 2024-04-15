@@ -42,7 +42,7 @@ watchEffect(() => {
   if (store.monitoringPolicies.length > 0 && route?.params?.id) {
     const filteredPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(route.params.id))
     store.displayPolicyForm(filteredPolicy as Policy)
-    }
+  }
 })
 </script>
 

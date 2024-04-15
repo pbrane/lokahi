@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { useTagQueries } from '@/store/Queries/tagQueries'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { TagSelectItem } from '@/types';
+import { TagSelectItem } from '@/types'
 
 const store = useMonitoringPoliciesStore()
 const tagQueries = useTagQueries()

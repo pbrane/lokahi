@@ -126,7 +126,7 @@ const deleteMsg = computed(() =>
   `Deleting monitoring policy ${store.selectedPolicy?.name} removes ${store.numOfAlertsForRule} associated alerts. Do you wish to proceed?`
 )
 
-const onEdit = (id: number) => {  
+const onEdit = (id: number) => {
   if (id) {
     router.push(`/monitoring-policies-new/${id}`)
   }

@@ -48,7 +48,7 @@
             tag="tbody"
           >
             <tr
-              v-for="policy in store.monitoringPolicies"
+              v-for="policy in pageData"
               :key="policy.id"
               :class="{'policies-table-row':true,'active': policy.id === store.selectedPolicy?.id }"
               @click="() => onSelectPolicy(policy.id)"
@@ -81,34 +81,60 @@
             </tr>
           </TransitionGroup>
         </table>
-        <!-- <FeatherPagination
-          v-model=""
-          :pageSize=""
-          :total=""
-          @update:model-value=""
-          v-if="store.monitoringPolicies.length > 0"
+        <FeatherPagination
+          v-model="page"
+          :pageSize="pageSize"
+          :total="total"
+          @update:modelValue="updatePage"
+          @update:pageSize="updatePageSize"
+          v-if="hasMonitoringPolicies"
         >
-        </FeatherPagination> -->
+        </FeatherPagination>
       </div>
     </TableCard>
   </div>
 </template>
 
 <script setup lang="ts">
-import { SORT } from '@featherds/table'
-import CheckCircle from '@featherds/icon/action/CheckCircle'
 import Circle from '@/assets/circle.svg'
+import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { MonitorPolicy } from '@/types/graphql'
+import { Policy } from '@/types/policies'
+import CheckCircle from '@featherds/icon/action/CheckCircle'
 import DownloadFile from '@featherds/icon/action/DownloadFile'
 import Refresh from '@featherds/icon/navigation/Refresh'
-import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { Policy } from '@/types/policies'
+import { SORT } from '@featherds/table'
+import { sortBy } from 'lodash'
 
 const store = useMonitoringPoliciesStore()
-
+const page = ref(0)
+const pageSize = ref(0)
+const total = ref(0)
+const pageData = ref([] as MonitorPolicy[])
+const hasMonitoringPolicies = computed(() => store.monitoringPolicies && store.monitoringPolicies.length > 0)
+const clonedMonitoringPolicies = ref([] as MonitorPolicy[])
 const icons = markRaw({
   CheckCircle,
   DownloadFile,
   Refresh
+})
+
+const loadData = () => {
+  if (hasMonitoringPolicies.value) {
+    page.value = 1
+    pageSize.value = 10
+    clonedMonitoringPolicies.value = store.monitoringPolicies
+    total.value = clonedMonitoringPolicies.value.length
+    pageData.value = getPageObjects(clonedMonitoringPolicies.value, page.value, pageSize.value)
+  }
+}
+
+onMounted(() => {
+  loadData()
+})
+
+watch(() => [hasMonitoringPolicies.value], () => {
+  loadData()
 })
 
 const emit = defineEmits<{
@@ -117,26 +143,50 @@ const emit = defineEmits<{
 
 const columns = [
   { id: 'name', label: 'Name' },
-  { id: 'description', label: 'Description' },
+  { id: 'memo', label: 'Description' },
   { id: 'alertRules', label: 'Alert Rules' },
   { id: 'affectedNodes', label: 'Affected Nodes' }
 ]
 
 const sort = reactive({
   name: SORT.NONE,
-  description: SORT.NONE,
+  memo: SORT.NONE,
   alertRules: SORT.NONE,
   affectedNodes: SORT.ASCENDING
 }) as any
 
 const sortChanged = (sortObj: Record<string, string>) => {
-  // store.setTopNNodesTableSort(sortObj)
+  if (sortObj.property !== 'affectedNodes' && sortObj.property !== 'alertRules') {
+    if (sortObj.value === 'asc') {
+      clonedMonitoringPolicies.value = sortBy(store.monitoringPolicies, sortObj.property)
+    } else if (sortObj.value === 'desc') {
+      clonedMonitoringPolicies.value = sortBy(store.monitoringPolicies, sortObj.property).reverse()
+    } else {
+      clonedMonitoringPolicies.value = store.monitoringPolicies
+    }
+  } else if (sortObj.property === 'alertRules') {
+    if (sortObj.value === 'asc') {
+      clonedMonitoringPolicies.value = sortBy(store.monitoringPolicies, item => item.rules?.length)
+    } else if (sortObj.value === 'desc') {
+      clonedMonitoringPolicies.value = sortBy(store.monitoringPolicies, item => item.rules?.length ? -item.rules.length : 0)
+    } else {
+      clonedMonitoringPolicies.value = store.monitoringPolicies
+    }
+  }
+
+  pageData.value = getPageObjects(clonedMonitoringPolicies.value, page.value, pageSize.value)
+
   for (const prop in sort) {
     sort[prop] = SORT.NONE
   }
   sort[sortObj.property] = sortObj.value
 }
-
+// Function to retrieve objects for a given page
+const getPageObjects = (array: Array<any>, pageNumber: number, pageSize: number) => {
+  const startIndex = (pageNumber - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  return array.slice(startIndex, endIndex)
+}
 const onSelectPolicy = (id: string) => {
   console.log(`onSelectPolicy, id: ${id}`)
   const selectedPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(id))
@@ -155,7 +205,19 @@ const onRefresh = () => {
   console.log('refresh clicked')
   store.getMonitoringPolicies()
 }
-
+const updatePage = (v: number) => {
+  if (hasMonitoringPolicies.value) {
+    page.value = v
+    pageData.value = getPageObjects(clonedMonitoringPolicies.value, v, pageSize.value)
+  }
+}
+const updatePageSize = (v: number) => {
+  if (hasMonitoringPolicies.value) {
+    pageSize.value = v
+    page.value = 1
+    pageData.value = getPageObjects(clonedMonitoringPolicies.value, page.value, v)
+  }
+}
 </script>
 
 <style lang="scss" scoped>
