@@ -283,4 +283,10 @@ public class GraphQLAlertService {
         }
         throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
     }
+
+    @GraphQLQuery(name = "getNodesCountByMonitoringPolicy")
+    public Mono<Long> getNodesCountByMonitoringPolicy(
+            @GraphQLArgument(name = "id") long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(alertsClient.getNodesCountByMonitoringPolicy(id, headerUtil.getAuthHeader(env)));
+    }
 }

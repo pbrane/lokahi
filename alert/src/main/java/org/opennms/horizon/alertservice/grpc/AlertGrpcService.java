@@ -21,6 +21,7 @@
  */
 package org.opennms.horizon.alertservice.grpc;
 
+import com.google.protobuf.Int64Value;
 import com.google.protobuf.Timestamp;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -487,5 +488,25 @@ public class AlertGrpcService extends AlertServiceGrpc.AlertServiceImplBase {
     private static Date convertTimestampToDate(Timestamp timestamp) {
         Instant instant = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
         return Date.from(instant);
+    }
+
+    @Override
+    public void countNodesByMonitoringPolicy(Int64Value request, StreamObserver<Int64Value> responseObserver) {
+        try {
+
+            String tenantId = tenantLookup.lookupTenantId(Context.current()).orElseThrow();
+            var nodeCount = alertRepository.countNodesByMonitoringPolicyAndTenantId(request.getValue(), tenantId);
+            responseObserver.onNext(Int64Value.of(nodeCount));
+            responseObserver.onCompleted();
+
+        } catch (NoSuchElementException e) {
+            var status = Status.newBuilder()
+                    .setCode(Code.INVALID_ARGUMENT_VALUE)
+                    .setMessage(TENANT_ID_NOT_FOUND)
+                    .build();
+            responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+        } catch (Exception e) {
+            responseObserver.onError(e);
+        }
     }
 }
