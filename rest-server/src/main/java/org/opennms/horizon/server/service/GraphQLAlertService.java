@@ -30,6 +30,7 @@ import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -167,7 +168,21 @@ public class GraphQLAlertService {
     @GraphQLQuery(name = "alertEventDefsByVendor")
     public Mono<EventDefinitionsByVendor> listEventDefinitionsByVendor(
             @GraphQLArgument EventDefsByVendorRequest request, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Mono.just(alertsClient.listAlertEventDefinitionsByVendor(request, headerUtil.getAuthHeader(env)));
+
+        EventDefinitionsByVendor eventsDefinitionsByVendor =
+                alertsClient.listAlertEventDefinitionsByVendor(request, headerUtil.getAuthHeader(env));
+        eventsDefinitionsByVendor.getAlertEventDefinitionList().stream().forEach(aed -> {
+            if (aed.getUei() != null && aed.getUei().contains("/")) {
+                String lastElement = Arrays.stream(aed.getUei().split("/"))
+                        .reduce((first, second) -> second)
+                        .orElse(null);
+                aed.setName(lastElement);
+            }
+            aed.setClearKey(aed.getClearKey().isEmpty() ? null : aed.getClearKey());
+            aed.setReductionKey(aed.getReductionKey().isEmpty() ? null : aed.getReductionKey());
+        });
+
+        return Mono.just(eventsDefinitionsByVendor);
     }
 
     @GraphQLQuery(name = "listVendors")
