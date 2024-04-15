@@ -34,7 +34,7 @@ const displayDetails = ref(false)
 const store = useMonitoringPoliciesStore()
 
 const onCreatePolicy = () => {
-  console.log('onCreatePolicy clicked')
+  store.copyPolicy({id: '', isDefault: false, tags: [], name: '', memo: '' })
   router.push('/monitoring-policies-new/create')
 }
 
