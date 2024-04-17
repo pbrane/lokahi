@@ -1,6 +1,6 @@
 <template>
   <div class="monitoring-policies-edit-panel">
-    <div class="page-headline1">Monitoring Policies sss</div>
+    <div class="page-headline1">Monitoring Policies</div>
     <FeatherTabContainer class="mt-2" :modelValue="selectedTab">
       <template v-slot:tabs>
         <FeatherTab>Basic Information</FeatherTab>
@@ -14,7 +14,9 @@
           <FeatherButton primary  @click="handleNext">Next</FeatherButton>
         </div>
       </FeatherTabPanel>
-      <FeatherTabPanel>TODO</FeatherTabPanel>
+      <FeatherTabPanel>
+        <MonitoringPoliciesRules />
+      </FeatherTabPanel>
     </FeatherTabContainer>
   </div>
 </template>

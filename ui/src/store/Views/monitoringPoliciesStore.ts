@@ -26,6 +26,7 @@ type TState = {
   numOfAlertsForPolicy: number
   numOfAlertsForRule: number
   validationErrors: any,
+  alertRuleDrawer: boolean
 }
 
 const defaultPolicy: Policy = {
@@ -86,7 +87,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     monitoringPolicies: [],
     numOfAlertsForPolicy: 0,
     numOfAlertsForRule: 0,
-    validationErrors: {}
+    validationErrors: {},
+    alertRuleDrawer: false
   }),
   actions: {
     // used for initial population of policies
@@ -211,8 +213,9 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.selectedPolicy!.rules?.push(this.selectedRule!)
       }
 
-      this.selectedRule = await getDefaultRule()
+      // this.selectedRule = await getDefaultRule()
       showSnackbar({ msg: 'Rule successfully applied to the policy.' })
+      this.closeAlertRuleDrawer()
     },
     async savePolicy() {
       const { addMonitoringPolicy, error } = useMonitoringPoliciesMutations()
@@ -292,6 +295,15 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       const { getAlertCountByPolicyId } = useMonitoringPoliciesQueries()
       const count = await getAlertCountByPolicyId(this.selectedPolicy?.id)
       this.numOfAlertsForPolicy = count
+    },
+    async openAlertRuleDrawer(rule?: PolicyRule) {
+      await this.displayRuleForm(rule)
+      this.alertRuleDrawer = true
+    },
+    async closeAlertRuleDrawer() {
+      this.alertRuleDrawer = false
+      this.selectedRule = undefined
+      this.validationErrors = {}
     }
   }
 })
