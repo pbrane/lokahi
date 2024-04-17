@@ -1,4 +1,4 @@
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import Dashboard from '@/containers/Dashboard.vue'
 import router from '@/router'
 

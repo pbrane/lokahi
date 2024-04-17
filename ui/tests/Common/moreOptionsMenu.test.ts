@@ -1,5 +1,5 @@
-import { findByText } from 'tests/utils'
 import mount from '../mountWithPiniaVillus'
+import { findByText } from '../utils'
 import MoreOptionsMenu from '@/components/Common/MoreOptionsMenu.vue'
 
 let wrapper: any

@@ -1,7 +1,7 @@
-import { useWelcomeStore } from '@/store/Views/welcomeStore'
 import { setActiveClient, useClient } from 'villus'
-import { buildFetchList } from 'tests/utils'
 import { createTestingPinia } from '@pinia/testing'
+import { useWelcomeStore } from '@/store/Views/welcomeStore'
+import { buildFetchList } from '../../utils'
 
 describe('Welcome Store', () => {
   beforeEach(() => {

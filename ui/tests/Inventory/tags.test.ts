@@ -1,4 +1,4 @@
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import InventoryTagManager from '@/components/Inventory/InventoryTagManager.vue'
 import InventoryTagManagerCtrl from '@/components/Inventory/InventoryTagManagerCtrl.vue'
 

@@ -1,5 +1,5 @@
+import mount from '../mountWithPiniaVillus'
 import Discovery from '@/containers/Discovery.vue'
-import mount from 'tests/mountWithPiniaVillus'
 import router from '@/router'
 import { useDiscoveryStore } from '@/store/Views/discoveryStore'
 

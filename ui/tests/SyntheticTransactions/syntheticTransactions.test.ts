@@ -1,4 +1,4 @@
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import SyntheticTransactions from '@/containers/SyntheticTransactions.vue'
 
 const wrapper = mountWithPiniaVillus({

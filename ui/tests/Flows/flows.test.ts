@@ -1,8 +1,8 @@
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
+import { LineGraphData, TableGraphData } from './flowsData'
 import Flows from '@/containers/Flows.vue'
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
 import { useFlowsStore } from '@/store/Views/flowsStore'
 import { TimeRange } from '@/types/graphql'
-import { LineGraphData, TableGraphData } from './flowsData'
 import { useFlowsApplicationStore } from '@/store/Views/flowsApplicationStore'
 
 describe('Flows', () => {

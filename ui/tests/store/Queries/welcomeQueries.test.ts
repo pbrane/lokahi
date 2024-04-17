@@ -1,9 +1,9 @@
-import { useWelcomeStore } from '@/store/Views/welcomeStore'
-import { setActiveClient, useClient } from 'villus'
-import { buildFetchList } from 'tests/utils'
 import { createTestingPinia } from '@pinia/testing'
+import { setActiveClient, useClient } from 'villus'
 import { useWelcomeQueries } from '@/store/Queries/welcomeQueries'
-import { defaultNodeDetails } from 'tests/fixture/welcome'
+import { useWelcomeStore } from '@/store/Views/welcomeStore'
+import { defaultNodeDetails } from '../../fixture/welcome'
+import { buildFetchList } from '../../utils'
 
 describe('Welcome Queries', () => {
   beforeEach(() => {

@@ -126,6 +126,7 @@ declare module '@vue/runtime-core' {
     MonitoringPoliciesTable: typeof import('./src/components/MonitoringPolicies/MonitoringPoliciesTable.vue')['default']
     MonitoringPoliciesThresholdConditionLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesThresholdConditionLegacy.vue')['default']
     MonitoringPolicyBasicInformationEditAddForm: typeof import('./src/components/MonitoringPolicies/MonitoringPolicyBasicInformationEditAddForm.vue')['default']
+    MonitoringPolicyCreatePanel: typeof import('./src/components/MonitoringPolicies/MonitoringPolicyCreatePanel.vue')['default']
     MoreOptionsMenu: typeof import('./src/components/Common/MoreOptionsMenu.vue')['default']
     NavigationRail: typeof import('./src/components/Layout/NavigationRail.vue')['default']
     NavigationRailNavItem: typeof import('./src/components/Layout/NavigationRailNavItem.vue')['default']

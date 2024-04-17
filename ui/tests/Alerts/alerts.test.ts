@@ -1,7 +1,7 @@
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
+import { getAlert } from '../fixture/alerts'
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import Alerts from '@/containers/Alerts.vue'
 import { useAlertsStore } from '@/store/Views/alertsStore'
-import { getAlert } from '../fixture/alerts'
 
 let wrapper: any
 

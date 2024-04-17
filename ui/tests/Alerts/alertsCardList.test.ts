@@ -1,4 +1,4 @@
-import shallowMount from 'tests/mountWithPiniaVillus'
+import shallowMount from '../mountWithPiniaVillus'
 import AlertsCardList from '@/components/Alerts/AlertsCardList.vue'
 import { getAlertsList } from '../fixture/alerts'
 

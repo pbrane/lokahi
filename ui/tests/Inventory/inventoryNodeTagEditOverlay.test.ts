@@ -1,5 +1,4 @@
-// import { mount } from '@vue/test-utils'
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import InventoryNodeTagEditOverlay from '@/components/Inventory/InventoryNodeTagEditOverlay.vue'
 import { TimeUnit } from '@/types'
 

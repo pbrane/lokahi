@@ -1,5 +1,5 @@
+import mount from '../mountWithPiniaVillus'
 import DashboardEmptyState from '@/components/Dashboard/DashboardEmptyState.vue'
-import mount from 'tests/mountWithPiniaVillus'
 import dashboardTexts from '@/components/Dashboard/dashboard.text'
 
 let wrapper: any
