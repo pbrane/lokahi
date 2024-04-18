@@ -23,7 +23,7 @@
       <FeatherButton
         icon="Copy"
         class="copy"
-        @click="emit('copyPolicy', policy)"
+        @click="emit('copyPolicyLegacy', policy)"
         data-test="policy-copy-btn"
       >
         <FeatherIcon :icon="icons.ContentCopy" />
@@ -104,7 +104,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'copyPolicy', policy: Policy): void,
+  (e: 'copyPolicyLegacy', policy: Policy): void,
   (e: 'deletePolicy', policy: Policy): void,
   (e: 'selectPolicy', policy: Policy): void
 }>()

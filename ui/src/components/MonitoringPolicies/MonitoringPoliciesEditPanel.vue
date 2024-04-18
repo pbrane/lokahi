@@ -11,7 +11,9 @@
         <MonitoringPolicyBasicInformationEditAddForm />
         <div class="d-flex justify-content-end mt-2">
           <FeatherButton text @click="handleCancel">Cancel</FeatherButton>
-          <FeatherButton primary  @click="handleNext">Next</FeatherButton>
+          <FeatherButton primary @click="handleNext">
+            {{ route?.params?.id !== '0' ? 'Next' : 'Save' }}
+          </FeatherButton>
         </div>
       </FeatherTabPanel>
       <FeatherTabPanel>
@@ -25,13 +27,20 @@
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { Policy } from '@/types/policies'
 import router from '@/router'
+
 const selectedTab = ref(0)
 const store = useMonitoringPoliciesStore()
 const route = useRoute()
 const handleNext = () => {
-  selectedTab.value = 1
+  if (route.params.id == '0') {
+    store.savePolicy(true)
+  } else {
+    selectedTab.value = 1
+  }
 }
+
 const handleCancel = () => {
+  store.clearSelectedPolicy()
   router.push('/monitoring-policies-new/')
 }
 const deleteMsg = computed(() =>
@@ -39,7 +48,7 @@ const deleteMsg = computed(() =>
 )
 
 watchEffect(() => {
-  if (store.monitoringPolicies.length > 0 && route?.params?.id) {
+  if (store.monitoringPolicies.length > 0 && route?.params?.id !== '0') {
     const filteredPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(route.params.id))
     store.displayPolicyForm(filteredPolicy as Policy)
   }

@@ -16,6 +16,7 @@ import {
   TimeRangeUnit
 } from '@/types/graphql'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
+import router from '@/router'
 
 const { showSnackbar } = useSnackbar()
 
@@ -92,7 +93,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
   }),
   actions: {
     // used for initial population of policies
-
     async getMonitoringPolicies() {
       const queries = useMonitoringPoliciesQueries()
       await queries.listMonitoringPolicies()
@@ -103,7 +103,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       //  Once back end adds ability to enable/disable, then we will add another issue to implement it here and elsewhere.
 
       for (let i = 0; i < this.monitoringPolicies.length; i++) {
-        if (!('enabled' in  this.monitoringPolicies[i])) {
+        if (!('enabled' in this.monitoringPolicies[i])) {
           this.monitoringPolicies[i].enabled = true
         }
       }
@@ -217,7 +217,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       showSnackbar({ msg: 'Rule successfully applied to the policy.' })
       this.closeAlertRuleDrawer()
     },
-    async savePolicy() {
+    async savePolicy(isCopy = false) {
       const { addMonitoringPolicy, error } = useMonitoringPoliciesMutations()
 
       if (!this.selectedPolicy || !this.validateMonitoringPolicy(this.selectedPolicy)) {
@@ -244,6 +244,12 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         return rule
       })
 
+      if (isCopy) {
+        delete policy.isDefault
+        delete policy.enabled
+        delete policy.id // Clear the ID to create a new policy using copy
+      }
+
       await addMonitoringPolicy({ policy })
 
       if (!error.value) {
@@ -252,11 +258,22 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.validationErrors = {}
         this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
+        if (isCopy) {
+          router.push('/monitoring-policies-new/')
+        }
       }
 
       return !error.value
     },
     copyPolicy(policy: Policy) {
+      const copiedPolicy = cloneDeep(policy)
+      copiedPolicy.name = `Copy of ${copiedPolicy.name}`
+      copiedPolicy.id = 0
+      copiedPolicy.isDefault = false
+      this.displayPolicyForm(copiedPolicy)
+      router.push('/monitoring-policies-new/0')
+    },
+    copyPolicyLegacy(policy: Policy) {
       const copiedPolicy = cloneDeep(policy)
       delete copiedPolicy.isDefault
       delete copiedPolicy.id
