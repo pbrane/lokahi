@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import NodeStatus from '@/containers/NodeStatus.vue'
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
 
 let wrapper: any
 let router: any

@@ -1,11 +1,10 @@
-import mount from 'tests/mountWithPiniaVillus'
-
+import mount from '../mountWithPiniaVillus'
 import { Unknowns } from '@/components/MonitoringPolicies/monitoringPolicies.constants'
 import MonitoringPolicies from '@/containers/MonitoringPolicies.vue'
+import featherInputFocusDirective from '@/directives/v-focus'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
 import { DetectionMethod, EventType, ManagedObjectType, MonitorPolicy, Severity } from '@/types/graphql'
-import featherInputFocusDirective from '@/directives/v-focus'
 import { buildFetchList } from '../utils'
 
 const testingPayload: MonitorPolicy = {

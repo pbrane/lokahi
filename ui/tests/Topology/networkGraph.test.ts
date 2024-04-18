@@ -1,4 +1,4 @@
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import NetworkGraph from '@/components//Topology/NetworkGraph.vue'
 
 const wrapper = mountWithPiniaVillus({

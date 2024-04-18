@@ -23,6 +23,13 @@ interface AlertsFilters {
   nodeId?: number
 }
 
+interface EventsFilters {
+  searchTerm?: string
+  sortAscending: boolean
+  sortBy?: string
+  nodeId?: number
+}
+
 interface Variables {
   id?: number;
 }

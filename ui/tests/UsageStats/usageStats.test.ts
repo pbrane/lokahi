@@ -1,4 +1,4 @@
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import OptInOutCtrl from '@/components/UsageStats/OptInOutCtrl.vue'
 // import { useUsageStatsMutations } from '@/store/Mutations/usageStatsMutations'
 

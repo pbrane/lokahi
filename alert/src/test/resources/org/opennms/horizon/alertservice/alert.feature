@@ -203,6 +203,7 @@ Feature: Alert Service Basic Functionality
       | alerts[1].severity == MAJOR |
     Then Verify alert topic has 4 messages for the tenant
 
+    @Node-Svan
   Scenario: Alerts can be counted
     When An event is sent with UEI "uei.opennms.org/generic/traps/SNMP_Link_Down" on node 10
     Then List alerts for the tenant, until JSON response matches the following JSON path expressions
@@ -219,3 +220,5 @@ Feature: Alert Service Basic Functionality
     Then Count alerts for the tenant, filtered by severity "MAJOR", assert response is 1
     Then Count alerts for the tenant on node 11 with page 0 pageSize 10 response is not equal to 0
     Then Verify alert topic has 2 messages for the tenant
+    Then Verify count of affected node by monitoring policy
+

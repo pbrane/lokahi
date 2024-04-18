@@ -31,10 +31,12 @@ import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alertservice.api.AlertLifecycleListener;
 import org.opennms.horizon.alertservice.api.AlertService;
 import org.opennms.horizon.alertservice.db.entity.Node;
+import org.opennms.horizon.alertservice.db.entity.NodeInfo;
 import org.opennms.horizon.alertservice.db.repository.AlertRepository;
 import org.opennms.horizon.alertservice.db.repository.NodeRepository;
 import org.opennms.horizon.alertservice.db.repository.SeverityCount;
 import org.opennms.horizon.alertservice.mapper.AlertMapper;
+import org.opennms.horizon.alertservice.mapper.NodeInfoMapper;
 import org.opennms.horizon.alertservice.mapper.NodeMapper;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.inventory.dto.NodeDTO;
@@ -51,6 +53,7 @@ public class AlertServiceImpl implements AlertService {
     private final AlertListenerRegistry alertListenerRegistry;
     private final AlertMapper alertMapper;
     private final NodeMapper nodeMapper;
+    private final NodeInfoMapper nodeInfoMapper;
 
     @Override
     public List<Alert> reduceEvent(Event e) {
@@ -185,11 +188,15 @@ public class AlertServiceImpl implements AlertService {
 
     private void createNode(NodeDTO nodeDTO) {
         Node node = nodeMapper.map(nodeDTO);
+        NodeInfo nodeInfo = nodeInfoMapper.map(nodeDTO);
+        node.setNodeInfo(nodeInfo);
         nodeRepository.save(node);
     }
 
     private void updateNode(Node node, NodeDTO nodeDTO) {
         node.setNodeLabel(nodeDTO.getNodeLabel());
+        NodeInfo nodeInfo = nodeInfoMapper.map(nodeDTO);
+        node.setNodeInfo(nodeInfo);
         nodeRepository.save(node);
     }
 }

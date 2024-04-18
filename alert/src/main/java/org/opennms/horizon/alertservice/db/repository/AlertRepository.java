@@ -151,4 +151,10 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
             countQuery =
                     "SELECT count(a) " + "FROM Alert a " + "WHERE a.tenantId = :tenantId " + "AND a.nodeId = :nodeId ")
     Page<Alert> findAlertsByNodeId(@Param("tenantId") String tenantId, @Param("nodeId") long nodeId, Pageable pageable);
+
+    @Query(
+            value =
+                    "SELECT count(distinct a.nodeId) FROM Alert a LEFT JOIN AlertCondition ac LEFT JOIN PolicyRule r LEFT JOIN MonitorPolicy p "
+                            + "WHERE a.tenantId = :tenantId AND p.id = :policyId")
+    long countNodesByMonitoringPolicyAndTenantId(@Param("policyId") long policyId, @Param("tenantId") String tenantId);
 }

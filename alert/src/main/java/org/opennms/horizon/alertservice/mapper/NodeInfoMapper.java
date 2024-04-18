@@ -19,35 +19,18 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.alertservice.db.entity;
+package org.opennms.horizon.alertservice.mapper;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.CollectionMappingStrategy;
+import org.mapstruct.Mapper;
+import org.mapstruct.NullValueCheckStrategy;
+import org.opennms.horizon.alertservice.db.entity.NodeInfo;
+import org.opennms.horizon.inventory.dto.NodeDTO;
 
-@Getter
-@Setter
-@RequiredArgsConstructor
-@Entity
-public class Node {
-    @Id
-    private long id;
+@Mapper(componentModel = "spring", collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
+public interface NodeInfoMapper {
 
-    @Column(name = "tenant_id")
-    private String tenantId;
-
-    @Column(name = "node_label")
-    private String nodeLabel;
-
-    @Column(name = "monitoring_location_id")
-    private long monitoringLocationId;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "node_info", columnDefinition = "jsonb")
-    private NodeInfo nodeInfo;
+    @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    NodeInfo map(NodeDTO proto);
 }

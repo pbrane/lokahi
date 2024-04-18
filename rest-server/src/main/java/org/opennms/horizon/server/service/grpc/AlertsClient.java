@@ -391,4 +391,14 @@ public class AlertsClient {
                 .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
                 .getAlertsByNode(request.build());
     }
+
+    public Long getNodesCountByMonitoringPolicy(Long id, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return alertStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .countNodesByMonitoringPolicy(Int64Value.of(id))
+                .getValue();
+    }
 }

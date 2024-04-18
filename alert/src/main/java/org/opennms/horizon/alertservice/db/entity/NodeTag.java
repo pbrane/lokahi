@@ -21,33 +21,15 @@
  */
 package org.opennms.horizon.alertservice.db.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import lombok.ToString;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
-@Entity
-public class Node {
-    @Id
+@ToString
+public class NodeTag {
     private long id;
-
-    @Column(name = "tenant_id")
     private String tenantId;
-
-    @Column(name = "node_label")
-    private String nodeLabel;
-
-    @Column(name = "monitoring_location_id")
-    private long monitoringLocationId;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "node_info", columnDefinition = "jsonb")
-    private NodeInfo nodeInfo;
+    private String name;
 }

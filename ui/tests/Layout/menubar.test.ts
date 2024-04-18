@@ -1,8 +1,8 @@
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
+import Keycloak from 'keycloak-js'
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import Menubar from '@/components/Layout/Menubar.vue'
 import useKeycloak from '@/composables/useKeycloak'
 import useTheme from '@/composables/useTheme'
-import Keycloak from 'keycloak-js'
 
 test('The menubar mounts', () => {
   const wrapper = mountWithPiniaVillus({

@@ -1,5 +1,5 @@
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import Inventory from '@/containers/Inventory.vue'
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
 
 let wrapper: any
 

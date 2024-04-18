@@ -1,4 +1,4 @@
-import mount from 'tests/mountWithPiniaVillus'
+import mount from '../mountWithPiniaVillus'
 import { Unknowns } from '@/components/MonitoringPoliciesLegacy/monitoringPoliciesLegacy.constants'
 import MonitoringPoliciesLegacy from '@/containers/MonitoringPoliciesLegacy.vue'
 import featherInputFocusDirective from '@/directives/v-focus'

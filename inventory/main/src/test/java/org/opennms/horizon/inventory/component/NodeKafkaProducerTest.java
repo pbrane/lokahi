@@ -21,16 +21,16 @@
  */
 package org.opennms.horizon.inventory.component;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.Objects;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.mapper.NodeMapper;
 import org.opennms.horizon.inventory.model.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,11 +49,11 @@ public class NodeKafkaProducerTest {
     @BeforeEach
     public void setUp() {
         mockKafkaTemplate = Mockito.mock(KafkaTemplate.class);
-
         target = new NodeKafkaProducer();
 
         target.setTopic(TEST_TOPIC);
         target.setKafkaTemplate(mockKafkaTemplate);
+        target.setNodeMapper(Mappers.getMapper(NodeMapper.class));
     }
 
     @Test

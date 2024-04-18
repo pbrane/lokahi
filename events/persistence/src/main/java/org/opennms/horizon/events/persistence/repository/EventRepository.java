@@ -42,8 +42,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                     + " OR e.locationName LIKE %:searchTerm% "
                     + " OR e.description LIKE %:searchTerm% "
                     + " OR e.logMessage LIKE %:searchTerm% "
-                    + " OR CAST( e.ipAddress  AS  string) LIKE %:searchTerm% )"
-                    + " ORDER BY e.id",
+                    + " OR CAST( e.ipAddress  AS  string) LIKE %:searchTerm% )",
             countQuery = "SELECT count(e)  FROM Event e  WHERE e.tenantId = :tenantId AND e.nodeId = :nodeId ")
     Page<Event> findByNodeIdAndSearchTermAndTenantId(
             @Param("tenantId") String tenantId,

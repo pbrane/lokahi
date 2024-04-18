@@ -45,6 +45,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.assertj.core.groups.Tuple;
+import org.junit.jupiter.api.Assertions;
 import org.junit.platform.commons.util.StringUtils;
 import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertConditionProto;
@@ -380,5 +381,17 @@ public class MonitorPolicySteps {
                 .build();
         var eventDefsByType = this.grpcClient.getAlertEventDefinitionStub().listAlertEventDefinitionsByVendor(request);
         assertThat(eventDefsByType.getEventDefinitionCount()).isGreaterThanOrEqualTo(size);
+    }
+
+    @Then("Verify count of affected node by monitoring policy")
+    public void verifyCountOfAffectedNodeByMonitoringPolicy() {
+
+        MonitorPolicyList list = grpcClient.getPolicyStub().listPolicies(Empty.getDefaultInstance());
+        var id = list.getPoliciesList().get(0).getId();
+        Assertions.assertTrue(grpcClient
+                        .getAlertServiceStub()
+                        .countNodesByMonitoringPolicy(Int64Value.of(id))
+                        .getValue()
+                > 0);
     }
 }

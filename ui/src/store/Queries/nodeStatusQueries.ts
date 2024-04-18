@@ -1,12 +1,20 @@
+import { AlertsFilters, EventsFilters, Pagination, Variables } from '@/types/alerts'
+import { AlertsByNodeDocument, DownloadAlertsByNodeDocument, DownloadCSVEventVariables, DownloadCsvVariables, DownloadEventsDocument, DownloadFormat, DownloadIpInterfacesDocument, DownloadSNMPInterfacesDocument, FindExportersForNodeStatusDocument, ListAlertResponse, ListEventResponse, ListNodeEventsDocument, ListNodeStatusDocument, Node, RequestCriteriaInput } from '@/types/graphql'
 import { defineStore } from 'pinia'
 import { useQuery } from 'villus'
-import { DownloadAlertsByNodeDocument, AlertsByNodeDocument, DownloadIpInterfacesDocument, DownloadCsvVariables, Event, FindExportersForNodeStatusDocument, ListAlertResponse, ListNodeEventsDocument, ListNodeStatusDocument, Node, RequestCriteriaInput, DownloadEventsDocument, DownloadSNMPInterfacesDocument } from '@/types/graphql'
-import { AlertsFilters, Pagination, Variables } from '@/types/alerts'
 import { defaultListAlertResponse } from './alertsQueries'
+
+export const DefaultEventListResponse = {
+  eventsList: [],
+  lastPage: 0,
+  nextPage: 0,
+  totalEvents: 0
+} as ListEventResponse
 
 export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
   const variables = ref<Variables>({})
   const fetchAlertsByNodeData = ref({} as ListAlertResponse)
+  const fetchedEventsByNodeData = ref({} as ListEventResponse)
   const setNodeId = (id: number) => {
     variables.value = { id }
   }
@@ -17,18 +25,8 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
     cachePolicy: 'network-only'
   })
 
-  const { data: events, execute: fetchEvents } = useQuery({
-    query: ListNodeEventsDocument,
-    variables,
-    cachePolicy: 'network-only'
-  })
-
   const fetchedData = computed(() => ({
     node: data.value?.node || ({} as Node)
-  }))
-
-  const fetchedEventsData = computed(() => ({
-    events: events.value?.events || ([] as Event[])
   }))
 
   const fetchExporters = async (requestCriteria: RequestCriteriaInput) => {
@@ -62,6 +60,29 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
       fetchAlertsByNodeData.value = {...data?.value?.getAlertsByNode } as ListAlertResponse
     } else {
       fetchAlertsByNodeData.value = defaultListAlertResponse()
+    }
+  }
+
+  const getEventsByNodeQuery = async (sortFilter: EventsFilters, paginationFilter: Pagination) => {
+    const { data, execute } = useQuery({
+      query: ListNodeEventsDocument,
+      variables: {
+        page: paginationFilter.page,
+        pageSize: paginationFilter.pageSize,
+        sortBy: sortFilter.sortBy,
+        sortAscending: sortFilter.sortAscending,
+        nodeId: sortFilter.nodeId,
+        searchTerm: sortFilter.searchTerm,
+        downloadFormat: DownloadFormat.Csv
+      },
+      cachePolicy: 'network-only'
+    })
+    await execute()
+
+    if (data.value?.searchEvents) {
+      fetchedEventsByNodeData.value = {...data.value.searchEvents}
+    } else {
+      fetchedEventsByNodeData.value = DefaultEventListResponse
     }
   }
 
@@ -105,7 +126,7 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
     return data.value?.downloadRecentAlertsByNode?.alertsBytes || []
   }
 
-  const downloadEvents = async (requestCriteria: DownloadCsvVariables) => {
+  const downloadEvents = async (requestCriteria: DownloadCSVEventVariables) => {
     const { execute, data } = useQuery({
       query: DownloadEventsDocument,
       variables: requestCriteria,
@@ -114,21 +135,21 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
     })
     await execute()
 
-    return data.value?.downloadEvents?.searchEventsBytes || []
+    return data.value?.downloadEventsByNodeId?.searchEventsBytes || []
   }
 
   return {
     setNodeId,
     fetchedData,
-    fetchedEventsData,
     fetchExporters,
     fetchNodeStatus,
-    fetchEvents,
     downloadIpInterfaces,
     downloadSNMPInterfaces,
     getAlertsByNodeQuery,
     fetchAlertsByNodeData,
+    fetchedEventsByNodeData,
     downloadAlertsByNode,
+    getEventsByNodeQuery,
     downloadEvents
   }
 })

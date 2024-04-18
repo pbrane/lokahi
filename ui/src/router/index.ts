@@ -51,9 +51,14 @@ const router = createRouter({
       component: () => import('@/containers/MonitoringPolicies.vue')
     },
     {
+      path: '/monitoring-policies-new/create',
+      name: 'Monitoring Policies New Selected',
+      component: () => import('../components/MonitoringPolicies/MonitoringPolicyCreatePanel.vue')
+    },
+    {
       path: '/monitoring-policies-new/:id',
       name: 'Monitoring Policies New Selected',
-      component: () => import('@/containers/MonitoringPolicies.vue')
+      component: () => import('../components/MonitoringPolicies/MonitoringPoliciesEditPanel.vue')
     },
     {
       path: '/synthetic-transactions',

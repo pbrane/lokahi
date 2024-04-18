@@ -1,5 +1,5 @@
+import mount from '../mountWithPiniaVillus'
 import DashboardNetworkTraffic from '@/components/Dashboard/DashboardNetworkTraffic.vue'
-import mount from 'tests/mountWithPiniaVillus'
 
 let wrapper: any
 

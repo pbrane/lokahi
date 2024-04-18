@@ -16,7 +16,10 @@ describe('Events queries', () => {
       useQuery: vi.fn().mockImplementation(() => ({
         data: {
           value: {
-            events: eventsFixture()
+            nextPage: 1,
+            lastPage: 1,
+            totalEvents: 0,
+            eventsList: eventsFixture()
           }
         }
       }))
@@ -26,8 +29,13 @@ describe('Events queries', () => {
     nodeStatusQueries.setNodeId(1)
 
     const expectedFetchedData = {
-      events: eventsFixture()
+      nextPage: 1,
+      lastPage: 1,
+      totalEvents: 0,
+      eventsList: eventsFixture()
     }
-    expect(nodeStatusQueries.fetchedEventsData).toStrictEqual(expectedFetchedData)
+
+    nodeStatusQueries.fetchedEventsByNodeData = expectedFetchedData
+    expect(nodeStatusQueries.fetchedEventsByNodeData).toStrictEqual(expectedFetchedData)
   })
 })

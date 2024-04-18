@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
+import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.SnmpInterfaceDTO;
 
 @RequiredArgsConstructor
 public class NodeTestSteps {
@@ -52,7 +54,17 @@ public class NodeTestSteps {
             NodeDTO.Builder builder = NodeDTO.newBuilder();
             builder.setNodeLabel(map.get("label"))
                     .setId(Long.parseLong(map.get("id")))
-                    .setTenantId(map.get("tenant_id"));
+                    .setTenantId(map.get("tenant_id"))
+                    .addIpInterfaces(IpInterfaceDTO.newBuilder()
+                            .setHostname("localhost")
+                            .setIpAddress("192.168.1.1")
+                            .build())
+                    .addSnmpInterfaces(SnmpInterfaceDTO.newBuilder()
+                            .setIfAlias("ifAlias")
+                            .setNodeId(Long.parseLong(map.get("id")))
+                            .setIfIndex(1)
+                            .setIfName("eth0")
+                            .build());
 
             builders.add(builder);
         }

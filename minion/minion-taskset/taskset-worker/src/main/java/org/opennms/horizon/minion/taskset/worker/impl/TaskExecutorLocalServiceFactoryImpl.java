@@ -21,6 +21,9 @@
  */
 package org.opennms.horizon.minion.taskset.worker.impl;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.opennms.horizon.minion.plugin.api.registries.CollectorRegistry;
 import org.opennms.horizon.minion.plugin.api.registries.DetectorRegistry;
 import org.opennms.horizon.minion.plugin.api.registries.ListenerFactoryRegistry;
@@ -48,6 +51,8 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
     private final CollectorRegistry collectorRegistry;
     private final ScannerRegistry scannerRegistry;
 
+    private ExecutorService executor;
+
     // ========================================
     // Constructor
     // ----------------------------------------
@@ -68,6 +73,9 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
         this.monitorRegistry = monitorRegistry;
         this.collectorRegistry = collectorRegistry;
         this.scannerRegistry = scannerRegistry;
+        this.executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+                .setNameFormat("monitor-service-response-handler")
+                .build());
     }
 
     // ========================================
@@ -83,7 +91,7 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
 
             case MONITOR:
                 return new TaskExecutorLocalMonitorServiceImpl(
-                        scheduler, taskDefinition, resultProcessor, monitorRegistry);
+                        scheduler, taskDefinition, resultProcessor, monitorRegistry, executor);
 
             case LISTENER:
                 TaskListenerRetryable listenerService =
@@ -101,5 +109,9 @@ public class TaskExecutorLocalServiceFactoryImpl implements TaskExecutorLocalSer
             default:
                 throw new RuntimeException("unrecognized taskDefinition type " + taskDefinition.getType());
         }
+    }
+
+    public void close() {
+        executor.shutdown();
     }
 }

@@ -1,9 +1,9 @@
+import { createClient, setActiveClient } from 'villus'
+import mount from '../mountWithPiniaVillus'
 import DashboardApplications from '@/components/Dashboard/DashboardApplications.vue'
-import mount from 'tests/mountWithPiniaVillus'
+import { useFlowsApplicationStore } from '@/store/Views/flowsApplicationStore'
 import { useFlowsStore } from '@/store/Views/flowsStore'
 import { TimeRange } from '@/types/graphql'
-import { createClient, setActiveClient } from 'villus'
-import { useFlowsApplicationStore } from '@/store/Views/flowsApplicationStore'
 
 const wrapper = mount({
   component: DashboardApplications,

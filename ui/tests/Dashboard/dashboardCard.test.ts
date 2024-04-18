@@ -1,6 +1,6 @@
+import mount from '../mountWithPiniaVillus'
 import DashboardCard from '@/components/Dashboard/DashboardCard.vue'
 import dashboardTexts from '@/components/Dashboard/dashboard.text'
-import mount from 'tests/mountWithPiniaVillus'
 import router from '@/router'
 
 let wrapper: any

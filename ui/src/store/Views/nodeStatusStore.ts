@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia'
+import { createAndDownloadBlobFile } from '@/components/utils'
 import { FLOWS_ENABLED } from '@/constants'
 import { useNodeStatusQueries } from '@/store/Queries/nodeStatusQueries'
 import { AZURE_SCAN, DeepPartial } from '@/types'
-import { DownloadFormat, DownloadCsvVariables, Exporter, ListAlertResponse, NodeUpdateInput, RequestCriteriaInput, TimeRange } from '@/types/graphql'
-import { useNodeMutations } from '../Mutations/nodeMutations'
-import { createAndDownloadBlobFile } from '@/components/utils'
-import { AlertsFilters, AlertsSort, Pagination } from '@/types/alerts'
+import { AlertsFilters, AlertsSort, EventsFilters, Pagination } from '@/types/alerts'
+import { DownloadCSVEventVariables, DownloadCsvVariables, DownloadFormat, Exporter, ListAlertResponse, ListEventResponse, NodeUpdateInput, RequestCriteriaInput, TimeRange } from '@/types/graphql'
 import { cloneDeep } from 'lodash'
+import { defineStore } from 'pinia'
+import { useNodeMutations } from '../Mutations/nodeMutations'
 
 const alertsFilterDefault: AlertsFilters = {
   timeRange: TimeRange.All,
@@ -17,20 +17,30 @@ const alertsFilterDefault: AlertsFilters = {
   nodeId: 1
 }
 
-const alertsPaginationDefault: Pagination = {
-  page: 0, // FE pagination component has base 1 (first page)
+const eventsFilterDefault: EventsFilters = {
+  searchTerm: '',
+  sortAscending: true,
+  sortBy: 'id',
+  nodeId: 1
+}
+
+const defaultPagination: Pagination = {
+  page: 1, // FE pagination component has base 1 (first page)
   pageSize: 10,
   total: 0
 }
 
+
 export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
   const alertsFilter = ref(cloneDeep(alertsFilterDefault))
-  const alertsPagination = ref(cloneDeep(alertsPaginationDefault))
+  const eventsFilter = ref(cloneDeep(eventsFilterDefault))
+  const alertsPagination = ref(cloneDeep(defaultPagination))
+  const eventsPagination = ref(cloneDeep(defaultPagination))
   const nodeStatusQueries = useNodeStatusQueries()
   const mutations = useNodeMutations()
   const fetchedData = computed(() => nodeStatusQueries.fetchedData)
-  const fetchedEventsData = computed(() => nodeStatusQueries.fetchedEventsData)
   const fetchAlertsByNodeData = ref({} as ListAlertResponse)
+  const fetchEventsByNodeData = ref({} as ListEventResponse)
   const exporters = ref<DeepPartial<Exporter>[]>([])
   const nodeId = ref()
 
@@ -126,7 +136,11 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
   }
 
   const downloadEvents = async (searchTerm: string) => {
-    const queryVariables: DownloadCsvVariables = {
+    const queryVariables: DownloadCSVEventVariables = {
+      page: eventsPagination.value.page > 0 ? eventsPagination.value.page - 1 : 0,
+      pageSize: eventsPagination.value.pageSize,
+      sortBy: eventsFilter.value.sortBy,
+      sortAscending: eventsFilter.value.sortAscending,
       nodeId: nodeId.value,
       searchTerm: searchTerm || '',
       downloadFormat: DownloadFormat.Csv
@@ -137,21 +151,36 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
   }
 
   const getAlertsByNode = async () => {
-
     const page = alertsPagination.value.page > 0 ? alertsPagination.value.page - 1 : 0
-
     const pagination = {
       ...alertsPagination.value,
       page
     }
     await nodeStatusQueries.getAlertsByNodeQuery(alertsFilter.value, pagination)
-
     fetchAlertsByNodeData.value = nodeStatusQueries.fetchAlertsByNodeData
-
-    if (fetchAlertsByNodeData.value.totalAlerts != alertsPagination.value.total) {
+    if (fetchAlertsByNodeData.value.totalAlerts !== alertsPagination.value.total) {
       alertsPagination.value = {
         ...alertsPagination.value,
         total: fetchAlertsByNodeData.value.totalAlerts
+      }
+    }
+  }
+
+  const getEventsByNode = async () => {
+    const page = eventsPagination.value.page > 0 ? eventsPagination.value.page - 1 : 0
+    const newPage = {
+      page: page,
+      pageSize: eventsPagination.value.pageSize,
+      total: eventsPagination.value.total
+    }
+    eventsFilter.value.nodeId = nodeId.value
+    await nodeStatusQueries.getEventsByNodeQuery(eventsFilter.value, newPage)
+    fetchEventsByNodeData.value = nodeStatusQueries.fetchedEventsByNodeData
+    if (fetchEventsByNodeData.value.totalEvents !== eventsPagination.value.total) {
+      eventsPagination.value = {
+        page: eventsPagination.value.page,
+        pageSize: eventsPagination.value.pageSize,
+        total: fetchEventsByNodeData.value.totalEvents
       }
     }
   }
@@ -167,6 +196,17 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
     getAlertsByNode()
   }
 
+  const setEventsByNodePage = (page: number): void => {
+    if (page !== Number(eventsPagination.value.page)) {
+      eventsPagination.value = {
+        ...eventsPagination.value,
+        page
+      }
+    }
+
+    getEventsByNode()
+  }
+
   const setAlertsByNodePageSize = (pageSize: number): void => {
     if (pageSize !== alertsPagination.value.pageSize) {
       alertsPagination.value = {
@@ -177,6 +217,18 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
     }
 
     getAlertsByNode()
+  }
+
+  const setEventsByNodePageSize = (pageSize: number): void => {
+    if (pageSize !== eventsPagination.value.pageSize) {
+      eventsPagination.value = {
+        ...eventsPagination.value,
+        page: 1, // always request first page on change
+        pageSize
+      }
+    }
+
+    getEventsByNode()
   }
 
   const alertsByNodeSortChanged = (sortObj: AlertsSort) => {
@@ -198,10 +250,33 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
     getAlertsByNode()
   }
 
+  const eventsSortChanged = (sortObj: AlertsSort) => {
+    eventsFilter.value = {
+      ...eventsFilter.value,
+      sortBy: sortObj.sortBy,
+      sortAscending: sortObj.sortAscending,
+      nodeId: nodeId.value
+    }
+
+    if (eventsPagination.value.page !== 1 || eventsPagination.value.total !== fetchEventsByNodeData.value.totalEvents) {
+      eventsPagination.value = {
+        ...eventsPagination.value,
+        page: 1, // always request first page on change
+        total: fetchEventsByNodeData.value.totalEvents
+      }
+    }
+
+    getEventsByNode()
+  }
+
+  const eventsSearchChanged = (searchTerm: string) => {
+    eventsFilter.value.searchTerm = searchTerm
+    getEventsByNode()
+  }
+
   return {
     updateNodeAlias,
     fetchedData,
-    fetchedEventsData,
     setNodeId,
     isAzure: computed(() => fetchedData.value.node.scanType === AZURE_SCAN),
     fetchExporters,
@@ -211,11 +286,18 @@ export const useNodeStatusStore = defineStore('nodeStatusStore', () => {
     downloadIpInterfacesToCsv,
     downloadSNMPInterfacesToCsv,
     getAlertsByNode,
+    getEventsByNode,
     fetchAlertsByNodeData,
+    fetchEventsByNodeData,
     alertsPagination,
+    eventsPagination,
     setAlertsByNodePageSize,
+    setEventsByNodePageSize,
+    setEventsByNodePage,
     setAlertsByNodePage,
     alertsByNodeSortChanged,
+    eventsSortChanged,
+    eventsSearchChanged,
     downloadAlertsByNodesToCsv,
     downloadEvents
   }

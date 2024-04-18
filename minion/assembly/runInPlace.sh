@@ -18,6 +18,8 @@ CLIENT_TRUSTSTORE="$(pwd)/../../target/tmp/server-ca.crt"
 CLIENT_TRUSTSTORE_TYPE="file"
 CLIENT_TRUSTSTORE_PASSWORD=""
 
+MANUAL_MODE="false"
+
 ###
 ### WARNING: certificate passwords currently do not work with PEM files; it only works with PKCS12 files.
 ###
@@ -32,7 +34,7 @@ OVERRIDE_AUTHORITY="minion.onmshs.local"
 USAGE()
 {
 	cat <<-!
-		Usage: bash $0 [-f <FLA>] [-h <HOST>] [-i <ID>] [-k <PATH>] [-l <LOC>] [-P <PASS>] [-p <PORT>] [-a <ADDRESS>] [-d] [-t]
+		Usage: bash $0 [-f <FLA>] [-h <HOST>] [-i <ID>] [-k <PATH>] [-l <LOC>] [-P <PASS>] [-p <PORT>] [-a <ADDRESS>] [-d] [-t] [-m]
 
 		    -a[ADDRESS]	use ADDRESS (IGNITE_SERVER_ADDRESSES) configure the Ignite cluster addresses? (warning - this currently may not have any effect)
 		    -f[FLAG]	use client private key PKCS12 FLAG (true => PKCS12; false => other)
@@ -46,10 +48,11 @@ USAGE()
 		    -d		enable jvm debug
 		    -t		enable TLS
 		    -T		generate minion mTLS from secrets available in local tilt setup (kubectl + openssl)
+			-m      Don't extract certificates automatically
 !
 }
 
-while getopts a:f:g:h:i:k:l:P:p:DdtxT FLAG
+while getopts a:f:g:h:i:k:l:P:p:DdtxTm FLAG
 do
     case "${FLAG}" in
         a) IGNITE_SERVER_ADDRESSES="${OPTARG}" ;;
@@ -67,9 +70,14 @@ do
         t) MINION_GATEWAY_TLS="true" ;;
         x) MINION_GATEWAY_TLS="false" ;;
         T) EXTRACT_TILT_CERTS="true" ;;
+		m) MANUAL_MODE="true" ;;
         ?) USAGE >&2 ; exit 1 ;;
     esac
 done
+
+if [ "${MANUAL_MODE}" == "false" ]; then
+ ./generate_location.sh -l default -k -P changeme
+fi
 
 if [ "${EXTRACT_TILT_CERTS}" == "true" ]; then
   mkdir -p $CERT_ROOTDIR || (echo "Could not create $CERT_ROOTDIR" && exit 1)

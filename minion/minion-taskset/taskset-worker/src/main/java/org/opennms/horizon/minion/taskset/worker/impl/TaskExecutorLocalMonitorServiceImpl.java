@@ -22,6 +22,7 @@
 package org.opennms.horizon.minion.taskset.worker.impl;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opennms.horizon.minion.plugin.api.MonitoredService;
@@ -43,7 +44,6 @@ import org.slf4j.LoggerFactory;
  *  problems due to serialization/deserialization.
  */
 public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalService {
-
     private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(TaskExecutorLocalMonitorServiceImpl.class);
 
     private Logger log = DEFAULT_LOGGER;
@@ -54,18 +54,20 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
     private TaskExecutionResultProcessor resultProcessor;
     private MonitorRegistry monitorRegistry;
     private ServiceMonitor monitor = null;
-
+    private ExecutorService executor;
     private AtomicBoolean active = new AtomicBoolean(false);
 
     public TaskExecutorLocalMonitorServiceImpl(
             OpennmsScheduler scheduler,
             TaskDefinition taskDefinition,
             TaskExecutionResultProcessor resultProcessor,
-            MonitorRegistry monitorRegistry) {
+            MonitorRegistry monitorRegistry,
+            ExecutorService executor) {
         this.taskDefinition = taskDefinition;
         this.scheduler = scheduler;
         this.resultProcessor = resultProcessor;
         this.monitorRegistry = monitorRegistry;
+        this.executor = executor;
     }
 
     // ========================================
@@ -134,7 +136,8 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
                 MonitoredService monitoredService = configureMonitoredService(taskDefinition);
                 CompletableFuture<ServiceMonitorResponse> future =
                         monitor.poll(monitoredService, taskDefinition.getConfiguration());
-                future.whenComplete(this::handleExecutionComplete);
+                future.whenCompleteAsync(this::handleExecutionComplete, executor);
+
             } else {
                 log.info("Skipping service monitor execution; monitor not found: monitor="
                         + taskDefinition.getPluginName());

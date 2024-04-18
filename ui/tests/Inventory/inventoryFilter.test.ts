@@ -1,5 +1,5 @@
+import mountWithPiniaVillus from '../mountWithPiniaVillus'
 import InventoryFilter from '@/components/Inventory/InventoryFilter.vue'
-import mountWithPiniaVillus from 'tests/mountWithPiniaVillus'
 
 let wrapper: any
 

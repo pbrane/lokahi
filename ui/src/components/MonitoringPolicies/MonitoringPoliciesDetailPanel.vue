@@ -8,7 +8,7 @@
       <div>
         <FeatherButton
           icon="Edit"
-          @click="onEdit"
+          @click="onEdit(store.selectedPolicy ?? {})"
         >
           <FeatherIcon :icon="icons.Edit" />
         </FeatherButton>
@@ -85,12 +85,14 @@
 </template>
 
 <script setup lang="ts">
-import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import ContentCopy from '@featherds/icon/action/ContentCopy'
-import Cancel from '@featherds/icon/navigation/Cancel'
-import Edit from '@featherds/icon/action/Edit'
-import Delete from '@featherds/icon/action/Delete'
 import useModal from '@/composables/useModal'
+import router from '@/router'
+import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { MonitorPolicy } from '@/types/graphql'
+import ContentCopy from '@featherds/icon/action/ContentCopy'
+import Delete from '@featherds/icon/action/Delete'
+import Edit from '@featherds/icon/action/Edit'
+import Cancel from '@featherds/icon/navigation/Cancel'
 
 const store = useMonitoringPoliciesStore()
 
@@ -124,8 +126,10 @@ const deleteMsg = computed(() =>
   `Deleting monitoring policy ${store.selectedPolicy?.name} removes ${store.numOfAlertsForRule} associated alerts. Do you wish to proceed?`
 )
 
-const onEdit = () => {
-  console.log('onEdit clicked')
+const onEdit = (policy: MonitorPolicy) => {
+  if (policy.id) {
+    router.push(`/monitoring-policies-new/${policy.id}`)
+  }
 }
 
 const onCopy = () => {
