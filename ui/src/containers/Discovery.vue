@@ -90,7 +90,7 @@
             >
             <ButtonWithSpinner
               text
-              v-if="discoveryStore.selectedDiscovery.name"
+              v-if="discoveryStore.selectedDiscovery.name && !discoveryStore.disableSave"
               :disabled="isOverallDisabled"
               :click="discoveryStore.saveSelectedDiscovery"
               :isFetching="discoveryStore.loading"
@@ -236,10 +236,9 @@
               @click="discoveryStore.backToTypePage"
               >Back</FeatherButton
             >
-
             <ButtonWithSpinner
               primary
-              v-if="discoveryStore.selectedDiscovery.name"
+              v-if="discoveryStore.selectedDiscovery.name && !discoveryStore.disableSave"
               :disabled="isOverallDisabled"
               :click="discoveryStore.saveSelectedDiscovery"
               :isFetching="discoveryStore.loading"

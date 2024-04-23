@@ -96,6 +96,7 @@ export interface DiscoveryStore {
   tagSearch: string;
   tagError: string;
   validationErrors: DiscoveryStoreErrors;
+  disableSave: boolean;
   validateOnKeyUp: boolean;
 }
 
