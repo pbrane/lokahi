@@ -43,9 +43,6 @@ const handleCancel = () => {
   store.clearSelectedPolicy()
   router.push('/monitoring-policies-new/')
 }
-const deleteMsg = computed(() =>
-  `Deleting monitoring policy ${store.selectedPolicy?.name} removes ${store.numOfAlertsForPolicy} associated alerts. Do you wish to proceed?`
-)
 
 watchEffect(() => {
   if (store.monitoringPolicies.length > 0 && route?.params?.id !== '0') {

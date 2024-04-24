@@ -3,6 +3,7 @@
     :primary="primary"
     :secondary="secondary"
     @click="click"
+    :disabled="disabled"
   >
     <template #icon>
       <slot />
@@ -24,7 +25,8 @@ defineProps({
   click: { type: Function as PropType<(...payload: any[]) => void>, default: () => {} },
   primary: { type: Boolean, default: false },
   secondary: { type: Boolean, default: false },
-  isFetching: { type: Boolean, default: false }
+  isFetching: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false }
 })
 </script>
 

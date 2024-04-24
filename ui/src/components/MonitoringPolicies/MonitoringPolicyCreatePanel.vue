@@ -29,9 +29,7 @@ const selectedTab = ref(0)
 const handleCancel = () => {
   router.push('/monitoring-policies-new/')
 }
-const deleteMsg = computed(() =>
-  `Deleting monitoring policy ${store.selectedPolicy?.name} removes ${store.numOfAlertsForPolicy} associated alerts. Do you wish to proceed?`
-)
+
 const handleNext = () => {
   selectedTab.value = 1
 }

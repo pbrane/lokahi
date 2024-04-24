@@ -27,8 +27,6 @@ const tagQueries = useTagQueries()
 
 const selectTags = (tags: TagSelectItem[]) => (store.selectedPolicy!.tags = tags.map((tag) => tag.name))
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const formattedTags = computed(() => store.selectedPolicy!.tags!.map((tag: string) => ({ name: tag, id: tag })))
 </script>
 <style lang="scss" scoped>
 @use '@featherds/styles/themes/variables';

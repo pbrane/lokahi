@@ -59,11 +59,11 @@
     </div>
   </div>
   <DeleteConfirmationModal
-   :name="store.selectedPolicy?.name" 
-   :isVisible="isVisible" 
+   :name="store.selectedPolicy?.name"
+   :isVisible="isVisible"
    :customMsg="deleteMsg"
-   :noteMsg="noteMsg" 
-   :closeModal="onCloseModal" 
+   :noteMsg="noteMsg"
+   :closeModal="onCloseModal"
    :deleteHandler="removePolicy" />
 </template>
 
