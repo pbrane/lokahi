@@ -59,10 +59,10 @@
             </div>
           </div>
 
-          <div class="alert-conditions">
-            <h2>Specify Alert Conditions</h2>
-            <p>Alert conditions are an additional set of parameters specific to the chosen detection method. Alert conditions help to determine what alerts will b etriggered and their assigned severity.</p>
-          </div>
+          <SystemEventAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SystemEvent)" />
+          <SNMPTrapAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SnmpTrap)"/>
+          <SyslogAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.Syslog)" />
+          <MetricThresholdAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.MetricThreshold)" />
         </div>
 
         <div class="footer">
@@ -99,7 +99,10 @@ const isIcon = ref(true)
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 
 const eventTypeOptions = [
+  { id: EventType.MetricThreshold, name: 'Metric Threshold' },
+  { id: EventType.SystemEvent, name: 'System Event' },
   { id: EventType.SnmpTrap, name: 'SNMP Trap' },
+  { id: EventType.Syslog, name: 'Syslog' },
   { id: EventType.Internal, name: 'Internal' }
 ]
 

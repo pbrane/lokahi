@@ -210,6 +210,9 @@ export type EventParameter = {
 export enum EventType {
   Internal = 'INTERNAL',
   SnmpTrap = 'SNMP_TRAP',
+  SystemEvent = 'SYSTEM_EVENT',
+  Syslog = 'SYSLOG',
+  MetricThreshold = 'METRIC_THRESHOLD',
   Unrecognized = 'UNRECOGNIZED'
 }
 

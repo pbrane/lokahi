@@ -61,7 +61,7 @@ async function getDefaultEventCondition(): Promise<AlertCondition> {
     return {
       id: new Date().getTime(),
       count: 1,
-      severity: Severity.Critical,
+      severity: Severity.Major,
       overtimeUnit: Unknowns.UNKNOWN_UNIT,
       triggerEvent: alertEventDefinitions.value.listAlertEventDefinitions[0]
     }

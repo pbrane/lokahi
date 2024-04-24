@@ -24,7 +24,7 @@ const testingPayload: MonitorPolicy = {
         {
           count: 1,
           overtime: undefined,
-          severity: Severity.Critical,
+          severity: Severity.Major,
           overtimeUnit: Unknowns.UNKNOWN_UNIT,
           triggerEvent: {
             id: 1,
