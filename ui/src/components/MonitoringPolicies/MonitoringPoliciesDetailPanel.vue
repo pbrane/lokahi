@@ -22,7 +22,7 @@
       <div class="card">
         <div class="sub-title">STATUS</div>
         <div class="toggle-wrapper">
-          <FeatherListSwitch class="basic-switch" v-model="isEnabled" />
+          <FeatherListSwitch class="basic-switch" v-model="store.selectedPolicy.enabled" />
           <span>Active</span>
         </div>
       </div>
