@@ -1,0 +1,30 @@
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:camel="http://camel.apache.org/schema/blueprint"
+           xsi:schemaLocation="
+           http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+           http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+
+    <bean id="syslogRoute" class="org.opennms.horizon.minion.syslog.listener.SyslogRoute">
+    <property name="udpPort" value="20514" />
+    </bean>
+
+
+<camel:camelContext id="myCamelContext"  autoStartup="true">
+        <camel:routeBuilder ref="syslogRoute"/>
+    </camel:camelContext>
+
+    <bean id="syslogConfig" class="org.opennms.horizon.minion.syslog.listener.SyslogConfigBean">
+        <property name="syslogPort" value="1514" />
+        <property name="listenAddress" value="0.0.0.0" />
+        <property name="numThreads" value="0" />
+        <property name="queueSize" value="10000" />
+        <property name="batchSize" value="1000" />
+        <property name="batchIntervalMs" value="500" />
+    </bean>
+
+
+
+
+</blueprint>
