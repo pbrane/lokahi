@@ -43,6 +43,7 @@
     <module>nodescan-plugin</module>
     <module>shell-commands</module>
     <module>ntp-plugin</module>
+    <module>http-plugin</module>
   </modules>
 
 </project>
