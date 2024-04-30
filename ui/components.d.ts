@@ -8,11 +8,11 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     AddressAutocomplete: typeof import('./src/components/Common/AddressAutocomplete.vue')['default']
+    AlertRulesDrawer: typeof import('./src/components/MonitoringPolicies/AlertRulesDrawer.vue')['default']
     AlertsCard: typeof import('./src/components/Alerts/AlertsCard.vue')['default']
     AlertsCardList: typeof import('./src/components/Alerts/AlertsCardList.vue')['default']
     AlertsSeverityCard: typeof import('./src/components/Alerts/AlertsSeverityCard.vue')['default']
     AlertsSeverityFilters: typeof import('./src/components/Alerts/AlertsSeverityFilters.vue')['default']
-    AlertRulesDrawer: typeof import('./src/components/MonitoringPolicies/AlertRulesDrawer.vue')['default']
     AlertsStatusCard: typeof import('./src/components/Alerts/AlertsStatusCard.vue')['default']
     AtomicAutocomplete: typeof import('./src/components/Common/AtomicAutocomplete.vue')['default']
     BasicAutocomplete: typeof import('./src/components/Common/BasicAutocomplete.vue')['default']
@@ -119,6 +119,7 @@ declare module '@vue/runtime-core' {
     MonitoringPoliciesCardEventConditionTableLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesCardEventConditionTableLegacy.vue')['default']
     MonitoringPoliciesCardLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesCardLegacy.vue')['default']
     MonitoringPoliciesCardThresholdConditionTableLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesCardThresholdConditionTableLegacy.vue')['default']
+    MonitoringPoliciesCreateAlertRules: typeof import('./src/components/MonitoringPolicies/MonitoringPoliciesCreateAlertRules.vue')['default']
     MonitoringPoliciesDetailPanel: typeof import('./src/components/MonitoringPolicies/MonitoringPoliciesDetailPanel.vue')['default']
     MonitoringPoliciesEditPanel: typeof import('./src/components/MonitoringPolicies/MonitoringPoliciesEditPanel.vue')['default']
     MonitoringPoliciesEventConditionLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesEventConditionLegacy.vue')['default']
@@ -126,7 +127,6 @@ declare module '@vue/runtime-core' {
     MonitoringPoliciesPolicyFormLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesPolicyFormLegacy.vue')['default']
     MonitoringPoliciesRuleFormLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesRuleFormLegacy.vue')['default']
     MonitoringPoliciesRules: typeof import('./src/components/MonitoringPolicies/MonitoringPoliciesRules.vue')['default']
-    MonitoringPoliciesCreateAlertRules: typeof import('./src/components/MonitoringPolicies/MonitoringPoliciesCreateAlertRules.vue')['default']
     MonitoringPoliciesSaveButtonsLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesSaveButtonsLegacy.vue')['default']
     MonitoringPoliciesTable: typeof import('./src/components/MonitoringPolicies/MonitoringPoliciesTable.vue')['default']
     MonitoringPoliciesThresholdConditionLegacy: typeof import('./src/components/MonitoringPoliciesLegacy/MonitoringPoliciesThresholdConditionLegacy.vue')['default']

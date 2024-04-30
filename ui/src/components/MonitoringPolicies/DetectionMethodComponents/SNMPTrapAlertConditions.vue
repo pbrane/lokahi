@@ -8,17 +8,16 @@
 
         <div>
             <div class="subtitle">Select a Vendor</div>
-            <FeatherInput
-            label=""
-            hide-label
-            v-focus
-            required
-            class="input-name"
-            data-test="input-name"
-            :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
-            >
-            <template #pre> <FeatherIcon :icon="icons.Search" /> </template
-          ></FeatherInput>
+            <FeatherAutocomplete
+              class="my-autocomplete height-fix"
+              label="Users"
+              v-model="selectedVendor"
+              :loading="loading"
+              :results="vendorSearchResults"
+              type="single"
+              @update:model-value="setSelectedVendor"
+              @search="search"
+            ></FeatherAutocomplete>
         </div>
         <div>
             <div class="subtitle">Select SNMP Trap & Assign Conditions</div>
@@ -26,7 +25,7 @@
                 <div class="col">
                     <FeatherSelect
                         label="Trigger Event"
-                        :options="triggerEventDefinitionOptions"
+                        :options="monitoringPoliciesStore.eventDefinitions"
                         text-prop="name"
                         :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
                         v-model="condition.triggerEvent"
@@ -37,7 +36,7 @@
                 <div class="col">
                     <FeatherSelect
                         label="Clear Event (Optional)"
-                        :options="clearEventDefinitionOptions"
+                        :options="monitoringPoliciesStore.eventDefinitions"
                         text-prop="name"
                         clear="Remove"
                         :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
@@ -79,17 +78,18 @@
 </template>
 
 <script setup lang="ts">
-import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { AlertCondition, EventType, Severity } from '@/types/graphql'
+import { AlertCondition, Severity } from '@/types/graphql'
+import { IAutocompleteItemType } from '@featherds/autocomplete'
 import Search from '@featherds/icon/action/Search'
 import { ISelectItemType } from '@featherds/select'
 
-const clearEventDefinitionOptions = ref([] as ISelectItemType[])
-const triggerEventDefinitionOptions = ref([] as ISelectItemType[])
-const alertEventDefinitionStore = useAlertEventDefinitionQueries()
+const eventDefinitionOptions = ref([] as ISelectItemType[])
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 const condition = ref({} as AlertCondition)
+const loading = ref(false)
+const selectedVendor = ref(undefined as unknown as IAutocompleteItemType)
+const vendorSearchResults = ref([] as IAutocompleteItemType[])
 
 const severityOptions = [
   { id: Severity.Critical, name: 'Critical' },
@@ -100,14 +100,34 @@ const severityOptions = [
 ]
 
 onMounted(async () => {
-  const result = await alertEventDefinitionStore.listAlertEventDefinitions(monitoringPoliciesStore.selectedRule?.eventType as EventType)
-  clearEventDefinitionOptions.value = result.value?.listAlertEventDefinitions || []
-  triggerEventDefinitionOptions.value = result.value?.listAlertEventDefinitions || []
-
+  if (monitoringPoliciesStore.selectedRule?.vendor && monitoringPoliciesStore.selectedRule?.eventType) {
+    const vendor = monitoringPoliciesStore.formattedVendors?.find((x) => x.toLowerCase().indexOf(monitoringPoliciesStore.selectedRule?.vendor?.toLowerCase() ?? 'generic') > -1)
+    selectedVendor.value = { _text: vendor }
+    await monitoringPoliciesStore.listAlertEventDefinitionsByVendor()
+  }
   if (monitoringPoliciesStore.selectedRule?.alertConditions && monitoringPoliciesStore.selectedRule?.alertConditions[0]) {
     condition.value = monitoringPoliciesStore.selectedRule?.alertConditions[0]
   }
 })
+
+watch(() => [monitoringPoliciesStore.eventDefinitions], () => {
+  eventDefinitionOptions.value = monitoringPoliciesStore.eventDefinitions || []
+})
+
+const search = (q: string) => {
+  loading.value = true
+
+  vendorSearchResults.value = monitoringPoliciesStore.formattedVendors?.filter((x) => x.toLowerCase().indexOf(q.toLowerCase()) > -1).map((x) => ({_text: x})) as IAutocompleteItemType[]
+
+  loading.value = false
+}
+
+const setSelectedVendor = (v: any) => {
+  if (monitoringPoliciesStore.selectedRule && v._text) {
+    monitoringPoliciesStore.selectedRule.vendor = monitoringPoliciesStore.vendors?.find((x) => x.toLowerCase().indexOf(v._text.toLowerCase()) > -1)
+    monitoringPoliciesStore.listAlertEventDefinitionsByVendor()
+  }
+}
 
 const icons = markRaw({
   Search
@@ -128,7 +148,13 @@ const icons = markRaw({
       }
     }
   }
-
+  .my-autocomplete  {
+      :deep(.feather-autocomplete-content) {
+        textarea {
+          height: 26px !important;
+        }
+      }
+  }
   .subtitle {
     @include typography.subtitle1;
     margin-bottom: 10px;

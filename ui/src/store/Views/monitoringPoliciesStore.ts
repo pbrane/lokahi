@@ -8,12 +8,14 @@ import { ThresholdLevels, Unknowns } from '@/components/MonitoringPolicies/monit
 import {
   AlertCondition,
   DetectionMethod,
+  EventDefsByVendorRequest,
   EventType,
   ManagedObjectType,
   MonitorPolicy,
   PolicyRule,
   Severity,
-  TimeRangeUnit
+  TimeRangeUnit,
+  AlertEventDefinition
 } from '@/types/graphql'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
 import router from '@/router'
@@ -28,6 +30,9 @@ type TState = {
   numOfAlertsForRule: number
   validationErrors: any,
   alertRuleDrawer: boolean
+  vendors?: string[],
+  formattedVendors?: string[]
+  eventDefinitions?: AlertEventDefinition[]
 }
 
 const defaultPolicy: Policy = {
@@ -55,15 +60,18 @@ function getDefaultThresholdCondition(): ThresholdCondition {
 
 async function getDefaultEventCondition(): Promise<AlertCondition> {
   const alertEventDefinitionQueries = useAlertEventDefinitionQueries()
-  const alertEventDefinitions = await alertEventDefinitionQueries.listAlertEventDefinitions(EventType.SnmpTrap)
-
-  if (alertEventDefinitions.value?.listAlertEventDefinitions?.length) {
+  const request: EventDefsByVendorRequest = {
+    eventType: EventType.SnmpTrap,
+    vendor: 'generic'
+  }
+  const alertEventDefinitions = await alertEventDefinitionQueries.listAlertEventDefinitionsByVendor(request)
+  if (alertEventDefinitions?.length) {
     return {
       id: new Date().getTime(),
       count: 1,
       severity: Severity.Major,
       overtimeUnit: Unknowns.UNKNOWN_UNIT,
-      triggerEvent: alertEventDefinitions.value.listAlertEventDefinitions[0]
+      triggerEvent: alertEventDefinitions[0]
     }
   } else {
     throw Error('Can\'t load alertEventDefinitions')
@@ -77,7 +85,8 @@ async function getDefaultRule(): Promise<PolicyRule> {
     componentType: ManagedObjectType.Node,
     detectionMethod: DetectionMethod.Event,
     eventType: EventType.SnmpTrap,
-    alertConditions: [await getDefaultEventCondition()]
+    alertConditions: [await getDefaultEventCondition()],
+    vendor: 'generic'
   }
 }
 
@@ -89,15 +98,21 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     numOfAlertsForPolicy: 0,
     numOfAlertsForRule: 0,
     validationErrors: {},
-    alertRuleDrawer: false
+    alertRuleDrawer: false,
+    vendors: [] as string[],
+    formattedVendors: [] as string[],
+    eventDefinitions: [] as AlertEventDefinition[]
   }),
   actions: {
     // used for initial population of policies
     async getMonitoringPolicies() {
       const queries = useMonitoringPoliciesQueries()
       await queries.listMonitoringPolicies()
+      queries.listVendors().then((res) => {
+        this.vendors = res
+        this.formatVendors(res?.length ? res : [])
+      })
       this.monitoringPolicies = queries.monitoringPolicies
-
       // we are setting this to true until the back end supports enable/disable.
       //  Then this component can just display the status.
       //  Once back end adds ability to enable/disable, then we will add another issue to implement it here and elsewhere.
@@ -319,6 +334,39 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.alertRuleDrawer = false
       this.selectedRule = undefined
       this.validationErrors = {}
+    },
+    async formatVendors(vendors: string[]) {
+      this.formattedVendors = vendors.map((vendor) => {
+        return vendor.charAt(0).toUpperCase() + vendor.slice(1);
+      })
+    },
+    async listAlertEventDefinitionsByVendor() {
+      const queries = useAlertEventDefinitionQueries()
+      if ((this.selectedRule?.eventType === EventType.SnmpTrap) && this.selectedRule?.vendor && this.vendors) {
+        const vendor = this.vendors.find((x) => x.toLowerCase().indexOf(this.selectedRule?.vendor!.toLowerCase()!) > -1)
+        const request: EventDefsByVendorRequest = {
+          eventType: this.selectedRule.eventType,
+          vendor: vendor!
+        }
+        this.eventDefinitions = await queries.listAlertEventDefinitionsByVendor(request)
+      }
+      if (this.selectedRule?.eventType === EventType.SystemEvent) {
+        const definitions = await queries.listAlertEventDefinitions(EventType.SnmpTrap)
+        this.eventDefinitions = definitions.value?.listAlertEventDefinitions
+      }
+      if (this.eventDefinitions?.length && this.eventDefinitions?.length > 0) {
+        this.selectedRule?.alertConditions?.map((item) => {
+          item.triggerEvent = this.eventDefinitions?.[0]
+          item.clearEvent = this.eventDefinitions?.[0]
+          return item
+        })
+      } else {
+        this.selectedRule?.alertConditions?.map((item) => {
+          item.triggerEvent = undefined
+          item.clearEvent = undefined
+          return item
+        })
+      }
     }
   }
 })
