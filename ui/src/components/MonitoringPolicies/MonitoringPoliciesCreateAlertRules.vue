@@ -35,7 +35,6 @@ onMounted(() => {
   margin-top: 30px;
   font-family: 'Roboto', sans-serif;
   box-shadow: 5px 5px 5px var(variables.$surface);
-  min-height: 730px;
 
   .alert-rules-content {
     position: relative;

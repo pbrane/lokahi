@@ -83,8 +83,6 @@ const store = useMonitoringPoliciesStore()
 
 const { openModal, closeModal, isVisible } = useModal()
 
-const isEnabled = ref(false)
-
 const noteMsg = ref('<b>Deleting this policy may cause these nodes to not be monitored, which means we will stop sending alerts</b>')
 
 const emit = defineEmits<{

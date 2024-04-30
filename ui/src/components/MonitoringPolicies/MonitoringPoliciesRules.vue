@@ -86,7 +86,6 @@ const savePolicy = async () => {
       .feather-col-12 {
         .footer {
               padding: 20px;
-              height: 10%;
               display: flex;
               align-items: center;
               justify-content: flex-end;

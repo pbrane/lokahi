@@ -1,5 +1,5 @@
 <template>
-      <div class="main">
+      <div :class="['main-alert', {'main':!title}]">
         <div :class="['header', {'main-heading':!title}]">
           <h2>{{ title || 'Create New Alert Rule' }}</h2>
           <p> {{ subTitle || 'A rule is a condition or set of conditions that triggers an alert.' }}</p>
@@ -31,40 +31,11 @@
             >
             </BasicSelect>
           </div>
-          <div class="basic-information">
-              <h2>Specify Trigger and Clear Event</h2>
-              <p>Select a Trigger and Clear event for the alert. Clear events will be limited based on the trigger event.</p>
-            </div>
-          <div class="event">
-            <div class="event-trigger">
-              <div class="subtitle">Trigger Event</div>
-              <BasicSelect
-              :list="eventTriggerOptions"
-              @item-selected.stop=""
-              :selectedId="monitoringPoliciesStore.selectedRule?.eventType"
-              :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
-              :icon="isIcon"
-            />
-            </div>
-
-            <div class="event-clear">
-              <div class="subtitle">Clear Event (Optional)</div>
-              <BasicSelect
-              :list="eventClearOptions"
-              @item-selected.stop=""
-              :selectedId="monitoringPoliciesStore.selectedRule?.eventType"
-              :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
-              :icon="isIcon"
-            />
-            </div>
-          </div>
-
           <SystemEventAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SystemEvent)" />
           <SNMPTrapAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SnmpTrap)"/>
           <SyslogAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.Syslog)" />
           <MetricThresholdAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.MetricThreshold)" />
-        </div>
-
+         </div>
         <div class="footer">
           <div v-if="!title">
             <FeatherButton
@@ -95,7 +66,6 @@ defineProps({
   subTitle: String
 })
 
-const isIcon = ref(true)
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 
 const eventTypeOptions = [
@@ -104,14 +74,6 @@ const eventTypeOptions = [
   { id: EventType.SnmpTrap, name: 'SNMP Trap' },
   { id: EventType.Syslog, name: 'Syslog' },
   { id: EventType.Internal, name: 'Internal' }
-]
-
-const eventTriggerOptions = [
-  { id: EventType.SnmpTrap, name: 'Device Unreachable' }
-]
-
-const eventClearOptions = [
-  { id: EventType.SnmpTrap, name: 'Device Service Restored' }
 ]
 
 const disableSaveRuleBtn = computed(
@@ -131,57 +93,70 @@ const selectEventType = (eventType: EventType) => {
 @use '@featherds/table/scss/table';
 @use '@/styles/vars.scss';
 
-  .main {
-    position: absolute;
+.main {
+  position: absolute;
+  overflow-y: scroll;
+  height: 100% !important;
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
 
-    .main-heading{
-      border-bottom: 1px solid #E1E1E3;
-    }
-    .header {
-      padding: 20px;
-      min-height: 11%;
-    }
+ &::-webkit-scrollbar-track {
+    background: #E1E1E3;
+    border-radius: 4px;
+    box-shadow: inset 0 0 6px var(variables.$background);
+}
 
-    .content {
-      padding: 10px 20px 20px 20px;
-      height: 80%;
+&::-webkit-scrollbar-thumb {
+    background: var(variables.$background);
+    border-radius: 4px;
+  }
+}
 
-      .subtitle {
-        @include typography.subtitle1;
-      }
+.main-alert {
+  height: auto;
+  .main-heading {
+    border-bottom: 1px solid #E1E1E3;
+  }
 
-      .basic-information {
-        margin: 8px 0px;
-      }
+  .header {
+    padding: 20px;
+    min-height: 11%;
+  }
 
-      .event {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        column-gap: 10px;
-        .event-trigger,.event-clear{
-          width: 50%;
+  .content {
+    padding: 10px 20px 20px 20px;
+    .name {
+      :deep(.label-border) {
+          min-width: 50px !important;
         }
-      }
     }
-    .footer {
-      padding: 20px 20px 0 20px;
-      height: 10%;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      .feather-button {
-        margin-top:  var(--feather-spacing-m);
-        background-color: transparent;
-        font-weight: var(variables.$font-semibold);
-        color: var(--feather-primary);
-        border: none;
-        border-radius: 4px;
-        font-size: 16px;
-        cursor: pointer;
-      }
+    .subtitle {
+      @include typography.subtitle1;
+      margin-bottom: 5px;
+    }
+    .basic-information {
+      margin: 8px 0px;
     }
   }
+
+  .footer {
+    padding: 10px 20px 5px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    .feather-button {
+      margin-top: var(--feather-spacing-m);
+      background-color: transparent;
+      font-weight: var(variables.$font-semibold);
+      color: var(--feather-primary);
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  }
+}
 </style>
 

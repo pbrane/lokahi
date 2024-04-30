@@ -22,7 +22,7 @@
         <div>
             <div class="subtitle">Select SNMP Trap & Assign Conditions</div>
             <div class="row">
-                <div class="col">
+                <div class="col event-trigger">
                     <FeatherSelect
                         label="Trigger Event"
                         :options="monitoringPoliciesStore.eventDefinitions"
@@ -33,7 +33,7 @@
                     ><template #pre> <FeatherIcon :icon="icons.Search" /> </template
                     ></FeatherSelect>
                 </div>
-                <div class="col">
+                <div class="col event-clear">
                     <FeatherSelect
                         label="Clear Event (Optional)"
                         :options="monitoringPoliciesStore.eventDefinitions"
@@ -145,6 +145,17 @@ const icons = markRaw({
       gap: var(variables.$spacing-xl);
       .col {
         flex: 1;
+
+      }
+      .event-trigger {
+        :deep(.label-border){
+          min-width: 74px !important;
+        }
+      }
+      .event-clear {
+        :deep(.label-border){
+          min-width: 24% !important;
+        }
       }
     }
   }
