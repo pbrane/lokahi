@@ -64,3 +64,29 @@ Feature: Node operation feature
       | alerts[0].nodeName == BLANK        |
       | alerts[1].label == SNMP Link Down  |
       | alerts[1].nodeName == third        |
+
+  Scenario: Delete node when receive new message
+    Given Tenant id "tenant-4"
+    And A monitoring policy named "my-policy" with tag "tag1"
+    And The policy has a rule named "my-rule" with component type "NODE" and trap definitions
+      | trigger_event_name | count | overtime | overtime_unit | severity | clear_event_name |
+      | SNMP Link Down     | 1     | 0        | MINUTE        | MINOR    |                  |
+      | SNMP Link Up       | 1     | 0        | MINUTE        | CLEARED  | SNMP Link Down   |
+      | SNMP Cold Start    | 1     | 0        | MINUTE        | MAJOR    |                  |
+      | SNMP Warm Start    | 1     | 0        | MINUTE        | CRITICAL |                  |
+    And The policy is created in the tenant
+    Given [Node] operation data
+      | id   | tenant_id | label |
+      | 155  | tenant-4  | four  |
+    And Sent node message to Kafka topic
+    Then An event is sent with UEI "uei.opennms.org/generic/traps/SNMP_Cold_Start" on node 2
+    Then An event is sent with UEI "uei.opennms.org/generic/traps/SNMP_Link_Down" on node 155
+    Then List alerts for the tenant, until JSON response matches the following JSON path expressions
+      | alerts.size() == 2                 |
+      | alerts[0].label == SNMP Cold Start |
+      | alerts[0].nodeName == BLANK        |
+      | alerts[1].label == SNMP Link Down  |
+      | alerts[1].nodeName == four        |
+    Then Sent node for deletion using Kafka topic
+    Then Verify node topic has 2 message for the tenant id "tenant-4"
+    Then Verify node with id 155 is deleted

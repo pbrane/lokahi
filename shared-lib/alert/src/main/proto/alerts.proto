@@ -237,6 +237,7 @@ service AlertService {
   rpc alertCounts(google.protobuf.Empty) returns (AlertCount) {};
   rpc getAlertsByNode(AlertRequestByNode)  returns (ListAlertsResponse) {};
   rpc countNodesByMonitoringPolicy(google.protobuf.Int64Value) returns(google.protobuf.Int64Value);
+  rpc getAlertsByNodeId(google.protobuf.Int64Value) returns (ListAlertsResponse);
 }
 
 // Proto for Monitoring policy

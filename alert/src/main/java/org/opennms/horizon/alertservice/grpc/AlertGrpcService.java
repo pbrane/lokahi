@@ -509,4 +509,29 @@ public class AlertGrpcService extends AlertServiceGrpc.AlertServiceImplBase {
             responseObserver.onError(e);
         }
     }
+
+    @Override
+    public void getAlertsByNodeId(Int64Value request, StreamObserver<ListAlertsResponse> responseObserver) {
+        try {
+            String tenantId = tenantLookup.lookupTenantId(Context.current()).orElseThrow();
+            List<org.opennms.horizon.alertservice.db.entity.Alert> listAlertsByNodeId =
+                    alertRepository.findListAlertsByNodeId(tenantId, request.getValue());
+            List<Alert> alerts =
+                    listAlertsByNodeId.stream().map(this::getEnrichAlertProto).collect(Collectors.toList());
+            ListAlertsResponse.Builder responseBuilder =
+                    ListAlertsResponse.newBuilder().addAllAlerts(alerts);
+
+            responseObserver.onNext(responseBuilder.build());
+            responseObserver.onCompleted();
+
+        } catch (NoSuchElementException e) {
+            var status = Status.newBuilder()
+                    .setCode(Code.INVALID_ARGUMENT_VALUE)
+                    .setMessage(TENANT_ID_NOT_FOUND)
+                    .build();
+            responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+        } catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
 }

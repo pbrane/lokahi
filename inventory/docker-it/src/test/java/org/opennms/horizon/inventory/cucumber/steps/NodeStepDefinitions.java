@@ -44,6 +44,7 @@ import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.NodeLabelSearchQuery;
 import org.opennms.horizon.inventory.dto.NodeList;
+import org.opennms.horizon.inventory.dto.NodeOperationProto;
 import org.opennms.horizon.inventory.dto.NodeUpdateDTO;
 import org.opennms.horizon.inventory.dto.SearchIpInterfaceQuery;
 
@@ -246,14 +247,14 @@ public class NodeStepDefinitions {
             if (record.value() == null) {
                 continue;
             }
-            NodeDTO nodeDTO;
+            NodeOperationProto nodeOperationProto;
             try {
-                nodeDTO = NodeDTO.parseFrom(record.value());
+                nodeOperationProto = NodeOperationProto.parseFrom(record.value());
             } catch (InvalidProtocolBufferException e) {
                 throw new RuntimeException(e);
             }
 
-            if (tenant.equals(nodeDTO.getTenantId())) {
+            if (tenant.equals(nodeOperationProto.getNodeDto().getTenantId())) {
                 foundMessages++;
             }
         }

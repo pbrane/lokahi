@@ -27,7 +27,8 @@ import io.grpc.Context;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alertservice.api.AlertService;
-import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeOperation;
+import org.opennms.horizon.inventory.dto.NodeOperationProto;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,17 +46,35 @@ public class NodeConsumer {
 
     @KafkaListener(topics = "${kafka.topics.node-changed}", concurrency = "1")
     public void receiveMessage(@Payload byte[] data) {
+
         try {
-            NodeDTO node = NodeDTO.parseFrom(data);
-            if (Strings.isNullOrEmpty(node.getTenantId())) {
-                LOG.warn("TenantId is empty, dropping node {}", node);
+            NodeOperationProto nodeOperation = NodeOperationProto.parseFrom(data);
+
+            if (Strings.isNullOrEmpty(nodeOperation.getNodeDto().getTenantId())) {
+                LOG.warn("TenantId is empty, dropping node {}", nodeOperation.getNodeDto());
                 return;
             }
 
-            // As this isn't a grpc call, there isn't a grpc context. Create one, and place the tenantId in it.
-            Context.current()
-                    .withValue(GrpcConstants.TENANT_ID_CONTEXT_KEY, node.getTenantId())
-                    .run(() -> alertService.saveNode(node));
+            switch (nodeOperation.getOperationValue()) {
+                case NodeOperation.UPDATE_NODE_VALUE:
+                    Context.current()
+                            .withValue(
+                                    GrpcConstants.TENANT_ID_CONTEXT_KEY,
+                                    nodeOperation.getNodeDto().getTenantId())
+                            .run(() -> alertService.saveNode(nodeOperation.getNodeDto()));
+                    break;
+
+                case NodeOperation.REMOVE_NODE_VALUE:
+                    Context.current()
+                            .withValue(
+                                    GrpcConstants.TENANT_ID_CONTEXT_KEY,
+                                    nodeOperation.getNodeDto().getTenantId())
+                            .run(() -> alertService.deleteNodeInAlert(nodeOperation));
+                    break;
+
+                default:
+                    break;
+            }
         } catch (InvalidProtocolBufferException e) {
             LOG.error("Error while parsing Node. Payload: {}", Arrays.toString(data), e);
         }

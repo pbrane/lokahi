@@ -124,6 +124,17 @@ message SnmpInterfacesList {
   repeated opennms.inventory.SnmpInterfaceDTO snmp_interfaces = 1;
 }
 
+enum NodeOperation {
+  UPDATE_NODE = 0;
+  REMOVE_NODE = 1;
+}
+
+message NodeOperationProto {
+  NodeOperation operation = 1;
+  NodeDTO nodeDto = 2;
+}
+
+
 service NodeService {
   rpc createNode(NodeCreateDTO) returns (NodeDTO) {};
   rpc updateNode(NodeUpdateDTO) returns (google.protobuf.Int64Value) {};

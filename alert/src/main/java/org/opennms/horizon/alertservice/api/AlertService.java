@@ -27,6 +27,7 @@ import org.opennms.horizon.alerts.proto.Alert;
 import org.opennms.horizon.alerts.proto.AlertCount;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeOperationProto;
 
 public interface AlertService {
     List<Alert> reduceEvent(Event e);
@@ -50,4 +51,6 @@ public interface AlertService {
     void saveNode(NodeDTO node);
 
     AlertCount getAlertsCount(String tenantId);
+
+    void deleteNodeInAlert(NodeOperationProto nodeOperationProto);
 }
