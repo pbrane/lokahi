@@ -8,6 +8,7 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     AddressAutocomplete: typeof import('./src/components/Common/AddressAutocomplete.vue')['default']
+    AlertConditions: typeof import('./src/components/MonitoringPolicies/DetectionMethodComponents/AlertConditions.vue')['default']
     AlertRulesDrawer: typeof import('./src/components/MonitoringPolicies/AlertRulesDrawer.vue')['default']
     AlertsCard: typeof import('./src/components/Alerts/AlertsCard.vue')['default']
     AlertsCardList: typeof import('./src/components/Alerts/AlertsCardList.vue')['default']
@@ -15,7 +16,6 @@ declare module '@vue/runtime-core' {
     AlertsSeverityFilters: typeof import('./src/components/Alerts/AlertsSeverityFilters.vue')['default']
     AlertsStatusCard: typeof import('./src/components/Alerts/AlertsStatusCard.vue')['default']
     AtomicAutocomplete: typeof import('./src/components/Common/AtomicAutocomplete.vue')['default']
-    AlertConditions: typeof import('./src/components/MonitoringPolicies/DetectionMethodComponents/AlertConditions.vue')['default']
     BasicAutocomplete: typeof import('./src/components/Common/BasicAutocomplete.vue')['default']
     BasicSelect: typeof import('./src/components/Common/BasicSelect.vue')['default']
     BasicToggle: typeof import('./src/components/Common/BasicToggle.vue')['default']

@@ -77,7 +77,7 @@
               </td>
               <td>{{ policy.memo }}</td>
               <td>{{ policy.rules?.length || 0 }}</td>
-              <td>{{ '--' }}</td>
+              <td>{{ store.affectedNodesByMonitoringPolicyCount?.get(policy.id) ?? '--' }}</td>
             </tr>
           </TransitionGroup>
         </table>

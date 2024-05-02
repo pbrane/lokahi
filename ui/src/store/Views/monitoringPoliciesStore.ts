@@ -15,7 +15,8 @@ import {
   PolicyRule,
   Severity,
   TimeRangeUnit,
-  AlertEventDefinition
+  AlertEventDefinition,
+  CountAffectedNodesByMonitoringPolicyVariables
 } from '@/types/graphql'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
 import router from '@/router'
@@ -32,7 +33,8 @@ type TState = {
   alertRuleDrawer: boolean
   vendors?: string[],
   formattedVendors?: string[]
-  eventDefinitions?: AlertEventDefinition[]
+  eventDefinitions?: AlertEventDefinition[],
+  affectedNodesByMonitoringPolicyCount?: Map<Number, Number>
 }
 
 const defaultPolicy: Policy = {
@@ -101,18 +103,27 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     alertRuleDrawer: false,
     vendors: [] as string[],
     formattedVendors: [] as string[],
-    eventDefinitions: [] as AlertEventDefinition[]
+    eventDefinitions: [] as AlertEventDefinition[],
+    affectedNodesByMonitoringPolicyCount: new Map()
   }),
   actions: {
     // used for initial population of policies
     async getMonitoringPolicies() {
       const queries = useMonitoringPoliciesQueries()
-      await queries.listMonitoringPolicies()
+      await queries.listMonitoringPolicies().then(() => {
+        this.monitoringPolicies = queries.monitoringPolicies
+        queries.monitoringPolicies.forEach(async (policy) => {
+          const request: CountAffectedNodesByMonitoringPolicyVariables = {
+            id: policy.id
+          }
+          const count = await queries.getCountForAffectedNodeByMonitoringPolicy(request)
+          this.affectedNodesByMonitoringPolicyCount?.set(policy.id, count ?? 0)
+        })
+      })
       queries.listVendors().then((res) => {
         this.vendors = res
         this.formatVendors(res?.length ? res : [])
       })
-      this.monitoringPolicies = queries.monitoringPolicies
       // we are setting this to true until the back end supports enable/disable.
       //  Then this component can just display the status.
       //  Once back end adds ability to enable/disable, then we will add another issue to implement it here and elsewhere.
