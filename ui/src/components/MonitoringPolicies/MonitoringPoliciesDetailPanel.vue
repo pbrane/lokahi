@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="policy-form"
-    v-if="store.selectedPolicy"
-  >
+  <div class="policy-form" v-if="store.selectedPolicy">
     <div class="policy-form-title-container">
       <div class="form-title">{{ store.selectedPolicy.name }}</div>
       <div>
@@ -12,16 +9,10 @@
         >
           <FeatherIcon :icon="icons.Edit" />
         </FeatherButton>
-         <FeatherButton
-          icon="ContentCopy"
-          @click="onCopy"
-        >
+        <FeatherButton icon="ContentCopy" @click="onCopy">
           <FeatherIcon :icon="icons.ContentCopy" />
         </FeatherButton>
-        <FeatherButton
-          icon="Cancel"
-          @click="onClose"
-        >
+        <FeatherButton icon="Cancel" @click="onClose">
           <FeatherIcon :icon="icons.Cancel" />
         </FeatherButton>
       </div>
@@ -31,10 +22,7 @@
       <div class="card">
         <div class="sub-title">STATUS</div>
         <div class="toggle-wrapper">
-          <FeatherListSwitch
-            class="basic-switch"
-            v-model="isEnabled"
-          />
+          <FeatherListSwitch class="basic-switch" v-model="store.selectedPolicy.enabled" />
           <span>Active</span>
         </div>
       </div>
@@ -49,7 +37,7 @@
       <div class="card">
         <div class="sub-title">ALERT RULES</div>
         <div class="alert-rules-wrapper">
-          <div class="alert-rule" v-for="(rule,index) in store.selectedPolicy?.rules?.slice(0,6)" :key="rule.id">
+          <div class="alert-rule" v-for="(rule, index) in store.selectedPolicy?.rules?.slice(0, 6)" :key="rule.id">
             <div v-if="index < 5">
               <div class="headline">
                 <span>{{ rule.name }}</span>
@@ -58,30 +46,25 @@
                 <span>Rule Description</span>
               </div>
             </div>
-            <span v-else  v-html="monitoringPolicyRules" class="rules"/>
+            <span v-else v-html="monitoringPolicyRules" class="rules" />
           </div>
         </div>
       </div>
       <div class="card">
-        <FeatherButton
-          class="delete"
-          secondary
-          @click="openModal"
-        >
+        <FeatherButton class="delete" secondary @click="openModal">
           <FeatherIcon :icon="icons.deleteIcon" />
           DELETE
         </FeatherButton>
-     </div>
+      </div>
     </div>
   </div>
   <DeleteConfirmationModal
-    :name = "store.selectedPolicy?.name"
-    :isVisible = "isVisible"
-    :customMsg = "deleteMsg"
-    :noteMsg = "noteMsg"
-    :closeModal="onCloseModal"
-    :deleteHandler="removePolicy"
-  />
+   :name="store.selectedPolicy?.name"
+   :isVisible="isVisible"
+   :customMsg="deleteMsg"
+   :noteMsg="noteMsg"
+   :closeModal="onCloseModal"
+   :deleteHandler="removePolicy" />
 </template>
 
 <script setup lang="ts">
@@ -94,11 +77,11 @@ import Delete from '@featherds/icon/action/Delete'
 import Edit from '@featherds/icon/action/Edit'
 import Cancel from '@featherds/icon/navigation/Cancel'
 
+
+
 const store = useMonitoringPoliciesStore()
 
 const { openModal, closeModal, isVisible } = useModal()
-
-const isEnabled = ref(false)
 
 const noteMsg = ref('<b>Deleting this policy may cause these nodes to not be monitored, which means we will stop sending alerts</b>')
 
@@ -133,7 +116,7 @@ const onEdit = (policy: MonitorPolicy) => {
 }
 
 const onCopy = () => {
-  console.log('copy clicked')
+  store.copyPolicy(store.selectedPolicy!)
 }
 
 const onClose = () => {
@@ -181,11 +164,14 @@ const removePolicy = () => {
 .policy-details-card-wrapper {
   display: flex;
   flex-direction: column;
+
   .card {
     padding: 15px 0px;
+
     .rules {
       margin-top: 5px;
     }
+
     .delete {
       &:focus {
         border: none
@@ -204,12 +190,14 @@ const removePolicy = () => {
   justify-content: flex-start;
   align-items: center;
   gap: 5px;
+
   :deep(.feather-list-item) {
-  padding: 0px !important;
-  &:deep(hover) {
-    background: none !important;
+    padding: 0px !important;
+
+    &:deep(hover) {
+      background: none !important;
+    }
   }
- }
 }
 
 .headline {
@@ -217,5 +205,4 @@ const removePolicy = () => {
   font-weight: 600;
   margin: 10px 0px;
 }
-
 </style>

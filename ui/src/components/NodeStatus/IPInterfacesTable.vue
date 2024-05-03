@@ -199,6 +199,8 @@ const updateIpInterfaces = () => {
     total.value = ipInterfaces.value.length
     clonedInterfaces.value = ipInterfaces.value
     pageObjects.value = getPageObjects(ipInterfaces.value, page.value, pageSize.value)
+  } else {
+    pageObjects.value = []
   }
 }
 onMounted(() => {

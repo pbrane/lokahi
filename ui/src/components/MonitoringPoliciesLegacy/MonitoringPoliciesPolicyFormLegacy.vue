@@ -26,7 +26,7 @@
           <div>
             <FeatherButton
               icon="Copy"
-              @click="store.copyPolicy(store.selectedPolicy!)"
+              @click="store.copyPolicyLegacy(store.selectedPolicy!)"
             >
               <FeatherIcon :icon="ContentCopy" />
             </FeatherButton>
@@ -96,7 +96,7 @@
           :index="index"
           @selectPolicy="(policy: Policy) => store.displayPolicyForm(policy)"
           @deletePolicy="(policy: Policy) => countAlertsAndOpenDeleteModal(policy)"
-          @copyPolicy="(policy: Policy) => store.copyPolicy(policy)"
+          @copyPolicyLegacy="(policy: Policy) => store.copyPolicyLegacy(policy)"
         />
       </div>
     </transition>

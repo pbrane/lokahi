@@ -1,6 +1,6 @@
+import { CountAlertByPolicyIdDocument, CountAlertByRuleIdDocument, ListMonitoryPoliciesDocument, ListVendorDocument } from '@/types/graphql'
 import { defineStore } from 'pinia'
 import { useQuery } from 'villus'
-import { ListMonitoryPoliciesDocument, CountAlertByPolicyIdDocument, CountAlertByRuleIdDocument } from '@/types/graphql'
 
 export const useMonitoringPoliciesQueries = defineStore('monitoringPoliciesQueries', () => {
   const { data, execute: listMonitoringPolicies } = useQuery({
@@ -40,10 +40,20 @@ export const useMonitoringPoliciesQueries = defineStore('monitoringPoliciesQueri
     return data.value?.countAlertByRuleId
   }
 
+  const listVendors = async () => {
+    const { execute, data } = useQuery({
+      query: ListVendorDocument,
+      cachePolicy: 'network-only'
+    })
+    await execute()
+    return data.value?.listVendors
+  }
+
   return {
     monitoringPolicies,
     listMonitoringPolicies,
     getAlertCountByPolicyId,
-    getAlertCountByRuleId
+    getAlertCountByRuleId,
+    listVendors
   }
 })

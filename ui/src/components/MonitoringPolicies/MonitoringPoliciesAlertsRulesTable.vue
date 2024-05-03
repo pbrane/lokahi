@@ -9,7 +9,7 @@
             </tr>
           </thead>
           <TransitionGroup name="data-table" tag="tbody">
-            <tr class="policies-table-row" v-for="rule in monitoringPoliciesStore.selectedPolicy?.rules">
+            <tr class="policies-table-row" v-for="rule in monitoringPoliciesStore.selectedPolicy?.rules" :key="rule?.id">
               <td>Outage</td>
               <td>System Event / Device Unreachable</td>
               <td>Critical / Interval 5 / 5 MINUTES</td>
@@ -34,7 +34,7 @@
       <FeatherButton class="feather-button" @click="createRule">ALERT RULE</FeatherButton>
     </div>
   </div>
-  <CreateEditAlertRulePanel/>
+  <AlertRulesDrawer/>
 </template>
 
 <script setup lang="ts">
@@ -52,7 +52,7 @@ const editIcon: IIcon = { image: markRaw(Edit), tooltip: 'Alert Rule Edit', size
 const copyIcon: IIcon = { image: markRaw(CopyIcon), tooltip: 'Alert Rule Copy', size: 1.5, cursorHover: true }
 const addIcon: IIcon = { image: markRaw(Add), tooltip: 'Alert Rule Add', size: 1.5, cursorHover: true }
 
-const columns = [
+const columns: { id: string; label: string }[] = [
   { id: 'AlertRule', label: 'Alert Rule' },
   { id: 'ConditionalLogic', label: 'Conditional Logic' },
   { id: 'Description', label: 'Description' },

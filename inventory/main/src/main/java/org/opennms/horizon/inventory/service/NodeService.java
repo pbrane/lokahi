@@ -44,6 +44,8 @@ import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeOperation;
+import org.opennms.horizon.inventory.dto.NodeOperationProto;
 import org.opennms.horizon.inventory.dto.NodeUpdateDTO;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
 import org.opennms.horizon.inventory.dto.TagEntityIdDTO;
@@ -281,6 +283,7 @@ public class NodeService {
             var location = node.getMonitoringLocationId();
             var tasks = getTasksForNode(node);
             removeAssociatedTags(node);
+            deleteNodeInKafka(node);
             nodeRepository.deleteById(id);
             executorService.execute(() -> taskSetPublisher.publishTaskDeletion(tenantId, location, tasks));
         }
@@ -434,12 +437,30 @@ public class NodeService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public void updateNodeInKafka(long nodeId, String tenantId) {
-        var optionalNode = getByIdAndTenantId(nodeId, tenantId);
+    private void updateNodeInKafka(long nodeId, String tenantId) {
+        var optionalNode = nodeRepository.findByIdAndTenantId(nodeId, tenantId).map(mapper::modelToDTO);
         if (optionalNode.isPresent()) {
             var nodeDTO = optionalNode.get();
-            nodeKafkaProducer.updateNodeInKafka(nodeDTO);
+            nodeKafkaProducer.nodeOperationInKafka(NodeOperationProto.newBuilder()
+                    .setNodeDto(nodeDTO)
+                    .setOperation(NodeOperation.UPDATE_NODE)
+                    .build());
+        }
+    }
+
+    private void deleteNodeInKafka(Node node) {
+        var optionalNode = nodeRepository
+                .findByIdAndTenantId(node.getId(), node.getTenantId())
+                .map(mapper::modelToDTO);
+        if (optionalNode.isPresent()) {
+            var nodeDeleteOperation = NodeOperationProto.newBuilder()
+                    .setNodeDto(NodeDTO.newBuilder()
+                            .setId(node.getId())
+                            .setTenantId(node.getTenantId())
+                            .build())
+                    .setOperation(NodeOperation.REMOVE_NODE)
+                    .build();
+            nodeKafkaProducer.nodeOperationInKafka(nodeDeleteOperation);
         }
     }
 }

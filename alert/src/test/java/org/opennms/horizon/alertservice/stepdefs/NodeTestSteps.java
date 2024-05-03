@@ -21,25 +21,36 @@
  */
 package org.opennms.horizon.alertservice.stepdefs;
 
+import static org.junit.Assert.assertTrue;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.opennms.horizon.alertservice.RetryUtils;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeOperation;
+import org.opennms.horizon.inventory.dto.NodeOperationProto;
 import org.opennms.horizon.inventory.dto.SnmpInterfaceDTO;
 
 @RequiredArgsConstructor
+@Slf4j
 public class NodeTestSteps {
     private final KafkaTestHelper kafkaTestHelper;
     private final BackgroundSteps background;
     private final TenantSteps tenantSteps;
     private String nodeTopic;
     private final List<NodeDTO.Builder> builders = new ArrayList<>();
+    private final RetryUtils retryUtils;
 
     @Given("Kafka node topic {string}")
     public void kafkaTagTopic(String nodeTopic) {
@@ -74,7 +85,58 @@ public class NodeTestSteps {
     public void sentMessageToKafkaTopic() {
         for (NodeDTO.Builder builder : builders) {
             NodeDTO node = builder.build();
-            kafkaTestHelper.sendToTopic(nodeTopic, node.toByteArray(), tenantSteps.getTenantId());
+            NodeOperationProto build = NodeOperationProto.newBuilder()
+                    .setNodeDto(node)
+                    .setOperation(NodeOperation.UPDATE_NODE)
+                    .build();
+            kafkaTestHelper.sendToTopic(nodeTopic, build.toByteArray(), tenantSteps.getTenantId());
         }
+    }
+
+    @Then("Sent node for deletion using Kafka topic")
+    public void sentNodeForDeletionUsingKafkaTopic() {
+        for (NodeDTO.Builder builder : builders) {
+            NodeDTO node = builder.build();
+            NodeOperationProto build = NodeOperationProto.newBuilder()
+                    .setNodeDto(node)
+                    .setOperation(NodeOperation.REMOVE_NODE)
+                    .build();
+            kafkaTestHelper.sendToTopic(nodeTopic, build.toByteArray(), tenantSteps.getTenantId());
+        }
+    }
+
+    private boolean checkNumberOfMessageForOneTenant(String tenant, int expectedMessages) {
+        int foundMessages = 0;
+        List<ConsumerRecord<String, byte[]>> records = kafkaTestHelper.getConsumedMessages(nodeTopic);
+        for (ConsumerRecord<String, byte[]> record : records) {
+            if (record.value() == null) {
+                continue;
+            }
+            NodeOperationProto nodeOperationProto;
+            try {
+                nodeOperationProto = NodeOperationProto.parseFrom(record.value());
+            } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (tenant.equals(nodeOperationProto.getNodeDto().getTenantId())) {
+                foundMessages++;
+            }
+        }
+        log.info("Found {} messages for tenant {}", foundMessages, tenant);
+        return foundMessages == expectedMessages;
+    }
+
+    @Then("Verify node topic has {int} message for the tenant id {string}")
+    public void verifyNodeTopicHasMessageForTheTenantId(int expectedMessages, String tenant)
+            throws InterruptedException {
+        boolean success = retryUtils.retry(
+                () -> this.checkNumberOfMessageForOneTenant(tenant, expectedMessages),
+                result -> result,
+                100,
+                10000,
+                false);
+
+        assertTrue("Verify node topic has the right number of message(s)", success);
     }
 }

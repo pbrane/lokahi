@@ -24,6 +24,7 @@ package org.opennms.horizon.alertservice.stepdefs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.Timestamp;
@@ -257,6 +258,7 @@ public class AlertTestSteps {
             alertsFromLastResponse = listAlertsResponse.getAlertsList();
             return listAlertsResponse;
         };
+
         boolean success = retryUtils.retry(
                 () -> this.doRequestThenCheckJsonPathMatch(call, jsonPathExpressions),
                 result -> result,
@@ -430,5 +432,16 @@ public class AlertTestSteps {
                 .setTimeRange(
                         TimeRangeFilter.newBuilder().setStartTime(thenTimestamp).setEndTime(nowTimestamp))
                 .build());
+    }
+
+    @Then("Verify node with id {int} is deleted")
+    public void verifyNodeWithIdIsDeleted(int id) {
+        try {
+            ListAlertsResponse alertsByNode = clientUtils.getAlertServiceStub().getAlertsByNodeId(Int64Value.of(id));
+            assertEquals(alertsByNode.getAlertsList().size(), 0);
+        } catch (Exception e) {
+
+            throw new RuntimeException(e);
+        }
     }
 }

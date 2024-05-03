@@ -26,6 +26,8 @@ import jakarta.persistence.PostUpdate;
 import lombok.Setter;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeOperation;
+import org.opennms.horizon.inventory.dto.NodeOperationProto;
 import org.opennms.horizon.inventory.mapper.NodeMapper;
 import org.opennms.horizon.inventory.model.Node;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,12 +53,16 @@ public class NodeKafkaProducer {
     @PostPersist
     public void sendNode(Node node) {
         NodeDTO nodeDTO = nodeMapper.modelToDTO(node);
-        var producerRecord = new ProducerRecord<String, byte[]>(topic, nodeDTO.toByteArray());
-        kafkaTemplate.send(producerRecord);
+        NodeOperationProto nodeOperationProto = NodeOperationProto.newBuilder()
+                .setOperation(NodeOperation.UPDATE_NODE)
+                .setNodeDto(nodeDTO)
+                .build();
+
+        nodeOperationInKafka(nodeOperationProto);
     }
 
-    public void updateNodeInKafka(NodeDTO nodeDTO) {
-        var producerRecord = new ProducerRecord<String, byte[]>(topic, nodeDTO.toByteArray());
+    public void nodeOperationInKafka(NodeOperationProto nodeOperationProto) {
+        var producerRecord = new ProducerRecord<String, byte[]>(topic, nodeOperationProto.toByteArray());
         kafkaTemplate.send(producerRecord);
     }
 }

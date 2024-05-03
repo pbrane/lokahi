@@ -63,6 +63,8 @@ enum MonitorType {
   SNMP = 2;
   ECHO = 3;
   AZURE = 4;
+  HTTP = 5;
+  NTP = 6;
 }
 
 message TaskDefinition {

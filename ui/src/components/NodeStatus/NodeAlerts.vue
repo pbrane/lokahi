@@ -27,7 +27,7 @@
                 >
                   {{ col.label }}
                 </FeatherSortHeader>
-                <th>Acked</th>
+                <th />
                 <th />
               </tr>
             </thead>

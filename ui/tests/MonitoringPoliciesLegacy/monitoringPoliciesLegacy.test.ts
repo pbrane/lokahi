@@ -20,11 +20,12 @@ const testingPayload: MonitorPolicy = {
       componentType: ManagedObjectType.Node,
       detectionMethod: DetectionMethod.Event,
       eventType: EventType.SnmpTrap,
+      vendor: 'generic',
       alertConditions: [
         {
           count: 1,
           overtime: undefined,
-          severity: Severity.Critical,
+          severity: Severity.Major,
           overtimeUnit: Unknowns.UNKNOWN_UNIT,
           triggerEvent: {
             id: 1,
@@ -44,6 +45,16 @@ global.fetch = buildFetchList({
       name: 'SNMP Trap',
       eventType: EventType.SnmpTrap
     }]
+  },
+  alertEventDefsByVendor: {
+    alertEventDefsByVendor: {
+      vendor: 'generic',
+      alertEventDefinitionList: [{
+        id: 1,
+        name: 'SNMP Trap',
+        eventType: EventType.SnmpTrap
+      }]
+    }
   }
 })
 

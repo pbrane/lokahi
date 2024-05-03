@@ -40,6 +40,7 @@ import org.opennms.horizon.alertservice.mapper.NodeInfoMapper;
 import org.opennms.horizon.alertservice.mapper.NodeMapper;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeOperationProto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -198,5 +199,27 @@ public class AlertServiceImpl implements AlertService {
         NodeInfo nodeInfo = nodeInfoMapper.map(nodeDTO);
         node.setNodeInfo(nodeInfo);
         nodeRepository.save(node);
+    }
+
+    private void deleteNode(NodeDTO nodeDTO) {
+        Node node = nodeMapper.map(nodeDTO);
+        nodeRepository.delete(node);
+    }
+
+    @Override
+    public void deleteNodeInAlert(NodeOperationProto nodeOperationProto) {
+
+        var listAlertsByNodeId = alertRepository.findListAlertsByNodeId(
+                nodeOperationProto.getNodeDto().getTenantId(),
+                nodeOperationProto.getNodeDto().getId());
+        listAlertsByNodeId.forEach(alert -> {
+            alert.setNodeId(null);
+        });
+        alertRepository.saveAll(listAlertsByNodeId);
+
+        deleteNode(NodeDTO.newBuilder()
+                .setId(nodeOperationProto.getNodeDto().getId())
+                .setTenantId(nodeOperationProto.getNodeDto().getTenantId())
+                .build());
     }
 }

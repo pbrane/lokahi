@@ -26,6 +26,7 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
     tagError: '',
     tagSearch: '',
     validationErrors: {},
+    disableSave: false,
     validateOnKeyUp: false
   } as DiscoveryStore),
 
@@ -181,6 +182,9 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
     },
     setSelectedDiscoveryValue(key: string, value: any) {
       (this.selectedDiscovery as Record<string, any>)[key] = value
+      if (key === 'name') {
+        this.customValidator(this.selectedDiscovery)
+      }
       if (this.validateOnKeyUp) {
         this.validateDiscovery()
       }
@@ -229,10 +233,13 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
       const name = (discovery.name || '').toLowerCase()
 
       if (name && this.loadedDiscoveries.some(d => (d.id != id) && d.name && d.name.toLowerCase() === name)) {
+        this.disableSave = true
         throw {
           message: 'Duplicate discovery name.',
           path: 'name'
         }
+      } else {
+        this.disableSave = false
       }
     },
     async validateDiscovery() {

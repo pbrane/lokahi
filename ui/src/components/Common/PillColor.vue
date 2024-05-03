@@ -24,6 +24,7 @@
       :class="['pill-style', `${item.style.toLowerCase()}-color`]"
       data-test="pill-style"
     >
+    <slot name="actions"> </slot>
       {{ item.label?.toLowerCase() || item.style.toLowerCase() }}
     </span>
   </div>
@@ -56,7 +57,7 @@ defineProps({
   display: inline-block;
   font-size: 0.8rem;
   line-height: normal;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 4px;
 }
 </style>

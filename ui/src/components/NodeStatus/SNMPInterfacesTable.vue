@@ -210,6 +210,8 @@ const updateSNMPInterfaces = () => {
     total.value = snmpInterfaces.value.length
     clonedInterfaces.value = snmpInterfaces.value
     pageObjects.value = getPageObjects(snmpInterfaces.value, page.value, pageSize.value)
+  } else {
+    pageObjects.value = []
   }
 }
 onMounted(() => {

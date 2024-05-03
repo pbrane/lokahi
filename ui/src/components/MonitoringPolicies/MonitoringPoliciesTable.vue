@@ -70,7 +70,7 @@
                     />
                   </FeatherTooltip>
                  </span>
-                  <span @click.stop class="policy-name">
+                  <span class="policy-name">
                     {{ policy.name }}
                   </span>
                </div>
@@ -188,9 +188,8 @@ const getPageObjects = (array: Array<any>, pageNumber: number, pageSize: number)
   return array.slice(startIndex, endIndex)
 }
 const onSelectPolicy = (id: string) => {
-  console.log(`onSelectPolicy, id: ${id}`)
   const selectedPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(id))
-
+  
   if (selectedPolicy) {
     store.displayPolicyForm(selectedPolicy)
     emit('policySelected', Number(selectedPolicy.id))
@@ -202,7 +201,6 @@ const onDownload = () => {
 }
 
 const onRefresh = () => {
-  console.log('refresh clicked')
   store.getMonitoringPolicies()
 }
 const updatePage = (v: number) => {

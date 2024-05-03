@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
-import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeOperationProto;
 import org.opennms.horizon.inventory.mapper.NodeMapper;
 import org.opennms.horizon.inventory.model.Node;
 import org.slf4j.Logger;
@@ -86,13 +86,22 @@ public class NodeKafkaProducerTest {
 
     private boolean nodeProducerRecordMatches(Node expectedNode, ProducerRecord<String, byte[]> producerRecord) {
         try {
-            NodeDTO nodeDTO = NodeDTO.parseFrom(producerRecord.value());
+
+            NodeOperationProto nodeOperationProto = NodeOperationProto.parseFrom(producerRecord.value());
 
             return ((TEST_TOPIC.equals(producerRecord.topic()))
-                    && (Objects.equals(expectedNode.getId(), nodeDTO.getId()))
-                    && (Objects.equals(expectedNode.getTenantId(), nodeDTO.getTenantId()))
-                    && (Objects.equals(expectedNode.getMonitoringLocationId(), nodeDTO.getMonitoringLocationId()))
-                    && (Objects.equals(expectedNode.getNodeLabel(), nodeDTO.getNodeLabel())));
+                    && (Objects.equals(
+                            expectedNode.getId(),
+                            nodeOperationProto.getNodeDto().getId()))
+                    && (Objects.equals(
+                            expectedNode.getTenantId(),
+                            nodeOperationProto.getNodeDto().getTenantId()))
+                    && (Objects.equals(
+                            expectedNode.getMonitoringLocationId(),
+                            nodeOperationProto.getNodeDto().getMonitoringLocationId()))
+                    && (Objects.equals(
+                            expectedNode.getNodeLabel(),
+                            nodeOperationProto.getNodeDto().getNodeLabel())));
         } catch (InvalidProtocolBufferException e) {
             LOG.error("Unexpected test error", e);
             return false;

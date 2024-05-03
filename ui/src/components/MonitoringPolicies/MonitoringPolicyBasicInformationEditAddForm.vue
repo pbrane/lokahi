@@ -14,7 +14,7 @@
     </FeatherCheckboxGroup>
     <div class="subtitle">Tags</div>
     <BasicAutocomplete @itemsSelected="selectTags" :getItems="tagQueries.getTagsSearch"
-      :label="'Tag name'" :items="tagQueries.tagsSearched" />
+      :label="'Tag name'" :items="tagQueries.tagsSearched"     :preselectedItems="formattedTags"/>
   </div>
 </template>
 <script setup lang="ts">
@@ -26,8 +26,6 @@ const store = useMonitoringPoliciesStore()
 const tagQueries = useTagQueries()
 
 const selectTags = (tags: TagSelectItem[]) => (store.selectedPolicy!.tags = tags.map((tag) => tag.name))
-
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const formattedTags = computed(() => store.selectedPolicy!.tags!.map((tag: string) => ({ name: tag, id: tag })))
 </script>
 <style lang="scss" scoped>
