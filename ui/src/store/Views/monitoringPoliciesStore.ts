@@ -47,6 +47,16 @@ const defaultPolicy: Policy = {
   rules: []
 }
 
+const defaultRule: PolicyRule = {
+    id: 0,
+    name: '',
+    componentType: ManagedObjectType.Node,
+    detectionMethod: DetectionMethod.Event,
+    eventType: EventType.SnmpTrap,
+    alertConditions: [],
+    vendor: 'generic'
+}
+
 function getDefaultThresholdCondition(): ThresholdCondition {
   return {
     id: new Date().getTime(),
@@ -92,10 +102,10 @@ async function getDefaultRule(): Promise<PolicyRule> {
   }
 }
 
-export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore', {
-  state: (): TState => ({
-    selectedPolicy: undefined,
-    selectedRule: undefined,
+export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore', {
+  state: (): TState =>  ({
+    selectedPolicy: cloneDeep(defaultPolicy),
+    selectedRule: cloneDeep(defaultRule),
     monitoringPolicies: [],
     numOfAlertsForPolicy: 0,
     numOfAlertsForRule: 0,
@@ -120,6 +130,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           this.affectedNodesByMonitoringPolicyCount?.set(policy.id, count ?? 0)
         })
       })
+    
+      this.selectedRule = cloneDeep(defaultRule)
       queries.listVendors().then((res) => {
         this.vendors = res
         this.formatVendors(res?.length ? res : [])
@@ -134,13 +146,14 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     },
     displayPolicyForm(policy?: Policy) {
       this.selectedPolicy = policy ? cloneDeep(policy) : cloneDeep(defaultPolicy)
-      this.selectedRule = undefined
+      this.selectedRule = cloneDeep(defaultRule)
     },
     clearSelectedPolicy() {
-      this.selectedPolicy = undefined
+      this.selectedPolicy = cloneDeep(defaultPolicy)
+      this.selectedRule = cloneDeep(defaultRule)
     },
-    async displayRuleForm(rule?: PolicyRule) {
-      this.selectedRule = rule ? cloneDeep(rule) : await getDefaultRule()
+    displayRuleForm(rule?: PolicyRule) {
+      this.selectedRule = rule ? cloneDeep(rule) : cloneDeep(defaultRule)
     },
     async resetDefaultConditions() {
       if (!this.selectedRule) {
@@ -277,8 +290,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       await addMonitoringPolicy({ policy })
 
       if (!error.value) {
-        this.selectedPolicy = undefined
-        this.selectedRule = undefined
+        this.selectedPolicy = cloneDeep(defaultPolicy)
+        this.selectedRule = cloneDeep(defaultRule)
         this.validationErrors = {}
         this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
@@ -328,8 +341,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       const { deleteMonitoringPolicy } = useMonitoringPoliciesMutations()
       await deleteMonitoringPolicy({ id: this.selectedPolicy?.id })
       this.getMonitoringPolicies()
-      this.selectedRule = undefined
-      this.selectedPolicy = undefined
+      this.selectedRule = cloneDeep(defaultRule)
+      this.selectedPolicy = cloneDeep(defaultPolicy)
       this.clearSelectedPolicy()
     },
     async countAlerts() {
@@ -338,12 +351,17 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.numOfAlertsForPolicy = count
     },
     async openAlertRuleDrawer(rule?: PolicyRule) {
-      await this.displayRuleForm(rule)
+      if (rule !==undefined) {
+        await this.displayRuleForm(rule)
       this.alertRuleDrawer = true
+      } else {
+        this.alertRuleDrawer = false
+      }
+      
     },
     async closeAlertRuleDrawer() {
       this.alertRuleDrawer = false
-      this.selectedRule = undefined
+      this.selectedRule = cloneDeep(defaultRule)
       this.validationErrors = {}
     },
     async formatVendors(vendors: string[]) {
@@ -378,6 +396,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           return item
         })
       }
-    }
+    },
   }
 })

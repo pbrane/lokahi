@@ -4,8 +4,9 @@ import MonitoringPolicies from '@/containers/MonitoringPolicies.vue'
 import featherInputFocusDirective from '@/directives/v-focus'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
-import { DetectionMethod, EventType, ManagedObjectType, MonitorPolicy, Severity } from '@/types/graphql'
+import { DetectionMethod, EventType, ManagedObjectType, MonitorPolicy, PolicyRule, Severity } from '@/types/graphql'
 import { buildFetchList } from '../utils'
+import { Policy } from '@/types/policies'
 
 const testingPayload: MonitorPolicy = {
   name: 'Policy1',
@@ -37,15 +38,39 @@ const testingPayload: MonitorPolicy = {
   ]
 }
 
-global.fetch = buildFetchList({
-  ListAlertEventDefinitions: {
-    listAlertEventDefinitions: [{
-      id: 1,
-      name: 'SNMP Trap',
-      eventType: EventType.SnmpTrap
-    }]
-  }
-})
+
+const defaultPolicy: Policy = {
+  name: '',
+  memo: '',
+  notifyByEmail: false,
+  notifyByPagerDuty: false,
+  notifyByWebhooks: false,
+  tags: ['default'],
+  rules: []
+}
+
+const defaultRule: PolicyRule = {
+  id: 0,
+  name: '',
+  componentType: ManagedObjectType.Node,
+  detectionMethod: DetectionMethod.Event,
+  eventType: EventType.SnmpTrap,
+  alertConditions: [],
+  vendor: 'generic'
+}
+
+
+// TODO: Skipping for now until we build out functionality with the new components
+
+// global.fetch = buildFetchList({
+//   ListAlertEventDefinitions: {
+//     listAlertEventDefinitions: [{
+//       id: 1,
+//       name: 'SNMP Trap',
+//       eventType: EventType.SnmpTrap
+//     }]
+//   }
+// })
 
 const wrapper = mount({
   component: MonitoringPolicies,
@@ -68,7 +93,7 @@ describe.skip('Monitoring Policies', () => {
     const store = useMonitoringPoliciesStore()
     const newPolicyBtn = wrapper.get('[data-test="new-policy-btn"]')
 
-    expect(store.selectedPolicy).toBeUndefined()
+    expect(store.selectedPolicy).toStrictEqual(defaultPolicy)
     await newPolicyBtn.trigger('click')
     expect(store.displayPolicyForm).toHaveBeenCalledTimes(1)
     expect(store.selectedPolicy).toBeTruthy()
@@ -78,7 +103,7 @@ describe.skip('Monitoring Policies', () => {
     const store = useMonitoringPoliciesStore()
     const newRuleBtn = wrapper.get('[data-test="new-rule-btn"]')
 
-    expect(store.selectedRule).toBeUndefined()
+    expect(store.selectedRule).toStrictEqual(defaultRule)
     await newRuleBtn.trigger('click')
     expect(store.displayRuleForm).toHaveBeenCalledTimes(1)
     // FIXME: This test broke after displayRuleForm was made async
