@@ -123,7 +123,7 @@ public class HttpMonitorCommand implements Action {
                 .setPorts(Port.newBuilder().addAllPort(ports).build())
                 .build());
 
-        CompletableFuture<ServiceMonitorResponse> response = httpMonitor.poll(null, configuration);
+        CompletableFuture<ServiceMonitorResponse> response = httpMonitor.poll(configuration);
         try {
             ServiceMonitorResponse serviceMonitorResponse = response.get(1, TimeUnit.SECONDS);
             System.out.println("HttpMonitor status: " + serviceMonitorResponse.getStatus());

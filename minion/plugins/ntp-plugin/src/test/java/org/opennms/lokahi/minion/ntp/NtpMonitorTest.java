@@ -25,13 +25,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.google.protobuf.Any;
-import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.monitors.ntp.contract.NTPMonitorRequest;
 
@@ -49,16 +47,13 @@ public class NtpMonitorTest {
 
     private static final int NON_DEFAULT_TEST_PORT_VALUE = 124;
 
-    @Mock
-    MonitoredService monitoredService;
-
     NTPMonitorRequest ntpMonitorRequest;
 
     Any testConfig;
     NtpMonitor ntpMonitor;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ntpMonitor = new NtpMonitor();
 
         MockitoAnnotations.openMocks(this);
@@ -76,7 +71,7 @@ public class NtpMonitorTest {
                 DEFAULT_TEST_PORT_VALUE,
                 DEFAULT_TEST_RETRIES_VALUE,
                 DEFAULT_TEST_TIMEOUT_VALUE));
-        CompletableFuture<ServiceMonitorResponse> response = ntpMonitor.poll(monitoredService, testConfig);
+        CompletableFuture<ServiceMonitorResponse> response = ntpMonitor.poll(testConfig);
         ServiceMonitorResponse serviceMonitorResponse = response.get();
         assertEquals(ServiceMonitorResponse.Status.Up, serviceMonitorResponse.getStatus());
         assertTrue(serviceMonitorResponse.getResponseTime() > 0.0);
@@ -89,7 +84,7 @@ public class NtpMonitorTest {
                 DEFAULT_TEST_PORT_VALUE,
                 DEFAULT_TEST_RETRIES_VALUE,
                 DEFAULT_TEST_TIMEOUT_VALUE));
-        CompletableFuture<ServiceMonitorResponse> response = ntpMonitor.poll(monitoredService, testConfig);
+        CompletableFuture<ServiceMonitorResponse> response = ntpMonitor.poll(testConfig);
         ServiceMonitorResponse serviceMonitorResponse = response.get();
         assertEquals(ServiceMonitorResponse.Status.Down, serviceMonitorResponse.getStatus());
         assertTrue(serviceMonitorResponse.getResponseTime() <= 0.0);
@@ -102,7 +97,7 @@ public class NtpMonitorTest {
                 NON_DEFAULT_TEST_PORT_VALUE,
                 DEFAULT_TEST_RETRIES_VALUE,
                 DEFAULT_TEST_TIMEOUT_VALUE));
-        CompletableFuture<ServiceMonitorResponse> response = ntpMonitor.poll(monitoredService, testConfig);
+        CompletableFuture<ServiceMonitorResponse> response = ntpMonitor.poll(testConfig);
         ServiceMonitorResponse serviceMonitorResponse = response.get();
         assertEquals(ServiceMonitorResponse.Status.Unknown, serviceMonitorResponse.getStatus());
         assertTrue(serviceMonitorResponse.getResponseTime() <= 0.0);
@@ -111,7 +106,7 @@ public class NtpMonitorTest {
     public NTPMonitorRequest getNtpMonitorRequest(String ipAddress, int port, int retries, int timeout) {
         return NTPMonitorRequest.newBuilder()
                 .setInetAddress(ipAddress)
-                .addAllPort(Arrays.asList(port))
+                .addAllPort(List.of(port))
                 .setRetries(retries)
                 .setTimeout(timeout)
                 .build();

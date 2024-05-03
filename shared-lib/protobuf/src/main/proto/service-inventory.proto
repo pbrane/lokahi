@@ -27,47 +27,11 @@
  *******************************************************************************/
 syntax = "proto3";
 
-import "google/protobuf/any.proto";
-
-package opennms.azure;
+package opennms.inventory.service;
 option java_multiple_files = true;
-option java_package = "org.opennms.azure.contract";
+option java_package = "org.opennms.inventory.service";
 
-message AzureScanRequest {
-  int64 active_discovery_id = 1;
-  string client_id = 2;
-  string client_secret = 3;
-  string subscription_id = 4;
-  string directory_id = 5;
-  int64 timeout_ms = 6;
-  int32 retries = 7;
-}
-
-message AzureMonitorRequest {
-  string resource = 1;
-  string resource_group = 2;
-  string client_id = 3;
-  string client_secret = 4;
-  string subscription_id = 5;
-  string directory_id = 6;
-  int32 retries = 7;
-  int64 timeout_ms = 8;
-  int64 node_id = 9;
-}
-
-message AzureCollectorResourcesRequest {
-  string resource = 1;
-  string type = 2;
-}
-
-message AzureCollectorRequest {
-  string resource = 1;
-  string resource_group = 2;
-  string client_id = 3;
-  string client_secret = 4;
-  string subscription_id = 5;
-  string directory_id = 6;
-  int32 retries = 7;
-  int64 timeout_ms = 8;
-  repeated AzureCollectorResourcesRequest collectorResources = 9;
+message ServiceInventory {
+  int64 node_id = 1;
+  int64 monitor_service_id = 2;
 }

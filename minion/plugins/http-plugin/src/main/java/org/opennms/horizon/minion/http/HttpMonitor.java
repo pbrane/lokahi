@@ -39,9 +39,8 @@ import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
-import org.opennms.horizon.minion.plugin.api.AbstractServiceMonitor;
-import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.PollStatus;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
 import org.opennms.horizon.shared.utils.Base64;
@@ -53,7 +52,7 @@ import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpMonitor extends AbstractServiceMonitor {
+public class HttpMonitor implements ServiceMonitor {
     public static final Logger LOG = LoggerFactory.getLogger(HttpMonitor.class);
 
     /**
@@ -78,7 +77,7 @@ public class HttpMonitor extends AbstractServiceMonitor {
     private static final int DEFAULT_TIMEOUT = 3000; // 3 second timeout on read()
 
     @Override
-    public CompletableFuture<ServiceMonitorResponse> poll(MonitoredService svc, Any config) {
+    public CompletableFuture<ServiceMonitorResponse> poll(Any config) {
 
         CompletableFuture<ServiceMonitorResponse> future = new CompletableFuture<>();
         HttpMonitorRequest httpMonitorRequest = null;

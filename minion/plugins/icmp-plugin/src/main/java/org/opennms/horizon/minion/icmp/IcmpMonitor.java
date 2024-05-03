@@ -26,8 +26,7 @@ import com.google.protobuf.Descriptors;
 import java.net.InetAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import org.opennms.horizon.minion.plugin.api.AbstractServiceMonitor;
-import org.opennms.horizon.minion.plugin.api.MonitoredService;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse.Status;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
@@ -41,7 +40,7 @@ import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IcmpMonitor extends AbstractServiceMonitor {
+public class IcmpMonitor implements ServiceMonitor {
 
     private final PingerFactory pingerFactory;
 
@@ -75,7 +74,7 @@ public class IcmpMonitor extends AbstractServiceMonitor {
     // ----------------------------------------
 
     @Override
-    public CompletableFuture<ServiceMonitorResponse> poll(MonitoredService svc, Any config) {
+    public CompletableFuture<ServiceMonitorResponse> poll(Any config) {
 
         CompletableFuture<ServiceMonitorResponse> future = new CompletableFuture<>();
 
@@ -100,7 +99,10 @@ public class IcmpMonitor extends AbstractServiceMonitor {
                     effectiveRequest.getTimeout(),
                     effectiveRequest.getRetries(),
                     effectiveRequest.getPacketSize(),
-                    new MyPingResponseCallback(future, svc.getNodeId(), svc.getMonitorServiceId()));
+                    new MyPingResponseCallback(
+                            future,
+                            effectiveRequest.getServiceInventory().getNodeId(),
+                            effectiveRequest.getServiceInventory().getMonitorServiceId()));
         } catch (Exception e) {
             future.completeExceptionally(e);
         }
@@ -132,8 +134,11 @@ public class IcmpMonitor extends AbstractServiceMonitor {
         }
 
         if (!request.hasField(timeoutFieldDescriptor)) {
+            request.getServiceInventory();
             resultBuilder.setTimeout(PingConstants.DEFAULT_TIMEOUT);
         }
+
+        resultBuilder.setServiceInventory(request.getServiceInventory());
 
         return resultBuilder.build();
     }

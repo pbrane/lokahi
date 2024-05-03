@@ -30,17 +30,12 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.monitors.http.contract.HttpMonitorRequest;
 import org.opennms.monitors.http.contract.Port;
 
 public class HttpsMonitorTest {
-
-    @Mock
-    MonitoredService monitoredService;
 
     HttpMonitorRequest httpTestRequest;
     Any testConfig;
@@ -57,7 +52,7 @@ public class HttpsMonitorTest {
         httpsMonitor = new HttpsMonitor();
         testConfig = prepareHttpsMonitorParams(
                 "www.google.com", "200-201", "https://www.google.com/", Arrays.asList(443), 2, 3000);
-        CompletableFuture<ServiceMonitorResponse> response = httpsMonitor.poll(monitoredService, testConfig);
+        CompletableFuture<ServiceMonitorResponse> response = httpsMonitor.poll(testConfig);
         ServiceMonitorResponse serviceMonitorResponse = response.get();
         assertEquals(ServiceMonitorResponse.Status.Up, serviceMonitorResponse.getStatus());
         assertTrue(serviceMonitorResponse.getResponseTime() > 0.0);
@@ -68,7 +63,7 @@ public class HttpsMonitorTest {
         httpsMonitor = new HttpsMonitor();
         testConfig = prepareHttpsMonitorParams(
                 "www.opennms.org", "100-200", "https://www.opennms.org/", Arrays.asList(443), 3, 3000);
-        CompletableFuture<ServiceMonitorResponse> response = httpsMonitor.poll(monitoredService, testConfig);
+        CompletableFuture<ServiceMonitorResponse> response = httpsMonitor.poll(testConfig);
         ServiceMonitorResponse serviceMonitorResponse = response.get();
         assertEquals(ServiceMonitorResponse.Status.Down, serviceMonitorResponse.getStatus());
         assertEquals(0.0d, serviceMonitorResponse.getResponseTime(), 0);

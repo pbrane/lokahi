@@ -72,7 +72,7 @@ public class NtpCommand implements Action {
                 .setTimeout(timeout)
                 .build());
 
-        var future = ntpMonitor.poll(null, configuration);
+        var future = ntpMonitor.poll(configuration);
 
         while (true) {
             try {
