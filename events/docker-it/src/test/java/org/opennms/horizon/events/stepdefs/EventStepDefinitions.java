@@ -27,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.hamcrest.Matchers;
 import org.opennms.horizon.events.EventsBackgroundHelper;
+import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventsSearchBy;
 import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapDTO;
@@ -118,12 +121,12 @@ public class EventStepDefinitions {
                                         .anyMatch(event -> event.getTenantId().equals(this.tenantId)
                                                 && event.getUei().equals(uei)),
                         Matchers.is(true));
+        List<Event> eventList =  backgroundHelper
+            .getEventServiceBlockingStub()
+            .searchEvents(searchEventByLocationName)
+            .getEventsList();
         assertTrue(
-                backgroundHelper
-                        .getEventServiceBlockingStub()
-                        .searchEvents(searchEventByLocationName)
-                        .getEventsList()
-                        .stream()
+                    eventList.stream()
                         .anyMatch(event -> event.getTenantId().equals(this.tenantId)
                                 && event.getUei().equals(uei)));
     }
