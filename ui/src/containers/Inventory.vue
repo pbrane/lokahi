@@ -6,6 +6,9 @@
         class="header"
         data-test="page-header"
       />
+      <FeatherButton secondary>
+        IMPORT NODES
+      </FeatherButton>
     </div>
 
     <InventoryTagModal
@@ -44,15 +47,32 @@
           >
         </FeatherTab>
       </template>
+
       <!-- Monitored Nodes -->
       <FeatherTabPanel>
+         <div class="tab-navigation"  v-if="tabMonitoredContent.length && !inventoryStore.loading">
+          <p class="search-node"> Search by name/tag or use additional filters to filters nodes </p>
+          <div class="tab-menu">
+            <FeatherButton secondary :class="{ 'active-tab': view === 'table' }" @click="toggleView('table')" :active="view === 'table'">
+               Table
+            </FeatherButton>
+            <FeatherButton secondary :class="{ 'active-tab': view === 'card' }" @click="toggleView('card')" :active="view === 'card'">
+              Card
+            </FeatherButton>
+          </div>
+         </div>
         <InventoryFilter
           v-if="inventoryStore.monitoredFilterActive"
           :state="MonitoredStates.MONITORED"
           :nodes="tabMonitoredContent"
         />
+        <InventoryTabTable
+          v-if="tabMonitoredContent.length && !inventoryStore.loading && view === 'table'"
+          :tabContent="tabMonitoredContent"
+          :state="MonitoredStates.MONITORED"
+        />
         <InventoryTabContent
-          v-if="tabMonitoredContent.length && !inventoryStore.loading"
+          v-if="tabMonitoredContent.length && !inventoryStore.loading && view === 'card'"
           :tabContent="tabMonitoredContent"
           :state="MonitoredStates.MONITORED"
         />
@@ -145,6 +165,7 @@ import { useInventoryStore } from '@/store/Views/inventoryStore'
 import { FeatherTextBadge, BadgeTypes } from '@featherds/badge'
 import { useTagStore } from '@/store/Components/tagStore'
 
+const view = ref('card')
 const inventoryStore = useInventoryStore()
 const tabMonitoredContent = computed((): InventoryItem[] =>
   inventoryStore.nodes.filter((d) => d.monitoredState === MonitoredStates.MONITORED)
@@ -160,6 +181,10 @@ const tagStore = useTagStore()
 onMounted(async () => {
   inventoryStore.init()
 })
+
+const toggleView = (selectedView: string) => {
+  view.value = selectedView
+}
 
 /**
  * If at any point, a tab of content is more than zero,
@@ -178,7 +203,6 @@ watchEffect(() => {
   }
 })
 </script>
-
 <style lang="scss" scoped>
 @use '@featherds/styles/themes/variables';
 @use '@/styles/vars';
@@ -203,6 +227,27 @@ watchEffect(() => {
       }
     }
   }
+
+  .tab-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .search-node {
+      font-weight: bold;
+      margin-bottom: var(variables.$spacing-s);
+    }
+
+    .tab-menu {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      .active-tab {
+        background-color: var(variables.$primary);
+        color: white !important;
+      }
+    }
+ }
 }
 
 .flex {

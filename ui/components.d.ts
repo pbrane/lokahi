@@ -95,6 +95,7 @@ declare module '@vue/runtime-core' {
     InventoryTagManagerCtrl: typeof import('./src/components/Inventory/InventoryTagManagerCtrl.vue')['default']
     InventoryTagModal: typeof import('./src/components/Inventory/InventoryTagModal.vue')['default']
     InventoryTextTagList: typeof import('./src/components/Inventory/InventoryTextTagList.vue')['default']
+    InventoryTabTable: typeof import('./src/components/Inventory/InventoryTabTable.vue')['default']
     IPInterfacesTable: typeof import('./src/components/NodeStatus/IPInterfacesTable.vue')['default']
     ItemPreview: typeof import('./src/components/Common/ItemPreview.vue')['default']
     LeafletMap: typeof import('./src/components/Map/LeafletMap.vue')['default']

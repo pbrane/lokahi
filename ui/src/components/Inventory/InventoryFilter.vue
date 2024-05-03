@@ -12,6 +12,9 @@
       <FeatherInput v-if="inventoryStore.searchType.name === 'Labels'" @update:model-value="searchNodesByLabel"
         label="Search" class="inventory-search" data-test="search" ref="searchNodesByLabelRef">
       </FeatherInput>
+      <div class="pointer">
+        <Icon :icon="filterIcon" />
+      </div>
     </li>
     <li class="push-right">
       <InventoryTagManagerCtrl class="tag-manager" data-test="tag-manager-ctrl" />
@@ -32,13 +35,15 @@
 </template>
 
 <script lang="ts" setup>
-import { NewInventoryNode, fncArgVoid } from '@/types'
+import { IIcon, NewInventoryNode, fncArgVoid } from '@/types'
 import { useInventoryStore } from '@/store/Views/inventoryStore'
 import { useInventoryQueries } from '@/store/Queries/inventoryQueries'
 import { useTagQueries } from '@/store/Queries/tagQueries'
 import { Tag } from '@/types/graphql'
 import { PropType } from 'vue'
 import { useTagStore } from '@/store/Components/tagStore'
+import FilterAlt from '@featherds/icon/action/FilterAlt'
+
 const inventoryStore = useInventoryStore()
 const tagStore = useTagStore()
 const inventoryQueries = useInventoryQueries()
@@ -59,8 +64,14 @@ defineProps({
   }
 })
 
-const searchNodesByLabelRef = ref()
+const filterIcon: IIcon = {
+  image: markRaw(FilterAlt),
+  tooltip: 'Node Status',
+  size: 1.5,
+  cursorHover: true
+}
 
+const searchNodesByLabelRef = ref()
 
 // Current BE setup only allows search by names OR tags.
 // so we clear the other search to avoid confusion
@@ -136,6 +147,19 @@ const searchNodesByTags: fncArgVoid = (tags: Tag[]) => {
 
   :deep(.feather-autocomplete-content) {
     display: block;
+  }
+}
+
+.pointer {
+  padding: 7px 9px;
+  border-radius: 3px;
+  font-size: 1.5rem;
+  color: var(variables.$primary);
+  cursor: pointer;
+  border:1px solid var(--feather-secondary-text-on-surface);
+  &:hover {
+    cursor: pointer;
+    color: var(variables.$disabled-text-on-surface);
   }
 }
 
