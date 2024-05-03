@@ -27,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -121,14 +120,13 @@ public class EventStepDefinitions {
                                         .anyMatch(event -> event.getTenantId().equals(this.tenantId)
                                                 && event.getUei().equals(uei)),
                         Matchers.is(true));
-        List<Event> eventList =  backgroundHelper
-            .getEventServiceBlockingStub()
-            .searchEvents(searchEventByLocationName)
-            .getEventsList();
-        assertTrue(
-                    eventList.stream()
-                        .anyMatch(event -> event.getTenantId().equals(this.tenantId)
-                                && event.getUei().equals(uei)));
+        List<Event> eventList = backgroundHelper
+                .getEventServiceBlockingStub()
+                .searchEvents(searchEventByLocationName)
+                .getEventsList();
+        assertTrue(eventList.stream()
+                .anyMatch(event -> event.getTenantId().equals(this.tenantId)
+                        && event.getUei().equals(uei)));
     }
 
     @Given("Initialize Trap Producer With Topic {string} and BootstrapServer {string}")
