@@ -82,6 +82,7 @@ public class SnmpCollector implements ServiceCollector {
 
         try {
             final CompletableFuture<List<SnmpResultMetric>> future = new CompletableFuture<>();
+
             SnmpCollectorRequest snmpRequest = config.unpack(SnmpCollectorRequest.class);
 
             LOG.debug("SNMP Collector Request {}", snmpRequest);
