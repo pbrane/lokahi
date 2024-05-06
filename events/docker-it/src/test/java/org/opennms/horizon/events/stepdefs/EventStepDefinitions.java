@@ -84,9 +84,9 @@ public class EventStepDefinitions {
                 TenantLocationSpecificTrapLogDTO.newBuilder()
                         .setTenantId(tenantId)
                         .setLocationId(location)
-                        .setTrapAddress("127.0.0.1")
+                        .setTrapAddress("127.0.0.2")
                         .addTrapDTO(TrapDTO.newBuilder()
-                                .setAgentAddress("127.0.0.1")
+                                .setAgentAddress("127.0.0.2")
                                 .build())
                         .build();
         var producerRecord = new ProducerRecord<String, byte[]>(
