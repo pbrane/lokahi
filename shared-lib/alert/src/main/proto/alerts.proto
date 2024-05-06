@@ -253,6 +253,7 @@ message MonitorPolicyProto {
   bool notifyByPagerDuty = 8;
   bool notifyByWebhooks = 9;
   string notifyInstruction = 10;
+  bool enabled = 11;
 }
 
 message PolicyRuleProto {

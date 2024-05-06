@@ -57,6 +57,9 @@ public class SystemPolicyTag {
     @JoinColumn(name = "tag_id", referencedColumnName = "id", nullable = true)
     private Tag tag;
 
+    @Column
+    private Boolean enabled;
+
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter

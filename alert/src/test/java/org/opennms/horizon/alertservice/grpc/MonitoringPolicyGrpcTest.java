@@ -156,7 +156,6 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
         verifyNoMoreInteractions(
                 spyMonitorPolicyService,
                 mockPolicyRuleRepository,
-                mockMonitorPolicyRepository,
                 spyInterceptor,
                 mockSystemPolicyTagRepository,
                 mockTagOperationProducer);
@@ -198,7 +197,7 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
         tag1.setName("tag1");
         tag1.setTenantId(tenantId);
         var systemPolicyTags = new HashSet<SystemPolicyTag>();
-        systemPolicyTags.add(new SystemPolicyTag(tenantId, policyId, tag1));
+        systemPolicyTags.add(new SystemPolicyTag(tenantId, policyId, tag1, true));
 
         doReturn(Optional.of(defaultPolicy))
                 .when(mockMonitorPolicyRepository)
@@ -236,8 +235,8 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
         customDefaultTag.setName(defaultTagName);
         customDefaultTag.setTenantId(tenantId);
 
-        var systemPolicyTag = new SystemPolicyTag(tenantId, policyId, tag);
-        var systemPolicyDefaultTag = new SystemPolicyTag(tenantId, policyId, customDefaultTag);
+        var systemPolicyTag = new SystemPolicyTag(tenantId, policyId, tag, true);
+        var systemPolicyDefaultTag = new SystemPolicyTag(tenantId, policyId, customDefaultTag, true);
         doReturn(new HashSet<>()).when(mockSystemPolicyTagRepository).findByTenantIdAndPolicyId(tenantId, policyId);
         when(mockSystemPolicyTagRepository.save(any(SystemPolicyTag.class))).thenAnswer(i -> {
             var inPolicyTag = (SystemPolicyTag) i.getArgument(0);
@@ -353,13 +352,13 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
                 .when(mockMonitorPolicyRepository)
                 .findByNameAndTenantId(DEFAULT_POLICY, SYSTEM_TENANT);
         var systemPolicyTags = new HashSet<SystemPolicyTag>();
-        systemPolicyTags.add(new SystemPolicyTag(tenantId, policyId, tag1));
-        systemPolicyTags.add(new SystemPolicyTag(tenantId, policyId, tag2));
+        systemPolicyTags.add(new SystemPolicyTag(tenantId, policyId, tag1, true));
+        systemPolicyTags.add(new SystemPolicyTag(tenantId, policyId, tag2, true));
 
         var tag3 = new Tag();
         tag3.setName("tag3");
         tag3.setTenantId(tenantId);
-        var systemPolicyTag3 = new SystemPolicyTag(tenantId, policyId, tag3);
+        var systemPolicyTag3 = new SystemPolicyTag(tenantId, policyId, tag3, true);
         doReturn(systemPolicyTags).when(mockSystemPolicyTagRepository).findByTenantIdAndPolicyId(tenantId, policyId);
         when(mockSystemPolicyTagRepository.save(any(SystemPolicyTag.class))).thenAnswer(i -> {
             var inPolicyTag = (SystemPolicyTag) i.getArgument(0);

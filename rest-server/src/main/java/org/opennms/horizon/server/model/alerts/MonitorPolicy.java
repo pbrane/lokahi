@@ -37,4 +37,5 @@ public class MonitorPolicy extends BaseModel {
     private Boolean notifyByWebhooks;
     private String notifyInstruction;
     private List<PolicyRule> rules;
+    private Boolean enabled;
 }
