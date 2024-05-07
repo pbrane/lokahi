@@ -64,6 +64,7 @@ public class EventsConsumer {
         try {
             EventLog eventLog = EventLog.parseFrom(data);
             LOG.trace("Received events from kafka {}", eventLog);
+            LOG.info("Received events from kafka {}", eventLog);
             if (Strings.isNullOrEmpty(eventLog.getTenantId())) {
                 LOG.warn("TenantId is empty. Dropping events: {}", eventLog);
                 return;
