@@ -16,10 +16,18 @@
               <MonitoringPoliciesCreateAlertRules />
             </div>
             <div class="footer">
-              <FeatherButton secondary @click="handleCancel" class="cancel-button">
+              <FeatherButton 
+                secondary 
+                @click="handleCancel" 
+                class="cancel-button"
+              >
                 CANCEL
               </FeatherButton>
-              <ButtonWithSpinner primary @click.prevent="savePolicy" :disabled="!savePolicyEnableDisable">
+              <ButtonWithSpinner 
+                primary 
+                @click.prevent="savePolicy" 
+                :disabled="savePolicyEnableDisable"
+              >
                 SAVE POLICY
               </ButtonWithSpinner>
             </div>
@@ -36,7 +44,9 @@ import router from '@/router'
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 const isCheckAlertRule = ref()
-const savePolicyEnableDisable = computed(() => (monitoringPoliciesStore.selectedPolicy?.rules?.length ?? 0) > 0)
+const savePolicyEnableDisable = computed(
+  () => !monitoringPoliciesStore.selectedPolicy?.rules?.length || !monitoringPoliciesStore.selectedPolicy?.name || monitoringPoliciesStore.selectedPolicy.isDefault
+)
 
 watchEffect(() => {
   isCheckAlertRule.value = (monitoringPoliciesStore.selectedPolicy?.rules?.length ?? 0) <= 0

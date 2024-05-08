@@ -166,7 +166,6 @@ const icons = markRaw({
 
     .event-clear {
       display: flex;
-      align-items: center;
       gap: 5px;
     }
   }

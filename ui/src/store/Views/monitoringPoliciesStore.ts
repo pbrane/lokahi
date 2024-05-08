@@ -122,18 +122,19 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           this.affectedNodesByMonitoringPolicyCount?.set(policy.id, count ?? 0)
         })
       })
-
-      this.selectedRule = undefined
-      queries.listVendors().then((res) => {
-        this.vendors = res
-        this.formatVendors(res?.length ? res : [])
-      })
       // we are setting this to true until the back end supports enable/disable.
       //  Then this component can just display the status.
       //  Once back end adds ability to enable/disable, then we will add another issue to implement it here and elsewhere.
 
       this.monitoringPolicies.forEach((p) => {
         p.enabled = true
+      })
+    },
+    loadVendors() {
+      const queries = useMonitoringPoliciesQueries()
+      queries.listVendors().then((res) => {
+        this.vendors = res
+        this.formatVendors(res?.length ? res : [])
       })
     },
     displayPolicyForm(policy?: Policy) {
@@ -301,7 +302,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.selectedPolicy = undefined
         this.selectedRule = undefined
         this.validationErrors = {}
-        this.getMonitoringPolicies()
+        await this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
         if (isCopy) {
           router.push('/monitoring-policies-new/')
@@ -337,8 +338,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.selectedPolicy!.rules?.splice(ruleIndex, 1)
       }
 
-      await this.getMonitoringPolicies()
       this.selectedRule = undefined
+      this.getMonitoringPolicies()
     },
     async countAlertsForRule() {
       const { getAlertCountByRuleId } = useMonitoringPoliciesQueries()
@@ -349,9 +350,9 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       const { deleteMonitoringPolicy } = useMonitoringPoliciesMutations()
       await deleteMonitoringPolicy({ id: this.selectedPolicy?.id })
       this.monitoringPolicies = []
-      this.getMonitoringPolicies()
       this.selectedRule = undefined
-      this.selectedPolicy = cloneDeep(defaultPolicy)
+      this.selectedPolicy = undefined
+      this.getMonitoringPolicies()
       this.clearSelectedPolicy()
     },
     async countAlerts() {

@@ -7,10 +7,18 @@
             <span class="title"></span>
           </div>
           <div class="btns">
-            <FeatherButton primary icon="Download" @click="onDownload">
+            <FeatherButton 
+              primary 
+              icon="Download" 
+              @click="onDownload"
+            >
               <FeatherIcon :icon="icons.DownloadFile" />
             </FeatherButton>
-            <FeatherButton primary icon="Refresh" @click="onRefresh">
+            <FeatherButton 
+              primary 
+              icon="Refresh" 
+              @click="onRefresh"
+            >
               <FeatherIcon :icon="icons.Refresh" />
             </FeatherButton>
           </div>
@@ -33,9 +41,17 @@
               <td>
                 <div class="action">
                   <span class="check-circle">
-                    <FeatherTooltip :title="policy?.enabled ? 'Enabled' : 'Disabled'" v-slot="{ attrs, on }">
-                      <FeatherIcon v-bind="attrs" v-on="on" :icon="policy?.enabled ? CheckCircle : Circle"
-                        :class="{ 'enabled': policy?.enabled }" class="enabled-icon" data-test="check-icon" />
+                    <FeatherTooltip 
+                      :title="policy?.enabled ? 'Enabled' : 'Disabled'" 
+                      v-slot="{ attrs, on }"
+                    >
+                      <FeatherIcon 
+                        v-bind="attrs" 
+                        v-on="on" :icon="policy?.enabled ? CheckCircle : Circle"
+                        :class="{ 'enabled': policy?.enabled }" 
+                        class="enabled-icon" 
+                        data-test="check-icon"
+                      />
                     </FeatherTooltip>
                   </span>
                   <span class="policy-name">
@@ -49,8 +65,14 @@
             </tr>
           </TransitionGroup>
         </table>
-        <FeatherPagination v-model="page" :pageSize="pageSize" :total="total" @update:modelValue="updatePage"
-          @update:pageSize="updatePageSize" v-if="hasMonitoringPolicies">
+        <FeatherPagination 
+          v-model="page" 
+          :pageSize="pageSize" 
+          :total="total" 
+          @update:modelValue="updatePage"
+          @update:pageSize="updatePageSize" 
+          v-if="hasMonitoringPolicies"
+        >
         </FeatherPagination>
       </div>
     </TableCard>
@@ -92,6 +114,7 @@ const loadData = () => {
 }
 
 onMounted(() => {
+  store.loadVendors()
   loadData()
 })
 

@@ -12,35 +12,52 @@
       </div>
 
       <div class="name">
-        <FeatherInput v-model.trim="monitoringPoliciesStore.selectedRule.name" label="Name"
-          data-test="rule-name-input" :error="monitoringPoliciesStore.validationErrors.ruleName"
-          :readonly="monitoringPoliciesStore.selectedPolicy?.isDefault" />
+        <FeatherInput
+          v-model.trim="monitoringPoliciesStore.selectedRule.name"
+          label="Name"
+          data-test="rule-name-input"
+          :error="monitoringPoliciesStore.validationErrors.ruleName"
+          :readonly="monitoringPoliciesStore.selectedPolicy?.isDefault"
+        />
       </div>
 
       <div class="event-type">
         <div class="subtitle">Select an Event Type</div>
-        <BasicSelect :list="eventTypeOptions" @item-selected="selectEventType"
+        <BasicSelect
+          :list="eventTypeOptions"
+          @item-selected="selectEventType"
           :selectedId="monitoringPoliciesStore.selectedRule?.eventType"
-          :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault">
-        </BasicSelect>
+          :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
+        />
       </div>
-      <SystemEventAlertConditions
-        v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SystemEvent)" />
+      <SystemEventAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SystemEvent)" />
       <SNMPTrapAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SnmpTrap)" />
       <SyslogAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.Syslog)" />
-      <MetricThresholdAlertConditions
-        v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.MetricThreshold)" />
+      <MetricThresholdAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.MetricThreshold)" />
     </div>
     <div class="footer">
       <div v-if="!title">
-        <FeatherButton secondary @click="monitoringPoliciesStore.closeAlertRuleDrawer">
+        <FeatherButton
+          secondary
+          @click="monitoringPoliciesStore.closeAlertRuleDrawer"
+        >
           Cancel
         </FeatherButton>
-        <ButtonWithSpinner primary @click="monitoringPoliciesStore.saveRule" :disabled="disableSaveRuleBtn">
+        <ButtonWithSpinner
+          primary
+          @click="monitoringPoliciesStore.saveRule"
+          :disabled="disableSaveRuleBtn"
+        >
           Save
         </ButtonWithSpinner>
       </div>
-      <FeatherButton v-else class="feather-button" @click="monitoringPoliciesStore.saveRule">SAVE ALERT RULE
+      <FeatherButton
+        v-else
+        text
+        @click="monitoringPoliciesStore.saveRule"
+        :disabled="disableSaveRuleBtn"
+      >
+        SAVE ALERT RULE
       </FeatherButton>
     </div>
   </div>
@@ -118,17 +135,6 @@ const selectEventType = (eventType: EventType) => {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-
-    .feather-button {
-      margin-top: var(--feather-spacing-m);
-      background-color: transparent;
-      font-weight: var(variables.$font-semibold);
-      color: var(--feather-primary);
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
-    }
   }
 }
 </style>

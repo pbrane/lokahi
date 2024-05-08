@@ -30,14 +30,27 @@
         </table>
       </div>
     </TableCard>
-    <div class="create-alert-btn">
-      <Icon :icon="addIcon" />
-      <FeatherButton class="feather-button" @click="createRule">ALERT RULE</FeatherButton>
+    <div>
+      <FeatherButton
+        text
+        @click="createRule"
+        :disabled="disableAddAlertRule"
+      >
+        <template v-slot:icon>
+          <Icon :icon="addIcon" />
+          ALERT RULE
+        </template>
+      </FeatherButton>
     </div>
   </div>
   <AlertRulesDrawer />
-  <DeleteConfirmationModal :isVisible="isVisible" :customMsg="deleteMsg" :closeModal="() => closeModal()"
-    :deleteHandler="() => monitoringPoliciesStore.removeRule()" :isDeleting="mutations.deleteRuleIsFetching" />
+  <DeleteConfirmationModal 
+    :isVisible="isVisible" 
+    :customMsg="deleteMsg" 
+    :closeModal="() => closeModal()"
+    :deleteHandler="() => monitoringPoliciesStore.removeRule()" 
+    :isDeleting="mutations.deleteRuleIsFetching" 
+  />
 </template>
 
 <script setup lang="ts">
@@ -60,7 +73,7 @@ const removeIcon: IIcon = { image: markRaw(Delete), tooltip: 'Alert Rule Delete'
 const editIcon: IIcon = { image: markRaw(Edit), tooltip: 'Alert Rule Edit', size: 1.5, cursorHover: true }
 const copyIcon: IIcon = { image: markRaw(CopyIcon), tooltip: 'Alert Rule Copy', size: 1.5, cursorHover: true }
 const addIcon: IIcon = { image: markRaw(Add), tooltip: 'Alert Rule Add', size: 1.5, cursorHover: true }
-
+const disableAddAlertRule = computed(() => monitoringPoliciesStore.selectedPolicy?.isDefault)
 const deleteMsg = computed(() =>
   `Deleting rule ${monitoringPoliciesStore.selectedRule?.name} removes ${monitoringPoliciesStore.numOfAlertsForRule} associated alerts. Do you wish to proceed?`
 )
@@ -153,22 +166,6 @@ const countAlertsAndOpenDeleteModal = async (rule: PolicyRule) => {
           }
         }
       }
-    }
-  }
-
-  .create-alert-btn {
-    margin-top: 15px;
-    display: flex;
-    align-items: center;
-
-    .feather-button {
-      background-color: transparent;
-      font-weight: var(variables.$font-semibold);
-      color: var(--feather-primary);
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
     }
   }
 }
