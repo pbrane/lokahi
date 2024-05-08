@@ -33,13 +33,8 @@
                 </td>
                 <td v-else>--</td>
                 <td class="actions-icons">
-                  <div @click.prevent="editNode" class="icon">
-                    <Icon :icon="editIcon" />
-                  </div>
-                  <div @click.prevent="removeNode" class="icon">
-                    <Icon :icon="removeIcon" />
-                  </div>
-                </td>
+                <InventoryIconActionList :node="node" nodeEdit="edit" className="icon-action" data-test="icon-action-list" />
+              </td>
               </tr>
             </TransitionGroup>
           </table>
@@ -50,16 +45,11 @@
   </template>
 
 <script setup lang="ts">
-import { IIcon, InventoryItem, RawMetric, MonitoredStates } from '@/types'
-import Delete from '@featherds/icon/action/Delete'
-import Edit from '@featherds/icon/action/Edit'
+import { InventoryItem, RawMetric, MonitoredStates } from '@/types'
 import { PropType } from 'vue'
 import { SORT } from '@featherds/table'
 import { BadgeTypes } from '../Common/commonTypes'
 import TextBadge from '../Common/TextBadge.vue'
-
-const removeIcon: IIcon = { image: markRaw(Delete), tooltip: 'Alert Rule Delete', size: 1.5, cursorHover: true }
-const editIcon: IIcon = { image: markRaw(Edit), tooltip: 'Alert Rule Edit', size: 1.5, cursorHover: true }
 
 defineProps({
   tabContent: {
@@ -92,8 +82,6 @@ const columns: { id: string; label: string }[] = [
   { id: 'Status', label: 'Status' }
 ]
 
-const editNode = () => console.log('edit ')
-const removeNode = () => console.log('remove inventory')
 const sortChanged = (sortObj: Record<string, string>) => console.log('sort inventory')
 
 const metricsAsTextBadges = (metrics?: RawMetric) => {
@@ -141,23 +129,9 @@ const metricsAsTextBadges = (metrics?: RawMetric) => {
             font-weight: bold;
         }
 
-        .node-tags {
-            color: var(variables.$primary);
-        }
-        .actions-icons {
-          display: flex;
-          justify-content: flex-start;
-          align-items: center;
-          gap: 5px;
-          min-height: 52px;
-          cursor: pointer;
-          .icon {
-            color: var(--feather-primary);
-            :deep(:focus) {
-              outline: none;
-           }
-          }
-        }
+      .node-tags {
+        color: var(variables.$primary);
+      }
 
         td {
           white-space: nowrap;
@@ -174,4 +148,5 @@ const metricsAsTextBadges = (metrics?: RawMetric) => {
       }
     }
   }
+
 </style>

@@ -3,10 +3,10 @@
     <li v-if="node.monitoredState === 'MONITORED'" @click="onLineChart" data-test="line-chart" class="pointer">
       <Icon :icon="lineChartIcon" />
     </li>
-    <li @click="onNodeStatus" data-test="node-status" class="pointer">
-      <Icon :icon="infoIcon" />
+    <li @click="onNodeStatus" data-test="node-status" class="pointer" >
+      <Icon :icon="nodeEdit ? editNodeIcon:infoIcon"/>
     </li>
-    <li @click="onWarning" data-test="warning" class="pointer">
+    <li  @click="onWarning" data-test="warning" class="pointer" v-if="!nodeEdit">
       <Icon :icon="warningIcon" />
     </li>
     <li @click="onDelete" data-test="delete">
@@ -32,6 +32,7 @@
 import Warning from '@featherds/icon/notification/Warning'
 import Delete from '@featherds/icon/action/Delete'
 import Info from '@featherds/icon/action/Info'
+import Edit from '@featherds/icon/action/Edit'
 import GraphIcon from '@/components/Common/GraphIcon.vue'
 import { IIcon, InventoryItem } from '@/types'
 import { ModalPrimary } from '@/types/modal'
@@ -45,12 +46,12 @@ const { showSnackbar } = useSnackbar()
 const { openModal, closeModal, isVisible } = useModal()
 const inventoryQueries = useInventoryQueries()
 const nodeMutations = useNodeMutations()
-
 const router = useRouter()
 const props = defineProps({
   node: { type: Object as PropType<InventoryItem>, default: () => ({}) },
   className: { type: String, default: '' },
-  ['data-test']: { type: String, default: '' }
+  ['data-test']: { type: String, default: '' },
+  nodeEdit: { type: String, required: false}
 })
 
 const onLineChart = () => {
@@ -59,6 +60,7 @@ const onLineChart = () => {
     params: { id: props.node.id }
   })
 }
+
 const lineChartIcon: IIcon = {
   image: markRaw(GraphIcon),
   tooltip: 'Graphs',
@@ -72,9 +74,17 @@ const onNodeStatus = () => {
     params: { id: props.node.id }
   })
 }
+
 const infoIcon: IIcon = {
   image: markRaw(Info),
   tooltip: 'Node Status',
+  size: 1.5,
+  cursorHover: true
+}
+
+const editNodeIcon: IIcon = {
+  image: markRaw(Edit),
+  tooltip: 'Node Edit',
   size: 1.5,
   cursorHover: true
 }
@@ -85,6 +95,7 @@ const onWarning = () => {
     params: { id: props.node.id }
   })
 }
+
 const warningIcon: IIcon = {
   image: markRaw(Warning),
   tooltip: 'Node Details',
