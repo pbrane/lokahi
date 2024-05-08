@@ -64,7 +64,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class GraphQLAlertService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GraphQLNodeService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GraphQLAlertService.class);
 
     private final AlertsClient alertsClient;
     private final ServerHeaderUtil headerUtil;
