@@ -3,9 +3,8 @@
   <p>
     Create a clear and descriptive name for the monitoring policy
   </p>
-  <div class="policy-form">
-
-    <FeatherInput v-model.trim="store.selectedPolicy!.name" label="New Policy Name" v-focus
+  <div v-if="store.selectedPolicy" class="policy-form">
+      <FeatherInput v-model.trim="store.selectedPolicy.name" label="New Policy Name" v-focus
       data-test="policy-name-input" :error="store.validationErrors.policyName" />
     <FeatherTextarea v-model.trim="store.selectedPolicy!.memo" label="Description" :maxlength="100" />
     <FeatherCheckboxGroup label="Notifications (Optional)" vertical>

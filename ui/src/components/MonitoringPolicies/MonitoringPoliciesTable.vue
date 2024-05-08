@@ -7,73 +7,41 @@
             <span class="title"></span>
           </div>
           <div class="btns">
-            <FeatherButton
-              primary
-              icon="Download"
-              @click="onDownload"
-            >
-              <FeatherIcon :icon="icons.DownloadFile"/>
+            <FeatherButton primary icon="Download" @click="onDownload">
+              <FeatherIcon :icon="icons.DownloadFile" />
             </FeatherButton>
-            <FeatherButton
-              primary
-              icon="Refresh"
-              @click="onRefresh"
-            >
-              <FeatherIcon :icon="icons.Refresh"/>
+            <FeatherButton primary icon="Refresh" @click="onRefresh">
+              <FeatherIcon :icon="icons.Refresh" />
             </FeatherButton>
           </div>
         </div>
       </div>
       <div class="container">
-        <table
-          class="data-table"
-          aria-label="Monitoring Policies Table"
-        >
+        <table class="data-table" aria-label="Monitoring Policies Table">
           <thead>
             <tr>
-              <FeatherSortHeader
-                v-for="col of columns"
-                :key="col.label"
-                scope="col"
-                :property="col.id"
-                :sort="(sort as any)[col.id]"
-                v-on:sort-changed="sortChanged"
-              >
+              <FeatherSortHeader v-for="col of columns" :key="col.label" scope="col" :property="col.id"
+                :sort="(sort as any)[col.id]" v-on:sort-changed="sortChanged">
                 {{ col.label }}
               </FeatherSortHeader>
             </tr>
           </thead>
-          <TransitionGroup
-            name="data-table"
-            tag="tbody"
-          >
-            <tr
-              v-for="policy in pageData"
-              :key="policy.id"
-              :class="{'policies-table-row':true,'active': policy.id === store.selectedPolicy?.id }"
-              @click="() => onSelectPolicy(policy.id)"
-            >
+          <TransitionGroup name="data-table" tag="tbody">
+            <tr v-for="policy in pageData" :key="policy.id"
+              :class="{ 'policies-table-row': true, 'active': policy.id === store.selectedPolicy?.id }"
+              @click="() => onSelectPolicy(policy.id)">
               <td>
                 <div class="action">
-                 <span class="check-circle">
-                  <FeatherTooltip
-                    :title="policy?.enabled ? 'Enabled':'Disabled'"
-                    v-slot="{ attrs, on }"
-                  >
-                    <FeatherIcon
-                      v-bind="attrs"
-                      v-on="on"
-                      :icon="policy?.enabled ? CheckCircle : Circle"
-                      :class="{ 'enabled': policy?.enabled }"
-                      class="enabled-icon"
-                      data-test="check-icon"
-                    />
-                  </FeatherTooltip>
-                 </span>
+                  <span class="check-circle">
+                    <FeatherTooltip :title="policy?.enabled ? 'Enabled' : 'Disabled'" v-slot="{ attrs, on }">
+                      <FeatherIcon v-bind="attrs" v-on="on" :icon="policy?.enabled ? CheckCircle : Circle"
+                        :class="{ 'enabled': policy?.enabled }" class="enabled-icon" data-test="check-icon" />
+                    </FeatherTooltip>
+                  </span>
                   <span class="policy-name">
                     {{ policy.name }}
                   </span>
-               </div>
+                </div>
               </td>
               <td>{{ policy.memo }}</td>
               <td>{{ policy.rules?.length || 0 }}</td>
@@ -81,14 +49,8 @@
             </tr>
           </TransitionGroup>
         </table>
-        <FeatherPagination
-          v-model="page"
-          :pageSize="pageSize"
-          :total="total"
-          @update:modelValue="updatePage"
-          @update:pageSize="updatePageSize"
-          v-if="hasMonitoringPolicies"
-        >
+        <FeatherPagination v-model="page" :pageSize="pageSize" :total="total" @update:modelValue="updatePage"
+          @update:pageSize="updatePageSize" v-if="hasMonitoringPolicies">
         </FeatherPagination>
       </div>
     </TableCard>
@@ -189,7 +151,7 @@ const getPageObjects = (array: Array<any>, pageNumber: number, pageSize: number)
 }
 const onSelectPolicy = (id: string) => {
   const selectedPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(id))
-  
+
   if (selectedPolicy) {
     store.displayPolicyForm(selectedPolicy)
     emit('policySelected', Number(selectedPolicy.id))
@@ -200,8 +162,8 @@ const onDownload = () => {
   console.log('download clicked')
 }
 
-const onRefresh = () => {
-  store.getMonitoringPolicies()
+const onRefresh = async () => {
+  await store.getMonitoringPolicies()
 }
 const updatePage = (v: number) => {
   if (hasMonitoringPolicies.value) {
@@ -244,16 +206,19 @@ const updatePageSize = (v: number) => {
         .title-time {
           display: flex;
           flex-direction: column;
+
           .title {
             @include typography.headline3;
             margin-left: 20px;
             margin-top: 2px;
           }
         }
+
         .btns {
           margin-right: 15px;
+
           :deep(:focus) {
-              outline: none;
+            outline: none;
           }
         }
       }
@@ -263,24 +228,30 @@ const updatePageSize = (v: number) => {
   .container {
     display: block;
     overflow-x: auto;
+
     table {
       width: 100%;
       @include table.table;
+
       .active {
         background-color: var(variables.$shade-4)
       }
+
       thead {
         background: var(variables.$background);
         text-transform: uppercase;
       }
-      .action{
+
+      .action {
         display: flex;
         justify-content: flex-start;
         align-items: center;
         gap: 20px;
       }
+
       td {
         white-space: nowrap;
+
         div {
           border-radius: 5px;
         }
@@ -289,7 +260,8 @@ const updatePageSize = (v: number) => {
       tr.policies-table-row {
         cursor: pointer;
         transition: background-color 0.3s ease;
-        &:hover{
+
+        &:hover {
           background-color: var(variables.$shade-4)
         }
       }
@@ -300,6 +272,7 @@ const updatePageSize = (v: number) => {
 
 .check-circle {
   margin-top: 5px;
+
   .enabled-icon {
     width: 1.5rem;
     height: 1.5rem;

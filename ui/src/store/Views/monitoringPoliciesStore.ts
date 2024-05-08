@@ -26,15 +26,16 @@ const { showSnackbar } = useSnackbar()
 type TState = {
   selectedPolicy?: Policy
   selectedRule?: PolicyRule
-  monitoringPolicies: MonitorPolicy[],
+  monitoringPolicies: MonitorPolicy[]
   numOfAlertsForPolicy: number
   numOfAlertsForRule: number
-  validationErrors: any,
+  validationErrors: any
   alertRuleDrawer: boolean
-  vendors?: string[],
+  vendors?: string[]
   formattedVendors?: string[]
-  eventDefinitions?: AlertEventDefinition[],
-  affectedNodesByMonitoringPolicyCount?: Map<Number, Number>
+  eventDefinitions?: AlertEventDefinition[]
+  affectedNodesByMonitoringPolicyCount?: Map<number, number>
+  cachedEventDefinitions?: Map<string, Array<AlertEventDefinition>>
 }
 
 const defaultPolicy: Policy = {
@@ -45,16 +46,6 @@ const defaultPolicy: Policy = {
   notifyByWebhooks: false,
   tags: ['default'],
   rules: []
-}
-
-const defaultRule: PolicyRule = {
-    id: 0,
-    name: '',
-    componentType: ManagedObjectType.Node,
-    detectionMethod: DetectionMethod.Event,
-    eventType: EventType.SnmpTrap,
-    alertConditions: [],
-    vendor: 'generic'
 }
 
 function getDefaultThresholdCondition(): ThresholdCondition {
@@ -90,7 +81,7 @@ async function getDefaultEventCondition(): Promise<AlertCondition> {
   }
 }
 
-async function getDefaultRule(): Promise<PolicyRule> {
+export async function getDefaultRule(): Promise<PolicyRule> {
   return {
     id: new Date().getTime(),
     name: '',
@@ -102,10 +93,10 @@ async function getDefaultRule(): Promise<PolicyRule> {
   }
 }
 
-export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore', {
-  state: (): TState =>  ({
-    selectedPolicy: cloneDeep(defaultPolicy),
-    selectedRule: cloneDeep(defaultRule),
+export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore', {
+  state: (): TState => ({
+    selectedPolicy: undefined,
+    selectedRule: undefined,
     monitoringPolicies: [],
     numOfAlertsForPolicy: 0,
     numOfAlertsForRule: 0,
@@ -114,7 +105,8 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
     vendors: [] as string[],
     formattedVendors: [] as string[],
     eventDefinitions: [] as AlertEventDefinition[],
-    affectedNodesByMonitoringPolicyCount: new Map()
+    affectedNodesByMonitoringPolicyCount: new Map(),
+    cachedEventDefinitions: new Map()
   }),
   actions: {
     // used for initial population of policies
@@ -130,8 +122,8 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
           this.affectedNodesByMonitoringPolicyCount?.set(policy.id, count ?? 0)
         })
       })
-    
-      this.selectedRule = cloneDeep(defaultRule)
+
+      this.selectedRule = undefined
       queries.listVendors().then((res) => {
         this.vendors = res
         this.formatVendors(res?.length ? res : [])
@@ -140,20 +132,21 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
       //  Then this component can just display the status.
       //  Once back end adds ability to enable/disable, then we will add another issue to implement it here and elsewhere.
 
-      this.monitoringPolicies.forEach(p => {
+      this.monitoringPolicies.forEach((p) => {
         p.enabled = true
       })
     },
     displayPolicyForm(policy?: Policy) {
       this.selectedPolicy = policy ? cloneDeep(policy) : cloneDeep(defaultPolicy)
-      this.selectedRule = cloneDeep(defaultRule)
     },
     clearSelectedPolicy() {
-      this.selectedPolicy = cloneDeep(defaultPolicy)
-      this.selectedRule = cloneDeep(defaultRule)
+      this.selectedPolicy = undefined
     },
-    displayRuleForm(rule?: PolicyRule) {
-      this.selectedRule = rule ? cloneDeep(rule) : cloneDeep(defaultRule)
+    clearSelectedRule() {
+      this.selectedRule = undefined
+    },
+    async displayRuleForm(rule?: PolicyRule) {
+      this.selectedRule = rule ? cloneDeep(rule) : cloneDeep(await getDefaultRule())
     },
     async resetDefaultConditions() {
       if (!this.selectedRule) {
@@ -185,7 +178,8 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.selectedRule!.alertConditions?.map((currentCondition: AlertCondition) => {
         if (currentCondition.id === id) {
-          return { ...currentCondition, ...condition }
+          // this.refactorClearEvent(currentCondition.triggerEvent ?? {})
+          return { ...currentCondition, ...condition } as AlertCondition
         }
         return
       })
@@ -201,12 +195,14 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
 
       let isValid = true
       const name = (rule.name?.trim() || '').toLowerCase()
-
+      const vendor = this.vendors?.find((x) => x.toLowerCase().indexOf(rule.vendor?.trim().toLowerCase() || '') > -1)
       if (!name) {
         this.validationErrors.ruleName = 'Rule name cannot be blank.'
         isValid = false
+      } else if (!vendor) {
+        this.validationErrors.ruleVendor = 'Vendor cannot be blank.'
       } else {
-        if (this.selectedPolicy?.rules?.some(r => (r.id !== rule.id) && (name === r.name?.toLowerCase()))) {
+        if (this.selectedPolicy?.rules?.some((r) => r.id !== rule.id && name === r.name?.toLowerCase())) {
           this.validationErrors.ruleName = 'Duplicate rule name.'
           isValid = false
         }
@@ -224,21 +220,24 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
         this.validationErrors.policyName = 'Policy name cannot be blank.'
         isValid = false
       } else {
-        if (this.monitoringPolicies.some(p => (p.id !== policy.id) && (name === p.name?.toLowerCase()))) {
+        if (this.monitoringPolicies.some((p) => p.id !== policy.id && name === p.name?.toLowerCase())) {
           this.validationErrors.policyName = 'Duplicate policy name.'
           isValid = false
         }
       }
-
       return isValid
     },
     async saveRule() {
       if (this.selectedRule && !this.validateRule(this.selectedRule)) {
+        showSnackbar({
+          msg: this.validationErrors.ruleName,
+          error: true
+        })
         return
       }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const existingItemIndex = this.selectedPolicy!.rules?.findIndex(rule => rule.id === this.selectedRule!.id) ?? -1
+      const existingItemIndex = this.selectedPolicy!.rules?.findIndex((rule) => rule.id === this.selectedRule!.id) ?? -1
 
       if (existingItemIndex !== -1) {
         // replace existing rule
@@ -258,6 +257,12 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
       const { addMonitoringPolicy, error } = useMonitoringPoliciesMutations()
 
       if (!this.selectedPolicy || !this.validateMonitoringPolicy(this.selectedPolicy)) {
+        if (this.validationErrors.policyName) {
+          showSnackbar({
+            msg: this.validationErrors.policyName,
+            error: true
+          })
+        }
         return false
       }
 
@@ -268,6 +273,8 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
       policy.rules = policy.rules?.map((rule) => {
         rule.alertConditions = rule.alertConditions?.map((condition) => {
           if (!policy.id) delete condition.id // don't send generated ids
+          delete condition.alertMessage
+          delete condition.clearEvent
           return condition
         })
         if (!policy.id) {
@@ -277,21 +284,22 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
         if (policy.isDefault) {
           delete policy.isDefault // for updating default (tags only)
         }
+        delete rule.vendor
 
         return rule
       })
+      delete policy.enabled
 
       if (isCopy) {
         delete policy.isDefault
-        delete policy.enabled
         delete policy.id // Clear the ID to create a new policy using copy
       }
 
       await addMonitoringPolicy({ policy })
 
       if (!error.value) {
-        this.selectedPolicy = cloneDeep(defaultPolicy)
-        this.selectedRule = cloneDeep(defaultRule)
+        this.selectedPolicy = undefined
+        this.selectedRule = undefined
         this.validationErrors = {}
         this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
@@ -322,14 +330,14 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
       await deleteRule({ id: this.selectedRule?.id })
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const ruleIndex = this.selectedPolicy!.rules?.findIndex(rule => rule.id === this.selectedRule!.id) ?? -1
+      const ruleIndex = this.selectedPolicy!.rules?.findIndex((rule) => rule.id === this.selectedRule!.id) ?? -1
 
       if (ruleIndex !== -1) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.selectedPolicy!.rules?.splice(ruleIndex, 1)
       }
 
-      this.getMonitoringPolicies()
+      await this.getMonitoringPolicies()
       this.selectedRule = undefined
     },
     async countAlertsForRule() {
@@ -340,8 +348,9 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
     async removePolicy() {
       const { deleteMonitoringPolicy } = useMonitoringPoliciesMutations()
       await deleteMonitoringPolicy({ id: this.selectedPolicy?.id })
+      this.monitoringPolicies = []
       this.getMonitoringPolicies()
-      this.selectedRule = cloneDeep(defaultRule)
+      this.selectedRule = undefined
       this.selectedPolicy = cloneDeep(defaultPolicy)
       this.clearSelectedPolicy()
     },
@@ -350,43 +359,57 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
       const count = await getAlertCountByPolicyId(this.selectedPolicy?.id)
       this.numOfAlertsForPolicy = count
     },
-    async openAlertRuleDrawer(rule?: PolicyRule) {
-      if (rule !==undefined) {
-        await this.displayRuleForm(rule)
+    openAlertRuleDrawer(rule?: PolicyRule) {
+      this.displayRuleForm(rule)
       this.alertRuleDrawer = true
-      } else {
-        this.alertRuleDrawer = false
-      }
-      
     },
     async closeAlertRuleDrawer() {
       this.alertRuleDrawer = false
-      this.selectedRule = cloneDeep(defaultRule)
+      this.selectedRule = undefined
       this.validationErrors = {}
     },
     async formatVendors(vendors: string[]) {
       this.formattedVendors = vendors.map((vendor) => {
-        return vendor.charAt(0).toUpperCase() + vendor.slice(1);
+        return vendor.charAt(0).toUpperCase() + vendor.slice(1)
       })
+    },
+    getClearEventName(key: string) {
+      if (key) {
+        const splitsOnColon = key.split(':')
+        const filteredUei = splitsOnColon.find((item) => item.startsWith('uei')) || ''
+        if (filteredUei) {
+          const splitsOnSlash = filteredUei.split('/')
+          return splitsOnSlash.pop()
+        }
+      }
+      return ''
     },
     async listAlertEventDefinitionsByVendor() {
       const queries = useAlertEventDefinitionQueries()
-      if ((this.selectedRule?.eventType === EventType.SnmpTrap) && this.selectedRule?.vendor && this.vendors) {
-        const vendor = this.vendors.find((x) => x.toLowerCase().indexOf(this.selectedRule?.vendor!.toLowerCase()!) > -1)
-        const request: EventDefsByVendorRequest = {
-          eventType: this.selectedRule.eventType,
-          vendor: vendor!
+      if (this.selectedRule?.eventType === EventType.SnmpTrap && this.selectedRule?.vendor && this.vendors) {
+        if (this.cachedEventDefinitions?.has(this.selectedRule.vendor)) {
+          this.eventDefinitions = this.cachedEventDefinitions.get(this.selectedRule.vendor)
+        } else {
+          const selectedVendor = this.selectedRule.vendor
+          const filteredVendor = this.vendors.find((x) => x.toLowerCase().indexOf(selectedVendor) > -1)
+          if (filteredVendor) {
+            const request: EventDefsByVendorRequest = {
+              eventType: this.selectedRule.eventType,
+              vendor: filteredVendor
+            }
+            const alertDefs = await queries.listAlertEventDefinitionsByVendor(request)
+            this.cachedEventDefinitions?.set(filteredVendor, alertDefs ?? [])
+            this.eventDefinitions = await queries.listAlertEventDefinitionsByVendor(request)
+          }
         }
-        this.eventDefinitions = await queries.listAlertEventDefinitionsByVendor(request)
       }
       if (this.selectedRule?.eventType === EventType.SystemEvent) {
         const definitions = await queries.listAlertEventDefinitions(EventType.SnmpTrap)
         this.eventDefinitions = definitions.value?.listAlertEventDefinitions
       }
-      if (this.eventDefinitions?.length && this.eventDefinitions?.length > 0) {
+      if (this.eventDefinitions && this.eventDefinitions.length > 0) {
         this.selectedRule?.alertConditions?.map((item) => {
           item.triggerEvent = this.eventDefinitions?.[0]
-          item.clearEvent = this.eventDefinitions?.[0]
           return item
         })
       } else {
@@ -396,6 +419,6 @@ export const  useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore'
           return item
         })
       }
-    },
+    }
   }
 })

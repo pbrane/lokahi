@@ -8,15 +8,15 @@
 </template>
 
 <script setup lang="ts">
-import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { getDefaultRule, useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 
 const title = ref('Specify Alert Conditions')
 const subTitle = ref('Alert conditions are an additional set of parameters specific to the chosen detection method. Alert condition help to  determine what alerts will be triggered and their assigned severity.')
 
-onMounted(() => {
-  monitoringPoliciesStore.openAlertRuleDrawer(undefined)
+onMounted(async () => {
+  monitoringPoliciesStore.displayRuleForm(await getDefaultRule())
 })
 </script>
 

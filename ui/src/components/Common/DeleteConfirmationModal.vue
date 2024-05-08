@@ -59,12 +59,10 @@ const props = defineProps<{
 const deleteAndCloseModal = async () => {
   await props.deleteHandler()
   props.closeModal()
-  store.clearSelectedPolicy()
 }
 
 const closeModal = () => {
   props.closeModal()
-  store.clearSelectedPolicy()
 }
 </script>
 <style lang="scss">

@@ -61,6 +61,7 @@ export type AlertCondition = {
   overtimeUnit?: Maybe<Scalars['String']>;
   severity?: Maybe<Scalars['String']>;
   triggerEvent?: Maybe<AlertEventDefinition>;
+  alertMessage?: Maybe<Scalars['String']>;
 }
 
 export type AlertConditionInput = {
@@ -71,6 +72,7 @@ export type AlertConditionInput = {
   overtimeUnit?: InputMaybe<Scalars['String']>;
   severity?: InputMaybe<Scalars['String']>;
   triggerEvent?: InputMaybe<AlertEventDefinitionInput>;
+  alertMessage?: Maybe<Scalars['String']>;
 }
 
 export type AlertCount = {
@@ -338,6 +340,7 @@ export type MonitorPolicyInput = {
   notifyInstruction?: InputMaybe<Scalars['String']>;
   rules?: InputMaybe<Array<InputMaybe<PolicyRuleInput>>>;
   tags?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  enabled?: Maybe<Scalars['Boolean']>;
 }
 
 export type MonitoringLocation = {
@@ -1503,11 +1506,11 @@ export type NodesForMapQueryVariables = Exact<{ [key: string]: never; }>
 
 export type NodesForMapQuery = { __typename?: 'Query', findAllNodes?: Array<{ __typename?: 'Node', id: any, nodeLabel?: string, location?: { __typename?: 'MonitoringLocation', latitude?: number, longitude?: number, location?: string } }> }
 
-export type MonitoringPolicyPartsFragment = { __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: ManagedObjectType, detectionMethod?: DetectionMethod, eventType?: EventType, thresholdMetricName?: string, alertConditions?: Array<{ __typename?: 'AlertCondition', id?: any, count?: number, overtime?: number, overtimeUnit?: string, severity?: string, clearEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, triggerEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType } }>, vendor?: string }> }
+export type MonitoringPolicyPartsFragment = { __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: ManagedObjectType, detectionMethod?: DetectionMethod, eventType?: EventType, thresholdMetricName?: string, alertConditions?: Array<{ __typename?: 'AlertCondition', id?: any, count?: number, overtime?: number, overtimeUnit?: string, severity?: string, clearEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, triggerEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, alertMessage?: string }>, vendor?: string }> }
 
 export type ListMonitoryPoliciesQueryVariables = Exact<{ [key: string]: never; }>
 
-export type ListMonitoryPoliciesQuery = { __typename?: 'Query', listMonitoryPolicies?: Array<{ __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: ManagedObjectType, detectionMethod?: DetectionMethod, eventType?: EventType, thresholdMetricName?: string, alertConditions?: Array<{ __typename?: 'AlertCondition', id?: any, count?: number, overtime?: number, overtimeUnit?: string, severity?: string, clearEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, triggerEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType } }>, vendor?: string }> }>, defaultPolicy?: { __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: ManagedObjectType, detectionMethod?: DetectionMethod, eventType?: EventType, thresholdMetricName?: string, alertConditions?: Array<{ __typename?: 'AlertCondition', id?: any, count?: number, overtime?: number, overtimeUnit?: string, severity?: string, clearEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, triggerEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType } }>, vendor?: string }> } }
+export type ListMonitoryPoliciesQuery = { __typename?: 'Query', listMonitoryPolicies?: Array<{ __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: ManagedObjectType, detectionMethod?: DetectionMethod, eventType?: EventType, thresholdMetricName?: string, alertConditions?: Array<{ __typename?: 'AlertCondition', id?: any, count?: number, overtime?: number, overtimeUnit?: string, severity?: string, clearEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, triggerEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, alertMessage?: string }>, vendor?: string }> }>, defaultPolicy?: { __typename?: 'MonitorPolicy', id?: any, memo?: string, name?: string, notifyByEmail?: boolean, notifyByPagerDuty?: boolean, notifyByWebhooks?: boolean, tags?: Array<string>, rules?: Array<{ __typename?: 'PolicyRule', id?: any, name?: string, componentType?: ManagedObjectType, detectionMethod?: DetectionMethod, eventType?: EventType, thresholdMetricName?: string, alertConditions?: Array<{ __typename?: 'AlertCondition', id?: any, count?: number, overtime?: number, overtimeUnit?: string, severity?: string, clearEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, triggerEvent?: { __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType }, alertMessage?: string }>, vendor?: string }> } }
 
 export type CountAlertByPolicyIdQueryVariables = Exact<{
   id: Scalars['Long'];

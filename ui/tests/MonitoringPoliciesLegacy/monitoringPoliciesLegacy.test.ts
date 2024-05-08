@@ -21,7 +21,6 @@ const testingPayload: MonitorPolicy = {
       componentType: ManagedObjectType.Node,
       detectionMethod: DetectionMethod.Event,
       eventType: EventType.SnmpTrap,
-      vendor: 'generic',
       alertConditions: [
         {
           count: 1,
@@ -100,7 +99,7 @@ describe('Monitoring Policies Legacy', () => {
     const store = useMonitoringPoliciesStore()
     const newPolicyBtn = wrapper.get('[data-test="new-policy-btn"]')
 
-    expect(store.selectedPolicy).toStrictEqual(defaultPolicy)
+    expect(store.selectedPolicy).toBeUndefined()
     await newPolicyBtn.trigger('click')
     expect(store.displayPolicyForm).toHaveBeenCalledTimes(1)
     expect(store.selectedPolicy).toBeTruthy()
@@ -110,7 +109,7 @@ describe('Monitoring Policies Legacy', () => {
     const store = useMonitoringPoliciesStore()
     const newRuleBtn = wrapper.get('[data-test="new-rule-btn"]')
 
-    expect(store.selectedRule).toStrictEqual(defaultRule)
+    expect(store.selectedRule).toBeUndefined()
     await newRuleBtn.trigger('click')
     expect(store.displayRuleForm).toHaveBeenCalledTimes(1)
     // FIXME: This test broke after displayRuleForm was made async
@@ -137,7 +136,7 @@ describe('Monitoring Policies Legacy', () => {
     const savePolicyBtn = wrapper.get('[data-test="save-policy-btn"]')
 
     await wrapper.get('[data-test="policy-name-input"] .feather-input').setValue('Policy1')
-    vi.spyOn(store,'savePolicy')
+    vi.spyOn(store, 'savePolicy')
     await savePolicyBtn.trigger('click')
 
     expect(store.savePolicy).toHaveBeenCalledTimes(1)

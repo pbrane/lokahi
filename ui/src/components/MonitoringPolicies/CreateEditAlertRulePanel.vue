@@ -1,60 +1,49 @@
 <template>
-      <div :class="['main-alert', {'main':!title}]">
-        <div :class="['header', {'main-heading':!title}]">
-          <h2>{{ title || 'Create New Alert Rule' }}</h2>
-          <p> {{ subTitle || 'A rule is a condition or set of conditions that triggers an alert.' }}</p>
-        </div>
-        <div class="content">
-          <div class="basic-information">
-            <h3>Basic Information</h3>
-            <p>Create a clear and descriptive name for the rule to easily identify its purpose and functionality. Then select a event type.</p>
-          </div>
-
-          <div class="name">
-            <FeatherInput
-              v-model.trim="monitoringPoliciesStore.selectedRule!.name"
-              label="Name"
-              v-focus
-              data-test="rule-name-input"
-              :error="monitoringPoliciesStore.validationErrors.ruleName"
-              :readonly="monitoringPoliciesStore.selectedPolicy?.isDefault"
-            />
-          </div>
-
-          <div class="event-type">
-            <div class="subtitle">Select an Event Type</div>
-            <BasicSelect
-              :list="eventTypeOptions"
-              @item-selected="selectEventType"
-              :selectedId="monitoringPoliciesStore.selectedRule?.eventType"
-              :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
-            >
-            </BasicSelect>
-          </div>
-          <SystemEventAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SystemEvent)" />
-          <SNMPTrapAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SnmpTrap)"/>
-          <SyslogAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.Syslog)" />
-          <MetricThresholdAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.MetricThreshold)" />
-         </div>
-        <div class="footer">
-          <div v-if="!title">
-            <FeatherButton
-            secondary
-            @click="monitoringPoliciesStore.closeAlertRuleDrawer"
-          >
-            Cancel
-          </FeatherButton>
-          <ButtonWithSpinner
-            primary
-            @click="monitoringPoliciesStore.saveRule"
-            :disabled="disableSaveRuleBtn"
-          >
-            Save
-          </ButtonWithSpinner>
-          </div>
-          <FeatherButton v-else class="feather-button" @click="monitoringPoliciesStore.saveRule">SAVE ALERT RULE</FeatherButton>
-        </div>
+  <div v-if="monitoringPoliciesStore.selectedRule && monitoringPoliciesStore.selectedPolicy" :class="['main-alert', { 'main': !title }]">
+    <div :class="['header', { 'main-heading': !title }]">
+      <h2>{{ title || 'Create New Alert Rule' }}</h2>
+      <p> {{ subTitle || 'A rule is a condition or set of conditions that triggers an alert.' }}</p>
+    </div>
+    <div class="content">
+      <div class="basic-information">
+        <h3>Basic Information</h3>
+        <p>Create a clear and descriptive name for the rule to easily identify its purpose and functionality. Then
+          select a event type.</p>
       </div>
+
+      <div class="name">
+        <FeatherInput v-model.trim="monitoringPoliciesStore.selectedRule.name" label="Name"
+          data-test="rule-name-input" :error="monitoringPoliciesStore.validationErrors.ruleName"
+          :readonly="monitoringPoliciesStore.selectedPolicy?.isDefault" />
+      </div>
+
+      <div class="event-type">
+        <div class="subtitle">Select an Event Type</div>
+        <BasicSelect :list="eventTypeOptions" @item-selected="selectEventType"
+          :selectedId="monitoringPoliciesStore.selectedRule?.eventType"
+          :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault">
+        </BasicSelect>
+      </div>
+      <SystemEventAlertConditions
+        v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SystemEvent)" />
+      <SNMPTrapAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SnmpTrap)" />
+      <SyslogAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.Syslog)" />
+      <MetricThresholdAlertConditions
+        v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.MetricThreshold)" />
+    </div>
+    <div class="footer">
+      <div v-if="!title">
+        <FeatherButton secondary @click="monitoringPoliciesStore.closeAlertRuleDrawer">
+          Cancel
+        </FeatherButton>
+        <ButtonWithSpinner primary @click="monitoringPoliciesStore.saveRule" :disabled="disableSaveRuleBtn">
+          Save
+        </ButtonWithSpinner>
+      </div>
+      <FeatherButton v-else class="feather-button" @click="monitoringPoliciesStore.saveRule">SAVE ALERT RULE
+      </FeatherButton>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -77,7 +66,7 @@ const eventTypeOptions = [
 ]
 
 const disableSaveRuleBtn = computed(
-  () => monitoringPoliciesStore.selectedPolicy?.isDefault || !monitoringPoliciesStore.selectedRule?.name || !monitoringPoliciesStore.selectedRule?.alertConditions?.length
+  () => monitoringPoliciesStore.selectedPolicy?.isDefault || !monitoringPoliciesStore.selectedRule?.name
 )
 
 const selectEventType = (eventType: EventType) => {
@@ -93,28 +82,9 @@ const selectEventType = (eventType: EventType) => {
 @use '@featherds/table/scss/table';
 @use '@/styles/vars.scss';
 
-.main {
-  position: absolute;
-  overflow-y: scroll;
-  height: 100% !important;
-  &::-webkit-scrollbar {
-    width: 10px;
-  }
-
- &::-webkit-scrollbar-track {
-    background: #E1E1E3;
-    border-radius: 4px;
-    box-shadow: inset 0 0 6px var(variables.$background);
-}
-
-&::-webkit-scrollbar-thumb {
-    background: var(variables.$background);
-    border-radius: 4px;
-  }
-}
-
 .main-alert {
   height: auto;
+
   .main-heading {
     border-bottom: 1px solid #E1E1E3;
   }
@@ -126,15 +96,18 @@ const selectEventType = (eventType: EventType) => {
 
   .content {
     padding: 10px 20px 20px 20px;
+
     .name {
       :deep(.label-border) {
-          min-width: 50px !important;
-        }
+        min-width: 50px !important;
+      }
     }
+
     .subtitle {
       @include typography.subtitle1;
       margin-bottom: 5px;
     }
+
     .basic-information {
       margin: 8px 0px;
     }
@@ -159,4 +132,3 @@ const selectEventType = (eventType: EventType) => {
   }
 }
 </style>
-
