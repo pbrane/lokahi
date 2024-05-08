@@ -39,6 +39,7 @@ import org.opennms.horizon.events.persistence.model.EventParameter;
 import org.opennms.horizon.events.persistence.model.EventParameters;
 import org.opennms.horizon.events.persistence.repository.EventRepository;
 import org.opennms.horizon.events.proto.EventInfo;
+import org.opennms.horizon.events.proto.Severity;
 import org.opennms.horizon.events.proto.SnmpInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,6 +50,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @SpringBootTest
 class EventServiceIntTest {
     private static final String TEST_TENANT_ID = "tenant-id";
+    private static final String TEST_LABEL_NAME = "test_label";
+
+    private static final Severity TEST_SEVERITY = Severity.WARNING;
+
     private static final String TEST_UEI = "uei";
     private static final String TEST_IP_ADDRESS = "192.168.1.1";
     private static final String TEST_NAME = "ifIndex";
@@ -147,6 +152,8 @@ class EventServiceIntTest {
         event.setProducedTime(LocalDateTime.now());
         event.setNodeId(nodeId);
         event.setIpAddress(InetAddress.getByName(TEST_IP_ADDRESS));
+        event.setEventLabel(TEST_LABEL_NAME);
+        event.setSeverity(TEST_SEVERITY);
 
         EventParameters parms = new EventParameters();
         EventParameter param = new EventParameter();
@@ -176,6 +183,9 @@ class EventServiceIntTest {
         assertEquals(TEST_UEI, event.getUei());
         assertNotEquals(0, event.getProducedTimeMs());
         assertEquals(TEST_IP_ADDRESS, event.getIpAddress());
+
+        assertEquals(TEST_LABEL_NAME, event.getEventLabel());
+        assertEquals(TEST_SEVERITY, event.getSeverity());
 
         assertNotNull(event.getParametersList());
         event.getParametersList().forEach(parameter -> {

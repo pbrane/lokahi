@@ -268,6 +268,12 @@ public class Event implements Serializable {
     @Valid
     private AlertData _alertData;
 
+    @XmlElement(name = "severity", required = true)
+    private String severity;
+
+    @XmlElement(name = "event-label", required = true)
+    private String eventLabel;
+
     // ----------------/
     // - Constructors -/
     // ----------------/
@@ -1775,6 +1781,22 @@ public class Event implements Serializable {
         _uuid = uuid;
     }
 
+    public String getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(String severity) {
+        this.severity = severity;
+    }
+
+    public String getEventLabel() {
+        return eventLabel;
+    }
+
+    public void setEventLabel(String eventLabel) {
+        this.eventLabel = eventLabel;
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(", ", Event.class.getSimpleName() + "[", "]")
@@ -1811,6 +1833,8 @@ public class Event implements Serializable {
                 .add("ifAlias='" + _ifAlias + "'")
                 .add("mouseovertext='" + _mouseovertext + "'")
                 .add("alertData=" + _alertData)
+                .add("eventLabel=" + eventLabel)
+                .add("severity=" + severity)
                 .toString();
     }
 

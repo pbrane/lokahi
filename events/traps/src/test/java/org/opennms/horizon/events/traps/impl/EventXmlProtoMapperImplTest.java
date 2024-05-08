@@ -46,7 +46,8 @@ public class EventXmlProtoMapperImplTest {
         testEvent.setNodeid(131313L);
         testEvent.setDistPoller("x-dist-poller-x");
         testEvent.setInterface("1.2.3.4");
-
+        testEvent.setEventLabel("x-label-x");
+        testEvent.setSeverity("Normal");
         Snmp testSnmp = new Snmp();
         testSnmp.setId("x-snmp-id-x");
         testSnmp.setVersion("x-version-x");
