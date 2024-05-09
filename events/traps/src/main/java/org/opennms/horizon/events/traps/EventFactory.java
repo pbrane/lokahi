@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import org.opennms.horizon.events.api.EventBuilder;
 import org.opennms.horizon.events.api.EventConfDao;
+import org.opennms.horizon.events.api.Severity;
 import org.opennms.horizon.events.conf.xml.Event;
 import org.opennms.horizon.events.conf.xml.LogDestType;
 import org.opennms.horizon.events.conf.xml.Logmsg;
@@ -154,6 +155,11 @@ public class EventFactory {
                 logMsg.setContent(econfLogMsg.getContent());
                 event.setLogmsg(logMsg);
             }
+            event.setEventLabel(econf.getEventLabel());
+            event.setSeverity(
+                    econf.getSeverity() != null && !econf.getSeverity().isEmpty()
+                            ? econf.getSeverity()
+                            : Severity.NORMAL.name());
         }
 
         if (event.getUei() == null) {

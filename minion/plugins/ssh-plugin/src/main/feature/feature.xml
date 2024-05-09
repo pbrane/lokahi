@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<features name="minion-plugin-ssh-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.6.0">
+
+    <feature name="ssh-plugins" version="${project.version}">
+        <feature>plugins-api</feature>
+        <bundle>mvn:org.opennms.lokahi.minion/ssh-plugin/${project.version}</bundle>
+    </feature>
+
+</features>

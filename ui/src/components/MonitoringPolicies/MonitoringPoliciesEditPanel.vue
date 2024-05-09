@@ -41,6 +41,7 @@ const handleNext = () => {
 
 const handleCancel = () => {
   store.clearSelectedPolicy()
+  store.clearSelectedRule()
   router.push('/monitoring-policies-new/')
 }
 

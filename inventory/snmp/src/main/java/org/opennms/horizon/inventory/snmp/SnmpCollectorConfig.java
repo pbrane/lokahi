@@ -96,7 +96,6 @@ public class SnmpCollectorConfig {
         return new SnmpCollectorConfig(configurations);
     }
 
-    // TODO LOK-2403: factor in ifType
     public Stream<Part> findMatchingParts(final String systemObjId) {
         if (systemObjId == null) {
             return Stream.empty();

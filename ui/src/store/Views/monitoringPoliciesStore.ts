@@ -15,7 +15,8 @@ import {
   PolicyRule,
   Severity,
   TimeRangeUnit,
-  AlertEventDefinition
+  AlertEventDefinition,
+  CountAffectedNodesByMonitoringPolicyVariables
 } from '@/types/graphql'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
 import router from '@/router'
@@ -25,14 +26,16 @@ const { showSnackbar } = useSnackbar()
 type TState = {
   selectedPolicy?: Policy
   selectedRule?: PolicyRule
-  monitoringPolicies: MonitorPolicy[],
+  monitoringPolicies: MonitorPolicy[]
   numOfAlertsForPolicy: number
   numOfAlertsForRule: number
-  validationErrors: any,
+  validationErrors: any
   alertRuleDrawer: boolean
-  vendors?: string[],
+  vendors?: string[]
   formattedVendors?: string[]
   eventDefinitions?: AlertEventDefinition[]
+  affectedNodesByMonitoringPolicyCount?: Map<number, number>
+  cachedEventDefinitions?: Map<string, Array<AlertEventDefinition>>
 }
 
 const defaultPolicy: Policy = {
@@ -78,7 +81,7 @@ async function getDefaultEventCondition(): Promise<AlertCondition> {
   }
 }
 
-async function getDefaultRule(): Promise<PolicyRule> {
+export async function getDefaultRule(): Promise<PolicyRule> {
   return {
     id: new Date().getTime(),
     name: '',
@@ -101,35 +104,50 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     alertRuleDrawer: false,
     vendors: [] as string[],
     formattedVendors: [] as string[],
-    eventDefinitions: [] as AlertEventDefinition[]
+    eventDefinitions: [] as AlertEventDefinition[],
+    affectedNodesByMonitoringPolicyCount: new Map(),
+    cachedEventDefinitions: new Map()
   }),
   actions: {
     // used for initial population of policies
     async getMonitoringPolicies() {
       const queries = useMonitoringPoliciesQueries()
-      await queries.listMonitoringPolicies()
-      queries.listVendors().then((res) => {
-        this.vendors = res
-        this.formatVendors(res?.length ? res : [])
+      await queries.listMonitoringPolicies().then(() => {
+        this.monitoringPolicies = queries.monitoringPolicies
+        queries.monitoringPolicies.forEach(async (policy) => {
+          const request: CountAffectedNodesByMonitoringPolicyVariables = {
+            id: policy.id
+          }
+          const count = await queries.getCountForAffectedNodeByMonitoringPolicy(request)
+          this.affectedNodesByMonitoringPolicyCount?.set(policy.id, count ?? 0)
+        })
       })
-      this.monitoringPolicies = queries.monitoringPolicies
       // we are setting this to true until the back end supports enable/disable.
       //  Then this component can just display the status.
       //  Once back end adds ability to enable/disable, then we will add another issue to implement it here and elsewhere.
 
-      this.monitoringPolicies.forEach(p => {
+      this.monitoringPolicies.forEach((p) => {
         p.enabled = true
+      })
+    },
+    loadVendors() {
+      const queries = useMonitoringPoliciesQueries()
+      queries.listVendors().then((res) => {
+        this.vendors = res
+        this.formatVendors(res?.length ? res : [])
       })
     },
     displayPolicyForm(policy?: Policy) {
       this.selectedPolicy = policy ? cloneDeep(policy) : cloneDeep(defaultPolicy)
-      this.selectedRule = undefined
     },
     clearSelectedPolicy() {
       this.selectedPolicy = undefined
     },
+    clearSelectedRule() {
+      this.selectedRule = undefined
+    },
     async displayRuleForm(rule?: PolicyRule) {
-      this.selectedRule = rule ? cloneDeep(rule) : await getDefaultRule()
+      this.selectedRule = rule ? cloneDeep(rule) : cloneDeep(await getDefaultRule())
     },
     async resetDefaultConditions() {
       if (!this.selectedRule) {
@@ -161,7 +179,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.selectedRule!.alertConditions?.map((currentCondition: AlertCondition) => {
         if (currentCondition.id === id) {
-          return { ...currentCondition, ...condition }
+          // this.refactorClearEvent(currentCondition.triggerEvent ?? {})
+          return { ...currentCondition, ...condition } as AlertCondition
         }
         return
       })
@@ -177,12 +196,14 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
 
       let isValid = true
       const name = (rule.name?.trim() || '').toLowerCase()
-
+      const vendor = this.vendors?.find((x) => x.toLowerCase().indexOf(rule.vendor?.trim().toLowerCase() || '') > -1)
       if (!name) {
         this.validationErrors.ruleName = 'Rule name cannot be blank.'
         isValid = false
+      } else if (!vendor) {
+        this.validationErrors.ruleVendor = 'Vendor cannot be blank.'
       } else {
-        if (this.selectedPolicy?.rules?.some(r => (r.id !== rule.id) && (name === r.name?.toLowerCase()))) {
+        if (this.selectedPolicy?.rules?.some((r) => r.id !== rule.id && name === r.name?.toLowerCase())) {
           this.validationErrors.ruleName = 'Duplicate rule name.'
           isValid = false
         }
@@ -200,21 +221,24 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.validationErrors.policyName = 'Policy name cannot be blank.'
         isValid = false
       } else {
-        if (this.monitoringPolicies.some(p => (p.id !== policy.id) && (name === p.name?.toLowerCase()))) {
+        if (this.monitoringPolicies.some((p) => p.id !== policy.id && name === p.name?.toLowerCase())) {
           this.validationErrors.policyName = 'Duplicate policy name.'
           isValid = false
         }
       }
-
       return isValid
     },
     async saveRule() {
       if (this.selectedRule && !this.validateRule(this.selectedRule)) {
+        showSnackbar({
+          msg: this.validationErrors.ruleName,
+          error: true
+        })
         return
       }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const existingItemIndex = this.selectedPolicy!.rules?.findIndex(rule => rule.id === this.selectedRule!.id) ?? -1
+      const existingItemIndex = this.selectedPolicy!.rules?.findIndex((rule) => rule.id === this.selectedRule!.id) ?? -1
 
       if (existingItemIndex !== -1) {
         // replace existing rule
@@ -234,6 +258,12 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       const { addMonitoringPolicy, error } = useMonitoringPoliciesMutations()
 
       if (!this.selectedPolicy || !this.validateMonitoringPolicy(this.selectedPolicy)) {
+        if (this.validationErrors.policyName) {
+          showSnackbar({
+            msg: this.validationErrors.policyName,
+            error: true
+          })
+        }
         return false
       }
 
@@ -244,6 +274,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       policy.rules = policy.rules?.map((rule) => {
         rule.alertConditions = rule.alertConditions?.map((condition) => {
           if (!policy.id) delete condition.id // don't send generated ids
+          delete condition.alertMessage
+          delete condition.clearEvent
           return condition
         })
         if (!policy.id) {
@@ -253,13 +285,14 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         if (policy.isDefault) {
           delete policy.isDefault // for updating default (tags only)
         }
+        delete rule.vendor
 
         return rule
       })
+      delete policy.enabled
 
       if (isCopy) {
         delete policy.isDefault
-        delete policy.enabled
         delete policy.id // Clear the ID to create a new policy using copy
       }
 
@@ -269,7 +302,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.selectedPolicy = undefined
         this.selectedRule = undefined
         this.validationErrors = {}
-        this.getMonitoringPolicies()
+        await this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
         if (isCopy) {
           router.push('/monitoring-policies-new/')
@@ -298,15 +331,15 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       await deleteRule({ id: this.selectedRule?.id })
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const ruleIndex = this.selectedPolicy!.rules?.findIndex(rule => rule.id === this.selectedRule!.id) ?? -1
+      const ruleIndex = this.selectedPolicy!.rules?.findIndex((rule) => rule.id === this.selectedRule!.id) ?? -1
 
       if (ruleIndex !== -1) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.selectedPolicy!.rules?.splice(ruleIndex, 1)
       }
 
-      this.getMonitoringPolicies()
       this.selectedRule = undefined
+      this.getMonitoringPolicies()
     },
     async countAlertsForRule() {
       const { getAlertCountByRuleId } = useMonitoringPoliciesQueries()
@@ -316,9 +349,10 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     async removePolicy() {
       const { deleteMonitoringPolicy } = useMonitoringPoliciesMutations()
       await deleteMonitoringPolicy({ id: this.selectedPolicy?.id })
-      this.getMonitoringPolicies()
+      this.monitoringPolicies = []
       this.selectedRule = undefined
       this.selectedPolicy = undefined
+      this.getMonitoringPolicies()
       this.clearSelectedPolicy()
     },
     async countAlerts() {
@@ -326,8 +360,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       const count = await getAlertCountByPolicyId(this.selectedPolicy?.id)
       this.numOfAlertsForPolicy = count
     },
-    async openAlertRuleDrawer(rule?: PolicyRule) {
-      await this.displayRuleForm(rule)
+    openAlertRuleDrawer(rule?: PolicyRule) {
+      this.displayRuleForm(rule)
       this.alertRuleDrawer = true
     },
     async closeAlertRuleDrawer() {
@@ -337,27 +371,46 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     },
     async formatVendors(vendors: string[]) {
       this.formattedVendors = vendors.map((vendor) => {
-        return vendor.charAt(0).toUpperCase() + vendor.slice(1);
+        return vendor.charAt(0).toUpperCase() + vendor.slice(1)
       })
+    },
+    getClearEventName(key: string) {
+      if (key) {
+        const splitsOnColon = key.split(':')
+        const filteredUei = splitsOnColon.find((item) => item.startsWith('uei')) || ''
+        if (filteredUei) {
+          const splitsOnSlash = filteredUei.split('/')
+          return splitsOnSlash.pop()
+        }
+      }
+      return ''
     },
     async listAlertEventDefinitionsByVendor() {
       const queries = useAlertEventDefinitionQueries()
-      if ((this.selectedRule?.eventType === EventType.SnmpTrap) && this.selectedRule?.vendor && this.vendors) {
-        const vendor = this.vendors.find((x) => x.toLowerCase().indexOf(this.selectedRule?.vendor!.toLowerCase()!) > -1)
-        const request: EventDefsByVendorRequest = {
-          eventType: this.selectedRule.eventType,
-          vendor: vendor!
+      if (this.selectedRule?.eventType === EventType.SnmpTrap && this.selectedRule?.vendor && this.vendors) {
+        if (this.cachedEventDefinitions?.has(this.selectedRule.vendor)) {
+          this.eventDefinitions = this.cachedEventDefinitions.get(this.selectedRule.vendor)
+        } else {
+          const selectedVendor = this.selectedRule.vendor
+          const filteredVendor = this.vendors.find((x) => x.toLowerCase().indexOf(selectedVendor) > -1)
+          if (filteredVendor) {
+            const request: EventDefsByVendorRequest = {
+              eventType: this.selectedRule.eventType,
+              vendor: filteredVendor
+            }
+            const alertDefs = await queries.listAlertEventDefinitionsByVendor(request)
+            this.cachedEventDefinitions?.set(filteredVendor, alertDefs ?? [])
+            this.eventDefinitions = await queries.listAlertEventDefinitionsByVendor(request)
+          }
         }
-        this.eventDefinitions = await queries.listAlertEventDefinitionsByVendor(request)
       }
       if (this.selectedRule?.eventType === EventType.SystemEvent) {
         const definitions = await queries.listAlertEventDefinitions(EventType.SnmpTrap)
         this.eventDefinitions = definitions.value?.listAlertEventDefinitions
       }
-      if (this.eventDefinitions?.length && this.eventDefinitions?.length > 0) {
+      if (this.eventDefinitions && this.eventDefinitions.length > 0) {
         this.selectedRule?.alertConditions?.map((item) => {
           item.triggerEvent = this.eventDefinitions?.[0]
-          item.clearEvent = this.eventDefinitions?.[0]
           return item
         })
       } else {

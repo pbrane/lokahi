@@ -32,6 +32,7 @@ import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.horizon.snmp.api.SnmpConfiguration;
 import org.opennms.icmp.contract.IcmpMonitorRequest;
+import org.opennms.inventory.service.ServiceInventory;
 import org.opennms.snmp.contract.SnmpMonitorRequest;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
@@ -59,7 +60,10 @@ public class MonitorTaskSetService {
         String pluginName = String.format("%sMonitor", monitorTypeValue);
         TaskDefinition taskDefinition = null;
         Any configuration = null;
-
+        ServiceInventory serviceInventory = ServiceInventory.newBuilder()
+                .setNodeId(nodeId)
+                .setMonitorServiceId(monitoredServiceId)
+                .build();
         switch (monitorType) {
             case ICMP -> configuration = Any.pack(IcmpMonitorRequest.newBuilder()
                     .setHost(ipAddress)
@@ -68,9 +72,11 @@ public class MonitorTaskSetService {
                     .setAllowFragmentation(TaskUtils.ICMP_DEFAULT_ALLOW_FRAGMENTATION)
                     .setPacketSize(TaskUtils.ICMP_DEFAULT_PACKET_SIZE)
                     .setRetries(TaskUtils.ICMP_DEFAULT_RETRIES)
+                    .setServiceInventory(serviceInventory)
                     .build());
             case SNMP -> {
-                var requestBuilder = SnmpMonitorRequest.newBuilder().setHost(ipAddress);
+                var requestBuilder =
+                        SnmpMonitorRequest.newBuilder().setHost(ipAddress).setServiceInventory(serviceInventory);
                 if (snmpConfiguration != null) {
                     requestBuilder.setAgentConfig(snmpConfiguration);
                 }
@@ -106,6 +112,7 @@ public class MonitorTaskSetService {
                 .setDirectoryId(discovery.getDirectoryId())
                 .setTimeoutMs(TaskUtils.AZURE_DEFAULT_TIMEOUT_MS)
                 .setRetries(TaskUtils.AZURE_DEFAULT_RETRIES)
+                .setNodeId(nodeId)
                 .build());
 
         String name = String.join("-", "azure", "monitor", scanItem.getId());

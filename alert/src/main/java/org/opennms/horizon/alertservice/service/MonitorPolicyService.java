@@ -130,7 +130,7 @@ public class MonitorPolicyService {
         if (DEFAULT_POLICY.equals(request.getName())) {
             return handleDefaultTagOperationUpdate(policy.getTags(), tenantId);
         } else {
-            updateData(policy, tenantId);
+            updateData(policy, tenantId, request.getEnabled());
             MonitorPolicy newPolicy = repository.save(policy);
             createAlertDefinitionFromPolicy(newPolicy);
             var existingTags = tagRepository.findByTenantIdAndPolicyId(newPolicy.getTenantId(), newPolicy.getId());
@@ -164,7 +164,7 @@ public class MonitorPolicyService {
                 } else {
                     updatedTag = existingTag.get();
                 }
-                defaultPolicyTag = new SystemPolicyTag(tenantId, defaultPolicy.getId(), updatedTag);
+                defaultPolicyTag = new SystemPolicyTag(tenantId, defaultPolicy.getId(), updatedTag, true);
                 defaultPolicyTag = systemPolicyTagRepository.save(defaultPolicyTag);
                 defaultPolicy.getTags().add(defaultPolicyTag.getTag());
                 newTags.add(updatedTag);
@@ -185,7 +185,7 @@ public class MonitorPolicyService {
         if (!newTags.isEmpty()) {
             systemPolicyTagRepository.deleteEmptyTagByTenantIdAndPolicyId(tenantId, defaultPolicy.getId());
         } else if (!removedTags.isEmpty()) {
-            var systemPolicyTag = new SystemPolicyTag(tenantId, defaultPolicy.getId(), null);
+            var systemPolicyTag = new SystemPolicyTag(tenantId, defaultPolicy.getId(), null, true);
             systemPolicyTagRepository.save(systemPolicyTag);
         }
 
@@ -325,7 +325,7 @@ public class MonitorPolicyService {
         return alertRepository.countByRuleIdAndTenantId(id, tenantId);
     }
 
-    private void updateData(MonitorPolicy policy, String tenantId) {
+    private void updateData(MonitorPolicy policy, String tenantId, Boolean enabled) {
         policy.setTenantId(tenantId);
         policy.getRules().forEach(r -> {
             r.setTenantId(tenantId);
@@ -336,6 +336,7 @@ public class MonitorPolicyService {
             });
         });
         policy.getTags().forEach(tag -> tag.setTenantId(tenantId));
+        policy.setEnabled(enabled);
     }
 
     private void createAlertDefinitionFromPolicy(MonitorPolicy policy) {

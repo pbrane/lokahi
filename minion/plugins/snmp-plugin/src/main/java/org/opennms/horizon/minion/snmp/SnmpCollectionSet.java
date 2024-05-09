@@ -86,8 +86,6 @@ public class SnmpCollectionSet {
                 .setInstance(result.getInstance().toString())
                 .setValue(mapValue(result.getValue()))
                 .setAlias(alias)
-                .setIfName(ifName)
-                .setIpAddress(ipAddress)
                 .build();
     }
 

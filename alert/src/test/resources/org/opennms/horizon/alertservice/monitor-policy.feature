@@ -13,6 +13,7 @@ Feature: Monitor policy gRPC Functionality
   Scenario: The default monitoring policy should exist
     Given Tenant id "different-tenant"
     Then The default monitoring policy exist with name "default_policy" and all notification enabled
+    Then Verify the default policy status is true
     Then Verify the default policy rule has name "default_rule" and component type "NODE"
     Then Verify the default monitoring policy has the following data
       | triggerEventName | severity |
@@ -55,6 +56,16 @@ Feature: Monitor policy gRPC Functionality
     Given The policy has a simple rule named "rule1" with component type "NODE"
     And The policy is created in the tenant
     Then Verify exception "StatusRuntimeException" thrown with message "INVALID_ARGUMENT: Duplicate monitoring rule with name rule1"
+
+
+  Scenario: Create  monitor policy with disabled status
+    Given Tenant id "test-tenant"
+    Given A monitoring policy named "disabled-rule-policy" with tag "tag1" and with  status disabled
+    Given The policy has a rule named "new-rule" with component type "NODE" and trap definitions
+      | trigger_event_name | count | overtime | overtime_unit | severity | clear_event_name |
+      | SNMP Cold Start    | 1     | 3        | MINUTE        | MAJOR    |                  |
+    And The monitor policy is created in the tenant with disabled status
+    Then verify that a new monitor policy is created with label "disabled-rule-policy" and with disabled status
 
   Scenario: Delete a monitor policy
     Given Tenant id "test-tenant1"
@@ -101,3 +112,5 @@ Feature: Monitor policy gRPC Functionality
     Given Tenant id "any-tenant"
     Then Fetch event defs for vendor "generic" and verify size is greater than or equal to 7
     Then Fetch event defs for event type "INTERNAL" and verify size is greater than or equal to 1
+
+

@@ -3,18 +3,45 @@
   <p>
     Create a clear and descriptive name for the monitoring policy
   </p>
-  <div class="policy-form">
-
-    <FeatherInput v-model.trim="store.selectedPolicy!.name" label="New Policy Name" v-focus
-      data-test="policy-name-input" :error="store.validationErrors.policyName" />
-    <FeatherTextarea v-model.trim="store.selectedPolicy!.memo" label="Description" :maxlength="100" />
-    <FeatherCheckboxGroup label="Notifications (Optional)" vertical>
-      <FeatherCheckbox v-model="store.selectedPolicy!.notifyByEmail">Email</FeatherCheckbox>
-      <FeatherCheckbox v-model="store.selectedPolicy!.notifyByPagerDuty">PagerDuty</FeatherCheckbox>
+  <div v-if="store.selectedPolicy" class="policy-form">
+      <FeatherInput
+        v-model.trim="store.selectedPolicy.name"
+        label="New Policy Name"
+        v-focus
+        data-test="policy-name-input"
+        :error="store.validationErrors.policyName"
+        :readonly="store.selectedPolicy.isDefault"
+      />
+    <FeatherTextarea
+      v-model.trim="store.selectedPolicy!.memo"
+      label="Description" :maxlength="100"
+      :disabled="store.selectedPolicy.isDefault"
+    />
+    <FeatherCheckboxGroup
+      label="Notifications (Optional)"
+      vertical
+    >
+      <FeatherCheckbox
+        v-model="store.selectedPolicy!.notifyByEmail"
+        :disabled="store.selectedPolicy.isDefault"
+      >
+        Email
+      </FeatherCheckbox>
+      <FeatherCheckbox
+        v-model="store.selectedPolicy!.notifyByPagerDuty"
+        :disabled="store.selectedPolicy.isDefault"
+      >
+        PagerDuty
+      </FeatherCheckbox>
     </FeatherCheckboxGroup>
     <div class="subtitle">Tags</div>
-    <BasicAutocomplete @itemsSelected="selectTags" :getItems="tagQueries.getTagsSearch"
-      :label="'Tag name'" :items="tagQueries.tagsSearched"     :preselectedItems="formattedTags"/>
+    <BasicAutocomplete
+      @itemsSelected="selectTags"
+      :getItems="tagQueries.getTagsSearch"
+      :label="'Tag name'"
+      :items="tagQueries.tagsSearched"
+      :preselectedItems="formattedTags"
+    />
   </div>
 </template>
 <script setup lang="ts">

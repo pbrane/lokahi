@@ -53,6 +53,8 @@ message Event {
   string description = 10;
   string log_message = 11;
   string location_name = 12; // prevent need for inter service id lookup
+  Severity severity = 13;
+  string event_label = 14;
 }
 
 message EventInfo {
@@ -100,3 +102,35 @@ service EventService {
   rpc getEventsByNodeId(google.protobuf.UInt64Value) returns (EventLog) {};
   rpc searchEvents(EventsSearchBy) returns (EventLogListResponse) {};
 }
+
+enum Severity {
+  // No or missing value
+  UNDEFINED = 0;
+  // The Indeterminate severity level indicates that the severity level cannot be determined.
+  INDETERMINATE = 1;
+  // The Cleared severity level indicates the clearing of one or more previously reported alerts. This
+  // alert clears all alerts for this managed object that have the same Alert type, Probable cause and
+  // Specific problems (if given).
+  CLEARED = 2;
+  // Informational only.
+  NORMAL = 3;
+  // The Warning severity level indicates the detection of a potential or impending service affecting
+  // fault, before any significant effects have been felt. Action should be taken to further diagnose (if
+  // necessary) and correct the problem in order to prevent it from becoming a more serious service affecting
+  // fault.
+  WARNING = 4;
+  // The Minor severity level indicates the existence of a non-service affecting fault condition and that
+  // corrective action should be taken in order to prevent a more serious (for example, service affecting) fault.
+  // Such a severity can be reported, for example, when the detected alert condition is not currently
+  // degrading the capacity of the managed object.
+  MINOR = 5;
+  // The Major severity level indicates that a service affecting condition has developed and an urgent
+  // corrective action is required. Such a severity can be reported, for example, when there is a severe
+  // degradation in the capability of the managed object and its full capability must be restored.
+  MAJOR = 6;
+  // The Critical severity level indicates that a service affecting condition has occurred and an
+  // immediate corrective action is required. Such a severity can be reported, for example, when a managed
+  // object becomes totally out of service and its capability must be restored.
+  CRITICAL = 7;
+}
+

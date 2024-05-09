@@ -31,8 +31,7 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
-import org.opennms.horizon.minion.plugin.api.AbstractServiceMonitor;
-import org.opennms.horizon.minion.plugin.api.MonitoredService;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
 import org.opennms.monitors.ntp.contract.NTPMonitorRequest;
@@ -40,7 +39,7 @@ import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NtpMonitor extends AbstractServiceMonitor {
+public class NtpMonitor implements ServiceMonitor {
     private static final Logger LOG = LoggerFactory.getLogger(NtpMonitor.class);
 
     private final int NTP_PACKET_SIZE = 512;
@@ -69,7 +68,7 @@ public class NtpMonitor extends AbstractServiceMonitor {
      * </P>
      */
     @Override
-    public CompletableFuture<ServiceMonitorResponse> poll(MonitoredService svc, Any config) {
+    public CompletableFuture<ServiceMonitorResponse> poll(Any config) {
         CompletableFuture<ServiceMonitorResponse> responseCompletableFuture = new CompletableFuture<>();
         if (!config.is(NTPMonitorRequest.class)) {
             throw new IllegalArgumentException(

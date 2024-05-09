@@ -23,6 +23,8 @@ package org.opennms.horizon.events.persistence.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,6 +35,7 @@ import java.net.InetAddress;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.opennms.horizon.events.proto.Severity;
 
 @Entity
 @Table(name = "event")
@@ -43,6 +46,9 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "event_label")
+    private String eventLabel;
+
     @NotNull
     @Column(name = "tenant_id")
     private String tenantId;
@@ -50,6 +56,10 @@ public class Event {
     @NotNull
     @Column(name = "event_uei")
     private String eventUei;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Severity severity = Severity.NORMAL;
 
     @NotNull
     @Column(name = "produced_time", columnDefinition = "TIMESTAMP")
@@ -176,5 +186,21 @@ public class Event {
 
     public void setLogMessage(String logMessage) {
         this.logMessage = logMessage;
+    }
+
+    public String getEventLabel() {
+        return eventLabel;
+    }
+
+    public void setEventLabel(String eventLabel) {
+        this.eventLabel = eventLabel;
+    }
+
+    public Severity getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(Severity severity) {
+        this.severity = severity;
     }
 }

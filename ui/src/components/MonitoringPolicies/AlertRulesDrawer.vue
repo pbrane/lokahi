@@ -1,12 +1,8 @@
 <template>
-    <FeatherDrawer
-      v-model:model-value="monitoringPoliciesStore.alertRuleDrawer"
-      v-on:hidden="monitoringPoliciesStore.closeAlertRuleDrawer"
-      width="50em"
-      class="alert-drawer"
-    >
-      <CreateEditAlertRulePanel/>
-    </FeatherDrawer>
+  <FeatherDrawer v-model:model-value="monitoringPoliciesStore.alertRuleDrawer"
+    v-on:hidden="monitoringPoliciesStore.closeAlertRuleDrawer" width="55em" class="alert-drawer">
+    <CreateEditAlertRulePanel />
+  </FeatherDrawer>
 </template>
 
 <script setup lang="ts">

@@ -56,14 +56,5 @@ public interface ServiceMonitor {
      * @see PollStatus#SERVICE_AVAILABLE
      * @see PollStatus#SERVICE_UNAVAILABLE
      */
-    public CompletableFuture<ServiceMonitorResponse> poll(MonitoredService svc, Any config);
-
-    /**
-     * Allows the monitor to override the location at which it should be run.
-     *
-     * @param location
-     *            location associated with the service to be monitored
-     * @return a possibly updated location
-     */
-    public String getEffectiveLocation(String location);
+    public CompletableFuture<ServiceMonitorResponse> poll(Any config);
 }

@@ -44,6 +44,7 @@
     <module>shell-commands</module>
     <module>ntp-plugin</module>
     <module>http-plugin</module>
+    <module>ssh-plugin</module>
   </modules>
 
 </project>

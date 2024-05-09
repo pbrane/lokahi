@@ -25,7 +25,6 @@ import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityFo
 import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForIpTask;
 
 import com.google.protobuf.Any;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,8 +47,6 @@ import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.horizon.snmp.api.SnmpConfiguration;
 import org.opennms.snmp.contract.SnmpCollectorPart;
 import org.opennms.snmp.contract.SnmpCollectorRequest;
-import org.opennms.snmp.contract.SnmpInterfaceElement;
-import org.opennms.snmp.contract.SnmpInterfaceElement.Builder;
 import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
@@ -85,30 +82,12 @@ public class CollectorTaskSetService {
             ifIndexMap.put(ipInterface.getIfIndex(), anInterface);
         }
 
-        // TODO LOK-2402: Remove the simple interface type and replace it with data from the collection parts
-        // below?
-        List<SnmpInterfaceElement> snmpInterfaceElements = new ArrayList<>();
-        for (SnmpInterface snmpInterface : snmpInterfaces) {
-            IpInterface ipInterfaceDTO = ifIndexMap.get(snmpInterface.getIfIndex());
-            String ifName = snmpInterface.getIfName();
-            if (ifName != null) {
-                Builder elementBuilder = SnmpInterfaceElement.newBuilder()
-                        .setIfIndex(snmpInterface.getIfIndex())
-                        .setIfName(ifName);
-                if (ipInterfaceDTO != null) {
-                    elementBuilder.setIpAddress(InetAddressUtils.toIpAddrString(ipInterfaceDTO.getIpAddress()));
-                }
-                snmpInterfaceElements.add(elementBuilder.build());
-            }
-        }
-
         String name = String.format("%s-collector", monitorTypeValue.toLowerCase());
         String pluginName = String.format("%sCollector", monitorTypeValue);
 
-        SnmpCollectorRequest.Builder requestBuilder = SnmpCollectorRequest.newBuilder()
-                .setHost(ipAddress)
-                .setNodeId(node.getId())
-                .addAllSnmpInterface(snmpInterfaceElements);
+        SnmpCollectorRequest.Builder requestBuilder =
+                SnmpCollectorRequest.newBuilder().setHost(ipAddress).setNodeId(node.getId());
+
         if (snmpConfiguration != null) {
             requestBuilder.setAgentConfig(snmpConfiguration);
         }

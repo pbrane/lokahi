@@ -19,11 +19,18 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.minion.plugin.api;
+package org.opennms.horizon.minion.http;
 
-import java.io.IOException;
-import java.net.Socket;
+import lombok.RequiredArgsConstructor;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
 
-public interface SocketWrapper {
-    Socket wrapSocket(Socket socket) throws IOException;
+@RequiredArgsConstructor
+public class HttpsMonitorManager implements ServiceMonitorManager {
+
+    @Override
+    public ServiceMonitor create() {
+        HttpsMonitor httpsMonitor = new HttpsMonitor();
+        return httpsMonitor;
+    }
 }

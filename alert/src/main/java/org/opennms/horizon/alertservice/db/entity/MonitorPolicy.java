@@ -74,4 +74,7 @@ public class MonitorPolicy {
 
     @ManyToMany(mappedBy = "policies")
     private Set<Tag> tags = new HashSet<>();
+
+    @Column(name = "enabled")
+    private Boolean enabled;
 }

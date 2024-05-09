@@ -17,4 +17,12 @@
         </service-properties>
     </service>
 
+    <bean id="httpsMonitorManager" class="org.opennms.horizon.minion.http.HttpsMonitorManager"/>
+
+    <service ref="httpsMonitorManager" interface="org.opennms.horizon.minion.plugin.api.ServiceMonitorManager">
+        <service-properties>
+            <entry key="monitor.name" value="HTTPSMonitor"/>
+        </service-properties>
+    </service>
+
 </blueprint>

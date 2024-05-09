@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+    <changeSet id="hs-0.1.0.add_event_label_and_severity_columns" author="mjunaid">
+        <!-- Add event_label column -->
+        <addColumn tableName="event">
+            <column name="event_label" type="text"/>
+        </addColumn>
+
+        <!-- Add severity column -->
+        <addColumn tableName="event">
+            <column name="severity" type="text" defaultValue="NORMAL">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

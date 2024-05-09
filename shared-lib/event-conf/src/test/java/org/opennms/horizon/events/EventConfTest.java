@@ -41,10 +41,13 @@ public class EventConfTest {
         var ueis = eventConfDao.getEventUEIs();
         assertFalse(ueis.isEmpty(), "Should have loaded some ueis");
         String uei = "uei.opennms.org/generic/traps/SNMP_Cold_Start";
+        String labelName = "OpenNMS-defined trap event: SNMP_Cold_Start";
         EventBuilder eb = new EventBuilder(uei, "JUnit");
         Event event = eventConfDao.findByEvent(eb.getEvent());
         assertNotNull(event);
         assertEquals(uei, event.getUei());
+        assertEquals(labelName, event.getEventLabel());
+        assertEquals("Normal", event.getSeverity());
         assertEquals("Normal", event.getSeverity());
         var events = eventConfDao.getAllEventsByUEI();
         System.out.printf("size of events = %d ", events.size());

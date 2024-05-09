@@ -21,6 +21,7 @@
  */
 package org.opennms.horizon.events.traps;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -28,6 +29,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import nl.altindag.log.LogCaptor;
@@ -54,6 +56,10 @@ public class TrapsConsumerTest {
     private InetAddress testInetAddress;
 
     private TrapsConsumer target;
+
+    private final String UEI = "uei.opennms.org/generic/traps/SNMP_Cold_Start";
+
+    private final String EVENT_LABEL_NAME = "OpenNMS-defined trap event: SNMP_Cold_Start";
 
     @BeforeEach
     public void setUp() {
@@ -93,7 +99,11 @@ public class TrapsConsumerTest {
         Events events = new Events();
         testXmlEventLog.setEvents(events);
 
-        Event testEvent = Event.newBuilder().setNodeId(1).build();
+        Event testEvent = Event.newBuilder()
+                .setNodeId(1)
+                .setUei(UEI)
+                .setEventLabel(EVENT_LABEL_NAME)
+                .build();
 
         EventLog testProtoEventLog = EventLog.newBuilder().addEvents(testEvent).build();
 
@@ -102,6 +112,11 @@ public class TrapsConsumerTest {
                 .thenReturn(testProtoEventLog);
 
         byte[] testKafkaPayload = testTrapLogDTO.toByteArray();
+
+        Optional<Event> resEvent = testProtoEventLog.getEventsList().stream().findFirst();
+        assertTrue(resEvent.isPresent(), "No event found in the log");
+        assertEquals(testEvent.getEventLabel(), resEvent.get().getEventLabel(), "Event label mismatch");
+        assertEquals(testEvent.getUei(), resEvent.get().getUei(), "UEI mismatch");
 
         //
         // Execute

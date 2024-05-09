@@ -129,6 +129,8 @@ public class EventsConsumer {
         event.setLocationName(eventProto.getLocationName());
         event.setDescription(eventProto.getDescription());
         event.setLogMessage(eventProto.getLogMessage());
+        event.setEventLabel(eventProto.getEventLabel());
+        event.setSeverity(eventProto.getSeverity());
 
         return event;
     }

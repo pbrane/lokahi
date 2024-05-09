@@ -29,6 +29,7 @@ syntax = "proto3";
 
 import "google/protobuf/any.proto";
 import "snmp-api.proto";
+import "service-inventory.proto";
 
 package opennms.snmp;
 option java_multiple_files = true;
@@ -45,6 +46,7 @@ message SnmpMonitorRequest {
   string operator = 3;
   string operand = 4;
   opennms.snmp.api.SnmpConfiguration agent_config = 5;
+  opennms.inventory.service.ServiceInventory service_inventory = 6;
 }
 
 message SnmpCollectorRequest {
@@ -52,14 +54,7 @@ message SnmpCollectorRequest {
   opennms.snmp.api.SnmpConfiguration agent_config = 2;
   uint64  node_id = 3;
   uint32 if_index = 4; // deprecated
-  repeated SnmpInterfaceElement snmp_interface = 5;
   repeated SnmpCollectorPart part = 6;
-}
-
-message SnmpInterfaceElement {
-  string if_name = 1;
-  uint32 if_index = 2;
-  optional string ip_address = 3;
 }
 
 message SnmpCollectorPart {

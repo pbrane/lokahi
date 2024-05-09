@@ -78,9 +78,6 @@ public class TaskSetCollectorSnmpResponseProcessor {
                         .setValue(CortexTSS.sanitizeLabelValue(value))));
 
                 builder.addLabels(
-                        PrometheusTypes.Label.newBuilder().setName("if_name").setValue(snmpResult.getIfName()));
-
-                builder.addLabels(
                         PrometheusTypes.Label.newBuilder().setName("instance").setValue(snmpResult.getInstance()));
 
                 for (final var e : snmpResult.getLabelsMap().entrySet()) {
@@ -88,18 +85,6 @@ public class TaskSetCollectorSnmpResponseProcessor {
                             .setName(CortexTSS.sanitizeLabelName(e.getKey()))
                             .setValue(CortexTSS.sanitizeLabelValue(e.getValue())));
                 }
-
-                if (snmpResult.hasIpAddress()
-                        && !snmpResult.getIpAddress().isEmpty()) { // TODO LOK-2404: encode in labels
-                    builder.addLabels(PrometheusTypes.Label.newBuilder()
-                            .setName("ip_address")
-                            .setValue(snmpResult.getIpAddress()));
-                    // TODO: Remove instance from ip_address
-                    builder.addLabels(PrometheusTypes.Label.newBuilder()
-                            .setName("instance")
-                            .setValue(snmpResult.getIpAddress()));
-                }
-
                 int type = snmpResult.getValue().getTypeValue();
                 switch (type) {
                     case SnmpValueType.INT32_VALUE:

@@ -24,6 +24,7 @@ package org.opennms.horizon.server.model.events;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.opennms.horizon.events.proto.Severity;
 
 @Getter
 @Setter
@@ -38,4 +39,6 @@ public class Event {
     private String description;
     private String locationName;
     private String logMessage;
+    private String eventLabel;
+    private Severity severity;
 }

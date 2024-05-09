@@ -25,6 +25,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.protobuf.Empty;
@@ -79,6 +80,9 @@ public class MonitorPolicySteps {
     private Map<String, AlertEventDefinitionProto> snmpTrapDefinitions;
 
     private MonitorPolicyProto lastCreatedPolicy;
+
+    private MonitorPolicyProto disabledCreatedPolicy;
+
     private MonitorPolicyProto defaultPolicy;
     private Exception lastException;
 
@@ -86,6 +90,12 @@ public class MonitorPolicySteps {
     public void defineNewPolicyNotifyViaEmail(String name, String tag) {
         defineNewPolicy(name, tag);
         policyBuilder.setNotifyByEmail(true);
+    }
+
+    @Given("A monitoring policy named {string} with tag {string} and with  status disabled")
+    public void aMonitoringPolicyNamedWithTagAndWithStatusDisabled(String name, String tag) {
+        defineNewPolicy(name, tag);
+        policyBuilder.setEnabled(false);
     }
 
     @Given("A monitoring policy named {string} with tag {string}")
@@ -137,6 +147,26 @@ public class MonitorPolicySteps {
                 .setName(ruleName)
                 .setComponentType(ManagedObjectType.valueOf(type.toUpperCase()))
                 .build());
+    }
+
+    @Given("An enabled flag of false")
+    public void anEnabledFlagOfFalse() {
+        policyBuilder.setEnabled(false);
+    }
+
+    @And("The monitor policy is created in the tenant with disabled status")
+    public void theMonitorPolicyIsCreatedInTheTenantWithDisabledStatus() {
+        triggerBuilders.stream().map(AlertConditionProto.Builder::build).forEach(ruleBuilder::addSnmpEvents);
+
+        MonitorPolicyProto policy = policyBuilder.addRules(ruleBuilder.build()).build();
+
+        try {
+            log.info("Creating policy {}", policy);
+            disabledCreatedPolicy = grpcClient.getPolicyStub().createPolicy(policy);
+            assertThat(disabledCreatedPolicy).isNotNull();
+        } catch (Exception e) {
+            lastException = e;
+        }
     }
 
     private Map<String, AlertEventDefinitionProto> loadSnmpTrapDefinitions() {
@@ -393,5 +423,23 @@ public class MonitorPolicySteps {
                         .countNodesByMonitoringPolicy(Int64Value.of(id))
                         .getValue()
                 > 0);
+    }
+
+    @Then("Verify the default policy status is true")
+    public void verifyTheDefaultPolicyStatusIsTrue() {
+        defaultPolicy = grpcClient.getPolicyStub().getDefaultPolicy(Empty.getDefaultInstance());
+        assertTrue(defaultPolicy.getEnabled());
+    }
+
+    @Then("verify that a new monitor policy is created with label {string} and with disabled status")
+    public void verifyThatANewMonitorPolicyIsCreatedWithLabelAndWithDisabledStatus(String policyName) {
+        disabledCreatedPolicy =
+                grpcClient.getPolicyStub().listPolicies(Empty.getDefaultInstance()).getPoliciesList().stream()
+                        .filter(fetched -> policyName.equals(fetched.getName()))
+                        .findFirst()
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("Monitor Policy  " + policyName + " not found"));
+
+        assertFalse(disabledCreatedPolicy.getEnabled());
     }
 }

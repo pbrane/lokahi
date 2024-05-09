@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opennms.horizon.events.proto.EventInfo;
 import org.opennms.horizon.events.proto.EventParameter;
+import org.opennms.horizon.events.proto.Severity;
 import org.opennms.horizon.events.proto.SnmpInfo;
 import org.opennms.horizon.events.traps.EventXmlToProtoMapper;
 import org.opennms.horizon.events.xml.Event;
@@ -47,8 +48,9 @@ public class EventXmlToProtoMapperImpl implements EventXmlToProtoMapper {
                         .setProducedTimeMs(event.getCreationTime().getTime())
                         .setNodeId(event.getNodeid())
                         .setLocationId(event.getDistPoller())
+                        .setEventLabel(event.getEventLabel())
+                        .setSeverity(getProtoSeverity(org.opennms.horizon.events.api.Severity.get(event.getSeverity())))
                         .setIpAddress(event.getInterface());
-
         if (event.getDescr() != null) {
             eventBuilder.setDescription(event.getDescr());
         }
@@ -99,5 +101,27 @@ public class EventXmlToProtoMapperImpl implements EventXmlToProtoMapper {
             return eventParm;
         }
         return null;
+    }
+
+    private Severity getProtoSeverity(org.opennms.horizon.events.api.Severity severity) {
+
+        switch (severity) {
+            case CRITICAL:
+                return Severity.CRITICAL;
+            case CLEARED:
+                return Severity.CLEARED;
+            case INDETERMINATE:
+                return Severity.INDETERMINATE;
+            case MAJOR:
+                return Severity.MAJOR;
+            case MINOR:
+                return Severity.MINOR;
+            case WARNING:
+                return Severity.WARNING;
+            case NORMAL:
+                return Severity.NORMAL;
+            default:
+                return Severity.NORMAL;
+        }
     }
 }

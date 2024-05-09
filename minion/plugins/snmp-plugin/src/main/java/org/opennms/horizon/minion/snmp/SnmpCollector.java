@@ -47,7 +47,6 @@ import org.opennms.horizon.snmp.api.SnmpResponseMetric;
 import org.opennms.horizon.snmp.api.SnmpResultMetric;
 import org.opennms.horizon.snmp.api.SnmpV3Configuration;
 import org.opennms.snmp.contract.SnmpCollectorRequest;
-import org.opennms.snmp.contract.SnmpInterfaceElement;
 import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +81,7 @@ public class SnmpCollector implements ServiceCollector {
 
         try {
             final CompletableFuture<List<SnmpResultMetric>> future = new CompletableFuture<>();
+
             SnmpCollectorRequest snmpRequest = config.unpack(SnmpCollectorRequest.class);
 
             LOG.debug("SNMP Collector Request {}", snmpRequest);
@@ -95,22 +95,14 @@ public class SnmpCollector implements ServiceCollector {
                 if (part.hasScalar()) {
                     final var scalar = part.getScalar();
                     final var collectable = SnmpScalarCollector.forScalar(scalar, builder);
-
                     snmpCollectionSet.getTrackers().add(collectable);
                 }
 
                 if (part.hasTable()) {
                     final var table = part.getTable();
                     final var collectable = SnmpTableCollector.forTable(table, builder);
-
                     snmpCollectionSet.getTrackers().add(collectable);
                 }
-            }
-
-            for (SnmpInterfaceElement element : snmpRequest.getSnmpInterfaceList()) {
-                var interfaceMetricsTracker = new InterfaceMetricsTracker(
-                        element.getIfIndex(), element.getIfName(), element.getIpAddress(), builder);
-                snmpCollectionSet.getTrackers().add(interfaceMetricsTracker);
             }
 
             AggregateTracker aggregate = new AggregateTracker(snmpCollectionSet.getTrackers());

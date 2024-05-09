@@ -30,10 +30,8 @@ import com.google.protobuf.Any;
 import java.util.concurrent.CompletableFuture;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.opennms.horizon.minion.plugin.api.MonitoredService;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse.Status;
 import org.opennms.horizon.shared.icmp.PingerFactory;
@@ -41,9 +39,6 @@ import org.opennms.icmp.contract.IcmpMonitorRequest;
 
 public class IcmpMonitorTest {
     private static final String TEST_LOCALHOST_IP_VALUE = "127.0.0.1";
-
-    @Mock
-    MonitoredService monitoredService;
 
     IcmpMonitorRequest testEchoRequest;
     Any testConfig;
@@ -74,7 +69,7 @@ public class IcmpMonitorTest {
     @Test
     public void poll() throws Exception {
         icmpMonitor = getIcmpMonitor(false, false);
-        CompletableFuture<ServiceMonitorResponse> response = icmpMonitor.poll(monitoredService, testConfig);
+        CompletableFuture<ServiceMonitorResponse> response = icmpMonitor.poll(testConfig);
 
         ServiceMonitorResponse serviceMonitorResponse = response.get();
 
@@ -86,7 +81,7 @@ public class IcmpMonitorTest {
     public void testTimeout() throws Exception {
         icmpMonitor = getIcmpMonitor(false, true);
 
-        CompletableFuture<ServiceMonitorResponse> response = icmpMonitor.poll(monitoredService, testConfig);
+        CompletableFuture<ServiceMonitorResponse> response = icmpMonitor.poll(testConfig);
 
         ServiceMonitorResponse serviceMonitorResponse = response.get();
 
@@ -99,7 +94,7 @@ public class IcmpMonitorTest {
     public void testError() throws Exception {
         icmpMonitor = getIcmpMonitor(true, false);
 
-        CompletableFuture<ServiceMonitorResponse> response = icmpMonitor.poll(monitoredService, testConfig);
+        CompletableFuture<ServiceMonitorResponse> response = icmpMonitor.poll(testConfig);
 
         ServiceMonitorResponse serviceMonitorResponse = response.get();
 
