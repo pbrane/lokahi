@@ -81,7 +81,7 @@ const eventTypeOptions = [
 ]
 
 const disableSaveRuleBtn = computed(
-  () => monitoringPoliciesStore.selectedPolicy?.isDefault || !monitoringPoliciesStore.selectedRule?.name
+  () => monitoringPoliciesStore?.selectedPolicy?.isDefault || !monitoringPoliciesStore?.selectedRule?.name
 )
 
 const selectEventType = (eventType: EventType) => {

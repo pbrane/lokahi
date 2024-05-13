@@ -39,9 +39,7 @@
 
 <script setup lang="ts">
 import Cancel from '@featherds/icon/navigation/Cancel'
-import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 
-const store = useMonitoringPoliciesStore()
 const icons = markRaw({
   Cancel
 })

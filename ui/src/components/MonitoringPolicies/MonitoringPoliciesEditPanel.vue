@@ -35,7 +35,7 @@ const route = useRoute()
 
 const handleNext = () => {
   if (route.params.id == '0') {
-    store.savePolicy(true)
+    store.savePolicy({isCopy: true})
   } else {
     selectedTab.value = 1
   }

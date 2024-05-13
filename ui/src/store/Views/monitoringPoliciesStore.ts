@@ -131,9 +131,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       //  Then this component can just display the status.
       //  Once back end adds ability to enable/disable, then we will add another issue to implement it here and elsewhere.
 
-      this.monitoringPolicies.forEach((p) => {
-        p.enabled = true
-      })
     },
     loadVendors() {
       const queries = useMonitoringPoliciesQueries()
@@ -263,8 +260,24 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       showSnackbar({ msg: 'Rule successfully applied to the policy.' })
       this.closeAlertRuleDrawer()
     },
-    async savePolicy(isCopy = false) {
+    async savePolicy({ status, isCopy = false, clearSelected = false }: { status?: boolean; isCopy?: boolean; clearSelected?: boolean } = {}) {
       const { addMonitoringPolicy, error } = useMonitoringPoliciesMutations()
+
+      if (status !== undefined) {
+        const updateStatus = { ...this.selectedPolicy, enabled: status }
+        const { isDefault: _, ...policy } = updateStatus
+
+        await addMonitoringPolicy({ policy })
+
+        if (!error.value) {
+          const policyToUpdate = this.monitoringPolicies?.find(policy => policy?.id === this.selectedPolicy?.id)
+          if (policyToUpdate) {
+            policyToUpdate.enabled = status
+          }
+          showSnackbar({ msg: 'Policy status has been updated successfully.' })
+        }
+        return !error.value
+      }
 
       if (!this.selectedPolicy || !this.validateMonitoringPolicy(this.selectedPolicy)) {
         if (this.validationErrors.policyName) {
@@ -298,7 +311,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
 
         return rule
       })
-      delete policy.enabled
 
       if (isCopy) {
         delete policy.isDefault
@@ -308,12 +320,17 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       await addMonitoringPolicy({ policy })
 
       if (!error.value) {
-        this.selectedPolicy = undefined
-        this.selectedRule = undefined
+
+        if (clearSelected) {
+          this.clearSelectedPolicy()
+          this.clearSelectedRule()
+        }
+
         this.validationErrors = {}
         this.setPolicyEditMode(CreateEditMode.None)
         await this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
+
         if (isCopy) {
           router.push('/monitoring-policies-new/')
         }
