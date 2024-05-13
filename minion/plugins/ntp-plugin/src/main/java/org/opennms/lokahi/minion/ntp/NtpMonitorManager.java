@@ -21,9 +21,11 @@
  */
 package org.opennms.lokahi.minion.ntp;
 
+import com.google.protobuf.Message;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
+import org.opennms.monitors.ntp.contract.NTPMonitorRequest;
 
 @RequiredArgsConstructor
 public class NtpMonitorManager implements ServiceMonitorManager {
@@ -33,5 +35,10 @@ public class NtpMonitorManager implements ServiceMonitorManager {
         NtpMonitor ntpMonitor = new NtpMonitor();
 
         return ntpMonitor;
+    }
+
+    @Override
+    public Message.Builder createRequestBuilder() {
+        return NTPMonitorRequest.newBuilder();
     }
 }

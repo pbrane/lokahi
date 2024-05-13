@@ -21,13 +21,20 @@
  */
 package org.opennms.lokahi.minion.ssh;
 
+import com.google.protobuf.Message;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
+import org.opennms.ssh.contract.SshMonitorRequest;
 
 public class SshMonitorManager implements ServiceMonitorManager {
     @Override
     public ServiceMonitor create() {
         SshMonitor sshMonitor = new SshMonitor();
         return sshMonitor;
+    }
+
+    @Override
+    public Message.Builder createRequestBuilder() {
+        return SshMonitorRequest.newBuilder();
     }
 }
