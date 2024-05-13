@@ -20,6 +20,7 @@ import {
 } from '@/types/graphql'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
 import router from '@/router'
+import { CreateEditMode } from '@/types'
 
 const { showSnackbar } = useSnackbar()
 
@@ -36,6 +37,8 @@ type TState = {
   eventDefinitions?: AlertEventDefinition[]
   affectedNodesByMonitoringPolicyCount?: Map<number, number>
   cachedEventDefinitions?: Map<string, Array<AlertEventDefinition>>
+  ruleEditMode: CreateEditMode,
+  policyEditMode: CreateEditMode
 }
 
 const defaultPolicy: Policy = {
@@ -106,7 +109,9 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     formattedVendors: [] as string[],
     eventDefinitions: [] as AlertEventDefinition[],
     affectedNodesByMonitoringPolicyCount: new Map(),
-    cachedEventDefinitions: new Map()
+    cachedEventDefinitions: new Map(),
+    ruleEditMode: CreateEditMode.None,
+    policyEditMode: CreateEditMode.None
   }),
   actions: {
     // used for initial population of policies
@@ -250,7 +255,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.selectedPolicy!.rules?.push(this.selectedRule!)
       }
 
-      // this.selectedRule = await getDefaultRule()
+      this.setRuleEditMode(CreateEditMode.None)
+
       showSnackbar({ msg: 'Rule successfully applied to the policy.' })
       this.closeAlertRuleDrawer()
     },
@@ -302,6 +308,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.selectedPolicy = undefined
         this.selectedRule = undefined
         this.validationErrors = {}
+        this.setPolicyEditMode(CreateEditMode.None)
         await this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
         if (isCopy) {
@@ -367,6 +374,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     async closeAlertRuleDrawer() {
       this.alertRuleDrawer = false
       this.selectedRule = undefined
+      this.setRuleEditMode(CreateEditMode.None)
       this.validationErrors = {}
     },
     async formatVendors(vendors: string[]) {
@@ -384,6 +392,12 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         }
       }
       return ''
+    },
+    setRuleEditMode(mode: CreateEditMode) {
+      this.ruleEditMode = mode
+    },
+    setPolicyEditMode(mode: CreateEditMode) {
+      this.policyEditMode = mode
     },
     async listAlertEventDefinitionsByVendor() {
       const queries = useAlertEventDefinitionQueries()

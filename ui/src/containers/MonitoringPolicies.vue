@@ -29,12 +29,14 @@
 <script setup lang="ts">
 import router from '@/router'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { CreateEditMode } from '@/types';
 
 const displayDetails = ref(false)
 const store = useMonitoringPoliciesStore()
 
 const onCreatePolicy = () => {
   store.displayPolicyForm()
+  store.setPolicyEditMode(CreateEditMode.Create)
   router.push('/monitoring-policies-new/create')
 }
 

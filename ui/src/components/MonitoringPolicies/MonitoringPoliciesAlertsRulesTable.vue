@@ -58,7 +58,7 @@ import useModal from '@/composables/useModal'
 import useSnackbar from '@/composables/useSnackbar'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { IIcon } from '@/types'
+import { CreateEditMode, IIcon } from '@/types'
 import { PolicyRule } from '@/types/graphql'
 import Add from '@featherds/icon/action/Add'
 import CopyIcon from '@featherds/icon/action/ContentCopy'
@@ -87,9 +87,11 @@ const columns: { id: string; label: string }[] = [
 
 const copyRule = () => console.log('copy alerts')
 const createRule = () => {
+  monitoringPoliciesStore.setRuleEditMode(CreateEditMode.Create)
   monitoringPoliciesStore.openAlertRuleDrawer(undefined)
 }
 const editRule = (rule: PolicyRule) => {
+  monitoringPoliciesStore.setRuleEditMode(CreateEditMode.Edit)
   monitoringPoliciesStore.openAlertRuleDrawer(rule)
 }
 const countAlertsAndOpenDeleteModal = async (rule: PolicyRule) => {

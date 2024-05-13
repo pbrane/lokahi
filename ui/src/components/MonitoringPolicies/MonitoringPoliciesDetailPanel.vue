@@ -71,6 +71,7 @@
 import useModal from '@/composables/useModal'
 import router from '@/router'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { CreateEditMode } from '@/types'
 import { MonitorPolicy } from '@/types/graphql'
 import ContentCopy from '@featherds/icon/action/ContentCopy'
 import Delete from '@featherds/icon/action/Delete'
@@ -111,6 +112,7 @@ const deleteMsg = computed(() =>
 
 const onEdit = (policy: MonitorPolicy) => {
   if (policy.id) {
+    store.setPolicyEditMode(CreateEditMode.Edit)
     router.push(`/monitoring-policies-new/${policy.id}`)
   }
 }
