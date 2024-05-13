@@ -90,7 +90,7 @@ export async function getDefaultRule(): Promise<PolicyRule> {
     name: '',
     componentType: ManagedObjectType.Node,
     detectionMethod: DetectionMethod.Event,
-    eventType: EventType.SnmpTrap,
+    eventType: EventType.Internal,
     alertConditions: [await getDefaultEventCondition()],
     vendor: 'generic'
   }
@@ -138,8 +138,11 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     loadVendors() {
       const queries = useMonitoringPoliciesQueries()
       queries.listVendors().then((res) => {
-        this.vendors = res
-        this.formatVendors(res?.length ? res : [])
+        const sortedResponse = res?.sort()
+        console.log("!11111111111", sortedResponse);
+        
+        this.vendors = sortedResponse
+        this.formatVendors(sortedResponse?.length ? sortedResponse : [])
       })
     },
     displayPolicyForm(policy?: Policy) {
@@ -406,7 +409,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           this.eventDefinitions = this.cachedEventDefinitions.get(this.selectedRule.vendor)
         } else {
           const selectedVendor = this.selectedRule.vendor
-          const filteredVendor = this.vendors.find((x) => x.toLowerCase().indexOf(selectedVendor) > -1)
+          const filteredVendor = this.vendors.find((x) => x.toLowerCase().indexOf(selectedVendor.toLowerCase()) > -1)
           if (filteredVendor) {
             const request: EventDefsByVendorRequest = {
               eventType: this.selectedRule.eventType,
@@ -418,10 +421,10 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           }
         }
       }
-      if (this.selectedRule?.eventType === EventType.SystemEvent) {
-        const definitions = await queries.listAlertEventDefinitions(EventType.SnmpTrap)
-        this.eventDefinitions = definitions.value?.listAlertEventDefinitions
-      }
+      // if (this.selectedRule?.eventType === EventType.SystemEvent) {
+      //   const definitions = await queries.listAlertEventDefinitions(EventType.SnmpTrap)
+      //   this.eventDefinitions = definitions.value?.listAlertEventDefinitions
+      // }
       if (this.eventDefinitions && this.eventDefinitions.length > 0) {
         this.selectedRule?.alertConditions?.map((item) => {
           item.triggerEvent = this.eventDefinitions?.[0]
