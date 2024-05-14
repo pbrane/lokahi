@@ -16,16 +16,16 @@
               <MonitoringPoliciesCreateAlertRules />
             </div>
             <div class="footer">
-              <FeatherButton 
-                secondary 
-                @click="handleCancel" 
+              <FeatherButton
+                secondary
+                @click="handleCancel"
                 class="cancel-button"
               >
                 CANCEL
               </FeatherButton>
-              <ButtonWithSpinner 
-                primary 
-                @click.prevent="savePolicy" 
+              <ButtonWithSpinner
+                primary
+                @click.prevent="savePolicy"
                 :disabled="savePolicyEnableDisable"
               >
                 SAVE POLICY
@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import router from '@/router'
-import { CreateEditMode } from '@/types';
+import { CreateEditMode } from '@/types'
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 const isCheckAlertRule = ref()

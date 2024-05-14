@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import router from '@/router'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { CreateEditMode } from '@/types';
+import { CreateEditMode } from '@/types'
 
 const displayDetails = ref(false)
 const store = useMonitoringPoliciesStore()

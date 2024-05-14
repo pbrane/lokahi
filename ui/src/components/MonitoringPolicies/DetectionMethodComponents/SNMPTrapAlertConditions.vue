@@ -72,7 +72,8 @@
 
 <script setup lang="ts">
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { AlertCondition, AlertEventDefinition, Severity } from '@/types/graphql'
+import { CreateEditMode } from '@/types'
+import { AlertCondition, AlertEventDefinition, EventType, Severity } from '@/types/graphql'
 import { IAutocompleteItemType } from '@featherds/autocomplete'
 import Search from '@featherds/icon/action/Search'
 import { ISelectItemType } from '@featherds/select'
@@ -94,17 +95,20 @@ const severityOptions = [
 ]
 
 onMounted(async () => {
-  if (monitoringPoliciesStore.selectedRule?.vendor && monitoringPoliciesStore.selectedRule?.eventType) {
-    const vendor = monitoringPoliciesStore.formattedVendors?.find((x) => x.toLowerCase().indexOf(monitoringPoliciesStore.selectedRule?.vendor?.toLowerCase() ?? 'generic') > -1)
-    selectedVendor.value = { _text: vendor }
-    await monitoringPoliciesStore.listAlertEventDefinitionsByVendor()
-  }
-  if (monitoringPoliciesStore.selectedRule?.alertConditions && monitoringPoliciesStore.selectedRule?.alertConditions[0]) {
-    condition.value = monitoringPoliciesStore.selectedRule?.alertConditions[0]
-    if (monitoringPoliciesStore.selectedRule?.alertConditions[0].triggerEvent?.clearKey) {
-      clearEvent.value = monitoringPoliciesStore.getClearEventName(monitoringPoliciesStore.selectedRule?.alertConditions[0].triggerEvent.clearKey)
-    } else {
-      clearEvent.value = ''
+  if (monitoringPoliciesStore.selectedRule && monitoringPoliciesStore.selectedRule.alertConditions) {
+    let extractedVendor = ''
+    if (monitoringPoliciesStore.ruleEditMode === CreateEditMode.Create) {
+      extractedVendor = monitoringPoliciesStore.selectedRule.vendor ?? ''
+    }
+    if (monitoringPoliciesStore.ruleEditMode === CreateEditMode.Edit) {
+      extractedVendor = monitoringPoliciesStore.extractVendorFromEventUei(monitoringPoliciesStore.selectedRule.alertConditions[0].triggerEvent?.uei ?? '') ?? ''
+    }
+    const formattedVendor = monitoringPoliciesStore.formattedVendors?.find((x) => x.toLowerCase().indexOf(extractedVendor.toLowerCase()) > -1) ?? ''
+    selectedVendor.value = { _text: formattedVendor }
+    await monitoringPoliciesStore.listAlertEventDefinitionsByVendor(monitoringPoliciesStore.selectedRule.eventType as EventType, formattedVendor)
+    condition.value = monitoringPoliciesStore.selectedRule.alertConditions[0]
+    if (monitoringPoliciesStore.selectedRule.alertConditions[0].triggerEvent) {
+      setClearEvent(monitoringPoliciesStore.selectedRule.alertConditions[0].triggerEvent)
     }
   }
 })
@@ -121,19 +125,27 @@ const search = (q: string) => {
   loading.value = false
 }
 
-const setSelectedVendor = (v: any) => {
+const setSelectedVendor = async (v: any) => {
   if (monitoringPoliciesStore.selectedRule && v._text) {
-    monitoringPoliciesStore.selectedRule.vendor = monitoringPoliciesStore.vendors?.find((x) => x.toLowerCase().indexOf(v._text.toLowerCase()) > -1)
-    monitoringPoliciesStore.listAlertEventDefinitionsByVendor()
+    await monitoringPoliciesStore.listAlertEventDefinitionsByVendor(monitoringPoliciesStore.selectedRule.eventType as EventType, v._text)
+    if (monitoringPoliciesStore.eventDefinitions?.length) {
+      setClearEvent(monitoringPoliciesStore.eventDefinitions[0])
+    } else {
+      clearEvent.value = ''
+    }
+  }
+}
+
+const setClearEvent = (event: AlertEventDefinition) => {
+  if (event.uei) {
+    clearEvent.value = monitoringPoliciesStore.getClearEventName(event.uei)
+  } else {
+    clearEvent.value = ''
   }
 }
 
 const onUpdateTriggerEvent = (e: AlertEventDefinition) => {
-  if (e.clearKey) {
-    clearEvent.value = monitoringPoliciesStore.getClearEventName(e.clearKey)
-  } else {
-    clearEvent.value = ''
-  }
+  setClearEvent(e)
   monitoringPoliciesStore.updateCondition(condition.value.id, condition.value)
 }
 
@@ -166,7 +178,7 @@ const icons = markRaw({
     .event-clear {
       display: flex;
       gap: 10px;
-      
+
       h4, p {
         line-height: 2rem !important;
       }

@@ -27,7 +27,7 @@
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { Policy } from '@/types/policies'
 import router from '@/router'
-import { CreateEditMode } from '@/types';
+import { CreateEditMode } from '@/types'
 
 const selectedTab = ref(0)
 const store = useMonitoringPoliciesStore()

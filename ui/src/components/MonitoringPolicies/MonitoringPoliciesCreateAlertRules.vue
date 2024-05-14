@@ -9,6 +9,7 @@
 
 <script setup lang="ts">
 import { getDefaultRule, useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { CreateEditMode } from '@/types';
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 
@@ -17,6 +18,7 @@ const subTitle = ref('Alert conditions are an additional set of parameters speci
 
 onMounted(async () => {
   monitoringPoliciesStore.displayRuleForm(await getDefaultRule())
+  monitoringPoliciesStore.setRuleEditMode(CreateEditMode.Create)
 })
 </script>
 

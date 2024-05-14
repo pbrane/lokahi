@@ -136,8 +136,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       const queries = useMonitoringPoliciesQueries()
       queries.listVendors().then((res) => {
         const sortedResponse = res?.sort()
-        console.log("!11111111111", sortedResponse);
-        
         this.vendors = sortedResponse
         this.formatVendors(sortedResponse?.length ? sortedResponse : [])
       })
@@ -317,6 +315,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         delete policy.id // Clear the ID to create a new policy using copy
       }
 
+      policy.enabled = true
       await addMonitoringPolicy({ policy })
 
       if (!error.value) {
@@ -419,29 +418,38 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     setPolicyEditMode(mode: CreateEditMode) {
       this.policyEditMode = mode
     },
-    async listAlertEventDefinitionsByVendor() {
+    extractVendorFromEventUei(uei: string) {
+      if (uei) {
+        const splitsOnColon = uei.split(':')
+        const filteredUei = splitsOnColon.find((item) => item.startsWith('uei')) || ''
+        if (filteredUei) {
+          const splitsOnSlash = filteredUei.split('/')
+          return splitsOnSlash.find((item) => this.vendors?.includes(item))
+        }
+      }
+      return ''
+    },
+    async listAlertEventDefinitionsByVendor(eventType: EventType, vendor: string) {
       const queries = useAlertEventDefinitionQueries()
-      if (this.selectedRule?.eventType === EventType.SnmpTrap && this.selectedRule?.vendor && this.vendors) {
-        if (this.cachedEventDefinitions?.has(this.selectedRule.vendor)) {
-          this.eventDefinitions = this.cachedEventDefinitions.get(this.selectedRule.vendor)
+      if (eventType === EventType.SnmpTrap && vendor && this.selectedRule) {
+        const filteredVendor = this.vendors?.find((x) => x.toLowerCase().indexOf(vendor.toLowerCase()) > -1)
+        this.selectedRule.vendor = filteredVendor
+
+        if (this.cachedEventDefinitions?.has(vendor)) {
+          this.eventDefinitions = this.cachedEventDefinitions.get(vendor)
         } else {
-          const selectedVendor = this.selectedRule.vendor
-          const filteredVendor = this.vendors.find((x) => x.toLowerCase().indexOf(selectedVendor.toLowerCase()) > -1)
           if (filteredVendor) {
             const request: EventDefsByVendorRequest = {
-              eventType: this.selectedRule.eventType,
+              eventType: eventType,
               vendor: filteredVendor
             }
+
             const alertDefs = await queries.listAlertEventDefinitionsByVendor(request)
             this.cachedEventDefinitions?.set(filteredVendor, alertDefs ?? [])
-            this.eventDefinitions = await queries.listAlertEventDefinitionsByVendor(request)
+            this.eventDefinitions = alertDefs
           }
         }
       }
-      // if (this.selectedRule?.eventType === EventType.SystemEvent) {
-      //   const definitions = await queries.listAlertEventDefinitions(EventType.SnmpTrap)
-      //   this.eventDefinitions = definitions.value?.listAlertEventDefinitions
-      // }
       if (this.eventDefinitions && this.eventDefinitions.length > 0) {
         this.selectedRule?.alertConditions?.map((item) => {
           item.triggerEvent = this.eventDefinitions?.[0]
