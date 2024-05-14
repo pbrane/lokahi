@@ -27,13 +27,15 @@
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { Policy } from '@/types/policies'
 import router from '@/router'
+import { CreateEditMode } from '@/types';
 
 const selectedTab = ref(0)
 const store = useMonitoringPoliciesStore()
 const route = useRoute()
+
 const handleNext = () => {
   if (route.params.id == '0') {
-    store.savePolicy(true)
+    store.savePolicy({isCopy: true})
   } else {
     selectedTab.value = 1
   }
@@ -42,6 +44,8 @@ const handleNext = () => {
 const handleCancel = () => {
   store.clearSelectedPolicy()
   store.clearSelectedRule()
+  store.setPolicyEditMode(CreateEditMode.None)
+  store.setRuleEditMode(CreateEditMode.None)
   router.push('/monitoring-policies-new/')
 }
 

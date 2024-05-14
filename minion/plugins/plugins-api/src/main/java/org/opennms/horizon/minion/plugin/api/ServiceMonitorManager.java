@@ -21,6 +21,11 @@
  */
 package org.opennms.horizon.minion.plugin.api;
 
+import com.google.protobuf.Message;
+
 public interface ServiceMonitorManager {
+
     ServiceMonitor create();
+
+    Message.Builder createRequestBuilder();
 }

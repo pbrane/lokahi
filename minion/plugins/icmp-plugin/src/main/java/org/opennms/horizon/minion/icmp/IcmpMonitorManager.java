@@ -21,10 +21,12 @@
  */
 package org.opennms.horizon.minion.icmp;
 
+import com.google.protobuf.Message;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
 import org.opennms.horizon.shared.icmp.PingerFactory;
+import org.opennms.icmp.contract.IcmpMonitorRequest;
 
 @RequiredArgsConstructor
 public class IcmpMonitorManager implements ServiceMonitorManager {
@@ -35,5 +37,10 @@ public class IcmpMonitorManager implements ServiceMonitorManager {
         IcmpMonitor icmpMonitor = new IcmpMonitor(pingerFactory);
 
         return icmpMonitor;
+    }
+
+    @Override
+    public Message.Builder createRequestBuilder() {
+        return IcmpMonitorRequest.newBuilder();
     }
 }

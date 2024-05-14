@@ -5,6 +5,7 @@ fragment MonitoringPolicyParts on MonitorPolicy {
   notifyByEmail
   notifyByPagerDuty
   notifyByWebhooks
+  enabled
   rules {
     id
     name

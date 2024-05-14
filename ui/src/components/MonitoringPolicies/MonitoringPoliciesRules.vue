@@ -41,6 +41,7 @@
 <script setup lang="ts">
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import router from '@/router'
+import { CreateEditMode } from '@/types';
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 const isCheckAlertRule = ref()
@@ -55,6 +56,8 @@ watchEffect(() => {
 const handleCancel = () => {
   monitoringPoliciesStore.clearSelectedPolicy()
   monitoringPoliciesStore.clearSelectedRule()
+  monitoringPoliciesStore.setPolicyEditMode(CreateEditMode.None)
+  monitoringPoliciesStore.setRuleEditMode(CreateEditMode.None)
   router.push('/monitoring-policies-new/')
 }
 

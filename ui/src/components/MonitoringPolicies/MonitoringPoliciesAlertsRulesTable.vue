@@ -11,9 +11,15 @@
           <TransitionGroup name="data-table" tag="tbody">
             <tr class="policies-table-row" v-for="rule in monitoringPoliciesStore.selectedPolicy?.rules"
               :key="rule?.id">
-              <td>Outage</td>
-              <td>System Event / Device Unreachable</td>
-              <td>Critical / Interval 5 / 5 MINUTES</td>
+              <td>{{ rule?.name }}</td>
+              <template v-if="rule.alertConditions">
+                <td>{{ `${rule.alertConditions[0]?.triggerEvent?.eventType ?? 'Unknown'} / ${rule.alertConditions[0]?.triggerEvent?.name ?? 'Unknown'}` }}</td>
+                <td>{{ `${rule.alertConditions[0]?.severity ?? 'Unknown'}`}}</td>
+              </template>
+              <template v-else>
+                <td>Unknown</td>
+                <td>Unknown</td>
+              </template>
               <td class="actions-icons">
                 <div @click.prevent="copyRule" class="icon">
                   <Icon :icon="copyIcon" />
@@ -44,12 +50,12 @@
     </div>
   </div>
   <AlertRulesDrawer />
-  <DeleteConfirmationModal 
-    :isVisible="isVisible" 
-    :customMsg="deleteMsg" 
+  <DeleteConfirmationModal
+    :isVisible="isVisible"
+    :customMsg="deleteMsg"
     :closeModal="() => closeModal()"
-    :deleteHandler="() => monitoringPoliciesStore.removeRule()" 
-    :isDeleting="mutations.deleteRuleIsFetching" 
+    :deleteHandler="() => monitoringPoliciesStore.removeRule()"
+    :isDeleting="mutations.deleteRuleIsFetching"
   />
 </template>
 
@@ -58,7 +64,7 @@ import useModal from '@/composables/useModal'
 import useSnackbar from '@/composables/useSnackbar'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { IIcon } from '@/types'
+import { CreateEditMode, IIcon } from '@/types'
 import { PolicyRule } from '@/types/graphql'
 import Add from '@featherds/icon/action/Add'
 import CopyIcon from '@featherds/icon/action/ContentCopy'
@@ -79,17 +85,19 @@ const deleteMsg = computed(() =>
 )
 
 const columns: { id: string; label: string }[] = [
-  { id: 'AlertRule', label: 'Alert Rule' },
-  { id: 'ConditionalLogic', label: 'Conditional Logic' },
+  { id: 'NameOfRule', label: 'Name' },
+  { id: 'EventType', label: 'Event Type' },
   { id: 'Description', label: 'Description' },
   { id: 'Actions', label: 'Actions' }
 ]
 
 const copyRule = () => console.log('copy alerts')
 const createRule = () => {
+  monitoringPoliciesStore.setRuleEditMode(CreateEditMode.Create)
   monitoringPoliciesStore.openAlertRuleDrawer(undefined)
 }
 const editRule = (rule: PolicyRule) => {
+  monitoringPoliciesStore.setRuleEditMode(CreateEditMode.Edit)
   monitoringPoliciesStore.openAlertRuleDrawer(rule)
 }
 const countAlertsAndOpenDeleteModal = async (rule: PolicyRule) => {

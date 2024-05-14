@@ -10,8 +10,7 @@
       <div class="subtitle">Select a Vendor</div>
       <FeatherAutocomplete
         class="my-autocomplete"
-        label=""
-        hide-label
+        label="Vendor"
         v-model="selectedVendor"
         :loading="loading"
         :results="vendorSearchResults"
@@ -37,8 +36,8 @@
           </template></FeatherSelect>
         </div>
         <div class="col event-clear">
-          <h4>Clear Event (Optional):</h4>
-          <p>{{ clearEvent }}</p>
+          <h4>Clear Event:</h4>
+          <p>{{ clearEvent ? clearEvent : '--'}}</p>
         </div>
       </div>
     </div>
@@ -166,7 +165,11 @@ const icons = markRaw({
 
     .event-clear {
       display: flex;
-      gap: 5px;
+      gap: 10px;
+      
+      h4, p {
+        line-height: 2rem !important;
+      }
     }
   }
 }

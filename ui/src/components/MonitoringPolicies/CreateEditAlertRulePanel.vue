@@ -30,7 +30,6 @@
           :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
         />
       </div>
-      <SystemEventAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SystemEvent)" />
       <SNMPTrapAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SnmpTrap)" />
       <SyslogAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.Syslog)" />
       <MetricThresholdAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.MetricThreshold)" />
@@ -75,15 +74,14 @@ defineProps({
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 
 const eventTypeOptions = [
-  { id: EventType.MetricThreshold, name: 'Metric Threshold' },
-  { id: EventType.SystemEvent, name: 'System Event' },
+  { id: EventType.Internal, name: 'Internal' },
   { id: EventType.SnmpTrap, name: 'SNMP Trap' },
   { id: EventType.Syslog, name: 'Syslog' },
-  { id: EventType.Internal, name: 'Internal' }
+  { id: EventType.MetricThreshold, name: 'Metric Threshold' }
 ]
 
 const disableSaveRuleBtn = computed(
-  () => monitoringPoliciesStore.selectedPolicy?.isDefault || !monitoringPoliciesStore.selectedRule?.name
+  () => monitoringPoliciesStore?.selectedPolicy?.isDefault || !monitoringPoliciesStore?.selectedRule?.name
 )
 
 const selectEventType = (eventType: EventType) => {
@@ -115,6 +113,7 @@ const selectEventType = (eventType: EventType) => {
     padding: 10px 20px 20px 20px;
 
     .name {
+      margin-top: 5px;
       :deep(.label-border) {
         min-width: 50px !important;
       }

@@ -22,7 +22,17 @@
       <div class="card">
         <div class="sub-title">STATUS</div>
         <div class="toggle-wrapper">
-          <FeatherListSwitch class="basic-switch" v-model="store.selectedPolicy.enabled" />
+          <FeatherTooltip
+          :title="store.selectedPolicy?.enabled ? 'Enabled' : 'Disabled'"
+           v-slot="{ attrs, on }"
+          >
+          <BasicToggle
+              v-bind="attrs"
+              v-on="on"
+              :toggle="store.selectedPolicy?.enabled"
+              @toggle="updateMonitoringPolicyStatus"
+          />
+          </FeatherTooltip>
           <span>Active</span>
         </div>
       </div>
@@ -50,11 +60,14 @@
           </div>
         </div>
       </div>
-      <div class="card">
+      <div class="card btn-card">
         <FeatherButton class="delete" secondary @click="openModal">
           <FeatherIcon :icon="icons.deleteIcon" />
           DELETE
         </FeatherButton>
+        <ButtonWithSpinner primary @click.prevent="savePolicy">
+          SAVE POLICY
+        </ButtonWithSpinner>
       </div>
     </div>
   </div>
@@ -71,17 +84,17 @@
 import useModal from '@/composables/useModal'
 import router from '@/router'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { CreateEditMode } from '@/types'
 import { MonitorPolicy } from '@/types/graphql'
 import ContentCopy from '@featherds/icon/action/ContentCopy'
 import Delete from '@featherds/icon/action/Delete'
 import Edit from '@featherds/icon/action/Edit'
 import Cancel from '@featherds/icon/navigation/Cancel'
 
-
-
 const store = useMonitoringPoliciesStore()
 
 const { openModal, closeModal, isVisible } = useModal()
+const enableDisable = ref<boolean>()
 
 const noteMsg = ref('<b>Deleting this policy may cause these nodes to not be monitored, which means we will stop sending alerts</b>')
 
@@ -111,12 +124,15 @@ const deleteMsg = computed(() =>
 
 const onEdit = (policy: MonitorPolicy) => {
   if (policy.id) {
+    store.setPolicyEditMode(CreateEditMode.Edit)
     router.push(`/monitoring-policies-new/${policy.id}`)
   }
 }
 
 const onCopy = () => {
-  store.copyPolicy(store.selectedPolicy!)
+  if (store.selectedPolicy) {
+    store.copyPolicy(store.selectedPolicy)
+  }
 }
 
 const onClose = () => {
@@ -132,6 +148,19 @@ const onCloseModal = () => {
 const removePolicy = () => {
   store.removePolicy()
   emit('onClose')
+}
+
+const updateMonitoringPolicyStatus = (newStatus: boolean) => {
+  enableDisable.value = newStatus
+}
+
+const savePolicy = async () => {
+  if (enableDisable.value) {
+    const result = await store?.savePolicy({status: enableDisable.value})
+    if (result) {
+      router.push('/monitoring-policies-new/')
+    }
+  }
 }
 </script>
 
@@ -178,6 +207,12 @@ const removePolicy = () => {
       }
     }
   }
+}
+
+.btn-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .sub-title {

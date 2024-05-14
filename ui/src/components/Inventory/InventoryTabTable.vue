@@ -19,7 +19,7 @@
             </tr>
           </thead>
             <TransitionGroup name="data-table" tag="tbody">
-              <tr class="policies-table-row" v-for="node of tabContent">
+              <tr class="policies-table-row" v-for="node of tabContent" :key="node?.id">
                 <td class="node-alias">{{ node?.nodeAlias || node?.nodeLabel }}</td>
                 <td>{{ node.nodeLabel }}</td>
                 <td class="node-tags">{{ node?.tags?.length || 0}}</td>

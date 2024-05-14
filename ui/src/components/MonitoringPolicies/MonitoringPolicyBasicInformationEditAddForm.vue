@@ -4,14 +4,15 @@
     Create a clear and descriptive name for the monitoring policy
   </p>
   <div v-if="store.selectedPolicy" class="policy-form">
-      <FeatherInput
-        v-model.trim="store.selectedPolicy.name"
-        label="New Policy Name"
-        v-focus
-        data-test="policy-name-input"
-        :error="store.validationErrors.policyName"
-        :readonly="store.selectedPolicy.isDefault"
-      />
+    <FeatherInput
+      v-model.trim="store.selectedPolicy.name"
+      label="New Policy Name"
+      v-focus
+      data-test="policy-name-input"
+      :error="store.validationErrors.policyName"
+      :readonly="store.selectedPolicy.isDefault"
+      class="policy-name"
+    />
     <FeatherTextarea
       v-model.trim="store.selectedPolicy!.memo"
       label="Description" :maxlength="100"
@@ -53,12 +54,16 @@ const store = useMonitoringPoliciesStore()
 const tagQueries = useTagQueries()
 
 const selectTags = (tags: TagSelectItem[]) => (store.selectedPolicy!.tags = tags.map((tag) => tag.name))
-const formattedTags = computed(() => store.selectedPolicy!.tags!.map((tag: string) => ({ name: tag, id: tag })))
+const formattedTags = computed(() => store.selectedPolicy?.tags?.map((tag: string) => ({ name: tag, id: tag })) || [])
 </script>
 <style lang="scss" scoped>
 @use '@featherds/styles/themes/variables';
 @use '@featherds/styles/mixins/typography';
 @use '@/styles/vars.scss';
+
+.policy-name {
+  margin-top: 5px
+}
 
 .page-headline1 {
   @include typography.headline1;

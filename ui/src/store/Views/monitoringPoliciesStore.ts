@@ -20,6 +20,7 @@ import {
 } from '@/types/graphql'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
 import router from '@/router'
+import { CreateEditMode } from '@/types'
 
 const { showSnackbar } = useSnackbar()
 
@@ -36,6 +37,8 @@ type TState = {
   eventDefinitions?: AlertEventDefinition[]
   affectedNodesByMonitoringPolicyCount?: Map<number, number>
   cachedEventDefinitions?: Map<string, Array<AlertEventDefinition>>
+  ruleEditMode: CreateEditMode,
+  policyEditMode: CreateEditMode
 }
 
 const defaultPolicy: Policy = {
@@ -87,7 +90,7 @@ export async function getDefaultRule(): Promise<PolicyRule> {
     name: '',
     componentType: ManagedObjectType.Node,
     detectionMethod: DetectionMethod.Event,
-    eventType: EventType.SnmpTrap,
+    eventType: EventType.Internal,
     alertConditions: [await getDefaultEventCondition()],
     vendor: 'generic'
   }
@@ -106,7 +109,9 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     formattedVendors: [] as string[],
     eventDefinitions: [] as AlertEventDefinition[],
     affectedNodesByMonitoringPolicyCount: new Map(),
-    cachedEventDefinitions: new Map()
+    cachedEventDefinitions: new Map(),
+    ruleEditMode: CreateEditMode.None,
+    policyEditMode: CreateEditMode.None
   }),
   actions: {
     // used for initial population of policies
@@ -126,15 +131,15 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       //  Then this component can just display the status.
       //  Once back end adds ability to enable/disable, then we will add another issue to implement it here and elsewhere.
 
-      this.monitoringPolicies.forEach((p) => {
-        p.enabled = true
-      })
     },
     loadVendors() {
       const queries = useMonitoringPoliciesQueries()
       queries.listVendors().then((res) => {
-        this.vendors = res
-        this.formatVendors(res?.length ? res : [])
+        const sortedResponse = res?.sort()
+        console.log("!11111111111", sortedResponse);
+        
+        this.vendors = sortedResponse
+        this.formatVendors(sortedResponse?.length ? sortedResponse : [])
       })
     },
     displayPolicyForm(policy?: Policy) {
@@ -250,12 +255,29 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.selectedPolicy!.rules?.push(this.selectedRule!)
       }
 
-      // this.selectedRule = await getDefaultRule()
+      this.setRuleEditMode(CreateEditMode.None)
+
       showSnackbar({ msg: 'Rule successfully applied to the policy.' })
       this.closeAlertRuleDrawer()
     },
-    async savePolicy(isCopy = false) {
+    async savePolicy({ status, isCopy = false, clearSelected = false }: { status?: boolean; isCopy?: boolean; clearSelected?: boolean } = {}) {
       const { addMonitoringPolicy, error } = useMonitoringPoliciesMutations()
+
+      if (status !== undefined) {
+        const updateStatus = { ...this.selectedPolicy, enabled: status }
+        const { isDefault: _, ...policy } = updateStatus
+
+        await addMonitoringPolicy({ policy })
+
+        if (!error.value) {
+          const policyToUpdate = this.monitoringPolicies?.find(policy => policy?.id === this.selectedPolicy?.id)
+          if (policyToUpdate) {
+            policyToUpdate.enabled = status
+          }
+          showSnackbar({ msg: 'Policy status has been updated successfully.' })
+        }
+        return !error.value
+      }
 
       if (!this.selectedPolicy || !this.validateMonitoringPolicy(this.selectedPolicy)) {
         if (this.validationErrors.policyName) {
@@ -289,7 +311,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
 
         return rule
       })
-      delete policy.enabled
 
       if (isCopy) {
         delete policy.isDefault
@@ -299,11 +320,17 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       await addMonitoringPolicy({ policy })
 
       if (!error.value) {
-        this.selectedPolicy = undefined
-        this.selectedRule = undefined
+
+        if (clearSelected) {
+          this.clearSelectedPolicy()
+          this.clearSelectedRule()
+        }
+
         this.validationErrors = {}
+        this.setPolicyEditMode(CreateEditMode.None)
         await this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
+
         if (isCopy) {
           router.push('/monitoring-policies-new/')
         }
@@ -367,6 +394,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     async closeAlertRuleDrawer() {
       this.alertRuleDrawer = false
       this.selectedRule = undefined
+      this.setRuleEditMode(CreateEditMode.None)
       this.validationErrors = {}
     },
     async formatVendors(vendors: string[]) {
@@ -385,6 +413,12 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       }
       return ''
     },
+    setRuleEditMode(mode: CreateEditMode) {
+      this.ruleEditMode = mode
+    },
+    setPolicyEditMode(mode: CreateEditMode) {
+      this.policyEditMode = mode
+    },
     async listAlertEventDefinitionsByVendor() {
       const queries = useAlertEventDefinitionQueries()
       if (this.selectedRule?.eventType === EventType.SnmpTrap && this.selectedRule?.vendor && this.vendors) {
@@ -392,7 +426,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           this.eventDefinitions = this.cachedEventDefinitions.get(this.selectedRule.vendor)
         } else {
           const selectedVendor = this.selectedRule.vendor
-          const filteredVendor = this.vendors.find((x) => x.toLowerCase().indexOf(selectedVendor) > -1)
+          const filteredVendor = this.vendors.find((x) => x.toLowerCase().indexOf(selectedVendor.toLowerCase()) > -1)
           if (filteredVendor) {
             const request: EventDefsByVendorRequest = {
               eventType: this.selectedRule.eventType,
@@ -404,10 +438,10 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           }
         }
       }
-      if (this.selectedRule?.eventType === EventType.SystemEvent) {
-        const definitions = await queries.listAlertEventDefinitions(EventType.SnmpTrap)
-        this.eventDefinitions = definitions.value?.listAlertEventDefinitions
-      }
+      // if (this.selectedRule?.eventType === EventType.SystemEvent) {
+      //   const definitions = await queries.listAlertEventDefinitions(EventType.SnmpTrap)
+      //   this.eventDefinitions = definitions.value?.listAlertEventDefinitions
+      // }
       if (this.eventDefinitions && this.eventDefinitions.length > 0) {
         this.selectedRule?.alertConditions?.map((item) => {
           item.triggerEvent = this.eventDefinitions?.[0]

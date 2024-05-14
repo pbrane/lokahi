@@ -21,9 +21,11 @@
  */
 package org.opennms.horizon.minion.http;
 
+import com.google.protobuf.Message;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
+import org.opennms.monitors.http.contract.HttpMonitorRequest;
 
 @RequiredArgsConstructor
 public class HttpsMonitorManager implements ServiceMonitorManager {
@@ -32,5 +34,10 @@ public class HttpsMonitorManager implements ServiceMonitorManager {
     public ServiceMonitor create() {
         HttpsMonitor httpsMonitor = new HttpsMonitor();
         return httpsMonitor;
+    }
+
+    @Override
+    public Message.Builder createRequestBuilder() {
+        return HttpMonitorRequest.newBuilder();
     }
 }
