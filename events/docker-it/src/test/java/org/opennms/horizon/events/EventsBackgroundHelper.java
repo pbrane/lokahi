@@ -27,9 +27,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
-import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import org.opennms.horizon.events.proto.EventServiceGrpc;
@@ -46,7 +44,8 @@ public class EventsBackgroundHelper {
     private EventServiceGrpc.EventServiceBlockingStub eventServiceBlockingStub;
 
     private Integer externalGrpcPort;
-    private final Map<String, String> grpcHeaders = new TreeMap<>();
+    private String bootstrapServer;
+    private String topic;
 
     public void externalGRPCPortInSystemProperty(String propertyName) {
         String value = System.getProperty(propertyName);
@@ -78,11 +77,15 @@ public class EventsBackgroundHelper {
     public void grpcTenantId(String tenantId) {
         Objects.requireNonNull(tenantId);
         this.tenantId = tenantId;
-        grpcHeaders.put(GrpcConstants.TENANT_ID_KEY, tenantId);
         LOG.info("Using tenantId={}", tenantId);
     }
 
     public int getEventCount() {
         return eventServiceBlockingStub.listEvents(Empty.newBuilder().build()).getEventsCount();
+    }
+
+    public void initializeTrapProducer(String topic, String bootstrapServer) {
+        this.topic = topic;
+        this.bootstrapServer = System.getProperty(bootstrapServer);
     }
 }
