@@ -291,9 +291,10 @@ public class ScannerResponseService {
             for (IpInterfaceResult ipIfResult : result.getIpInterfacesList()) {
                 ipInterfaceService.createOrUpdateFromScanResult(tenantId, node, ipIfResult, ifIndexSNMPMap);
             }
+            nodeService.updateNodeInfo(node, result.getNodeInfo());
             result.getDetectorResultList()
                     .forEach(detectorResult -> processDetectorResults(tenantId, locationId, node, detectorResult));
-            nodeService.updateNodeInfo(node, result.getNodeInfo());
+
         } else {
             log.error(
                     "Error while process node scan results, tenantId={}; locationId={}; node with id {} doesn't exist",
