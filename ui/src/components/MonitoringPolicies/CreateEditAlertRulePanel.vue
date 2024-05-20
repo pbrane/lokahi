@@ -4,7 +4,7 @@
       <h2>{{ title || 'Create New Alert Rule' }}</h2>
       <p> {{ subTitle || 'A rule is a condition or set of conditions that triggers an alert.' }}</p>
     </div>
-    <div class="content">
+    <div :class="['content', { 'scroll-bar': !scrollBar }]">
       <div class="basic-information">
         <h3>Basic Information</h3>
         <p>Create a clear and descriptive name for the rule to easily identify its purpose and functionality. Then
@@ -68,7 +68,8 @@ import { EventType } from '@/types/graphql'
 
 defineProps({
   title: String,
-  subTitle: String
+  subTitle: String,
+  scrollBar: Boolean
 })
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
@@ -108,7 +109,10 @@ const selectEventType = (eventType: EventType) => {
     padding: 20px;
     min-height: 11%;
   }
-
+  .scroll-bar {
+    overflow: auto;
+    height: calc(100vh - 10rem);
+  }
   .content {
     padding: 10px 20px 20px 20px;
 

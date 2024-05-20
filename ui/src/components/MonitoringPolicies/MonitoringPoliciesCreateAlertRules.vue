@@ -1,7 +1,10 @@
 <template>
     <div class="alert-rules-container">
     <div class="alert-rules-content">
-       <CreateEditAlertRulePanel :title="title" :subTitle="subTitle"/>
+       <CreateEditAlertRulePanel
+        :title="title"
+        :subTitle="subTitle"
+        :scrollBar="scrollBar"/>
     </div>
    </div>
 
@@ -9,10 +12,10 @@
 
 <script setup lang="ts">
 import { getDefaultRule, useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { CreateEditMode } from '@/types';
+import { CreateEditMode } from '@/types'
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
-
+const scrollBar = ref(true)
 const title = ref('Specify Alert Conditions')
 const subTitle = ref('Alert conditions are an additional set of parameters specific to the chosen detection method. Alert condition help to  determine what alerts will be triggered and their assigned severity.')
 
