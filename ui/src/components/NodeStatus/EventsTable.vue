@@ -63,19 +63,19 @@
             </td>
             <td>
               <PillColor
-                :item="showSeverity('warning')"
+                :item="showSeverity(event.severity)"
                 data-test="severity-label"
               />
             </td>
             <td>{{ event.uei }}</td>
-            <td>{{ event.label || 'Local' }}</td>
+            <td>{{ event.eventLabel }}</td>
             <td>{{ event.ipAddress }}</td>
             <td>
               <div class="action-template">
                 <FeatherButton
                   primary
                   icon="Edit"
-                  @click="editEvent(event)"
+                  @click.stop="editEvent(event)"
                 >
                   <FeatherIcon :icon="icons.AddNote"/>
                 </FeatherButton>
@@ -150,7 +150,7 @@ const columns = [
   { id: 'severity', label: 'Severity' },
   { id: 'eventUei', label: 'UEI' },
   { id: 'eventLabel', label: 'Event Label'},
-  { id: 'ipAddress', label: 'IP Address' }
+  { id: 'ipAddress', label: 'Device Info' }
 ]
 const emptyListContent = {
   msg: 'No results found.'
