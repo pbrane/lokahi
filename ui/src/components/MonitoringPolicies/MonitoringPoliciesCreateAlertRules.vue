@@ -19,9 +19,9 @@ const scrollBar = ref(true)
 const title = ref('Specify Alert Conditions')
 const subTitle = ref('Alert conditions are an additional set of parameters specific to the chosen detection method. Alert condition help to  determine what alerts will be triggered and their assigned severity.')
 
-onMounted(async () => {
-  monitoringPoliciesStore.displayRuleForm(await getDefaultRule())
+onMounted(() => {
   monitoringPoliciesStore.setRuleEditMode(CreateEditMode.Create)
+  monitoringPoliciesStore.displayRuleForm(getDefaultRule(monitoringPoliciesStore.cachedEventDefinitions?.get('internal') ?? []))
 })
 </script>
 

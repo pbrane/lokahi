@@ -2,7 +2,7 @@ import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStor
 import { Policy, ThresholdCondition } from '@/types/policies'
 import { createTestingPinia } from '@pinia/testing'
 import { buildFetchList } from '../../utils'
-import { DetectionMethod, PolicyRule, EventType, ManagedObjectType, MonitorPolicy } from '@/types/graphql'
+import { DetectionMethod, PolicyRule, EventType, ManagedObjectType, MonitorPolicy, AlertEventDefinition } from '@/types/graphql'
 
 import { setActiveClient, useClient } from 'villus'
 
@@ -261,6 +261,15 @@ describe('Monitoring Policies Store', () => {
       const store = useMonitoringPoliciesStore()
       store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
       store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      const defaultAlertDefs: Array<AlertEventDefinition> = [
+        {
+          id: 7,
+          name: 'Device Unreachable',
+          eventType: EventType.Internal,
+          uei: 'uei.opennms.org/internal/node/serviceUnreachable'
+        }
+      ]
+      store.cachedEventDefinitions?.set('internal', defaultAlertDefs)
 
       await store.resetDefaultConditions()
       expect(store.resetDefaultConditions).toHaveBeenCalledOnce()
@@ -272,6 +281,15 @@ describe('Monitoring Policies Store', () => {
 
       store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
       store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      const defaultAlertDefs: Array<AlertEventDefinition> = [
+        {
+          id: 7,
+          name: 'Device Unreachable',
+          eventType: EventType.Internal,
+          uei: 'uei.opennms.org/internal/node/serviceUnreachable'
+        }
+      ]
+      store.cachedEventDefinitions?.set('internal', defaultAlertDefs)
 
       await store.addNewCondition()
       expect(store.addNewCondition).toHaveBeenCalledOnce()

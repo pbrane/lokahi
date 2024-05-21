@@ -166,7 +166,6 @@ const icons = markRaw({
 
     .col {
       flex: 1;
-
     }
 
     .event-trigger {

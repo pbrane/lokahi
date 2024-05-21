@@ -64,34 +64,28 @@ function getDefaultThresholdCondition(): ThresholdCondition {
   }
 }
 
-async function getDefaultEventCondition(): Promise<AlertCondition> {
-  const alertEventDefinitionQueries = useAlertEventDefinitionQueries()
-  const request: EventDefsByVendorRequest = {
-    eventType: EventType.SnmpTrap,
-    vendor: 'generic'
-  }
-  const alertEventDefinitions = await alertEventDefinitionQueries.listAlertEventDefinitionsByVendor(request)
-  if (alertEventDefinitions?.length) {
+function getDefaultEventCondition(alertDefs: Array<AlertEventDefinition>): AlertCondition {
+  if (alertDefs?.length) {
     return {
       id: new Date().getTime(),
       count: 1,
       severity: Severity.Major,
       overtimeUnit: Unknowns.UNKNOWN_UNIT,
-      triggerEvent: alertEventDefinitions[0]
+      triggerEvent: alertDefs[0]
     }
   } else {
     throw Error('Can\'t load alertEventDefinitions')
   }
 }
 
-export async function getDefaultRule(): Promise<PolicyRule> {
+export function getDefaultRule(alertDefs: Array<AlertEventDefinition>): PolicyRule {
   return {
     id: new Date().getTime(),
     name: '',
     componentType: ManagedObjectType.Node,
     detectionMethod: DetectionMethod.Event,
     eventType: EventType.Internal,
-    alertConditions: [await getDefaultEventCondition()],
+    alertConditions: [getDefaultEventCondition(alertDefs)],
     vendor: 'generic'
   }
 }
@@ -143,16 +137,28 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     displayPolicyForm(policy?: Policy) {
       this.selectedPolicy = policy ? cloneDeep(policy) : cloneDeep(defaultPolicy)
     },
+    async getInitialAlertEventDefinitions() {
+      const queries = useAlertEventDefinitionQueries()
+      const request: EventDefsByVendorRequest = {
+        eventType: EventType.SnmpTrap,
+        vendor: 'generic'
+      }
+      const alertDefsByVendor = await queries.listAlertEventDefinitionsByVendor(request)
+      this.cachedEventDefinitions?.set('generic', alertDefsByVendor ?? [])
+
+      const alertDefs = await queries.listAlertEventDefinitions(EventType.Internal)
+      this.cachedEventDefinitions?.set('internal', alertDefs.value?.listAlertEventDefinitions ?? [])
+    },
     clearSelectedPolicy() {
       this.selectedPolicy = undefined
     },
     clearSelectedRule() {
       this.selectedRule = undefined
     },
-    async displayRuleForm(rule?: PolicyRule) {
-      this.selectedRule = rule ? cloneDeep(rule) : cloneDeep(await getDefaultRule())
+    displayRuleForm(rule?: PolicyRule) {
+      this.selectedRule = rule ? cloneDeep(rule) : cloneDeep(getDefaultRule(this.cachedEventDefinitions?.get('internal') ?? []))
     },
-    async resetDefaultConditions() {
+    resetDefaultConditions() {
       if (!this.selectedRule) {
         return
       }
@@ -163,9 +169,9 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       }
 
       // detection method EVENT
-      return (this.selectedRule.alertConditions = [await getDefaultEventCondition()])
+      return (this.selectedRule.alertConditions = [getDefaultEventCondition(this.cachedEventDefinitions?.get('internal') ?? [])])
     },
-    async addNewCondition() {
+    addNewCondition() {
       if (!this.selectedRule) {
         return
       }
@@ -176,7 +182,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       }
 
       // detection method EVENT
-      return this.selectedRule.alertConditions?.push(await getDefaultEventCondition())
+      return this.selectedRule.alertConditions?.push(getDefaultEventCondition(this.cachedEventDefinitions?.get('internal') ?? []))
     },
     updateCondition(id: string, condition: Condition) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

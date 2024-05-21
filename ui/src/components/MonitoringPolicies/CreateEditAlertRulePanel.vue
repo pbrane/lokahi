@@ -30,6 +30,7 @@
           :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
         />
       </div>
+      <InternalAlertCondition v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.Internal)" />
       <SNMPTrapAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.SnmpTrap)" />
       <SyslogAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.Syslog)" />
       <MetricThresholdAlertConditions v-if="monitoringPoliciesStore.selectedRule?.eventType?.match(EventType.MetricThreshold)" />

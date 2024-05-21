@@ -115,6 +115,7 @@ const loadData = () => {
 
 onMounted(() => {
   store.loadVendors()
+  store.getInitialAlertEventDefinitions()
   loadData()
 })
 

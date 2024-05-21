@@ -4,7 +4,7 @@ import MonitoringPoliciesLegacy from '@/containers/MonitoringPoliciesLegacy.vue'
 import featherInputFocusDirective from '@/directives/v-focus'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
-import { DetectionMethod, EventType, ManagedObjectType, MonitorPolicy, PolicyRule, Severity } from '@/types/graphql'
+import { AlertEventDefinition, DetectionMethod, EventType, ManagedObjectType, MonitorPolicy, PolicyRule, Severity } from '@/types/graphql'
 import { buildFetchList } from '../utils'
 import { Policy } from '@/types/policies'
 
@@ -15,12 +15,13 @@ const testingPayload: MonitorPolicy = {
   notifyByPagerDuty: false,
   notifyByWebhooks: false,
   tags: ['default'],
+  enabled: true,
   rules: [
     {
       name: 'Rule1',
       componentType: ManagedObjectType.Node,
       detectionMethod: DetectionMethod.Event,
-      eventType: EventType.SnmpTrap,
+      eventType: EventType.Internal,
       alertConditions: [
         {
           count: 1,
@@ -28,34 +29,15 @@ const testingPayload: MonitorPolicy = {
           severity: Severity.Major,
           overtimeUnit: Unknowns.UNKNOWN_UNIT,
           triggerEvent: {
-            id: 1,
-            name: 'SNMP Trap',
-            eventType: EventType.SnmpTrap
+            id: 7,
+            name: 'Device Unreachable',
+            eventType: EventType.Internal,
+            uei: 'uei.opennms.org/internal/node/serviceUnreachable'
           }
         }
       ]
     }
   ]
-}
-
-const defaultPolicy: Policy = {
-  name: '',
-  memo: '',
-  notifyByEmail: false,
-  notifyByPagerDuty: false,
-  notifyByWebhooks: false,
-  tags: ['default'],
-  rules: []
-}
-
-const defaultRule: PolicyRule = {
-  id: 0,
-  name: '',
-  componentType: ManagedObjectType.Node,
-  detectionMethod: DetectionMethod.Event,
-  eventType: EventType.SnmpTrap,
-  alertConditions: [],
-  vendor: 'generic'
 }
 
 global.fetch = buildFetchList({
@@ -109,6 +91,16 @@ describe('Monitoring Policies Legacy', () => {
     const store = useMonitoringPoliciesStore()
     const newRuleBtn = wrapper.get('[data-test="new-rule-btn"]')
 
+    const defaultAlertDefs: Array<AlertEventDefinition> = [
+      {
+        id: 7,
+        name: 'Device Unreachable',
+        eventType: EventType.Internal,
+        uei: 'uei.opennms.org/internal/node/serviceUnreachable'
+      }
+    ]
+    store.cachedEventDefinitions?.set('internal', defaultAlertDefs)
+
     expect(store.selectedRule).toBeUndefined()
     await newRuleBtn.trigger('click')
     expect(store.displayRuleForm).toHaveBeenCalledTimes(1)
@@ -116,9 +108,18 @@ describe('Monitoring Policies Legacy', () => {
     // expect(store.selectedRule).toBeTruthy()
   })
 
-  test.skip('Saving a rule to the policy.', async () => {
+  test('Saving a rule to the policy.', async () => {
     const store = useMonitoringPoliciesStore()
     const saveRuleBtn = wrapper.get('[data-test="save-rule-btn"]')
+    const defaultAlertDefs: Array<AlertEventDefinition> = [
+      {
+        id: 7,
+        name: 'Device Unreachable',
+        eventType: EventType.Internal,
+        uei: 'uei.opennms.org/internal/node/serviceUnreachable'
+      }
+    ]
+    store.cachedEventDefinitions?.set('internal', defaultAlertDefs)
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(store.selectedPolicy!.rules?.length).toBe(0)
@@ -130,13 +131,22 @@ describe('Monitoring Policies Legacy', () => {
     expect(store.selectedPolicy!.rules?.length).toBe(1)
   })
 
-  test.skip('Saving a new policy.', async () => {
+  test('Saving a new policy.', async () => {
     const store = useMonitoringPoliciesStore()
     const mutations = useMonitoringPoliciesMutations()
     const savePolicyBtn = wrapper.get('[data-test="save-policy-btn"]')
+    const defaultAlertDefs: Array<AlertEventDefinition> = [
+      {
+        id: 7,
+        name: 'Device Unreachable',
+        eventType: EventType.Internal,
+        uei: 'uei.opennms.org/internal/node/serviceUnreachable'
+      }
+    ]
+    store.cachedEventDefinitions?.set('internal', defaultAlertDefs)
 
-    await wrapper.get('[data-test="policy-name-input"] .feather-input').setValue('Policy1')
     vi.spyOn(store, 'savePolicy')
+    await wrapper.get('[data-test="policy-name-input"] .feather-input').setValue('Policy1')
     await savePolicyBtn.trigger('click')
 
     expect(store.savePolicy).toHaveBeenCalledTimes(1)

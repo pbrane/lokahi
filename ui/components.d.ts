@@ -86,6 +86,7 @@ declare module '@vue/runtime-core' {
     HeadlineSection: typeof import('./src/components/Common/HeadlineSection.vue')['default']
     Icon: typeof import('./src/components/Common/Icon.vue')['default']
     InstructionsStepper: typeof import('./src/components/Common/InstructionsStepper.vue')['default']
+    InternalAlertCondition: typeof import('./src/components/MonitoringPolicies/DetectionMethodComponents/InternalAlertCondition.vue')['default']
     InventoryFilter: typeof import('./src/components/Inventory/InventoryFilter.vue')['default']
     InventoryIconActionList: typeof import('./src/components/Inventory/InventoryIconActionList.vue')['default']
     InventoryMetricChipList: typeof import('./src/components/Inventory/InventoryMetricChipList.vue')['default']
