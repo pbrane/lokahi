@@ -84,6 +84,14 @@ spec:
                   key: notificationPwd
             - name: SPRING_MAIL_FROM
               value: "{{ .Values.OpenNMS.notification.mailFrom }}"
+            - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+              value: "{{ .Values.OpenNMS.notification.smtpStartTls }}"
+            - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+              value: "{{ .Values.OpenNMS.notification.smtpAuth }}"
+            - name: SPRING_MAIL_USERNAME
+              value: "{{ .Values.OpenNMS.notification.smtpUsername }}"
+            - name: SPRING_MAIL_PASSWORD
+              value: "{{ .Values.OpenNMS.notification.smtpPassword }}"
             - name: HORIZON_EMAIL_RETRY_DELAY
               value: "{{ .Values.OpenNMS.notification.retry.delay }}"
             - name: HORIZON_EMAIL_RETRY_MAXDELAY

@@ -80,6 +80,7 @@ import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapperImpl;
 import org.opennms.horizon.alertservice.service.MonitorPolicyService;
+import org.opennms.horizon.alertservice.service.routing.MonitoringPolicyProducer;
 import org.opennms.horizon.alertservice.service.routing.TagOperationProducer;
 import org.opennms.horizon.shared.common.tag.proto.Operation;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationList;
@@ -113,6 +114,8 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
     @Captor
     ArgumentCaptor<TagOperationList> tagOperationListCaptor;
 
+    private MonitoringPolicyProducer monitoringPolicyProducer;
+
     @BeforeEach
     void prepareTest() throws VerificationException, IOException {
         mockMonitorPolicyRepository = mock(MonitorPolicyRepository.class);
@@ -131,7 +134,8 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
                 mockAlertDefinitionRepo,
                 mockAlertRepository,
                 mockTagRepository,
-                mockTagOperationProducer));
+                mockTagOperationProducer,
+                monitoringPolicyProducer));
         MonitorPolicyGrpc grpcService = new MonitorPolicyGrpc(spyMonitorPolicyService, tenantLookup);
         startServer(grpcService);
         channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();

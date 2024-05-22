@@ -51,6 +51,7 @@ import org.opennms.horizon.alertservice.db.repository.PolicyRuleRepository;
 import org.opennms.horizon.alertservice.db.repository.SystemPolicyTagRepository;
 import org.opennms.horizon.alertservice.db.repository.TagRepository;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
+import org.opennms.horizon.alertservice.service.routing.MonitoringPolicyProducer;
 import org.opennms.horizon.alertservice.service.routing.TagOperationProducer;
 import org.opennms.horizon.shared.common.tag.proto.Operation;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationList;
@@ -74,6 +75,7 @@ public class MonitorPolicyService {
 
     private final TagRepository tagRepository;
     private final TagOperationProducer tagOperationProducer;
+    private final MonitoringPolicyProducer monitoringPolicyProducer;
 
     private void validatePolicyName(MonitorPolicyProto request, String tenantId) {
         if (StringUtils.isBlank(request.getName())) {
@@ -137,6 +139,7 @@ public class MonitorPolicyService {
             var tags = updateTags(newPolicy, policy.getTags());
             newPolicy.setTags(tags);
             handleTagOperationUpdate(existingTags, tags);
+            monitoringPolicyProducer.sendMonitoringPolicy(newPolicy);
             return policyMapper.map(newPolicy);
         }
     }

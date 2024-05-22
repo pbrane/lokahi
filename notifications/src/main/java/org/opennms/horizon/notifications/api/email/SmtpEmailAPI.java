@@ -49,13 +49,11 @@ public class SmtpEmailAPI implements EmailAPI {
             try {
                 MimeMessage mimeMessage = sender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
-
                 helper.setTo(emailAddress);
                 helper.setFrom(fromAddress);
 
                 helper.setSubject(subject);
                 helper.setText(bodyHtml, true);
-
                 sender.send(helper.getMimeMessage());
                 return true;
             } catch (MailSendException e) {
