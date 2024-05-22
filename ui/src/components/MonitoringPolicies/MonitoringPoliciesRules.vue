@@ -58,6 +58,7 @@ const handleCancel = () => {
   monitoringPoliciesStore.clearSelectedRule()
   monitoringPoliciesStore.setPolicyEditMode(CreateEditMode.None)
   monitoringPoliciesStore.setRuleEditMode(CreateEditMode.None)
+  monitoringPoliciesStore.cachedAffectedAlertsByRule = new Map()
   router.push('/monitoring-policies-new/')
 }
 

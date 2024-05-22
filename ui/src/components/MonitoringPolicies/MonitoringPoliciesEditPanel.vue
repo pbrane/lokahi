@@ -39,6 +39,10 @@ const selectedTab = ref(0)
 const store = useMonitoringPoliciesStore()
 const route = useRoute()
 
+onMounted(() => {
+  store.cacheAlertsByRuleId()
+})
+
 const handleNext = () => {
   if (route.params.id == '0') {
     store.savePolicy({isCopy: true})
@@ -57,6 +61,7 @@ const handleCancel = () => {
   store.clearSelectedRule()
   store.setPolicyEditMode(CreateEditMode.None)
   store.setRuleEditMode(CreateEditMode.None)
+  store.cachedAffectedAlertsByRule = new Map()
   router.push('/monitoring-policies-new/')
 }
 

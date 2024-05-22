@@ -20,16 +20,16 @@
                 <td>Unknown</td>
                 <td>Unknown</td>
               </template>
-              <td class="actions-icons">
-                <div @click.prevent="copyRule" class="icon">
-                  <Icon :icon="copyIcon" />
-                </div>
-                <div @click.prevent="editRule(rule)" class="icon">
-                  <Icon :icon="editIcon" />
-                </div>
-                <div @click.prevent="countAlertsAndOpenDeleteModal(rule)" class="icon">
-                  <Icon :icon="removeIcon" />
-                </div>
+              <td>
+                <FeatherButton @click.prevent="copyRule(rule)" :disabled="disableActionRule" icon="copy">
+                  <FeatherIcon :icon="Copy"> </FeatherIcon>
+                </FeatherButton>
+                <FeatherButton @click.prevent="editRule(rule)" icon="edit">
+                  <FeatherIcon :icon="Edit"> </FeatherIcon>
+                </FeatherButton>
+                <FeatherButton @click.prevent="countAlertsAndOpenDeleteModal(rule)" :disabled="disableActionRule" icon="delete">
+                  <FeatherIcon :icon="Delete"> </FeatherIcon>
+                </FeatherButton>
               </td>
             </tr>
           </TransitionGroup>
@@ -43,7 +43,7 @@
         :disabled="disableAddAlertRule"
       >
         <template v-slot:icon>
-          <Icon :icon="addIcon" />
+          <FeatherIcon :icon="Add"> </FeatherIcon>
           ALERT RULE
         </template>
       </FeatherButton>
@@ -53,7 +53,7 @@
   <DeleteConfirmationModal
     :isVisible="isVisible"
     :customMsg="deleteMsg"
-    :closeModal="() => closeModal()"
+    :closeModal="() => closeDeleteModal()"
     :deleteHandler="() => monitoringPoliciesStore.removeRule()"
     :isDeleting="mutations.deleteRuleIsFetching"
   />
@@ -64,10 +64,10 @@ import useModal from '@/composables/useModal'
 import useSnackbar from '@/composables/useSnackbar'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { CreateEditMode, IIcon } from '@/types'
+import { CreateEditMode } from '@/types'
 import { PolicyRule } from '@/types/graphql'
 import Add from '@featherds/icon/action/Add'
-import CopyIcon from '@featherds/icon/action/ContentCopy'
+import Copy from '@featherds/icon/action/ContentCopy'
 import Delete from '@featherds/icon/action/Delete'
 import Edit from '@featherds/icon/action/Edit'
 
@@ -75,14 +75,9 @@ const { openModal, closeModal, isVisible } = useModal()
 const { showSnackbar } = useSnackbar()
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 const mutations = useMonitoringPoliciesMutations()
-const removeIcon: IIcon = { image: markRaw(Delete), tooltip: 'Alert Rule Delete', size: 1.5, cursorHover: true }
-const editIcon: IIcon = { image: markRaw(Edit), tooltip: 'Alert Rule Edit', size: 1.5, cursorHover: true }
-const copyIcon: IIcon = { image: markRaw(CopyIcon), tooltip: 'Alert Rule Copy', size: 1.5, cursorHover: true }
-const addIcon: IIcon = { image: markRaw(Add), tooltip: 'Alert Rule Add', size: 1.5, cursorHover: true }
 const disableAddAlertRule = computed(() => monitoringPoliciesStore.selectedPolicy?.isDefault)
-const deleteMsg = computed(() =>
-  `Deleting rule ${monitoringPoliciesStore.selectedRule?.name} removes ${monitoringPoliciesStore.numOfAlertsForRule} associated alerts. Do you wish to proceed?`
-)
+const disableActionRule = computed(() => monitoringPoliciesStore.selectedPolicy?.isDefault)
+const deleteMsg = ref()
 
 const columns: { id: string; label: string }[] = [
   { id: 'NameOfRule', label: 'Name' },
@@ -91,7 +86,9 @@ const columns: { id: string; label: string }[] = [
   { id: 'Actions', label: 'Actions' }
 ]
 
-const copyRule = () => console.log('copy alerts')
+const copyRule = (rule: PolicyRule) => {
+  monitoringPoliciesStore.copyRule(rule)
+}
 const createRule = () => {
   monitoringPoliciesStore.setRuleEditMode(CreateEditMode.Create)
   monitoringPoliciesStore.openAlertRuleDrawer(undefined)
@@ -103,7 +100,7 @@ const editRule = (rule: PolicyRule) => {
 const countAlertsAndOpenDeleteModal = async (rule: PolicyRule) => {
   if (monitoringPoliciesStore.selectedPolicy?.rules?.length && monitoringPoliciesStore.selectedPolicy?.rules?.length > 1) {
     monitoringPoliciesStore.selectedRule = rule
-    await monitoringPoliciesStore.countAlertsForRule()
+    deleteMsg.value = `Deleting rule ${monitoringPoliciesStore.selectedRule?.name} removes ${monitoringPoliciesStore.cachedAffectedAlertsByRule?.get(monitoringPoliciesStore.selectedRule.id)} associated alerts. Do you wish to proceed?`
     openModal()
   } else {
     showSnackbar({
@@ -112,7 +109,10 @@ const countAlertsAndOpenDeleteModal = async (rule: PolicyRule) => {
     })
   }
 }
-
+const closeDeleteModal = () => {
+  monitoringPoliciesStore.selectedRule = undefined
+  closeModal()
+}
 </script>
 
 <style lang="scss" scoped>
@@ -142,23 +142,6 @@ const countAlertsAndOpenDeleteModal = async (rule: PolicyRule) => {
       thead {
         background: var(variables.$background);
         text-transform: uppercase;
-      }
-
-      .actions-icons {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        gap: 5px;
-        min-height: 52px;
-        cursor: pointer;
-
-        .icon {
-          color: var(--feather-primary);
-
-          :deep(:focus) {
-            outline: none;
-          }
-        }
       }
 
       td {

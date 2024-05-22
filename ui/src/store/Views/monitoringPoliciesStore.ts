@@ -38,7 +38,8 @@ type TState = {
   affectedNodesByMonitoringPolicyCount?: Map<number, number>
   cachedEventDefinitions?: Map<string, Array<AlertEventDefinition>>
   ruleEditMode: CreateEditMode,
-  policyEditMode: CreateEditMode
+  policyEditMode: CreateEditMode,
+  cachedAffectedAlertsByRule?: Map<number, number>,
 }
 
 const defaultPolicy: Policy = {
@@ -105,7 +106,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     affectedNodesByMonitoringPolicyCount: new Map(),
     cachedEventDefinitions: new Map(),
     ruleEditMode: CreateEditMode.None,
-    policyEditMode: CreateEditMode.None
+    policyEditMode: CreateEditMode.None,
+    cachedAffectedAlertsByRule: new Map()
   }),
   actions: {
     // used for initial population of policies
@@ -256,7 +258,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       }
 
       this.setRuleEditMode(CreateEditMode.None)
-
+      this.cachedAffectedAlertsByRule?.set(this.selectedRule?.id, 0)
       showSnackbar({ msg: 'Rule successfully applied to the policy.' })
       this.closeAlertRuleDrawer()
     },
@@ -326,9 +328,9 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
 
         this.validationErrors = {}
         this.setPolicyEditMode(CreateEditMode.None)
+        this.cachedAffectedAlertsByRule = new Map()
         await this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
-
         if (isCopy) {
           router.push('/monitoring-policies-new/')
         }
@@ -351,6 +353,17 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       delete copiedPolicy.name
       this.displayPolicyForm(copiedPolicy)
     },
+    copyRule(rule: PolicyRule) {
+      const copiedRule = cloneDeep(rule)
+      copiedRule.name = `Copy of ${rule.name}`
+      copiedRule.id = new Date().getTime()
+      copiedRule.alertConditions?.map((condition) => {
+        condition.id = new Date().getTime()
+      })
+      this.cachedAffectedAlertsByRule?.set(copiedRule.id, 0)
+      this.selectedRule = copiedRule
+      this.saveRule()
+    },
     async removeRule() {
       const { deleteRule } = useMonitoringPoliciesMutations()
       await deleteRule({ id: this.selectedRule?.id })
@@ -363,6 +376,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.selectedPolicy!.rules?.splice(ruleIndex, 1)
       }
 
+      this.cachedAffectedAlertsByRule?.delete(this.selectedRule?.id)
       this.selectedRule = undefined
       this.getMonitoringPolicies()
     },
@@ -427,6 +441,18 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         }
       }
       return ''
+    },
+    cacheAlertsByRuleId() {
+      if (this.selectedPolicy?.rules) {
+        const { getAlertCountByRuleId } = useMonitoringPoliciesQueries()
+        this.selectedPolicy.rules.forEach(async (rule) => {
+          if (!this.cachedAffectedAlertsByRule?.has(rule.id)) {
+            getAlertCountByRuleId(rule.id).then((res) => {
+              this.cachedAffectedAlertsByRule?.set(rule.id, res)
+            })
+          }
+        })
+      }
     },
     async listAlertEventDefinitionsByVendor(eventType: EventType, vendor: string) {
       const queries = useAlertEventDefinitionQueries()
