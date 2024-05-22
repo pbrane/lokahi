@@ -402,10 +402,10 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.setRuleEditMode(CreateEditMode.None)
       this.validationErrors = {}
     },
-    async formatVendors(vendors: string[]) {
-      this.formattedVendors = vendors.map((vendor) => {
-        return vendor.charAt(0).toUpperCase() + vendor.slice(1)
-      })
+    formatVendors(vendors: string[]) {
+      let uniqueItems = Array.from(new Set(vendors.map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()))).sort();
+      uniqueItems = uniqueItems.filter(s => s !== "Generic");
+      this.formattedVendors = ['Generic', ...uniqueItems]
     },
     getClearEventName(key: string) {
       if (key) {

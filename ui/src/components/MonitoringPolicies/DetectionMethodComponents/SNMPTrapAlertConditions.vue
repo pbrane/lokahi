@@ -9,8 +9,8 @@
     <div>
       <div class="subtitle">Select a Vendor</div>
       <FeatherAutocomplete
-        class="my-autocomplete"
-        label="Vendor"
+        label=""
+        class="vendor-autocomplete"
         v-model="selectedVendor"
         :loading="loading"
         :results="vendorSearchResults"
@@ -36,8 +36,11 @@
           </template></FeatherSelect>
         </div>
         <div class="col event-clear">
-          <h4>Clear Event:</h4>
-          <p>{{ clearEvent ? clearEvent : '--'}}</p>
+          <FeatherInput
+            label="Clear Event"
+            v-model.trim="clearEvent"
+            readonly
+          ></FeatherInput>
         </div>
       </div>
     </div>
@@ -49,7 +52,6 @@
       </p>
       <FeatherInput
         label="Message"
-        class="input-name"
         v-model.trim="condition.alertMessage"
         @update:model-value="monitoringPoliciesStore.updateCondition(condition.id, condition)"
         :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
@@ -137,8 +139,8 @@ const setSelectedVendor = async (v: any) => {
 }
 
 const setClearEvent = (event: AlertEventDefinition) => {
-  if (event.uei) {
-    clearEvent.value = monitoringPoliciesStore.getClearEventName(event.uei)
+  if (event.clearKey) {
+    clearEvent.value = monitoringPoliciesStore.getClearEventName(event.clearKey)
   } else {
     clearEvent.value = ''
   }
@@ -173,23 +175,12 @@ const icons = markRaw({
         min-width: 74px !important;
       }
     }
-
-    .event-clear {
-      display: flex;
-      gap: 10px;
-
-      h4, p {
-        line-height: 2rem !important;
-      }
-    }
   }
 }
 
-.my-autocomplete {
-  :deep(.feather-autocomplete-content) {
-    textarea {
-      height: 26px !important;
-    }
+.vendor-autocomplete {
+  :deep(.label-border) {
+    width: 0px !important;
   }
 }
 
@@ -200,11 +191,5 @@ const icons = markRaw({
 
 .margin-fix {
   margin-bottom: 10px;
-}
-
-.input-name {
-  :deep(.label-border) {
-    width: 50px !important;
-  }
 }
 </style>

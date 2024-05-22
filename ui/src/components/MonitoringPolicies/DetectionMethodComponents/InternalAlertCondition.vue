@@ -22,8 +22,11 @@
                 </template></FeatherSelect>
                 </div>
                 <div class="col event-clear">
-                  <h4>Clear Event:</h4>
-                  <p>{{ clearEvent ? clearEvent : '--'}}</p>
+                  <FeatherInput
+                    label="Clear Event"
+                    v-model.trim="clearEvent"
+                    readonly
+                  ></FeatherInput>
                 </div>
             </div>
         </div>
@@ -113,15 +116,6 @@ const icons = markRaw({
 
     .col {
       flex: 1;
-    }
-
-    .event-clear {
-      display: flex;
-      gap: 10px;
-
-      h4, p {
-        line-height: 2rem !important;
-      }
     }
   }
 }
