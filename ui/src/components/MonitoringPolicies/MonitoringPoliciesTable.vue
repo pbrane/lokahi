@@ -4,7 +4,7 @@
       <div class="header">
         <div class="title-container">
           <div class="title-time">
-            <span class="title"></span>
+            <span class="title"/>
           </div>
           <div class="btns">
             <FeatherButton
@@ -72,8 +72,7 @@
           @update:modelValue="updatePage"
           @update:pageSize="updatePageSize"
           v-if="hasMonitoringPolicies"
-        >
-        </FeatherPagination>
+        />
       </div>
     </TableCard>
   </div>
@@ -103,6 +102,10 @@ const icons = markRaw({
   Refresh
 })
 
+const props = defineProps<{
+  refreshMonitoringPolicies: boolean
+}>()
+
 const loadData = () => {
   if (hasMonitoringPolicies.value) {
     page.value = 1
@@ -119,7 +122,7 @@ onMounted(() => {
   loadData()
 })
 
-watch(() => [hasMonitoringPolicies.value], () => {
+watch(() => [hasMonitoringPolicies.value, props.refreshMonitoringPolicies], () => {
   loadData()
 })
 

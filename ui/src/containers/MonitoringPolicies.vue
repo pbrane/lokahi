@@ -14,11 +14,13 @@
           <div :class="displayDetails ? 'feather-col-8' : 'feather-col-12'">
             <MonitoringPoliciesTable
               @policy-selected="displayDetails = true"
+              :refreshMonitoringPolicies = "reFresh"
             />
           </div>
           <div v-if="displayDetails" class="feather-col-4">
             <MonitoringPoliciesDetailPanel
               @on-close="displayDetails = false"
+              @on-refresh="onRefresh"
             />
           </div>
         </section>
@@ -31,7 +33,8 @@ import router from '@/router'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { CreateEditMode } from '@/types'
 
-const displayDetails = ref(false)
+const displayDetails = ref<boolean>(false)
+const reFresh = ref<boolean>(false)
 const store = useMonitoringPoliciesStore()
 
 const onCreatePolicy = () => {
@@ -41,6 +44,9 @@ const onCreatePolicy = () => {
 }
 
 onMounted(() => store.getMonitoringPolicies())
+const onRefresh = () => {
+  reFresh.value = !reFresh.value
+}
 </script>
 
 <style scoped lang="scss">

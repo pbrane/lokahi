@@ -121,10 +121,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           this.affectedNodesByMonitoringPolicyCount?.set(policy.id, count ?? 0)
         })
       })
-      // we are setting this to true until the back end supports enable/disable.
-      //  Then this component can just display the status.
-      //  Once back end adds ability to enable/disable, then we will add another issue to implement it here and elsewhere.
-
     },
     loadVendors() {
       const queries = useMonitoringPoliciesQueries()
@@ -274,10 +270,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         await addMonitoringPolicy({ policy })
 
         if (!error.value) {
-          const policyToUpdate = this.monitoringPolicies?.find(policy => policy?.id === this.selectedPolicy?.id)
-          if (policyToUpdate) {
-            policyToUpdate.enabled = status
-          }
+          await this.getMonitoringPolicies()
           showSnackbar({ msg: 'Policy status has been updated successfully.' })
         }
         return !error.value

@@ -11,7 +11,13 @@
         <MonitoringPolicyBasicInformationEditAddForm />
         <div class="d-flex justify-content-end mt-2">
           <FeatherButton text @click="handleCancel">Cancel</FeatherButton>
-          <FeatherButton primary @click="handleNext">
+          <FeatherButton
+           primary v-if="isPolicyEditable"
+           :disabled="isSavePolicyDisabled"
+           @click.prevent="savePolicy">
+           Save Policy
+          </FeatherButton>
+          <FeatherButton v-else primary @click="handleNext">
             {{ route?.params?.id !== '0' ? 'Next' : 'Save' }}
           </FeatherButton>
         </div>
@@ -41,6 +47,11 @@ const handleNext = () => {
   }
 }
 
+const isPolicyEditable = computed(() => store.policyEditMode === 2)
+const isSavePolicyDisabled = computed(
+  () => !store.selectedPolicy?.rules?.length || !store.selectedPolicy?.name || store.selectedPolicy.isDefault
+)
+
 const handleCancel = () => {
   store.clearSelectedPolicy()
   store.clearSelectedRule()
@@ -55,6 +66,13 @@ watchEffect(() => {
     store.displayPolicyForm(filteredPolicy as Policy)
   }
 })
+
+const savePolicy = async () => {
+  const result = await store?.savePolicy()
+  if (result) {
+    router.push('/monitoring-policies-new/')
+  }
+}
 </script>
 
 <style lang="scss" scoped>

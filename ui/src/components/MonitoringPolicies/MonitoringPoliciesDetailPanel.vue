@@ -65,8 +65,10 @@
           <FeatherIcon :icon="icons.deleteIcon" />
           DELETE
         </FeatherButton>
-        <ButtonWithSpinner primary @click.prevent="savePolicy">
-          SAVE POLICY
+        <ButtonWithSpinner primary
+          @click.prevent="savePolicy"
+          :disabled="isSavePolicyDisabled">
+            SAVE POLICY
         </ButtonWithSpinner>
       </div>
     </div>
@@ -94,12 +96,13 @@ import Cancel from '@featherds/icon/navigation/Cancel'
 const store = useMonitoringPoliciesStore()
 
 const { openModal, closeModal, isVisible } = useModal()
-const enableDisable = ref<boolean>()
+const isPolicyEnabled = ref<boolean>()
 
 const noteMsg = ref('<b>Deleting this policy may cause these nodes to not be monitored, which means we will stop sending alerts</b>')
 
 const emit = defineEmits<{
-  (e: 'onClose'): void
+  (e: 'onClose'): void,
+  (e: 'onRefresh'): void
 }>()
 
 const icons = markRaw({
@@ -108,6 +111,10 @@ const icons = markRaw({
   Edit,
   deleteIcon: Delete
 })
+
+const isSavePolicyDisabled = computed(
+  () => !store.selectedPolicy?.rules?.length || !store.selectedPolicy?.name || store.selectedPolicy.isDefault
+)
 
 const monitoringPolicyRules = computed(() => {
   const length = store.selectedPolicy?.rules?.length || 0
@@ -151,15 +158,14 @@ const removePolicy = () => {
 }
 
 const updateMonitoringPolicyStatus = (newStatus: boolean) => {
-  enableDisable.value = newStatus
+  isPolicyEnabled.value = newStatus
 }
 
 const savePolicy = async () => {
-  if (enableDisable.value) {
-    const result = await store?.savePolicy({status: enableDisable.value})
-    if (result) {
-      router.push('/monitoring-policies-new/')
-    }
+  const result = await store?.savePolicy({status: isPolicyEnabled.value})
+  if (result) {
+    emit('onRefresh')
+    router.push('/monitoring-policies-new/')
   }
 }
 </script>

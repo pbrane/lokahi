@@ -1,6 +1,6 @@
 <template>
   <div class="page-headline3">Name & Description</div>
-  <p>
+  <p class="page-sub-headline">
     Create a clear and descriptive name for the monitoring policy
   </p>
   <div v-if="store.selectedPolicy" class="policy-form">
@@ -77,6 +77,10 @@ const formattedTags = computed(() => store.selectedPolicy?.tags?.map((tag: strin
   @include typography.headline3;
 }
 
+.page-sub-headline {
+    padding: 5px 0 15px 0;
+}
+
 .mt-2 {
   margin-top: var(variables.$spacing-m);
 }
@@ -95,5 +99,9 @@ const formattedTags = computed(() => store.selectedPolicy?.tags?.map((tag: strin
 
 .justify-content-end {
   justify-content: end;
+}
+
+.subtitle {
+  padding-bottom: 1rem;
 }
 </style>
