@@ -24,10 +24,14 @@ package org.opennms.horizon.events.stepdefs;
 import static com.jayway.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.google.protobuf.Empty;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +43,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.hamcrest.Matchers;
 import org.opennms.horizon.events.EventsBackgroundHelper;
 import org.opennms.horizon.events.proto.Event;
+import org.opennms.horizon.events.proto.EventLog;
 import org.opennms.horizon.events.proto.EventsSearchBy;
 import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapDTO;
@@ -52,6 +57,7 @@ public class EventStepDefinitions {
     private static final Logger LOG = LoggerFactory.getLogger(EventStepDefinitions.class);
     private String tenantId;
     private String uei = "uei.opennms.org/generic/traps/SNMP_Cold_Start";
+    private final List<Event.Builder> builders = new ArrayList<>();
 
     @Given("[Event] External GRPC Port in system property {string}")
     public void externalGRPCPortInSystemProperty(String propertyName) {
@@ -132,5 +138,74 @@ public class EventStepDefinitions {
     @Given("Initialize Trap Producer With Topic {string} and BootstrapServer {string}")
     public void initializeTrapProducerWithTopicAndBootstrapServer(String topic, String bootstrapServer) {
         backgroundHelper.initializeTrapProducer(topic, bootstrapServer);
+    }
+
+    @Given("[Event] data")
+    public void nodeData(DataTable data) {
+        for (Map<String, String> map : data.asMaps()) {
+            Event.Builder builder = Event.newBuilder();
+            builder.setTenantId(map.get("tenant_id"))
+                    .setUei(map.get("uei"))
+                    .setIpAddress(map.get("ip_address"))
+                    .setLocationId(map.get("location_id"))
+                    .build();
+
+            builders.add(builder);
+        }
+    }
+
+    @When("Send events message to Kafka topic {string} and tenant {string}")
+    public void sendEventsMessageToKafkaTopic(String topic, String tenantId) {
+        List<Event> eventList = new ArrayList<>();
+        for (Event.Builder builder : builders) {
+            eventList.add(builder.build());
+        }
+
+        EventLog eventLog = EventLog.newBuilder()
+                .setTenantId(tenantId)
+                .addAllEvents(eventList)
+                .build();
+
+        var producerRecord = new ProducerRecord<String, byte[]>(topic, eventLog.toByteArray());
+
+        Properties producerConfig = new Properties();
+        if (backgroundHelper.getBootstrapServer() == null) {
+            System.out.println("null");
+        }
+        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, backgroundHelper.getBootstrapServer());
+        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
+        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getCanonicalName());
+        try (KafkaProducer<String, byte[]> kafkaProducer = new KafkaProducer<>(producerConfig)) {
+            kafkaProducer.send(producerRecord);
+        } catch (Exception e) {
+            LOG.error(e.toString());
+        }
+        System.out.println("Producer");
+    }
+
+    @Then("verify events persisted with uei {string} with total rows {int}")
+    public void verifyEventsPersistedWithTenant(String uei, int rows) {
+        await().atMost(20, TimeUnit.SECONDS)
+                .pollDelay(1, TimeUnit.SECONDS)
+                .pollInterval(2, TimeUnit.SECONDS)
+                .until(
+                        () ->
+                                backgroundHelper
+                                        .getEventServiceBlockingStub()
+                                        .listEvents(Empty.newBuilder().build())
+                                        .getEventsList()
+                                        .stream()
+                                        .anyMatch(event -> event.getUei().equals(uei)),
+                        Matchers.is(true));
+        List<Event> eventList =
+                backgroundHelper
+                        .getEventServiceBlockingStub()
+                        .listEvents(Empty.newBuilder().build())
+                        .getEventsList()
+                        .stream()
+                        .filter(event -> event.getUei().equals(uei))
+                        .toList();
+        assertNotNull(eventList);
+        assertTrue(eventList.size() == rows);
     }
 }
