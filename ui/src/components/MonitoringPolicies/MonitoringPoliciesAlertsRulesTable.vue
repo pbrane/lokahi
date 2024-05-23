@@ -100,7 +100,7 @@ const editRule = (rule: PolicyRule) => {
 const countAlertsAndOpenDeleteModal = async (rule: PolicyRule) => {
   if (monitoringPoliciesStore.selectedPolicy?.rules?.length && monitoringPoliciesStore.selectedPolicy?.rules?.length > 1) {
     monitoringPoliciesStore.selectedRule = rule
-    deleteMsg.value = `Deleting rule ${monitoringPoliciesStore.selectedRule?.name} removes ${monitoringPoliciesStore.cachedAffectedAlertsByRule?.get(monitoringPoliciesStore.selectedRule.id)} associated alerts. Do you wish to proceed?`
+    deleteMsg.value = `Deleting rule ${monitoringPoliciesStore.selectedRule?.name} removes ${monitoringPoliciesStore.cachedAffectedAlertsByRule?.get(monitoringPoliciesStore.selectedRule.id) ?? 0} associated alerts. Do you wish to proceed?`
     openModal()
   } else {
     showSnackbar({

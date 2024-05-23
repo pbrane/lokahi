@@ -68,7 +68,7 @@ function getDefaultThresholdCondition(): ThresholdCondition {
 function getDefaultEventCondition(alertDefs: Array<AlertEventDefinition>): AlertCondition {
   if (alertDefs?.length) {
     return {
-      id: new Date().getTime(),
+      id: -1,
       count: 1,
       severity: Severity.Major,
       overtimeUnit: Unknowns.UNKNOWN_UNIT,
@@ -81,7 +81,7 @@ function getDefaultEventCondition(alertDefs: Array<AlertEventDefinition>): Alert
 
 export function getDefaultRule(alertDefs: Array<AlertEventDefinition>): PolicyRule {
   return {
-    id: new Date().getTime(),
+    id: -1,
     name: '',
     componentType: ManagedObjectType.Node,
     detectionMethod: DetectionMethod.Event,
@@ -258,7 +258,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       }
 
       this.setRuleEditMode(CreateEditMode.None)
-      this.cachedAffectedAlertsByRule?.set(this.selectedRule?.id, 0)
       showSnackbar({ msg: 'Rule successfully applied to the policy.' })
       this.closeAlertRuleDrawer()
     },
@@ -295,6 +294,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       policy.rules = policy.rules?.map((rule) => {
         rule.alertConditions = rule.alertConditions?.map((condition) => {
           if (!policy.id) delete condition.id // don't send generated ids
+          if (condition.id === -1) delete condition.id
           delete condition.alertMessage
           delete condition.clearEvent
           return condition
@@ -302,7 +302,9 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         if (!policy.id) {
           delete rule.id // don't send generated ids
         }
-
+        if (rule.id === -1) {
+          delete rule.id
+        }
         if (policy.isDefault) {
           delete policy.isDefault // for updating default (tags only)
         }
@@ -356,11 +358,10 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     copyRule(rule: PolicyRule) {
       const copiedRule = cloneDeep(rule)
       copiedRule.name = `Copy of ${rule.name}`
-      copiedRule.id = new Date().getTime()
+      copiedRule.id = -1
       copiedRule.alertConditions?.map((condition) => {
-        condition.id = new Date().getTime()
+        condition.id = -1
       })
-      this.cachedAffectedAlertsByRule?.set(copiedRule.id, 0)
       this.selectedRule = copiedRule
       this.saveRule()
     },
@@ -410,8 +411,8 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.validationErrors = {}
     },
     formatVendors(vendors: string[]) {
-      let uniqueItems = Array.from(new Set(vendors.map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()))).sort();
-      uniqueItems = uniqueItems.filter(s => s !== "Generic");
+      let uniqueItems = Array.from(new Set(vendors.map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()))).sort()
+      uniqueItems = uniqueItems.filter(s => s !== 'Generic')
       this.formattedVendors = ['Generic', ...uniqueItems]
     },
     getClearEventName(key: string) {
