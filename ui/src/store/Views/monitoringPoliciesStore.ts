@@ -236,30 +236,38 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       return isValid
     },
     async saveRule() {
-      if (this.selectedRule && !this.validateRule(this.selectedRule)) {
+      if (this.selectedRule?.eventType === EventType.MetricThreshold || this.selectedRule?.eventType === EventType.Syslog) {
         showSnackbar({
-          msg: this.validationErrors.ruleName,
+          msg: 'Cannot yet save Alert Rule for Syslog and Metric Threshold event types.',
           error: true
         })
         return
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const existingItemIndex = this.selectedPolicy!.rules?.findIndex((rule) => rule.id === this.selectedRule!.id) ?? -1
-
-      if (existingItemIndex !== -1) {
-        // replace existing rule
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.selectedPolicy!.rules?.splice(existingItemIndex, 1, this.selectedRule!)
       } else {
-        // add new rule
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.selectedPolicy!.rules?.push(this.selectedRule!)
-      }
+        if (this.selectedRule && !this.validateRule(this.selectedRule)) {
+          showSnackbar({
+            msg: this.validationErrors.ruleName,
+            error: true
+          })
+          return
+        }
 
-      this.setRuleEditMode(CreateEditMode.None)
-      showSnackbar({ msg: 'Rule successfully applied to the policy.' })
-      this.closeAlertRuleDrawer()
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const existingItemIndex = this.selectedPolicy!.rules?.findIndex((rule) => rule.id === this.selectedRule!.id) ?? -1
+
+        if (existingItemIndex !== -1) {
+          // replace existing rule
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          this.selectedPolicy!.rules?.splice(existingItemIndex, 1, this.selectedRule!)
+        } else {
+          // add new rule
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          this.selectedPolicy!.rules?.push(this.selectedRule!)
+        }
+
+        this.setRuleEditMode(CreateEditMode.None)
+        showSnackbar({ msg: 'Rule successfully applied to the policy.' })
+        this.closeAlertRuleDrawer()
+      }
     },
     async savePolicy({ status, isCopy = false, clearSelected = false }: { status?: boolean; isCopy?: boolean; clearSelected?: boolean } = {}) {
       const { addMonitoringPolicy, error } = useMonitoringPoliciesMutations()

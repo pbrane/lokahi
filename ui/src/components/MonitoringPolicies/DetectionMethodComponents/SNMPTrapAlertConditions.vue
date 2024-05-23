@@ -32,7 +32,7 @@
             v-model="condition.triggerEvent"
             @update:model-value="(e) => onUpdateTriggerEvent(e as unknown as AlertEventDefinition)"
           ><template #pre>
-            <FeatherIcon :icon="icons.Search" />
+            <FeatherIcon :icon="Search" />
           </template></FeatherSelect>
         </div>
         <div class="col event-clear">
@@ -150,10 +150,6 @@ const onUpdateTriggerEvent = (e: AlertEventDefinition) => {
   setClearEvent(e)
   monitoringPoliciesStore.updateCondition(condition.value.id, condition.value)
 }
-
-const icons = markRaw({
-  Search
-})
 </script>
 
 <style scoped lang="scss">
