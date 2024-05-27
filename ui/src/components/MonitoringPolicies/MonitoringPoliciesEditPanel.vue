@@ -1,6 +1,14 @@
 <template>
   <div class="monitoring-policies-edit-panel">
-    <div class="page-headline1">Monitoring Policies</div>
+    <div class="monitoring-policy-header">
+      <div class="page-headline1">Monitoring Policies</div>
+      <FeatherButton
+        primary
+        @click="handleGoBack"
+        data-test="create-policy-btn"
+        >Go Back
+      </FeatherButton>
+    </div>
     <FeatherTabContainer class="mt-2" :modelValue="selectedTab">
       <template v-slot:tabs>
         <FeatherTab>Basic Information</FeatherTab>
@@ -65,6 +73,10 @@ const handleCancel = () => {
   router.push('/monitoring-policies-new/')
 }
 
+const handleGoBack = () => {
+  router.push('/monitoring-policies-new/')
+}
+
 watchEffect(() => {
   if (store.monitoringPolicies.length > 0 && route?.params?.id !== '0') {
     const filteredPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(route.params.id))
@@ -88,6 +100,15 @@ const savePolicy = async () => {
 .monitoring-policies-edit-panel {
   max-width: 1222px;
   margin: 2% auto;
+  .monitoring-policy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 5px;
+    :deep(.btn-secondary){
+      border: none;
+    }
+  }
 }
 
 .bg-white {
