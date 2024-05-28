@@ -122,6 +122,20 @@ const discoveryTypeList = [
         subtitle:
           'Connect to the Azure API, query the virtual machines list, and create entities for each VM in the node inventory.',
         value: DiscoveryType.Azure
+      },
+      {
+        title: 'Window Servers',
+        icon: AddNote,
+        subtitle:
+          'Conduct a Secure Windows Discovery to discover Servers, Processes, and more',
+        value: DiscoveryType.WindowsServer
+      },
+      {
+        title: 'Service Discovery',
+        icon: AddNote,
+        subtitle:
+          'Discovery network services from a preselected list that your Application depends on',
+        value: DiscoveryType.ServiceDiscovery
       }
     ]
   },

@@ -5,7 +5,9 @@ export enum DiscoveryType {
   ICMPV3Auth = 'ICMPV3Auth',
   ICMPV3AuthPrivacy = 'ICMPV3AuthPrivacy',
   Azure = 'AZURE',
-  SyslogSNMPTraps = 'SyslogSNMPTraps'
+  SyslogSNMPTraps = 'SyslogSNMPTraps',
+  WindowsServer = 'WindowsServer',
+  ServiceDiscovery = 'ServiceDiscovery'
 }
 
 export enum InstructionsType {

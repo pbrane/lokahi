@@ -287,6 +287,8 @@ const typeOptions = computed(() => {
   let options = [
     { value: DiscoveryType.ICMP, _text: 'ICMP/SNMP' },
     { value: DiscoveryType.Azure, _text: 'Azure' },
+    { value: DiscoveryType.WindowsServer, _text: 'Windows Server' },
+    { value: DiscoveryType.ServiceDiscovery, _text: 'Service Discovery' },
     { value: DiscoveryType.SyslogSNMPTraps, _text: 'Passive Traps' }
   ]
 
