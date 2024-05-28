@@ -342,7 +342,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         await this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
         if (isCopy) {
-          router.push('/monitoring-policies-new/')
+          router.push('/monitoring-policies')
         }
       }
 
@@ -354,7 +354,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       copiedPolicy.id = 0
       copiedPolicy.isDefault = false
       this.displayPolicyForm(copiedPolicy)
-      router.push('/monitoring-policies-new/0')
+      router.push('/monitoring-policies/0')
     },
     copyPolicyLegacy(policy: Policy) {
       const copiedPolicy = cloneDeep(policy)

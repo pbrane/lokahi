@@ -59,13 +59,13 @@ const handleCancel = () => {
   monitoringPoliciesStore.setPolicyEditMode(CreateEditMode.None)
   monitoringPoliciesStore.setRuleEditMode(CreateEditMode.None)
   monitoringPoliciesStore.cachedAffectedAlertsByRule = new Map()
-  router.push('/monitoring-policies-new/')
+  router.push('/monitoring-policies')
 }
 
 const savePolicy = async () => {
   const result = await monitoringPoliciesStore?.savePolicy()
   if (result) {
-    router.push('/monitoring-policies-new/')
+    router.push('/monitoring-policies')
   }
 }
 </script>

@@ -40,7 +40,7 @@ const store = useMonitoringPoliciesStore()
 const onCreatePolicy = () => {
   store.displayPolicyForm()
   store.setPolicyEditMode(CreateEditMode.Create)
-  router.push('/monitoring-policies-new/create')
+  router.push('/monitoring-policies/create')
 }
 
 onMounted(() => store.getMonitoringPolicies())

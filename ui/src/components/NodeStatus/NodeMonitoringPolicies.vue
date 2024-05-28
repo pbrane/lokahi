@@ -22,10 +22,10 @@ import { NewOrUpdatedDiscovery } from '@/types/discovery'
 const store = useMonitoringPoliciesStore()
 const router = useRouter()
 onMounted(() => store.getMonitoringPolicies())
-onUnmounted(() => store.$reset())
 const handleRoute = (policy: NewOrUpdatedDiscovery ) => {
+  store.selectedPolicy = policy
   router.push({
-    path: `/monitoring-policies/${policy.id}`
+    path: '/monitoring-policies'
   })
 }
 </script>

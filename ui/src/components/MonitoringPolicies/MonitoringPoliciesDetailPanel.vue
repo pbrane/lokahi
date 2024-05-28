@@ -132,7 +132,7 @@ const deleteMsg = computed(() =>
 const onEdit = (policy: MonitorPolicy) => {
   if (policy.id) {
     store.setPolicyEditMode(CreateEditMode.Edit)
-    router.push(`/monitoring-policies-new/${policy.id}`)
+    router.push(`/monitoring-policies/${policy.id}`)
   }
 }
 
@@ -165,7 +165,7 @@ const savePolicy = async () => {
   const result = await store?.savePolicy({status: isPolicyEnabled.value})
   if (result) {
     emit('onRefresh')
-    router.push('/monitoring-policies-new/')
+    router.push('/monitoring-policies')
   }
 }
 </script>

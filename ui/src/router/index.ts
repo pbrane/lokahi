@@ -36,28 +36,24 @@ const router = createRouter({
       component: () => import('@/containers/Discovery.vue')
     },
     {
+      // older monitoring policy page
+      path: '/monitoring-policies-legacy',
+      name: 'Monitoring Policies Legacy',
+      component: () => import('@/containers/MonitoringPoliciesLegacy.vue')
+    },
+    {
       path: '/monitoring-policies',
       name: 'Monitoring Policies',
-      component: () => import('@/containers/MonitoringPoliciesLegacy.vue')
-    },
-    {
-      path: '/monitoring-policies/:id',
-      name: 'Monitoring Policies Selected',
-      component: () => import('@/containers/MonitoringPoliciesLegacy.vue')
-    },
-    {
-      path: '/monitoring-policies-new',
-      name: 'Monitoring Policies New',
       component: () => import('@/containers/MonitoringPolicies.vue')
     },
     {
-      path: '/monitoring-policies-new/create',
-      name: 'Monitoring Policies New Selected',
-      component: () => import('../components/MonitoringPolicies/MonitoringPolicyCreatePanel.vue')
+      path: '/monitoring-policies/create',
+      name: 'Monitoring Policies Create',
+      component: () => import('../components/MonitoringPolicies/MonitoringPoliciesEditPanel.vue')
     },
     {
-      path: '/monitoring-policies-new/:id',
-      name: 'Monitoring Policies New Selected',
+      path: '/monitoring-policies/:id',
+      name: 'Monitoring Policies Edit',
       component: () => import('../components/MonitoringPolicies/MonitoringPoliciesEditPanel.vue')
     },
     {

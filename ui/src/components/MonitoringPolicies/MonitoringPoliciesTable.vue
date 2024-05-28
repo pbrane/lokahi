@@ -94,7 +94,6 @@ const page = ref(0)
 const pageSize = ref(0)
 const total = ref(0)
 const pageData = ref([] as MonitorPolicy[])
-const hasMonitoringPolicies = computed(() => store.monitoringPolicies && store.monitoringPolicies.length > 0)
 const clonedMonitoringPolicies = ref([] as MonitorPolicy[])
 const icons = markRaw({
   CheckCircle,
@@ -105,6 +104,21 @@ const icons = markRaw({
 const props = defineProps<{
   refreshMonitoringPolicies: boolean
 }>()
+
+const emit = defineEmits<{
+  (e: 'policySelected', id: number): void
+}>()
+
+const onSelectPolicy = (id: string) => {
+  const selectedPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(id))
+
+  if (selectedPolicy) {
+    store.displayPolicyForm(selectedPolicy)
+    emit('policySelected', Number(selectedPolicy.id))
+  }
+}
+
+const hasMonitoringPolicies = computed(() => store.monitoringPolicies && store.monitoringPolicies.length > 0)
 
 const loadData = () => {
   if (hasMonitoringPolicies.value) {
@@ -124,11 +138,10 @@ onMounted(() => {
 
 watch(() => [hasMonitoringPolicies.value, props.refreshMonitoringPolicies], () => {
   loadData()
+  if (store.selectedPolicy?.id) {
+    onSelectPolicy(`${store.selectedPolicy?.id}`)
+  }
 })
-
-const emit = defineEmits<{
-  (e: 'policySelected', id: number): void
-}>()
 
 const columns = [
   { id: 'name', label: 'Name' },
@@ -175,14 +188,6 @@ const getPageObjects = (array: Array<any>, pageNumber: number, pageSize: number)
   const startIndex = (pageNumber - 1) * pageSize
   const endIndex = startIndex + pageSize
   return array.slice(startIndex, endIndex)
-}
-const onSelectPolicy = (id: string) => {
-  const selectedPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(id))
-
-  if (selectedPolicy) {
-    store.displayPolicyForm(selectedPolicy)
-    emit('policySelected', Number(selectedPolicy.id))
-  }
 }
 
 const onDownload = () => {

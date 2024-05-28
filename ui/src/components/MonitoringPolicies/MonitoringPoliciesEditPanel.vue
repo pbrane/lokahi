@@ -38,9 +38,8 @@
 </template>
 
 <script setup lang="ts">
-import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { Policy } from '@/types/policies'
 import router from '@/router'
+import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { CreateEditMode } from '@/types'
 
 const selectedTab = ref(0)
@@ -70,24 +69,17 @@ const handleCancel = () => {
   store.setPolicyEditMode(CreateEditMode.None)
   store.setRuleEditMode(CreateEditMode.None)
   store.cachedAffectedAlertsByRule = new Map()
-  router.push('/monitoring-policies-new/')
+  router.push('/monitoring-policies')
 }
 
 const handleGoBack = () => {
-  router.push('/monitoring-policies-new/')
+  handleCancel()
 }
-
-watchEffect(() => {
-  if (store.monitoringPolicies.length > 0 && route?.params?.id !== '0') {
-    const filteredPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(route.params.id))
-    store.displayPolicyForm(filteredPolicy as Policy)
-  }
-})
 
 const savePolicy = async () => {
   const result = await store?.savePolicy()
   if (result) {
-    router.push('/monitoring-policies-new/')
+    router.push('/monitoring-policies')
   }
 }
 </script>
