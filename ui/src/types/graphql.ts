@@ -63,6 +63,7 @@ export type AlertCondition = {
   triggerEvent?: Maybe<AlertEventDefinition>;
   alertMessage?: Maybe<Scalars['String']>;
   alertRegex?: Maybe<Scalars['String']>;
+  isNew?: Maybe<boolean>;
 }
 
 export type AlertConditionInput = {
@@ -631,7 +632,8 @@ export type PolicyRule = {
   id?: Maybe<Scalars['Long']>;
   name?: Maybe<Scalars['String']>;
   thresholdMetricName?: Maybe<Scalars['String']>;
-  vendor?: Scalars['String']
+  vendor?: Scalars['String'];
+  isNew?: Maybe<boolean>;
 }
 
 export type EventDefsByVendorRequest = {

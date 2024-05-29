@@ -21,6 +21,7 @@ import {
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
 import router from '@/router'
 import { CreateEditMode } from '@/types'
+import { createId } from '@/components/utils'
 
 const { showSnackbar } = useSnackbar()
 
@@ -54,7 +55,7 @@ const defaultPolicy: Policy = {
 
 function getDefaultThresholdCondition(): ThresholdCondition {
   return {
-    id: new Date().getTime(),
+    id: createId(),
     level: ThresholdLevels.ABOVE,
     percentage: 50,
     forAny: 5,
@@ -68,11 +69,12 @@ function getDefaultThresholdCondition(): ThresholdCondition {
 function getDefaultEventCondition(alertDefs: Array<AlertEventDefinition>): AlertCondition {
   if (alertDefs?.length) {
     return {
-      id: -1,
+      id: createId(),
       count: 1,
       severity: Severity.Major,
       overtimeUnit: Unknowns.UNKNOWN_UNIT,
-      triggerEvent: alertDefs[0]
+      triggerEvent: alertDefs[0],
+      isNew: true
     }
   } else {
     throw Error('Can\'t load alertEventDefinitions')
@@ -81,13 +83,14 @@ function getDefaultEventCondition(alertDefs: Array<AlertEventDefinition>): Alert
 
 export function getDefaultRule(alertDefs: Array<AlertEventDefinition>): PolicyRule {
   return {
-    id: -1,
+    id: createId(),
     name: '',
     componentType: ManagedObjectType.Node,
     detectionMethod: DetectionMethod.Event,
     eventType: EventType.Internal,
     alertConditions: [getDefaultEventCondition(alertDefs)],
-    vendor: 'generic'
+    vendor: 'generic',
+    isNew: true
   }
 }
 
@@ -301,22 +304,18 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
 
       policy.rules = policy.rules?.map((rule) => {
         rule.alertConditions = rule.alertConditions?.map((condition) => {
-          if (!policy.id) delete condition.id // don't send generated ids
-          if (condition.id === -1) delete condition.id
+          if (condition.isNew === true) delete condition.id // don't send generated ids
+          delete condition.isNew
           delete condition.alertMessage
           delete condition.clearEvent
           return condition
         })
-        if (!policy.id) {
-          delete rule.id // don't send generated ids
-        }
-        if (rule.id === -1) {
-          delete rule.id
-        }
+        if (rule.isNew === true) delete rule.id // don't send generated ids
         if (policy.isDefault) {
           delete policy.isDefault // for updating default (tags only)
         }
         delete rule.vendor
+        delete rule.isNew
 
         return rule
       })
@@ -366,9 +365,11 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     copyRule(rule: PolicyRule) {
       const copiedRule = cloneDeep(rule)
       copiedRule.name = `Copy of ${rule.name}`
-      copiedRule.id = -1
+      copiedRule.id = createId()
+      copiedRule.isNew = true
       copiedRule.alertConditions?.map((condition) => {
-        condition.id = -1
+        condition.id = createId()
+        condition.isNew = true
       })
       this.selectedRule = copiedRule
       this.saveRule()

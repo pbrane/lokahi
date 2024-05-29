@@ -192,3 +192,7 @@ export const humanFileSizeFromBits = (bits: number, dp = 1) => {
 
   return bits.toFixed(dp) + ' ' + units[u]
 }
+
+export const createId = () => {
+  return new Date().getTime()
+}
