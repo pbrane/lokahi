@@ -292,43 +292,6 @@ ssl_check('onmshs.local', 1443, tries=300,
 
 
 # Deployment #
-helm_repo('minio', 'https://operator.min.io', labels=['zz_minio'])
-helm_resource('minio-operator', 'minio/operator',
-	flags=[
-		'--create-namespace',
-	],
-	resource_deps=[
-		'minio',
-	],
-)
-k8s_resource(
-    'minio-operator',
-    labels=['zz_minio'],
-    port_forwards=port_forward(9090, name='Console')
-)
-local_resource("minio-admin-jwt",["build-tools/basic/get_minio_jwt.sh"],labels=["zz_minio"],	resource_deps=[
-		'minio-operator',
-	],
-)
-
-helm_resource('minio-tenant', 'minio/tenant',
-	resource_deps=[
-		'minio-operator',
-	],
-    labels=['zz_minio'],
-)
-
-# login using minio/minio123 :-)
-k8s_resource(
-    'minio-tenant',
-    labels=['zz_minio'],
-    port_forwards=port_forward(9443, name='api'),
-    links=[
-        link('https://onmshs.local:9443/', 'Tenant Console'),
-    ]
-)
-
-# Deployment #
 # https://github.com/grafana/helm-charts/tree/main/charts/tempo
 helm_remote('tempo', version='1.7.1', repo_url='https://grafana.github.io/helm-charts',
     set=[
