@@ -134,13 +134,13 @@ onMounted(() => {
   store.loadVendors()
   store.getInitialAlertEventDefinitions()
   loadData()
+  if (store.selectedPolicy?.id) {
+    onSelectPolicy(`${store.selectedPolicy?.id}`)
+  }
 })
 
 watch(() => [hasMonitoringPolicies.value, props.refreshMonitoringPolicies], () => {
   loadData()
-  if (store.selectedPolicy?.id) {
-    onSelectPolicy(`${store.selectedPolicy?.id}`)
-  }
 })
 
 const columns = [
