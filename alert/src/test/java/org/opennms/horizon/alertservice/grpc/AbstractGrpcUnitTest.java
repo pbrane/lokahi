@@ -24,7 +24,7 @@ package org.opennms.horizon.alertservice.grpc;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.opennms.horizon.alertservice.service.MonitorPolicyService.SYSTEM_TENANT;
+import static org.opennms.horizon.shared.utils.SystemInfoUtils.SYSTEM_TENANT;
 
 import io.grpc.BindableService;
 import io.grpc.Metadata;

@@ -38,6 +38,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.server.mapper.alert.AlertMapper;
+import org.opennms.horizon.server.mapper.alert.MonitorPolicyMapper;
 import org.opennms.horizon.server.model.alerts.Alert;
 import org.opennms.horizon.server.model.alerts.AlertCount;
 import org.opennms.horizon.server.model.alerts.AlertEventDefinition;
@@ -51,6 +52,7 @@ import org.opennms.horizon.server.model.alerts.MonitorPolicy;
 import org.opennms.horizon.server.model.alerts.TimeRange;
 import org.opennms.horizon.server.model.inventory.DownloadAlertsResponse;
 import org.opennms.horizon.server.model.inventory.DownloadFormat;
+import org.opennms.horizon.server.model.inventory.DownloadResponse;
 import org.opennms.horizon.server.service.grpc.AlertsClient;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
 import org.slf4j.Logger;
@@ -69,6 +71,7 @@ public class GraphQLAlertService {
     private final AlertsClient alertsClient;
     private final ServerHeaderUtil headerUtil;
     private final AlertMapper mapper;
+    private final MonitorPolicyMapper policyMapper;
 
     @SuppressWarnings("squid:S107")
     @GraphQLQuery
@@ -147,6 +150,26 @@ public class GraphQLAlertService {
     @GraphQLQuery
     public Flux<MonitorPolicy> listMonitoryPolicies(@GraphQLEnvironment ResolutionEnvironment env) {
         return Flux.fromIterable(alertsClient.listMonitorPolicies(headerUtil.getAuthHeader(env)));
+    }
+
+    @GraphQLQuery
+    public Mono<DownloadResponse> searchAndDownloadMonitoringPolicies(
+            @GraphQLArgument(name = "pageSize") Integer pageSize,
+            @GraphQLArgument(name = "page") int page,
+            @GraphQLArgument(name = "sortBy") String sortBy,
+            @GraphQLArgument(name = "sortAscending") boolean sortAscending,
+            @GraphQLEnvironment ResolutionEnvironment env,
+            @GraphQLArgument(name = "downloadFormat") DownloadFormat downloadFormat) {
+
+        return Mono.just(generateDownloadableMonitoringPoliciesResponse(
+                alertsClient
+                        .downloadMonitorPolicies(pageSize, page, sortBy, sortAscending, headerUtil.getAuthHeader(env))
+                        .getPoliciesList()
+                        .stream()
+                        .map(policyMapper::map)
+                        .collect(Collectors.toList()),
+                downloadFormat,
+                env));
     }
 
     @GraphQLQuery
@@ -254,6 +277,39 @@ public class GraphQLAlertService {
         }
     }
 
+    @GraphQLQuery(name = "getNodesCountByMonitoringPolicy")
+    public Mono<Long> getNodesCountByMonitoringPolicy(
+            @GraphQLArgument(name = "id") long id, @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(alertsClient.getNodesCountByMonitoringPolicy(id, headerUtil.getAuthHeader(env)));
+    }
+
+    private DownloadResponse generateDownloadableMonitoringPoliciesResponse(
+            List<MonitorPolicy> monitorPolicies, DownloadFormat downloadFormat, ResolutionEnvironment env) {
+        downloadFormat = downloadFormat == null ? DownloadFormat.CSV : downloadFormat;
+        if (downloadFormat.equals(DownloadFormat.CSV)) {
+            StringBuilder csvData = new StringBuilder();
+            var csvformat = CSVFormat.Builder.create()
+                    .setHeader("Name", "Description", "Alert Rules", "Affected Nodes")
+                    .build();
+
+            try (CSVPrinter csvPrinter = new CSVPrinter(csvData, csvformat)) {
+                for (MonitorPolicy policy : monitorPolicies) {
+                    csvPrinter.printRecord(
+                            policy.getName(),
+                            policy.getMemo(),
+                            policy.getRules().size(),
+                            alertsClient.getNodesCountByMonitoringPolicy(
+                                    policy.getId(), headerUtil.getAuthHeader(env)));
+                }
+                csvPrinter.flush();
+            } catch (Exception e) {
+                LOG.error("Exception while printing records", e);
+            }
+            return new DownloadResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
+        }
+        throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
+    }
+
     private static DownloadAlertsResponse generateDownloadableAlertsResponse(
             List<Alert> alertList, DownloadFormat downloadFormat) throws IOException {
         if (downloadFormat == null) {
@@ -282,11 +338,5 @@ public class GraphQLAlertService {
             return new DownloadAlertsResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
         }
         throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
-    }
-
-    @GraphQLQuery(name = "getNodesCountByMonitoringPolicy")
-    public Mono<Long> getNodesCountByMonitoringPolicy(
-            @GraphQLArgument(name = "id") long id, @GraphQLEnvironment ResolutionEnvironment env) {
-        return Mono.just(alertsClient.getNodesCountByMonitoringPolicy(id, headerUtil.getAuthHeader(env)));
     }
 }

@@ -34,9 +34,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.alerts.proto.MonitorPolicyList;
 import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
+import org.opennms.horizon.alerts.proto.MonitorPolicySearchBy;
 import org.opennms.horizon.alerts.proto.MonitorPolicyServiceGrpc;
 import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
 import org.opennms.horizon.alertservice.service.MonitorPolicyService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -45,6 +49,8 @@ import org.springframework.stereotype.Component;
 public class MonitorPolicyGrpc extends MonitorPolicyServiceGrpc.MonitorPolicyServiceImplBase {
     private final MonitorPolicyService service;
     private final TenantLookup tenantLookup;
+    public static final int PAGE_SIZE_DEFAULT = 10;
+    public static final String SORT_BY_DEFAULT = "id";
 
     @Override
     public void createPolicy(MonitorPolicyProto request, StreamObserver<MonitorPolicyProto> responseObserver) {
@@ -195,6 +201,28 @@ public class MonitorPolicyGrpc extends MonitorPolicyServiceGrpc.MonitorPolicySer
                                         .build();
                                 responseObserver.onError(StatusProto.toStatusRuntimeException(status));
                             }
+                        },
+                        () -> responseObserver.onError(StatusProto.toStatusRuntimeException(badTenant())));
+    }
+
+    @Override
+    public void searchMonitorPolicies(
+            MonitorPolicySearchBy request, StreamObserver<MonitorPolicyList> responseObserver) {
+        tenantLookup
+                .lookupTenantId(Context.current())
+                .ifPresentOrElse(
+                        tenantId -> {
+                            Pageable pageRequest = PageRequest.of(
+                                    request.getPage(),
+                                    request.getPageSize() != 0 ? request.getPageSize() : PAGE_SIZE_DEFAULT,
+                                    Sort.by(
+                                            request.getSortAscending() ? Sort.Direction.ASC : Sort.Direction.DESC,
+                                            !request.getSortBy().isEmpty() ? request.getSortBy() : SORT_BY_DEFAULT));
+                            List<MonitorPolicyProto> list = service.searchMonitorPolicies(tenantId, pageRequest);
+                            responseObserver.onNext(MonitorPolicyList.newBuilder()
+                                    .addAllPolicies(list)
+                                    .build());
+                            responseObserver.onCompleted();
                         },
                         () -> responseObserver.onError(StatusProto.toStatusRuntimeException(badTenant())));
     }

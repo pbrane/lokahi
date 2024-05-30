@@ -24,8 +24,11 @@ package org.opennms.horizon.alertservice.db.repository;
 import java.util.List;
 import java.util.Optional;
 import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface MonitorPolicyRepository extends JpaRepository<MonitorPolicy, Long> {
     List<MonitorPolicy> findAllByTenantId(String tenantId);
@@ -39,4 +42,12 @@ public interface MonitorPolicyRepository extends JpaRepository<MonitorPolicy, Lo
     @Query(
             "SELECT policy FROM AlertCondition ac INNER JOIN ac.rule as pr INNER JOIN pr.policy as policy WHERE ac.id = ?1")
     Optional<MonitorPolicy> findMonitoringPolicyByAlertConditionId(Long alertConditionId);
+
+    @Query(
+            value = "SELECT p FROM MonitorPolicy p  " + "LEFT JOIN FETCH p.rules AS r "
+                    + "LEFT JOIN FETCH r.alertConditions AS ac "
+                    + "LEFT JOIN FETCH p.tags "
+                    + "WHERE p.tenantId IN :tenantIds ",
+            countQuery = "SELECT count(p) " + "FROM MonitorPolicy p " + "WHERE p.tenantId IN :tenantIds")
+    Page<MonitorPolicy> findByTenantIdIn(@Param("tenantIds") List<String> tenantIds, Pageable pageable);
 }
