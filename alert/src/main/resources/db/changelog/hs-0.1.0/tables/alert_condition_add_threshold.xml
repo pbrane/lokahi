@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="hs-0.1.0-alert_condition_add_threshold" author="jahanzebakhtar">
+        <addColumn tableName="alert_condition">
+            <column name="enabled" type="boolean" defaultValueBoolean="false"/>
+        </addColumn>
+        <addColumn tableName="alert_condition">
+            <column name="threshold" type="int"/>
+        </addColumn>
+        <addColumn tableName="alert_condition">
+            <column name="condition" type="text"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

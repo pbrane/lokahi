@@ -281,6 +281,9 @@ message AlertConditionProto {
   OverTimeUnit overtimeUnit = 6;
   Severity severity = 7;
   AlertEventDefinitionProto clearEvent = 8;
+  bool enabled = 9;
+  int32 threshold = 10;
+  string condition = 11;
 }
 
 enum OverTimeUnit {
@@ -319,6 +322,8 @@ message AlertEventDefinitionProto {
 enum EventType {
   INTERNAL = 0;
   SNMP_TRAP = 1;
+  SYSLOG = 2;
+  METRIC_THRESHOLD = 3;
 }
 
 message ListAlertEventDefinitionsRequest {

@@ -34,4 +34,7 @@ public class AlertCondition extends BaseModel {
     private String overtimeUnit;
     private String severity;
     private AlertEventDefinition clearEvent;
+    private boolean enabled;
+    private Integer threshold;
+    private String condition;
 }
