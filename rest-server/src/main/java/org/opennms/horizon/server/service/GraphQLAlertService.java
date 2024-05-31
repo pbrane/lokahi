@@ -50,7 +50,6 @@ import org.opennms.horizon.server.model.alerts.EventDefsByVendorRequest;
 import org.opennms.horizon.server.model.alerts.ListAlertResponse;
 import org.opennms.horizon.server.model.alerts.MonitorPolicy;
 import org.opennms.horizon.server.model.alerts.TimeRange;
-import org.opennms.horizon.server.model.inventory.DownloadAlertsResponse;
 import org.opennms.horizon.server.model.inventory.DownloadFormat;
 import org.opennms.horizon.server.model.inventory.DownloadResponse;
 import org.opennms.horizon.server.service.grpc.AlertsClient;
@@ -254,7 +253,7 @@ public class GraphQLAlertService {
     }
 
     @GraphQLQuery(name = "downloadRecentAlertsByNode")
-    public Mono<DownloadAlertsResponse> downloadRecentAlertsByNode(
+    public Mono<DownloadResponse> downloadRecentAlertsByNode(
             @GraphQLArgument(name = "pageSize") Integer pageSize,
             @GraphQLArgument(name = "page") int page,
             @GraphQLArgument(name = "sortBy") String sortBy,
@@ -310,7 +309,7 @@ public class GraphQLAlertService {
         throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
     }
 
-    private static DownloadAlertsResponse generateDownloadableAlertsResponse(
+    private static DownloadResponse generateDownloadableAlertsResponse(
             List<Alert> alertList, DownloadFormat downloadFormat) throws IOException {
         if (downloadFormat == null) {
             downloadFormat = DownloadFormat.CSV;
@@ -335,7 +334,7 @@ public class GraphQLAlertService {
             } catch (Exception e) {
                 LOG.error("Exception while printing records", e);
             }
-            return new DownloadAlertsResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
+            return new DownloadResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
         }
         throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
     }

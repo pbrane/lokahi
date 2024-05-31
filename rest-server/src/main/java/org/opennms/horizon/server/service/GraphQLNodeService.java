@@ -44,16 +44,14 @@ import org.opennms.horizon.server.mapper.SnmpInterfaceMapper;
 import org.opennms.horizon.server.mapper.discovery.ActiveDiscoveryMapper;
 import org.opennms.horizon.server.model.TimeRangeUnit;
 import org.opennms.horizon.server.model.inventory.DownloadFormat;
+import org.opennms.horizon.server.model.inventory.DownloadResponse;
 import org.opennms.horizon.server.model.inventory.IpInterface;
-import org.opennms.horizon.server.model.inventory.IpInterfaceResponse;
 import org.opennms.horizon.server.model.inventory.MonitoringLocation;
 import org.opennms.horizon.server.model.inventory.Node;
 import org.opennms.horizon.server.model.inventory.NodeCreate;
 import org.opennms.horizon.server.model.inventory.NodeUpdate;
 import org.opennms.horizon.server.model.inventory.SnmpInterface;
-import org.opennms.horizon.server.model.inventory.SnmpInterfaceResponse;
 import org.opennms.horizon.server.model.inventory.TopNNode;
-import org.opennms.horizon.server.model.inventory.TopNResponse;
 import org.opennms.horizon.server.model.inventory.discovery.active.ActiveDiscovery;
 import org.opennms.horizon.server.model.status.NodeStatus;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
@@ -195,7 +193,7 @@ public class GraphQLNodeService {
     }
 
     @GraphQLQuery(name = "downloadTopN")
-    public Mono<TopNResponse> downloadTopN(
+    public Mono<DownloadResponse> downloadTopN(
             @GraphQLEnvironment ResolutionEnvironment env,
             @GraphQLArgument(name = "timeRange") Integer timeRange,
             @GraphQLArgument(name = "timeRangeUnit") TimeRangeUnit timeRangeUnit,
@@ -227,7 +225,7 @@ public class GraphQLNodeService {
     }
 
     @GraphQLQuery(name = "downloadSnmpInterfaces")
-    public Mono<SnmpInterfaceResponse> downloadSnmpInterfaces(
+    public Mono<DownloadResponse> downloadSnmpInterfaces(
             @GraphQLEnvironment ResolutionEnvironment env,
             @GraphQLArgument(name = "searchTerm") String searchTerm,
             @GraphQLArgument(name = "nodeId") Long nodeId,
@@ -248,7 +246,7 @@ public class GraphQLNodeService {
         return Flux.fromIterable(client.getMonitoringPoliciesByNode(id, headerUtil.getAuthHeader(env)));
     }
 
-    private static TopNResponse generateDownloadableTopNResponse(
+    private static DownloadResponse generateDownloadableTopNResponse(
             List<TopNNode> topNNodes, DownloadFormat downloadFormat) throws IOException {
         if (downloadFormat == null) {
             downloadFormat = DownloadFormat.CSV;
@@ -271,12 +269,12 @@ public class GraphQLNodeService {
             } catch (Exception e) {
                 LOG.error("Exception while printing records", e);
             }
-            return new TopNResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
+            return new DownloadResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
         }
         throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
     }
 
-    private static SnmpInterfaceResponse generateDownloadableSnmpInterfaceResponse(
+    private static DownloadResponse generateDownloadableSnmpInterfaceResponse(
             List<SnmpInterfaceDTO> snmpInterfaceDTOs, DownloadFormat downloadFormat) throws IOException {
         if (downloadFormat == null) {
             downloadFormat = DownloadFormat.CSV;
@@ -313,7 +311,7 @@ public class GraphQLNodeService {
             } catch (Exception e) {
                 LOG.error("Exception while printing records", e);
             }
-            return new SnmpInterfaceResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
+            return new DownloadResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
         }
         throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
     }
@@ -331,7 +329,7 @@ public class GraphQLNodeService {
     }
 
     @GraphQLQuery(name = "downloadIpInterfacesByNodeAndSearchTerm")
-    public Mono<IpInterfaceResponse> downloadIpInterfacesByNodeAndSearchTerm(
+    public Mono<DownloadResponse> downloadIpInterfacesByNodeAndSearchTerm(
             @GraphQLEnvironment ResolutionEnvironment env,
             @GraphQLArgument(name = "nodeId") Long nodeId,
             @GraphQLArgument(name = "searchTerm") String searchTerm,
@@ -349,7 +347,7 @@ public class GraphQLNodeService {
         }
     }
 
-    private static IpInterfaceResponse generateDownloadableIpInterfacesResponse(
+    private static DownloadResponse generateDownloadableIpInterfacesResponse(
             List<IpInterface> ipInterfaceList, DownloadFormat downloadFormat) throws IOException {
         if (downloadFormat == null) {
             downloadFormat = DownloadFormat.CSV;
@@ -372,7 +370,7 @@ public class GraphQLNodeService {
             } catch (Exception e) {
                 LOG.error("Exception while printing records", e);
             }
-            return new IpInterfaceResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
+            return new DownloadResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
         }
         throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
     }
