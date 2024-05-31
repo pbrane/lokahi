@@ -26,7 +26,7 @@
            Save Policy
           </FeatherButton>
           <FeatherButton v-else primary @click="handleNext">
-            {{ route?.params?.id !== '0' ? 'Next' : 'Save' }}
+            Next
           </FeatherButton>
         </div>
       </FeatherTabPanel>
@@ -44,21 +44,16 @@ import { CreateEditMode } from '@/types'
 
 const selectedTab = ref(0)
 const store = useMonitoringPoliciesStore()
-const route = useRoute()
 
 onMounted(() => {
   store.cacheAlertsByRuleId()
 })
 
 const handleNext = () => {
-  if (route.params.id == '0') {
-    store.savePolicy({isCopy: true})
-  } else {
-    selectedTab.value = 1
-  }
+  selectedTab.value = 1
 }
 
-const isPolicyEditable = computed(() => store.policyEditMode === 2)
+const isPolicyEditable = computed(() => store.policyEditMode === CreateEditMode.Edit)
 const isSavePolicyDisabled = computed(
   () => !store.selectedPolicy?.rules?.length || !store.selectedPolicy?.name || store.selectedPolicy.isDefault
 )

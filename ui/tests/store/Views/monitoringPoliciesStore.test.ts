@@ -105,9 +105,9 @@ global.fetch = buildFetchList({
   countAlertByRuleId: {
     countAlertByRuleId: 5
   },
-  addMonitoringPolicy :{
+  addMonitoringPolicy: {
     createMonitorPolicy: {
-      id: 1 
+      id: 1
     }
   }
 })
@@ -213,8 +213,6 @@ describe('Monitoring Policies Store', () => {
       expect(store.copyPolicy).toHaveBeenCalledWith(mockData)
       expect(store.copyPolicy).toHaveBeenCalledOnce()
       expect(store.selectedPolicy).toStrictEqual({
-        id: 0,
-        isDefault: false,
         memo: '',
         name: 'Copy of ',
         notifyByEmail: false,
@@ -313,7 +311,7 @@ describe('Monitoring Policies Store', () => {
       test('should replace an existing rule', async () => {
         await store.saveRule()
         expect(store.selectedPolicy.rules[0].name).toBe('This Is Edited Rule')
-        
+
       })
 
       test('should add a new rule', async () => {
@@ -344,46 +342,46 @@ describe('Monitoring Policies Store', () => {
         expect(store.closeAlertRuleDrawer).toHaveBeenCalled()
       })
     })
-    
-describe('monitoringPolicies.savePolicy', () => {
-  let store: any
-  beforeEach(async () => {
-    store = useMonitoringPoliciesStore()
 
-    store.selectedRule = cloneDeep(mockPolicyRule)
-    vi.clearAllMocks()
-  })
-test('monitoringPolicies.savePolicy completes successfully', async () => {
-  await store.savePolicy()
-  expect(store.savePolicy).toHaveBeenCalledOnce()
-})
+    describe('monitoringPolicies.savePolicy', () => {
+      let store: any
+      beforeEach(async () => {
+        store = useMonitoringPoliciesStore()
 
-test('fails saving policy with validation errors', async () => {
-let FunctionReturn=  await store.savePolicy()
-  expect(FunctionReturn).toBeFalsy()
-})
+        store.selectedRule = cloneDeep(mockPolicyRule)
+        vi.clearAllMocks()
+      })
+      test('monitoringPolicies.savePolicy completes successfully', async () => {
+        await store.savePolicy()
+        expect(store.savePolicy).toHaveBeenCalledOnce()
+      })
 
-test('updates policy status on save', async () => {
-  let changedMockMonitoringPolicy = cloneDeep(mockMonitoringPolicy)
-  changedMockMonitoringPolicy.enabled = false
-  store.monitoringPolicies = [mockMonitoringPolicy]
-  store.selectedPolicy = changedMockMonitoringPolicy
-  store.getMonitoringPolicies = vi.fn().mockResolvedValue([mockMonitoringPolicy])
-  await store.savePolicy({status:true ,isCopy: false,clearSelected :false})
-  await store.getMonitoringPolicies()
-  expect(store.monitoringPolicies[0].enabled).toBe(true)
-  })
+      test('fails saving policy with validation errors', async () => {
+        const result =  await store.savePolicy()
+        expect(result).toBeFalsy()
+      })
 
-  test('fails saving with empty policy name', async () => {
-    let changedMockMonitoringPolicy = cloneDeep(mockMonitoringPolicy)
-    changedMockMonitoringPolicy.name = ''
-     store.monitoringPolicies = changedMockMonitoringPolicy
-     store.selectedPolicy = changedMockMonitoringPolicy
-     await store.savePolicy()
-    expect(store.validationErrors.policyName).toBe('Policy name cannot be blank.')
-     })
+      test('updates policy status on save', async () => {
+        const changedMockMonitoringPolicy = cloneDeep(mockMonitoringPolicy)
+        changedMockMonitoringPolicy.enabled = false
+        store.monitoringPolicies = [mockMonitoringPolicy]
+        store.selectedPolicy = changedMockMonitoringPolicy
+        store.getMonitoringPolicies = vi.fn().mockResolvedValue([mockMonitoringPolicy])
+        await store.savePolicy({status: true})
+        await store.getMonitoringPolicies()
+        expect(store.monitoringPolicies[0].enabled).toBe(true)
+      })
 
-})
+      test('fails saving with empty policy name', async () => {
+        const changedMockMonitoringPolicy = cloneDeep(mockMonitoringPolicy)
+        changedMockMonitoringPolicy.name = ''
+        store.monitoringPolicies = changedMockMonitoringPolicy
+        store.selectedPolicy = changedMockMonitoringPolicy
+        await store.savePolicy()
+        expect(store.validationErrors.policyName).toBe('Policy name cannot be blank.')
+      })
+
+    })
 
     describe('monitoringPolicies.resetDefaultConditions all Functionality Tests', () => {
       test('monitoringPolicies.resetDefaultConditions completes successfully', async () => {
@@ -496,7 +494,7 @@ test('updates policy status on save', async () => {
         // @ts-ignore
         expect(store.selectedRule.alertConditions.length).toBe(1)
         if (store.selectedRule.alertConditions && store.selectedRule.alertConditions?.length > 0) {
-          
+
           expect(store.selectedRule.alertConditions[0].severity).toBe('MAJOR')
         }
       })
@@ -519,7 +517,7 @@ test('updates policy status on save', async () => {
 
       await store.removeRule()
       expect(store.selectedRule).toBeUndefined()
-       // @ts-ignore
+      // @ts-ignore
       expect(store.selectedPolicy.rules.length).toBe(0)
 
     })
@@ -598,7 +596,7 @@ test('updates policy status on save', async () => {
 
     test('should format vendors correctly', async () => {
       const vendors = ['vendor1', 'vendor2']
-      const expectedFormattedVendors = ['Generic','Vendor1', 'Vendor2']
+      const expectedFormattedVendors = ['Generic', 'Vendor1', 'Vendor2']
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const store = useMonitoringPoliciesStore()
       await store.formatVendors(vendors)

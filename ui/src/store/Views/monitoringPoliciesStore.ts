@@ -272,7 +272,7 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         this.closeAlertRuleDrawer()
       }
     },
-    async savePolicy({ status, isCopy = false, clearSelected = false }: { status?: boolean; isCopy?: boolean; clearSelected?: boolean } = {}) {
+    async savePolicy({ status }: { status?: boolean } = {}) {
       const { addMonitoringPolicy, error } = useMonitoringPoliciesMutations()
 
       if (status !== undefined) {
@@ -320,29 +320,17 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         return rule
       })
 
-      if (isCopy) {
-        delete policy.isDefault
-        delete policy.id // Clear the ID to create a new policy using copy
-      }
-
       policy.enabled = true
       await addMonitoringPolicy({ policy })
 
       if (!error.value) {
-
-        if (clearSelected) {
-          this.clearSelectedPolicy()
-          this.clearSelectedRule()
-        }
-
+        this.clearSelectedPolicy()
+        this.clearSelectedRule()
         this.validationErrors = {}
         this.setPolicyEditMode(CreateEditMode.None)
         this.cachedAffectedAlertsByRule = new Map()
         await this.getMonitoringPolicies()
         showSnackbar({ msg: 'Policy successfully applied.' })
-        if (isCopy) {
-          router.push('/monitoring-policies')
-        }
       }
 
       return !error.value
@@ -350,8 +338,18 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     copyPolicy(policy: Policy) {
       const copiedPolicy = cloneDeep(policy)
       copiedPolicy.name = `Copy of ${copiedPolicy.name}`
-      copiedPolicy.id = 0
-      copiedPolicy.isDefault = false
+      delete copiedPolicy.id
+      delete copiedPolicy.isDefault
+      copiedPolicy.rules?.map((rule) => {
+        rule.id = createId()
+        rule.isNew = true
+        rule.alertConditions?.map((condition) => {
+          condition.id = createId()
+          condition.isNew = true
+          return condition
+        })
+        return rule
+      })
       this.displayPolicyForm(copiedPolicy)
       router.push('/monitoring-policies/0')
     },
