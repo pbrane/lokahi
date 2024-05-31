@@ -76,7 +76,9 @@
         class="discovery"
       >
         <div class="flex-title">
-          <h2 class="title">{{ discoveryCopy.title }} | {{ selectedTypeOption?._text }}</h2>
+          <div><h2 class="title">{{ discoveryCopy.title }} | {{ selectedTypeOption?._text }}</h2>
+            <span v-if="isServiceDiscovery">Fill out the form to create a discovery</span>
+          </div>
           <div
             style="display: flex; justify-content: flex-end"
             v-if="discoveryStore.selectedDiscovery.id"
@@ -161,9 +163,15 @@
         </p>
         <p
           class="margin-bottom"
-          v-if="!isICMPOrPassive"
+          v-if="!isICMPOrPassive && !isServiceDiscovery"
         >
           Set connection information like Azure client and subscription IDs.
+        </p>
+        <p
+          class="margin-bottom"
+          v-if="isServiceDiscovery"
+        >
+          Choose your protocol and enter in your credentials for Windows Discovery.
         </p>
         <FeatherTabContainer
           :modelValue="selectedTab"
@@ -352,6 +360,9 @@ const isICMPOrPassive = computed(
     discoveryStore.selectedDiscovery.type === DiscoveryType.ICMP ||
     discoveryStore.selectedDiscovery.type === DiscoveryType.SyslogSNMPTraps
 )
+const isServiceDiscovery = computed(() =>
+  discoveryStore.selectedDiscovery.type === DiscoveryType.ServiceDiscovery
+)
 
 watchEffect(() => {
   if (discoveryStore.loadedDiscoveries.length > 0 && route?.params?.id) {
@@ -524,6 +535,9 @@ onUnmounted(() => {
   }
   h2 {
     margin-bottom: 0;
+  }
+  span {
+    margin-top: 5px;
   }
 }
 .margin-bottom {
