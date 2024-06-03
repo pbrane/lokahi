@@ -64,7 +64,8 @@ query {
     $sortBy: String, 
     $downloadFormat: DownloadFormat
   ) {
-    alertsBytes
+    responseBytes
+    format
   }
 }
 

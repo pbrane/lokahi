@@ -5,7 +5,8 @@ import { DiscoveryStore, DiscoveryTrapMeta, NewOrUpdatedDiscovery } from '@/type
 import { clientToServerValidation, discoveryFromClientToServer, discoveryFromServerToClient } from '@/dtos/discovery.dto'
 import { useDiscoveryMutations } from '../Mutations/discoveryMutations'
 import { MonitoringLocation } from '@/types/graphql'
-
+import useSnackbar from '@/composables/useSnackbar'
+const { showSnackbar } = useSnackbar()
 export const useDiscoveryStore = defineStore('discoveryStore', {
   state: () => ({
     discoveryFormActive: false,
@@ -258,6 +259,11 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
           await discoveryMutations.upsertPassiveDiscovery({passiveDiscovery: discoveryFromClientToServer(this.selectedDiscovery)})
         } else if (this.selectedDiscovery.type === DiscoveryType.Azure) {
           await discoveryMutations.addAzureCreds({ discovery: discoveryFromClientToServer(this.selectedDiscovery)})
+        } else if (this.selectedDiscovery.type === DiscoveryType.ServiceDiscovery) {
+          this.loading = false
+          return showSnackbar({
+            msg: 'Service Discoveries cannot be saved yet!'
+          })
         } else {
           await discoveryMutations.createOrUpdateDiscovery({request: discoveryFromClientToServer(this.selectedDiscovery)})
         }

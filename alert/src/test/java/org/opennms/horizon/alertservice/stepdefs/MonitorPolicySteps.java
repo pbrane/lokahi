@@ -36,8 +36,11 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -57,6 +60,7 @@ import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsRequest;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
 import org.opennms.horizon.alerts.proto.MonitorPolicyList;
 import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
+import org.opennms.horizon.alerts.proto.MonitorPolicySearchBy;
 import org.opennms.horizon.alerts.proto.OverTimeUnit;
 import org.opennms.horizon.alerts.proto.PolicyRuleProto;
 import org.opennms.horizon.alerts.proto.Severity;
@@ -252,9 +256,11 @@ public class MonitorPolicySteps {
     public void verifyTheDefaultMonitoringPolicyHasTheFollowingData(DataTable dataTable) {
         List<Map<String, String>> rows = dataTable.asMaps();
         List<AlertConditionProto> events = defaultPolicy.getRulesList().get(0).getSnmpEventsList();
-        assertThat(events).asList().hasSize(rows.size());
-        for (int i = 0; i < events.size(); i++) {
-            assertThat(events.get(i))
+        List<AlertConditionProto> sortedEvents = new ArrayList<>(events);
+        Collections.sort(sortedEvents, Comparator.comparingLong(alert -> alert.getId()));
+        assertThat(sortedEvents).asList().hasSize(rows.size());
+        for (int i = 0; i < sortedEvents.size(); i++) {
+            assertThat(sortedEvents.get(i))
                     .extracting(e -> e.getTriggerEvent().getName(), e -> e.getSeverity()
                             .name())
                     .containsExactly(
@@ -441,5 +447,38 @@ public class MonitorPolicySteps {
                                 () -> new IllegalArgumentException("Monitor Policy  " + policyName + " not found"));
 
         assertFalse(disabledCreatedPolicy.getEnabled());
+    }
+
+    @Then("Get list of moniotr policy  and verify that its size is greated then {int}")
+    public void getListOfMoniotrPolicyAndVerifyThatItsSizeIsGreatedThen(int size) {
+        MonitorPolicySearchBy searchBy = getMonitorPolicySearchBy(3, "id", true);
+        var response = grpcClient.getPolicyStub().searchMonitorPolicies(searchBy);
+        assertTrue(response.getPoliciesList().size() > size);
+    }
+
+    @Then("Get list of moniotr policy list sort by {string} and verify list is coming in sorting manner")
+    public void getListOfMoniotrPolicyListSortByAndVerifyListIsComingInSortingManner(String columnName) {
+        MonitorPolicySearchBy searchBy = getMonitorPolicySearchBy(3, columnName, true);
+        MonitorPolicyList response = grpcClient.getPolicyStub().searchMonitorPolicies(searchBy);
+        Optional<MonitorPolicyProto> monitorPolicyProtoOption =
+                response.getPoliciesList().stream().findFirst();
+        assertEquals("default_policy", monitorPolicyProtoOption.get().getName());
+    }
+
+    @Then("Get list of moniotr policy with page size {int}  and verify list size is enqail to page size")
+    public void getListOfMoniotrPolicyWithPageSizeAndVerifyListSizeIsEnqailToPageSize(int pageSize) {
+        MonitorPolicySearchBy searchBy = getMonitorPolicySearchBy(pageSize, "id", false);
+        MonitorPolicyList response = grpcClient.getPolicyStub().searchMonitorPolicies(searchBy);
+        assertEquals(pageSize, response.getPoliciesList().size());
+    }
+
+    private MonitorPolicySearchBy getMonitorPolicySearchBy(int pageSize, String column, boolean sortAscending) {
+        MonitorPolicySearchBy searchBy = MonitorPolicySearchBy.newBuilder()
+                .setPage(0)
+                .setPageSize(pageSize)
+                .setSortAscending(sortAscending)
+                .setSortBy(column)
+                .build();
+        return searchBy;
     }
 }

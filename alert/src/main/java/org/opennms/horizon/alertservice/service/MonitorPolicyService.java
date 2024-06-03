@@ -21,8 +21,11 @@
  */
 package org.opennms.horizon.alertservice.service;
 
+import static org.opennms.horizon.shared.utils.SystemInfoUtils.SYSTEM_TENANT;
+
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +59,8 @@ import org.opennms.horizon.alertservice.service.routing.TagOperationProducer;
 import org.opennms.horizon.shared.common.tag.proto.Operation;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationList;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationProto;
+import org.opennms.horizon.shared.utils.SystemInfoUtils;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,7 +68,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 public class MonitorPolicyService {
-    public static final String SYSTEM_TENANT = "system-tenant";
     public static final String DEFAULT_POLICY = "default_policy";
 
     private final MonitorPolicyMapper policyMapper;
@@ -382,5 +386,14 @@ public class MonitorPolicyService {
             return AlertType.CLEAR;
         }
         return AlertType.ALARM_TYPE_UNDEFINED;
+    }
+
+    public List<MonitorPolicyProto> searchMonitorPolicies(String tenantId, Pageable pageRequest) {
+        return repository
+                .findByTenantIdIn(Arrays.asList(tenantId, SystemInfoUtils.SYSTEM_TENANT), pageRequest)
+                .getContent()
+                .stream()
+                .map(policyMapper::map)
+                .toList();
     }
 }

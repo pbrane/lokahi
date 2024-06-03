@@ -47,7 +47,9 @@ import org.opennms.horizon.alerts.proto.Filter;
 import org.opennms.horizon.alerts.proto.ListAlertEventDefinitionsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
+import org.opennms.horizon.alerts.proto.MonitorPolicyList;
 import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
+import org.opennms.horizon.alerts.proto.MonitorPolicySearchBy;
 import org.opennms.horizon.alerts.proto.MonitorPolicyServiceGrpc;
 import org.opennms.horizon.alerts.proto.Severity;
 import org.opennms.horizon.alerts.proto.TimeRangeFilter;
@@ -240,6 +242,23 @@ public class AlertsClient {
                 .stream()
                 .map(policyMapper::map)
                 .toList();
+    }
+
+    public MonitorPolicyList downloadMonitorPolicies(
+            Integer pageSize, int page, String sortBy, boolean sortAscending, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+
+        MonitorPolicySearchBy searchMonitorPoliciesRequest = MonitorPolicySearchBy.newBuilder()
+                .setPageSize(pageSize)
+                .setPage(page)
+                .setSortBy(sortBy)
+                .setSortAscending(sortAscending)
+                .build();
+        return policyStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .searchMonitorPolicies(searchMonitorPoliciesRequest);
     }
 
     public MonitorPolicy getMonitorPolicyById(Long id, String accessToken) {

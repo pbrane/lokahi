@@ -113,4 +113,13 @@ Feature: Monitor policy gRPC Functionality
     Then Fetch event defs for vendor "generic" and verify size is greater than or equal to 7
     Then Fetch event defs for event type "INTERNAL" and verify size is greater than or equal to 1
 
-
+  Scenario: Fetch minotor policies
+    Given Tenant id "test-tenant"
+    Given A monitoring policy named "search-test-policy" with tag "search-tag1", notifying by email
+    Given The policy has a rule named "search-snmp-rule" with component type "NODE" and trap definitions
+      | trigger_event_name | count | overtime | overtime_unit | severity | clear_event_name |
+      | SNMP Cold Start    | 1     | 3        | MINUTE        | MAJOR    |                  |
+    And The policy is created in the tenant
+    Then Get list of moniotr policy  and verify that its size is greated then 1
+    Then Get list of moniotr policy list sort by "name" and verify list is coming in sorting manner
+    Then Get list of moniotr policy with page size 1  and verify list size is enqail to page size

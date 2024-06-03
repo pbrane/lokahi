@@ -37,7 +37,7 @@ public class SystemInfoUtils {
     // as well
     public static final String OPENNMS_INSTANCE_ID_SYS_PROP = "org.opennms.instance.id";
     public static final String DEFAULT_INSTANCE_ID = "OpenNMS";
-
+    public static final String SYSTEM_TENANT = "system-tenant";
     private static final String s_instanceId;
     private static final String s_displayVersion;
     private static final String s_version;

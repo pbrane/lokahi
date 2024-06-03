@@ -51,6 +51,7 @@ import org.opennms.horizon.alertservice.db.repository.ThresholdedEventRepository
 import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
 import org.opennms.horizon.alertservice.mapper.AlertMapper;
 import org.opennms.horizon.events.proto.Event;
+import org.opennms.horizon.shared.utils.SystemInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -124,7 +125,7 @@ public class AlertEventProcessor {
                 alertDefinitionRepository.findByTenantIdAndUei(event.getTenantId(), event.getUei());
         if (alertDefinitions.isEmpty()) {
             alertDefinitions =
-                    alertDefinitionRepository.findByTenantIdAndUei(MonitorPolicyService.SYSTEM_TENANT, event.getUei());
+                    alertDefinitionRepository.findByTenantIdAndUei(SystemInfoUtils.SYSTEM_TENANT, event.getUei());
         }
         if (alertDefinitions.isEmpty()) {
             // No alert definition matching, no alert to create

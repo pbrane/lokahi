@@ -87,7 +87,8 @@ query DownloadIpInterfacesByNodeAndSearchTerm(
     searchTerm: $searchTerm
     downloadFormat: $downloadFormat
   ) {
-    ipInterfaces
+    responseBytes
+    format
   }
 }
 
@@ -111,8 +112,8 @@ query DownloadSnmpInterfaces(
     searchTerm: $searchTerm
     downloadFormat: $downloadFormat
   ) {
-    downloadFormat
-    snmpInterfaceBytes
+    responseBytes
+    format
   }
 }
 
@@ -122,6 +123,7 @@ query {
   $searchTerm: String!
   $downloadFormat: DownloadFormat
 ) {
-      searchEventsBytes
+    responseBytes
+    format
   }
 }

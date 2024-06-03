@@ -37,7 +37,7 @@ import org.opennms.horizon.server.mapper.EventMapper;
 import org.opennms.horizon.server.model.events.Event;
 import org.opennms.horizon.server.model.events.EventLogResponse;
 import org.opennms.horizon.server.model.inventory.DownloadFormat;
-import org.opennms.horizon.server.model.inventory.SearchEventsResponse;
+import org.opennms.horizon.server.model.inventory.DownloadResponse;
 import org.opennms.horizon.server.service.grpc.EventsClient;
 import org.opennms.horizon.server.utils.DateTimeUtil;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
@@ -86,7 +86,7 @@ public class GraphQLEventService {
     }
 
     @GraphQLQuery(name = "downloadEventsByNodeId")
-    public Mono<SearchEventsResponse> downloadEventsByNodeId(
+    public Mono<DownloadResponse> downloadEventsByNodeId(
             @GraphQLEnvironment ResolutionEnvironment env,
             @GraphQLArgument(name = "nodeId") Long nodeId,
             @GraphQLArgument(name = "searchTerm") String searchTerm,
@@ -109,7 +109,7 @@ public class GraphQLEventService {
         }
     }
 
-    private static SearchEventsResponse generateDownloadableEventsResponse(
+    private static DownloadResponse generateDownloadableEventsResponse(
             List<Event> events, DownloadFormat downloadFormat) throws IOException {
         if (downloadFormat == null) {
             downloadFormat = DownloadFormat.CSV;
@@ -132,7 +132,7 @@ public class GraphQLEventService {
             } catch (Exception e) {
                 LOG.error("Exception while printing records", e);
             }
-            return new SearchEventsResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
+            return new DownloadResponse(csvData.toString().getBytes(StandardCharsets.UTF_8), downloadFormat);
         }
         throw new IllegalArgumentException("Invalid download format" + downloadFormat.value);
     }

@@ -124,7 +124,37 @@
         />
       </div>
     </div>
+    <div v-if="[DiscoveryType.WindowsServer].includes(discovery.type as DiscoveryType)"></div>
+    <div v-if="[DiscoveryType.ServiceDiscovery].includes(discovery.type as DiscoveryType)">
+      <div class="discovery-targets">
+        <div class="discovery-title">
+          <h5>Enter Discovery Targets</h5>
+          <Icon :icon="targetsDiscoveryIcon" />
+        </div>
+        <FeatherTextarea
+          class="input-dicovery"
+          v-model.trim="discoveryTargets"
+          label="Enter Discovery Targets"
+          :maxlength="150"
+        >
+        </FeatherTextarea>
+       </div>
+       <div class="discovery-title">
+          <h5>Select services to associate with the Discovery</h5>
+          <Icon :icon="servicesProtocolIcon" />
+       </div>
+      <div class="services-protocol">
+        <FeatherCheckbox
+          v-for="service in services"
+          :key="service.label"
+          :model-value="selectService.includes(service.label)"
+          @update:model-value="(isSelected) => onSelectService(service.label, Boolean(isSelected))"
+        >
+          {{ service.label }}
+        </FeatherCheckbox>
+   </div>
   </div>
+ </div>
 </template>
 <script lang="ts" setup>
 import { PropType } from 'vue'
@@ -138,14 +168,39 @@ import {
   DiscoveryAzureMeta
 } from '@/types/discovery'
 import { FeatherTabContainer } from '@featherds/tabs'
+import { IIcon } from '@/types'
+import Warning from '@featherds/icon/notification/Warning'
 const props = defineProps({
   discovery: { type: Object as PropType<NewOrUpdatedDiscovery>, default: () => ({}) },
   discoveryErrors: { type: Object as PropType<Record<string, string>>, default: () => ({}) },
   updateDiscoveryValue: { type: Function as PropType<(key: string, value: string) => void>, default: () => ({}) }
 })
 const isOverallDisabled = computed(() => !!(props.discovery.type === DiscoveryType.Azure && props.discovery.id))
-
 const selectedTab = ref()
+const discoveryTargets = ref()
+const selectService = ref<string[]>([])
+const services = reactive([
+  { label: 'HTTP (Port 80)' },
+  { label: 'HTTPS (Port 443)' },
+  { label: 'NTP' },
+  { label: 'Telnet' },
+  { label: 'DNS' },
+  { label: 'SSH' }
+])
+
+const targetsDiscoveryIcon: IIcon = {
+  image: markRaw(Warning),
+  tooltip: 'Discovery Targets',
+  size: 1.5,
+  cursorHover: true
+}
+const servicesProtocolIcon: IIcon = {
+  image: markRaw(Warning),
+  tooltip: 'Services associate with discovery',
+  size: 1.5,
+  cursorHover: true
+}
+
 const changeSecurityType = (type?: number) => {
   let setType = DiscoveryType.ICMPV3NoAuth
   if (type === 1) {
@@ -172,6 +227,17 @@ const isICMPV3 = computed(() =>
 const isICMPV3WithPass = computed(() =>
   [DiscoveryType.ICMPV3Auth, DiscoveryType.ICMPV3AuthPrivacy].includes(props.discovery.type as DiscoveryType)
 )
+
+const onSelectService = (label: string, isSelected: boolean) => {
+  if (isSelected) {
+    selectService.value.push(label)
+  } else {
+    const index = selectService.value.indexOf(label)
+    if (index > -1) {
+      selectService.value.splice(index, 1)
+    }
+  }
+}
 </script>
 <style lang="scss" scoped>
 .azure-row {
@@ -217,5 +283,22 @@ const isICMPV3WithPass = computed(() =>
   :deep(.feather-textarea-container) {
     flex-basis: 50%;
   }
+}
+.services-protocol {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  grid-column-gap: 5px;
+  margin: 25px 0;
+}
+.discovery-targets {
+  margin-top: 20px;
+}
+.discovery-title {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  grid-column-gap:5px;
+  margin:10px 0;
 }
 </style>

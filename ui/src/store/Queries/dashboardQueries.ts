@@ -56,7 +56,7 @@ export const useDashboardQueries = defineStore('dashboardQueries', () => {
       fetchOnMount: false
     })
     await execute()
-    return data.value?.downloadTopN?.topNBytes
+    return data.value?.downloadTopN?.responseBytes
   }
 
   return {

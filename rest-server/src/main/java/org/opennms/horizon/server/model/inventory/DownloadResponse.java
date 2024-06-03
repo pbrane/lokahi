@@ -24,10 +24,9 @@ package org.opennms.horizon.server.model.inventory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Getter
-public class IpInterfaceResponse {
-
-    private byte[] ipInterfaces;
-    private DownloadFormat downloadFormat;
+@AllArgsConstructor
+public class DownloadResponse {
+    private byte[] responseBytes;
+    private DownloadFormat format;
 }

@@ -34,8 +34,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import org.opennms.horizon.alerts.proto.DetectionMethod;
@@ -73,7 +73,7 @@ public class PolicyRule {
     private String thresholdMetricName;
 
     @OneToMany(mappedBy = "rule", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<AlertCondition> alertConditions = new ArrayList<>();
+    private Set<AlertCondition> alertConditions = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_id", referencedColumnName = "id")

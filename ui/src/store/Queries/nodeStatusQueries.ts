@@ -94,7 +94,7 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
       fetchOnMount: false
     })
     await execute()
-    return data.value?.downloadIpInterfacesByNodeAndSearchTerm?.ipInterfaces
+    return data.value?.downloadIpInterfacesByNodeAndSearchTerm?.responseBytes
   }
 
   const downloadSNMPInterfaces = async (requestCriteria: DownloadCsvVariables) => {
@@ -105,7 +105,7 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
       fetchOnMount: false
     })
     await execute()
-    return data.value?.downloadSnmpInterfaces?.snmpInterfaceBytes
+    return data.value?.downloadSnmpInterfaces?.responseBytes
   }
 
   const downloadAlertsByNode = async ({sortBy, sortAscending}: AlertsFilters, {page, pageSize}: Pagination, downloadFormat: DownloadCsvVariables) => {
@@ -123,7 +123,7 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
       fetchOnMount: false
     })
     await execute()
-    return data.value?.downloadRecentAlertsByNode?.alertsBytes || []
+    return data.value?.downloadRecentAlertsByNode?.responseBytes
   }
 
   const downloadEvents = async (requestCriteria: DownloadCSVEventVariables) => {
@@ -135,7 +135,7 @@ export const useNodeStatusQueries = defineStore('nodeStatusQueries', () => {
     })
     await execute()
 
-    return data.value?.downloadEventsByNodeId?.searchEventsBytes || []
+    return data.value?.downloadEventsByNodeId?.responseBytes
   }
 
   return {

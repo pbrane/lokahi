@@ -306,6 +306,7 @@ service MonitorPolicyService {
   rpc deleteRuleById(google.protobuf.Int64Value) returns(google.protobuf.BoolValue);
   rpc countAlertByPolicyId(google.protobuf.Int64Value) returns(google.protobuf.Int64Value);
   rpc countAlertByRuleId(google.protobuf.Int64Value) returns(google.protobuf.Int64Value);
+  rpc searchMonitorPolicies(MonitorPolicySearchBy) returns (MonitorPolicyList);
 }
 
 message AlertEventDefinitionProto {
@@ -350,6 +351,14 @@ message EventDefsByVendorRequest {
 
 message ListEventDefinitionsByVendor {
   repeated  EventDefinitionsByVendor eventDefinitionByVendor = 1;
+}
+message MonitorPolicySearchBy {
+  string searchTerm = 1;
+  int32 page_size = 2;
+  int32 page = 3;
+  string sort_by = 4;
+  bool sort_ascending = 5;
+
 }
 
 service AlertEventDefinitionService {

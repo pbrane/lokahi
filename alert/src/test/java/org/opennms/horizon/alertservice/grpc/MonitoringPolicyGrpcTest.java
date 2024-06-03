@@ -33,7 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.opennms.horizon.alertservice.service.MonitorPolicyService.DEFAULT_POLICY;
-import static org.opennms.horizon.alertservice.service.MonitorPolicyService.SYSTEM_TENANT;
+import static org.opennms.horizon.shared.utils.SystemInfoUtils.SYSTEM_TENANT;
 
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.Empty;
