@@ -1,27 +1,28 @@
-import { defineStore } from 'pinia'
-import { cloneDeep } from 'lodash'
-import { Condition, Policy, ThresholdCondition } from '@/types/policies'
-import { useMonitoringPoliciesMutations } from '../Mutations/monitoringPoliciesMutations'
-import { useMonitoringPoliciesQueries } from '../Queries/monitoringPoliciesQueries'
-import useSnackbar from '@/composables/useSnackbar'
 import { ThresholdLevels, Unknowns } from '@/components/MonitoringPolicies/monitoringPolicies.constants'
+import { createAndDownloadBlobFile, createId } from '@/components/utils'
+import useSnackbar from '@/composables/useSnackbar'
+import router from '@/router'
+import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
+import { CreateEditMode } from '@/types'
 import {
   AlertCondition,
+  AlertEventDefinition,
+  CountAffectedNodesByMonitoringPolicyVariables,
   DetectionMethod,
+  DownloadCSVMonitoringPoliciesVariables,
   EventDefsByVendorRequest,
   EventType,
   ManagedObjectType,
   MonitorPolicy,
   PolicyRule,
   Severity,
-  TimeRangeUnit,
-  AlertEventDefinition,
-  CountAffectedNodesByMonitoringPolicyVariables
+  TimeRangeUnit
 } from '@/types/graphql'
-import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
-import router from '@/router'
-import { CreateEditMode } from '@/types'
-import { createId } from '@/components/utils'
+import { Condition, Policy, ThresholdCondition } from '@/types/policies'
+import { cloneDeep } from 'lodash'
+import { defineStore } from 'pinia'
+import { useMonitoringPoliciesMutations } from '../Mutations/monitoringPoliciesMutations'
+import { useMonitoringPoliciesQueries } from '../Queries/monitoringPoliciesQueries'
 
 const { showSnackbar } = useSnackbar()
 
@@ -461,6 +462,12 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           }
         })
       }
+    },
+    async downloadMonitoringPoliciesCSV(request: DownloadCSVMonitoringPoliciesVariables) {
+      const queries = useMonitoringPoliciesQueries()
+      const bytes = await queries.downloadMonitoringPolices(request)
+      const fileName = `Monitoring Policies - page - ${request.page + 1}.csv`
+      createAndDownloadBlobFile(bytes, fileName)
     },
     async listAlertEventDefinitionsByVendor(eventType: EventType, vendor: string) {
       const queries = useAlertEventDefinitionQueries()
