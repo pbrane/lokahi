@@ -13,12 +13,14 @@
         <section class="feather-row">
           <div :class="displayDetails ? 'feather-col-8' : 'feather-col-12'">
             <MonitoringPoliciesTable
+              data-test="MonitoringPoliciesTable"
               @policy-selected="displayDetails = true"
               :refreshMonitoringPolicies = "reFresh"
             />
           </div>
           <div v-if="displayDetails" class="feather-col-4">
             <MonitoringPoliciesDetailPanel
+              data-test="MonitoringPoliciesDetailPanel"
               @on-close="displayDetails = false"
               @on-refresh="onRefresh"
             />
