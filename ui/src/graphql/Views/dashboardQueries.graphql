@@ -43,6 +43,7 @@ query DownloadTopN(
     sortAscending: $sortAscending,
     sortBy: $sortBy,
     downloadFormat: $downloadFormat) {
-      topNBytes
+      responseBytes
+      format
   }
 }
