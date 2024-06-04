@@ -19,20 +19,11 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.server.model.alerts;
+package org.opennms.horizon.alertservice.db.repository;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.opennms.horizon.server.model.BaseModel;
+import org.opennms.horizon.alertservice.db.entity.ThresholdMetric;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@Getter
-@Setter
-public class AlertCondition extends BaseModel {
-    private AlertEventDefinition triggerEvent;
-    private Integer count;
-    private Integer overtime;
-    private String overtimeUnit;
-    private String severity;
-    private AlertEventDefinition clearEvent;
-    private ThresholdMetric thresholdMetric;
-}
+@Repository
+public interface ThresholdMatricRepository extends JpaRepository<ThresholdMetric, Long> {}

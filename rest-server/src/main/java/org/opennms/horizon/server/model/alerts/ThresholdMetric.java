@@ -23,16 +23,12 @@ package org.opennms.horizon.server.model.alerts;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.opennms.horizon.server.model.BaseModel;
 
 @Getter
 @Setter
-public class AlertCondition extends BaseModel {
-    private AlertEventDefinition triggerEvent;
-    private Integer count;
-    private Integer overtime;
-    private String overtimeUnit;
-    private String severity;
-    private AlertEventDefinition clearEvent;
-    private ThresholdMetric thresholdMetric;
+public class ThresholdMetric {
+    private Long id;
+    private boolean enabled;
+    private Integer threshold;
+    private String condition;
 }

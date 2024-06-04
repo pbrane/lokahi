@@ -79,12 +79,7 @@ public class AlertCondition {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "alertCondition")
     private AlertDefinition alertDefinition;
 
-    @Column(name = "enabled")
-    private boolean enabled;
-
-    @Column(name = "threshold")
-    private Integer threshold;
-
-    @Column(name = "condition")
-    private String condition;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "metric_threshold_id", referencedColumnName = "id")
+    private ThresholdMetric thresholdMetric;
 }

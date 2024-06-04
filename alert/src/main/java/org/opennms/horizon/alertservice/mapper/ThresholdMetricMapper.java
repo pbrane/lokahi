@@ -19,20 +19,19 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.server.model.alerts;
+package org.opennms.horizon.alertservice.mapper;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.opennms.horizon.server.model.BaseModel;
+import org.mapstruct.*;
+import org.opennms.horizon.alerts.proto.ThresholdMetricProto;
+import org.opennms.horizon.alertservice.db.entity.ThresholdMetric;
 
-@Getter
-@Setter
-public class AlertCondition extends BaseModel {
-    private AlertEventDefinition triggerEvent;
-    private Integer count;
-    private Integer overtime;
-    private String overtimeUnit;
-    private String severity;
-    private AlertEventDefinition clearEvent;
-    private ThresholdMetric thresholdMetric;
+@Mapper(
+        componentModel = "spring",
+        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
+        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
+public interface ThresholdMetricMapper {
+
+    ThresholdMetric protoToEntity(ThresholdMetricProto proto);
+
+    ThresholdMetricProto entityToProto(ThresholdMetric thresholdMetric);
 }

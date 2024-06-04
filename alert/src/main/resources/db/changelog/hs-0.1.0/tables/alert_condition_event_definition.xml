@@ -26,7 +26,7 @@
             WHERE replace(ac.clear_event_type, '_', ' ') = ed.name;
         </sql>
 
-        <addNotNullConstraint tableName="alert_condition" columnName="trigger_event_definition_id"/>
+        <!--<addNotNullConstraint tableName="alert_condition" columnName="trigger_event_definition_id"/>-->
     </changeSet>
     <changeSet id="hs-0.1.0-migrate-to-event-definition-drop-old-columns" author="geraldhumphries">
         <dropColumn tableName="alert_condition" columnName="trigger_event_type"/>

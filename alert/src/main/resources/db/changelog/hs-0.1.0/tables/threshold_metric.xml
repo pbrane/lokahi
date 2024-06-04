@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+    <changeSet id="hs-0.1.0-threshold_metric" author="jahanzebakhtar">
+        <createTable tableName="threshold_metric">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_threshold_metric_id" />
+            </column>
+            <column name="enabled" type="boolean" defaultValueBoolean="false"> </column>
+            <column name="threshold" type="int"> </column>
+            <column name="condition" type="text" > </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
