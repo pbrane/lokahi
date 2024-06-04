@@ -163,13 +163,13 @@
         </p>
         <p
           class="margin-bottom"
-          v-if="!isICMPOrPassive && !isServiceDiscovery"
+          v-if="isAzure"
         >
           Set connection information like Azure client and subscription IDs.
         </p>
         <p
           class="margin-bottom"
-          v-if="isServiceDiscovery"
+          v-if="isServiceDiscovery || isWindowServer"
         >
           Choose your protocol and enter in your credentials for Windows Discovery.
         </p>
@@ -359,6 +359,14 @@ const isICMPOrPassive = computed(
   () =>
     discoveryStore.selectedDiscovery.type === DiscoveryType.ICMP ||
     discoveryStore.selectedDiscovery.type === DiscoveryType.SyslogSNMPTraps
+)
+
+const isAzure = computed(
+  () => discoveryStore.selectedDiscovery.type === DiscoveryType.Azure
+)
+
+const isWindowServer = computed(
+  () => discoveryStore.selectedDiscovery.type === DiscoveryType.WindowsServer
 )
 const isServiceDiscovery = computed(() =>
   discoveryStore.selectedDiscovery.type === DiscoveryType.ServiceDiscovery

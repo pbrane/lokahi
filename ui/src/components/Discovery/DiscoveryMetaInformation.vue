@@ -124,7 +124,6 @@
         />
       </div>
     </div>
-    <div v-if="[DiscoveryType.WindowsServer].includes(discovery.type as DiscoveryType)"></div>
     <div v-if="[DiscoveryType.ServiceDiscovery].includes(discovery.type as DiscoveryType)">
       <div class="discovery-targets">
         <div class="discovery-title">
@@ -154,22 +153,87 @@
         </FeatherCheckbox>
    </div>
   </div>
+    <div v-if="[DiscoveryType.WindowsServer].includes(discovery.type as DiscoveryType)">
+      <div class="window-protocol-row">
+        <div class="col">
+          <FeatherSelect
+            label="Select Windows Protocol"
+            text-prop="name"
+            :options="windowProtocolOptions"
+            @update:model-value="setWindowsProtocol"
+          />
+        </div>
+        <div class="col"></div>
+      </div>
+      <div class="credential-row">
+        <div class="col">
+          <FeatherInput
+            label="Username"
+            :error="discoveryErrors?.username"
+            :modelValue="(discovery?.meta as DiscoveryWindowServerMeta).username"
+            @update:modelValue="(e?: string | number) => updateDiscoveryValue('username',String(e ?? ''))"
+          />
+        </div>
+        <div class="col">
+          <FeatherInput
+            type="password"
+            label="Password"
+            :error="discoveryErrors?.password"
+            :modelValue="(discovery?.meta as DiscoveryWindowServerMeta).password"
+            @update:modelValue="(e?: string | number) => updateDiscoveryValue('password',String(e ?? ''))"
+          />
+        </div>
+      </div>
+      <div class="discovery-targets">
+        <h4>Enter Discovery Targets&nbsp;&nbsp;
+          <FeatherPopover
+            :pointer-alignment="PointerAlignment.center"
+            :placement="PopoverPlacement.top"
+          >
+            <template #default>
+              <div>
+                <h4>Discovery Targets</h4>
+                <p>Enter the FQDN or IP address/subnet/ranges of servers to Discover.</p>
+              </div>
+            </template>
+            <template #trigger="{ attrs, on }">
+              <FeatherIcon
+                class="info-icon"
+                v-bind="attrs"
+                v-on="on"
+                :icon="Info"
+              />
+            </template>
+          </FeatherPopover>
+        </h4>
+        <FeatherTextarea
+          :error="discoveryErrors?.discoveryTarget"
+          :modelValue="(discovery?.meta as DiscoveryWindowServerMeta)?.discoveryTarget"
+          @update:modelValue="(e: string) => updateDiscoveryValue('discoveryTarget',e ?? '')"
+          label="Enter Discovery Targets"
+        />
+      </div>
+    </div>
  </div>
 </template>
 <script lang="ts" setup>
-import { PropType } from 'vue'
-import { DiscoveryType } from './discovery.constants'
+import { IIcon } from '@/types';
 import {
-  NewOrUpdatedDiscovery,
+  DiscoveryAzureMeta,
   DiscoverySNMPMeta,
-  DiscoveryTrapMeta,
   DiscoverySNMPV3Auth,
   DiscoverySNMPV3AuthPrivacy,
-  DiscoveryAzureMeta
-} from '@/types/discovery'
-import { FeatherTabContainer } from '@featherds/tabs'
-import { IIcon } from '@/types'
-import Warning from '@featherds/icon/notification/Warning'
+  DiscoveryTrapMeta,
+  DiscoveryWindowServerMeta,
+  NewOrUpdatedDiscovery
+} from '@/types/discovery';
+import Info from "@featherds/icon/action/Info";
+import Warning from '@featherds/icon/notification/Warning';
+import { ISelectItemType } from '@featherds/select';
+import { FeatherTabContainer } from '@featherds/tabs';
+import { PointerAlignment, PopoverPlacement } from '@featherds/tooltip';
+import { PropType } from 'vue';
+import { DiscoveryType } from './discovery.constants';
 const props = defineProps({
   discovery: { type: Object as PropType<NewOrUpdatedDiscovery>, default: () => ({}) },
   discoveryErrors: { type: Object as PropType<Record<string, string>>, default: () => ({}) },
@@ -227,6 +291,14 @@ const isICMPV3 = computed(() =>
 const isICMPV3WithPass = computed(() =>
   [DiscoveryType.ICMPV3Auth, DiscoveryType.ICMPV3AuthPrivacy].includes(props.discovery.type as DiscoveryType)
 )
+const windowProtocolOptions = [
+  { id: 1, name: 'WMI' }
+]
+const setWindowsProtocol = (selected: ISelectItemType | undefined) => {
+  if (selected?.id) {
+    props.updateDiscoveryValue('windowsProtocol', windowProtocolOptions.find((item) => item.id === selected.id)?.name ?? '')
+  }
+}
 
 const onSelectService = (label: string, isSelected: boolean) => {
   if (isSelected) {
@@ -240,6 +312,9 @@ const onSelectService = (label: string, isSelected: boolean) => {
 }
 </script>
 <style lang="scss" scoped>
+@use '@featherds/styles/themes/variables';
+@use '@/styles/mediaQueriesMixins';
+
 .azure-row {
   display: flex;
   width: 100%;
@@ -284,15 +359,34 @@ const onSelectService = (label: string, isSelected: boolean) => {
     flex-basis: 50%;
   }
 }
+.credential-row,
+.window-protocol-row {
+  @include mediaQueriesMixins.screen-lg {
+    display: flex;
+    gap: var(variables.$spacing-xl);
+
+    .col {
+      flex: 1;
+    }
+  }
+}
+.discovery-targets {
+  h4 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+
+    .info-icon {
+      font-size: 1.5rem;
+    }
+  }
+}
 .services-protocol {
   display: flex;
   justify-content: space-between;
   align-items: center;
   grid-column-gap: 5px;
   margin: 25px 0;
-}
-.discovery-targets {
-  margin-top: 20px;
 }
 .discovery-title {
   display: flex;

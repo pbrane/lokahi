@@ -253,16 +253,18 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
       const discoveryMutations = useDiscoveryMutations()
       this.loading = true
       const isValid = await this.validateDiscovery()
+      console.log(isValid, 'isValid');
+      console.log(this.validationErrors, 'this.validationErrors');
 
       if (isValid) {
         if (this.selectedDiscovery.type === DiscoveryType.SyslogSNMPTraps) {
           await discoveryMutations.upsertPassiveDiscovery({passiveDiscovery: discoveryFromClientToServer(this.selectedDiscovery)})
         } else if (this.selectedDiscovery.type === DiscoveryType.Azure) {
           await discoveryMutations.addAzureCreds({ discovery: discoveryFromClientToServer(this.selectedDiscovery)})
-        } else if (this.selectedDiscovery.type === DiscoveryType.ServiceDiscovery) {
+        } else if (this.selectedDiscovery.type === DiscoveryType.ServiceDiscovery || this.selectedDiscovery.type === DiscoveryType.WindowsServer) {
           this.loading = false
           return showSnackbar({
-            msg: 'Service Discoveries cannot be saved yet!'
+            msg: `${this.selectedDiscovery.type} Discovery cannot be saved yet!`
           })
         } else {
           await discoveryMutations.createOrUpdateDiscovery({request: discoveryFromClientToServer(this.selectedDiscovery)})
@@ -282,6 +284,12 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
         const nameError = toRaw(this.validationErrors).name
         if (nameError && !nameError.toLowerCase().includes('duplicate')) {
           this.setSelectedDiscoveryValue('name', '')
+        }
+
+        if (toRaw(this.validationErrors).windowsProtocol) {
+          showSnackbar({
+            msg: `${toRaw(this.validationErrors).windowsProtocol}`
+          })
         }
 
         if (toRaw(this.validationErrors).clientId) {
