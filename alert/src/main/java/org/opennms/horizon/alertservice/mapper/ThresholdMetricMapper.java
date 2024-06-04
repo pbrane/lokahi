@@ -21,7 +21,9 @@
  */
 package org.opennms.horizon.alertservice.mapper;
 
-import org.mapstruct.*;
+import org.mapstruct.CollectionMappingStrategy;
+import org.mapstruct.Mapper;
+import org.mapstruct.NullValueCheckStrategy;
 import org.opennms.horizon.alerts.proto.ThresholdMetricProto;
 import org.opennms.horizon.alertservice.db.entity.ThresholdMetric;
 
