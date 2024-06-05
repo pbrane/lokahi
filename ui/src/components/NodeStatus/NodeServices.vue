@@ -1,11 +1,74 @@
 <template>
-    <div class="window-service">
+    <div class="windows-service">
       <TableCard>
           <div>
               <section class="feather-row">
                   <div class="heading-container">
                     <h3 data-test="heading" class="feather-col-6">Windows Service Summary</h3>
                     <h5>10 Services Discovered</h5>
+                  </div>
+                  <div class="btns action-container feather-col-6">
+                      <div class="search-container">
+                          <FeatherInput
+                              label="Search Services"
+                              type="search"
+                          >
+                              <template #pre>
+                                  <FeatherIcon :icon="Search" />
+                              </template>
+                          </FeatherInput>
+                      </div>
+                      <FeatherButton
+                          primary
+                          icon="Download"
+                      >
+                          <FeatherIcon :icon="DownloadFile"/>
+                      </FeatherButton>
+                      <FeatherButton
+                          primary
+                          icon="Refresh"
+                      >
+                          <FeatherIcon :icon="Refresh"/>
+                      </FeatherButton>
+                  </div>
+              </section>
+          </div>
+          <div>
+            <FeatherTabContainer
+              class="tab-container"
+              data-test="tab-container"
+            >
+            <template v-slot:tabs>
+              <FeatherTab>
+                Services Running (7/10)
+              </FeatherTab>
+              <FeatherTab>
+                Services Not Running (3/10)
+              </FeatherTab>
+              <FeatherTab>
+                Services Encountering Errors (2)
+              </FeatherTab>
+            </template>
+            <FeatherTabPanel>
+              <ServiceTable :serviceType="ServiceType.Running"/>
+            </FeatherTabPanel>
+            <FeatherTabPanel>
+              <ServiceTable :serviceType="ServiceType.NotRunning"/>
+            </FeatherTabPanel>
+            <FeatherTabPanel>
+              <ServiceTable :serviceType="ServiceType.Error"/>
+            </FeatherTabPanel>
+            </FeatherTabContainer>
+          </div>
+      </TableCard>
+    </div>
+    <div class="hosted-service">
+      <TableCard>
+          <div>
+              <section class="feather-row">
+                  <div class="heading-container">
+                    <h3 data-test="heading" class="feather-col-6">Hosted Service Summary</h3>
+                    <h5>10 Services Summary</h5>
                   </div>
                   <div class="btns action-container feather-col-6">
                       <div class="search-container">
@@ -75,8 +138,8 @@ import { ServiceType } from '../utils'
 @use "@featherds/styles/themes/variables";
 @use "@featherds/styles/mixins/typography";
 
-.window-service {
-    padding: 0 3rem;
+.hosted-service {
+  margin-top: 18px;
 }
 
 .feather-row {
