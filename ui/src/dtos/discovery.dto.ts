@@ -1,6 +1,6 @@
 import { DiscoveryType, REGEX_EXPRESSIONS } from '@/components/Discovery/discovery.constants'
 import { validationErrorsToStringRecord } from '@/services/validationService'
-import { DiscoveryAzureMeta, DiscoverySNMPMeta, DiscoveryTrapMeta, NewOrUpdatedDiscovery, ServerDiscoveries } from '@/types/discovery'
+import { DiscoveryAzureMeta, DiscoverySNMPMeta, DiscoveryTrapMeta, DiscoveryWindowServerMeta, NewOrUpdatedDiscovery, ServerDiscoveries } from '@/types/discovery'
 import * as yup from 'yup'
 
 export const splitStringOnSemiCommaOrDot = (inString?: string) => {
@@ -20,6 +20,9 @@ export const discoveryFromClientToServer = (discovery: NewOrUpdatedDiscovery) =>
     return discoveryFromTrapClientToServer(discovery)
   }
 
+  if (discovery.type === DiscoveryType.WindowsServer) {
+    return discoveryFromWindowsServerClientToServer(discovery)
+  }
   return {}
 }
 
@@ -58,6 +61,19 @@ export const discoveryFromTrapClientToServer = (discovery: NewOrUpdatedDiscovery
     snmpPorts: splitStringOnSemiCommaOrDot(meta.udpPorts),
     snmpCommunities: splitStringOnSemiCommaOrDot(meta.communityStrings),
     tags: discovery.tags?.map((t) => ({name: t.name}))
+  }
+}
+
+export const discoveryFromWindowsServerClientToServer = (discovery: NewOrUpdatedDiscovery) => {
+  const meta = discovery.meta as DiscoveryWindowServerMeta
+  return {
+    id: discovery.id,
+    locationId: discovery.locations?.[0]?.id,
+    name: discovery.name,
+    username: meta.username,
+    password: meta.password,
+    discoveryTarget: meta.discoveryTarget,
+    windowsProtocol: meta.windowsProtocol
   }
 }
 
@@ -167,10 +183,20 @@ const azureDiscoveryValidation = yup.object().shape({
   clientSecret: yup.string().trim().required('Client secret is required.')
 }).required()
 
+const WindowsServerDiscoveryValidation = yup.object().shape({
+  name: yup.string().trim().required('Please enter a name.'),
+  locationId: yup.string().trim().required('Location required.'),
+  username: yup.string().trim().required('Username is required.'),
+  password: yup.string().trim().required('Password is required.'),
+  windowsProtocol: yup.string().trim().required('Windows Protocol is required.'),
+  discoveryTarget: yup.string().trim().required('Client secret is required.')
+}).required()
+
 const validatorMap: Record<string, yup.Schema> = {
   [DiscoveryType.Azure]: azureDiscoveryValidation,
   [DiscoveryType.ICMP]: activeDiscoveryValidation,
-  [DiscoveryType.SyslogSNMPTraps]: passiveDiscoveryValidation
+  [DiscoveryType.SyslogSNMPTraps]: passiveDiscoveryValidation,
+  [DiscoveryType.WindowsServer]: WindowsServerDiscoveryValidation
 }
 
 // customValidator should throw { message, path } on validation error

@@ -47,7 +47,14 @@ export interface DiscoveryAzureMeta {
   directoryId?: string;
 }
 
-export type DiscoveryMeta = DiscoverySNMPMeta | DiscoveryTrapMeta | DiscoveryAzureMeta
+export interface DiscoveryWindowServerMeta {
+  username?: string;
+  password?: string;
+  windowsProtocol?: string;
+  discoveryTarget?: Array<string>
+}
+
+export type DiscoveryMeta = DiscoverySNMPMeta | DiscoveryTrapMeta | DiscoveryAzureMeta | DiscoveryWindowServerMeta
 
 export interface NewOrUpdatedDiscovery {
   id?: number;
@@ -74,7 +81,8 @@ export interface DiscoveryStoreErrors {
   password?: string,
   username?: string,
   context?: string,
-  privacy?: string
+  privacy?: string,
+  windowsProtocol?: string
 }
 
 export interface DiscoveryStore {

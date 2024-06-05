@@ -17,3 +17,8 @@ export interface ThresholdCondition {
 }
 
 export type Condition = ThresholdCondition | AlertCondition
+
+export interface MonitorPolicyFilters {
+  sortAscending: boolean
+  sortBy?: string
+}

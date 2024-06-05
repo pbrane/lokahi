@@ -81,8 +81,8 @@
 <script setup lang="ts">
 import Circle from '@/assets/circle.svg'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { MonitorPolicy } from '@/types/graphql'
-import { Policy } from '@/types/policies'
+import { DownloadCSVMonitoringPoliciesVariables, DownloadFormat, MonitorPolicy } from '@/types/graphql'
+import { MonitorPolicyFilters, Policy } from '@/types/policies'
 import CheckCircle from '@featherds/icon/action/CheckCircle'
 import DownloadFile from '@featherds/icon/action/DownloadFile'
 import Refresh from '@featherds/icon/navigation/Refresh'
@@ -95,6 +95,7 @@ const pageSize = ref(0)
 const total = ref(0)
 const pageData = ref([] as MonitorPolicy[])
 const clonedMonitoringPolicies = ref([] as MonitorPolicy[])
+const policiesFilter = ref({} as MonitorPolicyFilters)
 const icons = markRaw({
   CheckCircle,
   DownloadFile,
@@ -134,6 +135,8 @@ onMounted(() => {
   store.loadVendors()
   store.getInitialAlertEventDefinitions()
   loadData()
+  policiesFilter.value.sortBy = 'id'
+  policiesFilter.value.sortAscending = true
   if (store.selectedPolicy?.id) {
     onSelectPolicy(`${store.selectedPolicy?.id}`)
   }
@@ -154,11 +157,13 @@ const sort = reactive({
   name: SORT.NONE,
   memo: SORT.NONE,
   alertRules: SORT.NONE,
-  affectedNodes: SORT.ASCENDING
+  affectedNodes: SORT.NONE
 }) as any
 
 const sortChanged = (sortObj: Record<string, string>) => {
+  policiesFilter.value.sortAscending = sortObj.value === 'asc' ? true : false
   if (sortObj.property !== 'affectedNodes' && sortObj.property !== 'alertRules') {
+    policiesFilter.value.sortBy = sortObj.property
     if (sortObj.value === 'asc') {
       clonedMonitoringPolicies.value = sortBy(store.monitoringPolicies, sortObj.property)
     } else if (sortObj.value === 'desc') {
@@ -167,6 +172,7 @@ const sortChanged = (sortObj: Record<string, string>) => {
       clonedMonitoringPolicies.value = store.monitoringPolicies
     }
   } else if (sortObj.property === 'alertRules') {
+    policiesFilter.value.sortBy = sortObj.property
     if (sortObj.value === 'asc') {
       clonedMonitoringPolicies.value = sortBy(store.monitoringPolicies, item => item.rules?.length)
     } else if (sortObj.value === 'desc') {
@@ -191,7 +197,15 @@ const getPageObjects = (array: Array<any>, pageNumber: number, pageSize: number)
 }
 
 const onDownload = () => {
-  console.log('download clicked')
+  const request: DownloadCSVMonitoringPoliciesVariables = {
+    page: page.value > 0 ? page.value - 1 : 0,
+    pageSize: pageSize.value,
+    sortAscending: policiesFilter.value.sortAscending,
+    sortBy: policiesFilter.value.sortBy === 'affectedNodes' || policiesFilter.value.sortBy === 'alertRules' ? 'id' : policiesFilter.value.sortBy,
+    downloadFormat: DownloadFormat.Csv
+  }
+
+  store.downloadMonitoringPoliciesCSV(request)
 }
 
 const onRefresh = async () => {

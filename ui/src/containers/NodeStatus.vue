@@ -53,6 +53,9 @@
         <FeatherTab
           >Events
         </FeatherTab>
+        <FeatherTab
+          >Services
+        </FeatherTab>
       </template>
       <!-- Status -->
       <FeatherTabPanel>
@@ -68,6 +71,9 @@
       <!-- Events -->
       <FeatherTabPanel>
         <EventsTable />
+      </FeatherTabPanel>
+      <FeatherTabPanel>
+        <NodeServices />
       </FeatherTabPanel>
     </FeatherTabContainer>
   </div>
