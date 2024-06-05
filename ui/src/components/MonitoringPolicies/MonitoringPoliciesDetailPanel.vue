@@ -1,18 +1,19 @@
 <template>
   <div class="policy-form" v-if="store.selectedPolicy">
     <div class="policy-form-title-container">
-      <div class="form-title">{{ store.selectedPolicy.name }}</div>
+      <div data-test="form-title" class="form-title">{{ store.selectedPolicy.name }}</div>
       <div>
         <FeatherButton
           icon="Edit"
+          data-test="Edit" 
           @click="onEdit(store.selectedPolicy ?? {})"
         >
           <FeatherIcon :icon="icons.Edit" />
         </FeatherButton>
-        <FeatherButton icon="ContentCopy" @click="onCopy">
+        <FeatherButton icon="ContentCopy" data-test="onCopy"  @click="onCopy">
           <FeatherIcon :icon="icons.ContentCopy" />
         </FeatherButton>
-        <FeatherButton icon="Cancel" @click="onClose">
+        <FeatherButton icon="Cancel" data-test="onClose"  @click="onClose">
           <FeatherIcon :icon="icons.Cancel" />
         </FeatherButton>
       </div>
@@ -27,6 +28,7 @@
            v-slot="{ attrs, on }"
           >
           <BasicToggle
+              data-test="BasicToggle"
               v-bind="attrs"
               v-on="on"
               :toggle="store.selectedPolicy?.enabled"
@@ -66,6 +68,7 @@
           DELETE
         </FeatherButton>
         <ButtonWithSpinner primary
+          data-test="ButtonWithSpinner"
           @click.prevent="savePolicy"
           :disabled="isSavePolicyDisabled">
             SAVE POLICY
@@ -111,7 +114,6 @@ const icons = markRaw({
   Edit,
   deleteIcon: Delete
 })
-
 const isSavePolicyDisabled = computed(
   () => !store.selectedPolicy?.rules?.length || !store.selectedPolicy?.name || store.selectedPolicy.isDefault
 )
