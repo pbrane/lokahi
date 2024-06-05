@@ -8,6 +8,13 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   cortex.yml: |
+  {{ if .Values.minio.enabled }}
+    target: all,alertmanager
+    auth_enabled: true
+  {{ else }}
+    target: all
+  {{ end }}
+
     # Configuration for running Cortex in single-process mode.
     # This should not be used in production.  It is only for getting started
     # and development.
@@ -50,15 +57,25 @@ data:
           replication_factor: 1
 
     blocks_storage:
-      tsdb:
-        dir: /tmp/cortex/tsdb
-
+  {{ if .Values.minio.enabled }}
+      backend: s3
+      s3:
+          access_key_id: {{ .Values.minio.username }}
+          bucket_name: cortex-tsdb
+          secret_access_key: {{ .Values.minio.password }}
+          endpoint: myminio-hl.default.svc.cluster.local:9000
+          insecure: false
+          http:
+           insecure_skip_verify: true
       bucket_store:
         sync_dir: /tmp/cortex/tsdb-sync
-
+      tsdb:
+        dir: /tmp/cortex/tsdb
+  {{ else }}  
       backend: filesystem
       filesystem:
-        dir: ./data/tsdb
+        dir: /tmp/cortex/tsdb
+  {{ end }}
 
     compactor:
       data_dir: /tmp/cortex/compactor
@@ -68,14 +85,52 @@ data:
 
     frontend_worker:
       match_max_concurrent: true
-
-    ruler:
+    
+  {{ if .Values.minio.enabled }}
+    alertmanager:
+      external_url: /alertmanager
       enable_api: true
+      sharding_enabled: true
+      sharding_ring:
+        replication_factor: 3
+        heartbeat_period: 5s
+        heartbeat_timeout: 15s
+        kvstore:
+         store: inmemory
+
+    alertmanager_storage:
+      backend: s3
+      s3:
+        access_key_id: {{ .Values.minio.username }}
+        bucket_name: cortex-alertmanager
+        secret_access_key: {{ .Values.minio.password }}
+        endpoint: myminio-hl.default.svc.cluster.local:9000
+        insecure: false
+        http:
+         insecure_skip_verify: true
+  {{ end }}
+
 
     ruler_storage:
+  {{ if .Values.minio.enabled }}
+      backend: s3
+      s3:
+       access_key_id: {{ .Values.minio.username }}
+       bucket_name: cortex-ruler
+       secret_access_key: {{ .Values.minio.password }}
+       endpoint: myminio-hl.default.svc.cluster.local:9000
+       insecure: false
+       http:
+        insecure_skip_verify: true
+  {{ else }}
       backend: local
       local:
         directory: /tmp/cortex/rules
+  {{ end }}
+
+    ruler:
+      enable_api: true
+      alertmanager_url: http://cortex:9000/alertmanager
 
   {{- if .Values.OpenNMS.global.openTelemetry.otlpTracesEndpoint }}
     tracing:

@@ -104,4 +104,9 @@ mailServer:
   enabled: true
 citus:
   enabled: true
+cortex:
+ minio:
+  enabled: false
 
+minio:
+ enabled: false

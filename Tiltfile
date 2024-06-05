@@ -292,6 +292,48 @@ ssl_check('onmshs.local', 1443, tries=300,
 
 
 # Deployment #
+helm_repo('minio', 'https://operator.min.io', labels=['zz_minio_dependency'])
+helm_resource('minio-operator', 'minio/operator',
+	flags=[
+		'--create-namespace',
+	],
+	resource_deps=[
+		'minio',
+	],
+)
+k8s_resource(
+    'minio-operator',
+    labels=['zz_minio_dependency'],
+    port_forwards=port_forward(9090, name='Console')
+)
+local_resource("minio-admin-jwt",["build-tools/basic/get_minio_jwt.sh"],labels=["zz_minio_dependency"],	resource_deps=[
+		'minio-operator',
+	],
+)
+
+helm_resource('minio-tenant', 'minio/tenant',
+	resource_deps=[
+		'minio-operator',
+	],
+    labels=['zz_minio_dependency'],
+)
+local_resource("create-cortex-buckets",["build-tools/basic/minio_create_bucket.sh"],labels=["zz_minio_dependency"],	resource_deps=[
+		'minio-tenant',
+	],
+)
+
+
+# login using minio/minio123 :-)
+k8s_resource(
+    'minio-tenant',
+    labels=['zz_minio_dependency'],
+    port_forwards=port_forward(9443, name='api'),
+    links=[
+        link('https://onmshs.local:9443/', 'Tenant Console'),
+    ]
+)
+
+# Deployment #
 # https://github.com/grafana/helm-charts/tree/main/charts/tempo
 helm_remote('tempo', version='1.7.1', repo_url='https://grafana.github.io/helm-charts',
     set=[
@@ -702,7 +744,8 @@ k8s_resource(
 k8s_resource(
     'cortex',
     labels='z_dependencies',
-    port_forwards=['19000:9000'],
+    port_forwards=['9000:9000'],
+    resource_deps=['create-cortex-buckets'],
     links=[
         link('https://onmshs.local:1443/grafana/explore?orgId=1&left=%7B%22datasource%22:%22EdAkOOOSk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%22,%22range%22:true,%22instant%22:true,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22EdAkOOOSk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D', 'Grafana - Explore Metrics'),
     ]

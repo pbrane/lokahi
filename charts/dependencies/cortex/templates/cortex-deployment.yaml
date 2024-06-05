@@ -46,6 +46,12 @@ spec:
             name: cortex-config-map
         - name: cortex-rules-volume
           emptyDir: {}
+        - name: cortex-tsdb-volume
+          emptyDir: {}  
+        - name: cortex-tsdb-sync-volume
+          emptyDir: {}  
+        - name: cortex-compactor-volume
+          emptyDir: {}  
       containers:
         - name: {{ .Values.cortex.serviceName }}
           image: {{ .Values.cortex.image }}
@@ -65,4 +71,12 @@ spec:
               subPath: "cortex.yml"
             - name: cortex-rules-volume
               mountPath: /tmp/cortex/rules
+            - name: cortex-tsdb-volume
+              mountPath: /tmp/cortex/tsdb
+            - name: cortex-tsdb-sync-volume
+              mountPath: /tmp/cortex/tsdb-sync
+            - name: cortex-compactor-volume
+              mountPath: /tmp/cortex/compactor
+              
+
 {{ end }}

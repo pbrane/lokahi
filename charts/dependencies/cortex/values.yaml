@@ -31,3 +31,7 @@ nodeRestrictions: # will be applied to every pod in the instance
   enabled: false
   key: kubernetes.azure.com/scalesetpriority
   value: spot
+minio:
+ enabled: true
+ username: minio
+ password: minio123
