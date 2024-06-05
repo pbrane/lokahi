@@ -217,7 +217,7 @@
  </div>
 </template>
 <script lang="ts" setup>
-import { IIcon } from '@/types';
+import { IIcon } from '@/types'
 import {
   DiscoveryAzureMeta,
   DiscoverySNMPMeta,
@@ -226,14 +226,14 @@ import {
   DiscoveryTrapMeta,
   DiscoveryWindowServerMeta,
   NewOrUpdatedDiscovery
-} from '@/types/discovery';
-import Info from "@featherds/icon/action/Info";
-import Warning from '@featherds/icon/notification/Warning';
-import { ISelectItemType } from '@featherds/select';
-import { FeatherTabContainer } from '@featherds/tabs';
-import { PointerAlignment, PopoverPlacement } from '@featherds/tooltip';
-import { PropType } from 'vue';
-import { DiscoveryType } from './discovery.constants';
+} from '@/types/discovery'
+import Info from '@featherds/icon/action/Info'
+import Warning from '@featherds/icon/notification/Warning'
+import { ISelectItemType } from '@featherds/select'
+import { FeatherTabContainer } from '@featherds/tabs'
+import { PointerAlignment, PopoverPlacement } from '@featherds/tooltip'
+import { PropType } from 'vue'
+import { DiscoveryType } from './discovery.constants'
 const props = defineProps({
   discovery: { type: Object as PropType<NewOrUpdatedDiscovery>, default: () => ({}) },
   discoveryErrors: { type: Object as PropType<Record<string, string>>, default: () => ({}) },

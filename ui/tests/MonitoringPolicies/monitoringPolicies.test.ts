@@ -8,13 +8,13 @@ import { Policy } from '@/types/policies'
 
 
 const mockMonitoringPolicy: Policy = {
-    name: '',
-    memo: '',
-    notifyByEmail: false,
-    notifyByPagerDuty: false,
-    notifyByWebhooks: false,
-    tags: [ 'default' ],
-    rules: []
+  name: '',
+  memo: '',
+  notifyByEmail: false,
+  notifyByPagerDuty: false,
+  notifyByWebhooks: false,
+  tags: [ 'default' ],
+  rules: []
 }
 
 const wrapper = mount({
@@ -32,17 +32,17 @@ describe('Monitoring Policies', () => {
   test('The Monitoring Policies page container mounts correctly', () => {
     expect(wrapper).toBeTruthy()
   })
-  test('Test if the create-policy-btn exists' , () => {
+  test('Test if the create-policy-btn exists', () => {
     expect(wrapper.get('[data-test="create-policy-btn"]')).toBeTruthy()
   })
-  test('Test if the MonitoringPoliciesTable component exists' , () => {
+  test('Test if the MonitoringPoliciesTable component exists', () => {
     expect(wrapper.get('[data-test="MonitoringPoliciesTable"]')).toBeTruthy()
   })
-  test('Test if the MonitoringPoliciesDetailPanel component exists' , () => { 
+  test('Test if the MonitoringPoliciesDetailPanel component exists', () => {
     expect(wrapper.find('[data-test="MonitoringPoliciesDetailPanel"]')).toBeTruthy()
   })
   test('The store populates with a selected policy when "New Policy" is clicked.', async () => {
-    const store =useMonitoringPoliciesStore()
+    const store = useMonitoringPoliciesStore()
     const newPolicyBtn = wrapper.get('[data-test="create-policy-btn"]')
     expect(store.selectedPolicy).toBe(undefined)
     await newPolicyBtn.trigger('click')

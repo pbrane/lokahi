@@ -196,3 +196,9 @@ export const humanFileSizeFromBits = (bits: number, dp = 1) => {
 export const createId = () => {
   return new Date().getTime()
 }
+
+export const enum ServiceType {
+  Running = 'RUNNING',
+  NotRunning = 'NOT_RUNNING',
+  Error = 'ERROR'
+}

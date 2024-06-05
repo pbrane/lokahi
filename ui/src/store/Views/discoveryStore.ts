@@ -253,8 +253,6 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
       const discoveryMutations = useDiscoveryMutations()
       this.loading = true
       const isValid = await this.validateDiscovery()
-      console.log(isValid, 'isValid');
-      console.log(this.validationErrors, 'this.validationErrors');
 
       if (isValid) {
         if (this.selectedDiscovery.type === DiscoveryType.SyslogSNMPTraps) {
