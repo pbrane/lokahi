@@ -20,11 +20,11 @@
 </template>
 
 <script setup lang="ts">
-import { MonitorPolicy, PolicyRule } from '@/types/graphql'
+import { MonitoringPolicy, MonitoringPolicyRule } from '@/types/policies'
 
 defineProps<{
   title: string
-  list: MonitorPolicy[] | PolicyRule[]
+  list: MonitoringPolicy[] | MonitoringPolicyRule[]
   selectedItemId?: number
 }>()
 </script>

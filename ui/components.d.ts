@@ -161,7 +161,6 @@ declare module '@vue/runtime-core' {
     SNMPTrapAlertConditions: typeof import('./src/components/MonitoringPolicies/DetectionMethodComponents/SNMPTrapAlertConditions.vue')['default']
     Spinner: typeof import('./src/components/Common/Spinner.vue')['default']
     SyslogAlertConditions: typeof import('./src/components/MonitoringPolicies/DetectionMethodComponents/SyslogAlertConditions.vue')['default']
-    SystemEventAlertConditions: typeof import('./src/components/MonitoringPolicies/DetectionMethodComponents/SystemEventAlertConditions.vue')['default']
     TableCard: typeof import('./src/components/Common/TableCard.vue')['default']
     TableChart: typeof import('./src/components/Flows/TableChart.vue')['default']
     TextBadge: typeof import('./src/components/Common/TextBadge.vue')['default']

@@ -1,9 +1,9 @@
 <template>
     <div class="alert-conditions">
         <div>
-            <h2>Specify Threshold Alert Conditions</h2>
-            <p>Alert conditions are an additional set of parameters specific to the chosen detection method.</p>
-            <p>These conditions help to determine what alerts will be triggered and their assigned severity.</p>
+          <h2>Specify Threshold Alert Conditions</h2>
+          <p>Alert conditions are an additional set of parameters specific to the chosen detection method.</p>
+          <p>These conditions help to determine what alerts will be triggered and their assigned severity.</p>
         </div>
         <div class="component-type">
           <h2>Select a Component Type</h2>
@@ -17,27 +17,27 @@
             :value="node"
             :data-test="`text-radio-button-${node}`"
           >
-          <p>Node</p>
-         </FeatherRadio>
-         <FeatherRadio
+            <p>Node</p>
+          </FeatherRadio>
+          <FeatherRadio
             :value="interFace"
             :data-test="`text-radio-button-${interFace}`"
           >
-          <p>Interface</p>
-         </FeatherRadio>
+            <p>Interface</p>
+          </FeatherRadio>
         </FeatherRadioGroup>
       </div>
       <div class="metric-type">
-            <h4>Select a Threshold Metric</h4>
-            <div class="select-metric">
-              <FeatherSelect
-                label="Select Metric"
-                :options="thresholdMetricTypeOptions"
-                text-prop="name"
-                :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
-                @update:model-value=""
-              />
-            </div>
+        <h4>Select a Threshold Metric</h4>
+        <div class="select-metric">
+          <FeatherSelect
+            label="Select Metric"
+            :options="thresholdMetricTypeOptions"
+            text-prop="name"
+            :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
+            @update:model-value="() => {}"
+          />
+        </div>
       </div>
     <span class="subtitle" v-if="isShow">Time period</span>
     <div class="time-period" v-if="isShow">
@@ -48,7 +48,7 @@
           @item-selected="selectEventType"
           selectedId="1"
           :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
-          />
+        />
       </div>
       <p class="subtitle-last-time">during the last</p>
       <div class="last-time">
@@ -60,8 +60,8 @@
         />
       </div>
     </div>
-      <AlertConditions/>
-      <div class="notify" v-if="isShow">
+    <AlertConditions/>
+    <div class="notify" v-if="isShow">
       <FeatherSelect
         label="Notify As"
         :options="notifyOptions"
@@ -101,16 +101,16 @@ const onChecked = (e: boolean) => {
 }
 
 const selectEventType = (eventType: EventType) => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   monitoringPoliciesStore.selectedRule!.eventType = eventType
 }
-
 </script>
 
 <style lang="scss" scoped>
-
 .alert-conditions {
   .component-type {
     padding-top: 1rem;
+
     :deep(.feather-radio-group) {
       display: flex;
       justify-content: center;
@@ -118,42 +118,42 @@ const selectEventType = (eventType: EventType) => {
       flex-direction: column;
       row-gap: 5px;
     }
-    h2{
-    color: var(--feather-cleared);
+    h2 {
+      color: var(--feather-cleared);
+    }
   }
- }
 
- .notify {
+  .notify {
     margin-top: 1em;
     width: 25%;
   }
 
- .time-period {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-top: 10px;
-  column-gap: 10px;
-  .any-time , .last-time {
-    width: 25%;
-  }
-  .subtitle-last-time , .subtitle-last-any {
-    align-self: baseline;
-    color: var(--feather-cleared);
-    margin: 10px 0px;
-  }
-}
+  .time-period {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 10px;
+    column-gap: 10px;
 
- .metric-type {
-     h4{
-        color: var(--feather-cleared);
+    .any-time, .last-time {
+      width: 25%;
+    }
+    .subtitle-last-time, .subtitle-last-any {
+      align-self: baseline;
+      color: var(--feather-cleared);
+      margin: 10px 0px;
+    }
+  }
+
+  .metric-type {
+    h4 {
+      color: var(--feather-cleared);
     }
     .select-metric {
       width: 40%;
       margin-top: 10px;
     }
- }
+  }
 }
-
 </style>

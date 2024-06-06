@@ -103,8 +103,8 @@ const props = defineProps({
 
 const loading = ref(false)
 const selectedItems = ref<IAutocomplete[]>([])
+
 const results = computed(() => {
-  loading.value = false
   let items = props.items?.map((item: Record<string, any>) => ({
     ...item,
     _text: item.name
@@ -149,9 +149,17 @@ const updateModelValue = (selected: any) => {
 }
 
 const search = (q: string) => {
-  if (!q) return // prevent making request on focus
+  if (!q) {
+    return // prevent making request on focus
+  }
+
   loading.value = true
-  props.getItems(q)
+
+  try {
+    props.getItems(q)
+  } finally {
+    loading.value = true
+  }
 }
 
 const addValue = (q: string) => {

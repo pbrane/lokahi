@@ -45,7 +45,10 @@ const onCreatePolicy = () => {
   router.push('/monitoring-policies/create')
 }
 
-onMounted(() => store.getMonitoringPolicies())
+onMounted(() => {
+  store.getMonitoringPolicies()
+})
+
 const onRefresh = () => {
   reFresh.value = !reFresh.value
 }

@@ -92,11 +92,11 @@
         <MonitoringPoliciesCardLegacy
           v-for="(policy, index) in store.monitoringPolicies"
           :key="policy.id"
-          :policy="(policy as Policy)"
+          :policy="policy"
           :index="index"
-          @selectPolicy="(policy: Policy) => store.displayPolicyForm(policy)"
-          @deletePolicy="(policy: Policy) => countAlertsAndOpenDeleteModal(policy)"
-          @copyPolicyLegacy="(policy: Policy) => store.copyPolicyLegacy(policy)"
+          @selectPolicy="(policy) => store.displayPolicyForm(policy)"
+          @deletePolicy="(policy) => countAlertsAndOpenDeleteModal(policy)"
+          @copyPolicyLegacy="(policy) => store.copyPolicyLegacy(policy)"
         />
       </div>
     </transition>
@@ -116,7 +116,7 @@ import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStor
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
 import { useTagQueries } from '@/store/Queries/tagQueries'
 import Add from '@featherds/icon/action/Add'
-import { Policy } from '@/types/policies'
+import { MonitoringPolicy } from '@/types/policies'
 import { TagSelectItem } from '@/types'
 import ContentCopy from '@featherds/icon/action/ContentCopy'
 import Delete from '@featherds/icon/action/Delete'
@@ -134,7 +134,7 @@ const icons = markRaw({
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const selectTags = (tags: TagSelectItem[]) => (store.selectedPolicy!.tags = tags.map((tag) => tag.name))
-const populateForm = (policy: Policy) => store.displayPolicyForm(policy)
+const populateForm = (policy: MonitoringPolicy) => store.displayPolicyForm(policy)
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const formattedTags = computed(() => store.selectedPolicy!.tags!.map((tag: string) => ({ name: tag, id: tag })))
@@ -142,12 +142,12 @@ const route = useRoute()
 
 watchEffect(() => {
   if (store.monitoringPolicies.length > 0 && route?.params?.id) {
-    const filteredPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(route.params.id))
-    populateForm(filteredPolicy as Policy)
+    const filteredPolicy = store.monitoringPolicies.find((item: MonitoringPolicy) => item.id === Number(route.params.id))
+    populateForm(filteredPolicy as MonitoringPolicy)
   }
 })
 
-const countAlertsAndOpenDeleteModal = async (policy?: Policy) => {
+const countAlertsAndOpenDeleteModal = async (policy?: MonitoringPolicy) => {
   if (policy?.id) {
     store.selectedPolicy = policy
   }

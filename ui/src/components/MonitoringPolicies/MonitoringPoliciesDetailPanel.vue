@@ -5,7 +5,7 @@
       <div>
         <FeatherButton
           icon="Edit"
-          data-test="Edit" 
+          data-test="Edit"
           @click="onEdit(store.selectedPolicy ?? {})"
         >
           <FeatherIcon :icon="icons.Edit" />
@@ -24,16 +24,16 @@
         <div class="sub-title">STATUS</div>
         <div class="toggle-wrapper">
           <FeatherTooltip
-          :title="store.selectedPolicy?.enabled ? 'Enabled' : 'Disabled'"
-           v-slot="{ attrs, on }"
+            :title="store.selectedPolicy?.enabled ? 'Enabled' : 'Disabled'"
+            v-slot="{ attrs, on }"
           >
-          <BasicToggle
+            <BasicToggle
               data-test="BasicToggle"
               v-bind="attrs"
               v-on="on"
               :toggle="store.selectedPolicy?.enabled"
               @toggle="updateMonitoringPolicyStatus"
-          />
+            />
           </FeatherTooltip>
           <span>Active</span>
         </div>

@@ -61,7 +61,7 @@
               </td>
               <td>{{ policy.memo }}</td>
               <td>{{ policy.rules?.length || 0 }}</td>
-              <td>{{ store.affectedNodesByMonitoringPolicyCount?.get(policy.id) ?? '--' }}</td>
+              <td>{{ (policy.id && store.affectedNodesByMonitoringPolicyCount?.get(policy.id)) || '--' }}</td>
             </tr>
           </TransitionGroup>
         </table>
@@ -81,8 +81,8 @@
 <script setup lang="ts">
 import Circle from '@/assets/circle.svg'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { DownloadCSVMonitoringPoliciesVariables, DownloadFormat, MonitorPolicy } from '@/types/graphql'
-import { MonitorPolicyFilters, Policy } from '@/types/policies'
+import { DownloadCSVMonitoringPoliciesVariables, DownloadFormat } from '@/types/graphql'
+import { MonitorPolicyFilters, MonitoringPolicy } from '@/types/policies'
 import CheckCircle from '@featherds/icon/action/CheckCircle'
 import DownloadFile from '@featherds/icon/action/DownloadFile'
 import Refresh from '@featherds/icon/navigation/Refresh'
@@ -93,8 +93,8 @@ const store = useMonitoringPoliciesStore()
 const page = ref(0)
 const pageSize = ref(0)
 const total = ref(0)
-const pageData = ref([] as MonitorPolicy[])
-const clonedMonitoringPolicies = ref([] as MonitorPolicy[])
+const pageData = ref([] as MonitoringPolicy[])
+const clonedMonitoringPolicies = ref([] as MonitoringPolicy[])
 const policiesFilter = ref({} as MonitorPolicyFilters)
 const icons = markRaw({
   CheckCircle,
@@ -110,12 +110,14 @@ const emit = defineEmits<{
   (e: 'policySelected', id: number): void
 }>()
 
-const onSelectPolicy = (id: string) => {
-  const selectedPolicy = store.monitoringPolicies.find((item: Policy) => item.id === Number(id))
+const onSelectPolicy = (id?: number) => {
+  if (id) {
+    const selectedPolicy = store.monitoringPolicies.find((item: MonitoringPolicy) => item.id === Number(id))
 
-  if (selectedPolicy) {
-    store.displayPolicyForm(selectedPolicy)
-    emit('policySelected', Number(selectedPolicy.id))
+    if (selectedPolicy) {
+      store.displayPolicyForm(selectedPolicy)
+      emit('policySelected', Number(selectedPolicy.id))
+    }
   }
 }
 
@@ -138,7 +140,7 @@ onMounted(() => {
   policiesFilter.value.sortBy = 'id'
   policiesFilter.value.sortAscending = true
   if (store.selectedPolicy?.id) {
-    onSelectPolicy(`${store.selectedPolicy?.id}`)
+    onSelectPolicy(store.selectedPolicy.id)
   }
 })
 
@@ -162,6 +164,7 @@ const sort = reactive({
 
 const sortChanged = (sortObj: Record<string, string>) => {
   policiesFilter.value.sortAscending = sortObj.value === 'asc' ? true : false
+
   if (sortObj.property !== 'affectedNodes' && sortObj.property !== 'alertRules') {
     policiesFilter.value.sortBy = sortObj.property
     if (sortObj.value === 'asc') {
@@ -189,6 +192,7 @@ const sortChanged = (sortObj: Record<string, string>) => {
   }
   sort[sortObj.property] = sortObj.value
 }
+
 // Function to retrieve objects for a given page
 const getPageObjects = (array: Array<any>, pageNumber: number, pageSize: number) => {
   const startIndex = (pageNumber - 1) * pageSize
@@ -211,12 +215,14 @@ const onDownload = () => {
 const onRefresh = async () => {
   await store.getMonitoringPolicies()
 }
+
 const updatePage = (v: number) => {
   if (hasMonitoringPolicies.value) {
     page.value = v
     pageData.value = getPageObjects(clonedMonitoringPolicies.value, v, pageSize.value)
   }
 }
+
 const updatePageSize = (v: number) => {
   if (hasMonitoringPolicies.value) {
     pageSize.value = v

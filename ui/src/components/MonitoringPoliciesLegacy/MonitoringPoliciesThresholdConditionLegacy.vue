@@ -4,7 +4,7 @@
     <div
       v-if="index !== 0"
       class="delete"
-      @click="emit('deleteCondition', alertCondition.id.toString())"
+      @click="emit('deleteCondition', alertCondition.id)"
     >
       Delete condition {{ conditionLetters[index].toUpperCase() }}
     </div>
@@ -111,7 +111,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'updateCondition', alertCondition: ThresholdCondition): void,
-  (e: 'deleteCondition', id: string): void
+  (e: 'deleteCondition', id: number): void
 }>()
 
 const alertCondition = ref<ThresholdCondition>(props.condition)

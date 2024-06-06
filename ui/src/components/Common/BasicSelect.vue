@@ -17,7 +17,9 @@
 <script lang="ts" setup>
 import { ISelectItemType } from '@featherds/select/src/components/types'
 import Search from '@featherds/icon/action/Search'
+
 const emit = defineEmits(['item-selected'])
+
 const props = defineProps<{
   list: ISelectItemType[] // accept the structure [{id, name}]
   isDisabled?: boolean
@@ -26,6 +28,7 @@ const props = defineProps<{
 }>()
 
 const selectedItem = ref(props.list[0])
+
 const setSelectedItem = (selected: ISelectItemType | undefined) => {
   emit('item-selected', selected?.id)
 }
@@ -33,6 +36,7 @@ const setSelectedItem = (selected: ISelectItemType | undefined) => {
 // set selected by passing in an id
 watchEffect(() => {
   selectedItem.value = props.list[0]
+
   if (props.selectedId) {
     for (const item of props.list) {
       if (item.id === props.selectedId) {

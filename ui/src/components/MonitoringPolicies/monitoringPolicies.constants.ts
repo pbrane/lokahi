@@ -1,3 +1,5 @@
+import { Comparators, KeyValueStringType } from '@/types/index'
+
 export enum ThresholdMetrics {
   OVER_UTILIZATION = 'OVER_UTILIZATION',
   SATURATION = 'SATURATION',
@@ -17,3 +19,21 @@ export enum Unknowns {
 }
 
 export const conditionLetters = ['a', 'b', 'c', 'd']
+
+export const ComparatorSigns: KeyValueStringType = Object.freeze({
+  [Comparators.EQ]: '==',
+  [Comparators.NE]: '!=',
+  [Comparators.GT]: '>',
+  [Comparators.GTE]: '>=',
+  [Comparators.LT]: '<',
+  [Comparators.LTE]: '<='
+})
+
+export const ComparatorText: KeyValueStringType = Object.freeze({
+  [Comparators.EQ]: 'equal to',
+  [Comparators.NE]: 'not equal to',
+  [Comparators.GT]: 'greater than',
+  [Comparators.GTE]: 'greater than or equal to',
+  [Comparators.LT]: 'less than',
+  [Comparators.LTE]: 'less than or equal to'
+})

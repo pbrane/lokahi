@@ -95,13 +95,13 @@ import { ISelectItemType } from '@featherds/select'
 import useSnackbar from '@/composables/useSnackbar'
 import { conditionLetters, Unknowns } from './monitoringPoliciesLegacy.constants'
 import { useAlertEventDefinitionQueries } from '@/store/Queries/alertEventDefinitionQueries'
-import { AlertCondition, EventType, Severity, TimeRangeUnit } from '@/types/graphql'
-import { ThresholdCondition } from '@/types/policies'
+import { EventType, Severity, TimeRangeUnit } from '@/types/graphql'
+import { PolicyAlertCondition } from '@/types/policies'
 
 const { showSnackbar } = useSnackbar()
 
 const props = defineProps<{
-  condition: AlertCondition
+  condition: PolicyAlertCondition
   eventType: EventType
   isDisabled: boolean
   index: number
@@ -110,8 +110,8 @@ const props = defineProps<{
 const alertEventDefinitionStore = useAlertEventDefinitionQueries()
 
 const emit = defineEmits<{
-  (e: 'updateCondition', alertCondition: AlertCondition | ThresholdCondition): void,
-  (e: 'deleteCondition', id: string): void
+  (e: 'updateCondition', alertCondition: PolicyAlertCondition): void,
+  (e: 'deleteCondition', id: number): void
 }>()
 
 const alertCondition = ref(props.condition)

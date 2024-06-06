@@ -7,6 +7,10 @@ export * from './locations.d'
 export declare type fncVoid = () => void
 export declare type fncArgVoid = (...args: any[]) => void
 
+export interface KeyValueStringType {
+  [key: string]: string
+}
+
 export interface SnackbarProps {
   msg: string
   center?: boolean
@@ -92,4 +96,13 @@ export enum CreateEditMode {
   None = 0,
   Create = 1,
   Edit = 2
+}
+
+export enum Comparators {
+  EQ = 'EQ',
+  NE = 'NE',
+  GT = 'GT',
+  GTE = 'GTE',
+  LT = 'LT',
+  LTE = 'LTE'
 }
