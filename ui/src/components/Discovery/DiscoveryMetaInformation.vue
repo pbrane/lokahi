@@ -125,23 +125,58 @@
       </div>
     </div>
     <div v-if="[DiscoveryType.ServiceDiscovery].includes(discovery.type as DiscoveryType)">
-      <div class="discovery-targets">
-        <div class="discovery-title">
-          <h5>Enter Discovery Targets</h5>
-          <Icon :icon="targetsDiscoveryIcon" />
-        </div>
+        <div class="discovery-targets">
+        <h4>Enter Discovery Targets&nbsp;&nbsp;
+          <FeatherPopover
+            :pointer-alignment="PointerAlignment.center"
+            :placement="PopoverPlacement.top"
+          >
+            <template #default>
+              <div>
+                <h4>Discovery Targets</h4>
+                <p>Enter the FQDN or IP address/subnet/ranges of servers to Discover.</p>
+              </div>
+            </template>
+            <template #trigger="{ attrs, on }">
+              <FeatherIcon
+                class="info-icon"
+                v-bind="attrs"
+                v-on="on"
+                :icon="Info"
+              />
+            </template>
+          </FeatherPopover>
+        </h4>
         <FeatherTextarea
           class="input-dicovery"
-          v-model.trim="discoveryTargets"
           label="Enter Discovery Targets"
-          :maxlength="150"
+          :modelValue="discoveryTargetsString"
+          @update:modelValue="(e: string) => updateDiscoveryValues('discoveryTargets',e)"
+          @blur="convertDiscoveryTargetsToString"
+          rows="5"
         >
         </FeatherTextarea>
        </div>
-       <div class="discovery-title">
-          <h5>Select services to associate with the Discovery</h5>
-          <Icon :icon="servicesProtocolIcon" />
-       </div>
+       <div class="discovery-targets">
+        <h4>Enter Discovery Targets&nbsp;&nbsp;
+          <FeatherPopover
+            :pointer-alignment="PointerAlignment.center"
+            :placement="PopoverPlacement.top"
+          >
+            <template #default>
+              <p>Services associated with discovery.</p>
+            </template>
+            <template #trigger="{ attrs, on }">
+              <FeatherIcon
+                class="info-icon"
+                v-bind="attrs"
+                v-on="on"
+                :icon="Info"
+              />
+            </template>
+          </FeatherPopover>
+        </h4>
+      </div>
       <div class="services-protocol">
         <FeatherCheckbox
           v-for="service in services"
@@ -213,11 +248,10 @@
           label="Enter Discovery Targets"
         />
       </div>
-    </div>
+     </div>
  </div>
 </template>
 <script lang="ts" setup>
-import { IIcon } from '@/types'
 import {
   DiscoveryAzureMeta,
   DiscoverySNMPMeta,
@@ -228,7 +262,6 @@ import {
   NewOrUpdatedDiscovery
 } from '@/types/discovery'
 import Info from '@featherds/icon/action/Info'
-import Warning from '@featherds/icon/notification/Warning'
 import { ISelectItemType } from '@featherds/select'
 import { FeatherTabContainer } from '@featherds/tabs'
 import { PointerAlignment, PopoverPlacement } from '@featherds/tooltip'
@@ -241,7 +274,7 @@ const props = defineProps({
 })
 const isOverallDisabled = computed(() => !!(props.discovery.type === DiscoveryType.Azure && props.discovery.id))
 const selectedTab = ref()
-const discoveryTargets = ref()
+const discoveryTargetsString = ref<string>()
 const selectService = ref<string[]>([])
 const services = reactive([
   { label: 'HTTP (Port 80)' },
@@ -251,19 +284,6 @@ const services = reactive([
   { label: 'DNS' },
   { label: 'SSH' }
 ])
-
-const targetsDiscoveryIcon: IIcon = {
-  image: markRaw(Warning),
-  tooltip: 'Discovery Targets',
-  size: 1.5,
-  cursorHover: true
-}
-const servicesProtocolIcon: IIcon = {
-  image: markRaw(Warning),
-  tooltip: 'Services associate with discovery',
-  size: 1.5,
-  cursorHover: true
-}
 
 const changeSecurityType = (type?: number) => {
   let setType = DiscoveryType.ICMPV3NoAuth
@@ -307,6 +327,35 @@ const onSelectService = (label: string, isSelected: boolean) => {
     const index = selectService.value.indexOf(label)
     if (index > -1) {
       selectService.value.splice(index, 1)
+    }
+  }
+}
+const parseDiscoveriesTargets = (discoveryTargets?: string | undefined): string[] => {
+  if (!discoveryTargets) {
+    return []
+  }
+  const parsedTargets = discoveryTargets?.split(/[\n,;]+/)
+    .map((target: string) => target.trim())
+    .filter((target: string) => target.length > 0)
+  return parsedTargets?.length > 0 ? parsedTargets : []
+}
+
+const updateDiscoveryValues = (key: string, value: any) => {
+  const parsedTargets = parseDiscoveriesTargets(value as string | undefined)
+  if (props.discovery.meta && 'discoveryTargets' in props.discovery.meta) {
+    props.discovery.meta = {
+      ...props.discovery.meta,
+      discoveryTargets: parsedTargets
+    }
+  }
+}
+
+const convertDiscoveryTargetsToString = () => {
+  if (props.discovery.meta && 'discoveryTargets' in props.discovery.meta) {
+    if (Array.isArray(props.discovery?.meta?.discoveryTargets)) {
+      discoveryTargetsString.value = props.discovery.meta.discoveryTargets.join('\n')
+    } else {
+      discoveryTargetsString.value = ''
     }
   }
 }

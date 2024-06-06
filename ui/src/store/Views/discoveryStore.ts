@@ -109,7 +109,8 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
           subscriptionId: '',
           directoryId: '',
           communityStrings: 'public',
-          udpPorts: '161'
+          udpPorts: '161',
+          discoveryTargets: ''
         }
       }
       const defaultLocation = discoveryQueries.locations.find((d) => d.location === 'default')
