@@ -87,9 +87,9 @@ const disableSaveRuleBtn = computed(
 )
 
 const selectEventType = (eventType: EventType) => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   monitoringPoliciesStore.selectedRule!.eventType = eventType
 }
-
 </script>
 
 <style lang="scss" scoped>

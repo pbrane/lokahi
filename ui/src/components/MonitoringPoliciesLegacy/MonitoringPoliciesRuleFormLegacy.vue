@@ -14,7 +14,7 @@
       </FeatherButton>
       <MonitoringPoliciesExistingItemsLegacy
         title="Existing Rules"
-        :list="store.selectedPolicy.rules as PolicyRule[]"
+        :list="store.selectedPolicy.rules || []"
         :selectedItemId="store.selectedRule?.id"
         @selectExistingItem="populateForm"
       />
@@ -101,9 +101,9 @@
                 v-for="(cond, index) in store.selectedRule!.alertConditions"
                 :key="cond.id"
                 :index="Number(index)"
-                :condition="(cond as ThresholdCondition)"
-                @updateCondition="(condition: ThresholdCondition) => store.updateCondition(cond.id, condition)"
-                @deleteCondition="(id: string) => store.deleteCondition(id)"
+                :condition="createThresholdCondition(cond)"
+                @updateCondition="(condition: ThresholdCondition) => { /* store.updateCondition(cond.id, condition) */ }"
+                @deleteCondition="(id: number) => store.deleteCondition(id)"
               />
             </template>
             <template
@@ -113,12 +113,12 @@
               <MonitoringPoliciesEventConditionLegacy
                 v-for="(cond, index) in store.selectedRule!.alertConditions"
                 :key="cond.id"
-                :condition="(cond as AlertCondition)"
+                :condition="cond"
                 :event-type="store.selectedRule?.eventType"
                 :index="Number(index)"
                 :isDisabled="store.selectedPolicy?.isDefault === true"
-                @updateCondition="(condition: AlertCondition) => store.updateCondition(cond.id, condition)"
-                @deleteCondition="(id: string) => store.deleteCondition(id)"
+                @updateCondition="(condition: PolicyAlertCondition) => store.updateCondition(cond.id, condition)"
+                @deleteCondition="(id: number) => store.deleteCondition(id)"
               />
             </template>
             <FeatherButton
@@ -158,8 +158,8 @@ import Delete from '@featherds/icon/action/Delete'
 import useModal from '@/composables/useModal'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
-import { AlertCondition, DetectionMethod, EventType, ManagedObjectType, PolicyRule } from '@/types/graphql'
-import { ThresholdCondition } from '@/types/policies'
+import { DetectionMethod, EventType, ManagedObjectType } from '@/types/graphql'
+import { MonitoringPolicyRule, PolicyAlertCondition, ThresholdCondition } from '@/types/policies'
 import { ThresholdMetrics } from './monitoringPoliciesLegacy.constants'
 
 const { openModal, closeModal, isVisible } = useModal()
@@ -194,13 +194,27 @@ const eventTypeOptions = [
   { id: EventType.Internal, name: 'Internal' }
 ]
 
+const createThresholdCondition = (condition: PolicyAlertCondition) => {
+  return {
+    id: condition.id,
+    level: '',
+    percentage: condition.percentage,
+    forAny: 0,
+    durationUnit: '',
+    duringLast: 0,
+    periodUnit: '',
+    severity: condition.severity,
+    triggerEvent: condition.triggerEvent
+  } as ThresholdCondition
+}
+
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const selectComponentType = (type: ManagedObjectType) => (store.selectedRule!.componentType = type)
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const selectThresholdMetric = (metric: string) => (store.selectedRule!.thresholdMetricName = metric)
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const selectEventType = (eventType: EventType) => (store.selectedRule!.eventType = eventType)
-const populateForm = async (rule: PolicyRule) => await store.displayRuleForm(rule)
+const populateForm = async (rule: MonitoringPolicyRule) => await store.displayRuleForm(rule)
 
 const selectDetectionMethod = async (method: DetectionMethod) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -54,6 +54,8 @@ export type Alert = {
 
 export type AlertCondition = {
   __typename?: 'AlertCondition';
+  alertMessage?: Maybe<Scalars['String']>;
+  alertRegex?: Maybe<Scalars['String']>;
   clearEvent?: Maybe<AlertEventDefinition>;
   count?: Maybe<Scalars['Int']>;
   id?: Maybe<Scalars['Long']>;
@@ -61,9 +63,6 @@ export type AlertCondition = {
   overtimeUnit?: Maybe<Scalars['String']>;
   severity?: Maybe<Scalars['String']>;
   triggerEvent?: Maybe<AlertEventDefinition>;
-  alertMessage?: Maybe<Scalars['String']>;
-  alertRegex?: Maybe<Scalars['String']>;
-  isNew?: Maybe<boolean>;
 }
 
 export type AlertConditionInput = {
@@ -74,8 +73,6 @@ export type AlertConditionInput = {
   overtimeUnit?: InputMaybe<Scalars['String']>;
   severity?: InputMaybe<Scalars['String']>;
   triggerEvent?: InputMaybe<AlertEventDefinitionInput>;
-  alertMessage?: Maybe<Scalars['String']>;
-  alertRegex?: Maybe<Scalars['String']>;
 }
 
 export type AlertCount = {
@@ -332,6 +329,7 @@ export type MonitorPolicy = {
   rules?: Maybe<Array<Maybe<PolicyRule>>>;
   tags?: Maybe<Array<Maybe<Scalars['String']>>>;
   enabled?: Maybe<Scalars['Boolean']>;
+  isDefault?: Maybe<Scalars['Boolean']>;
 }
 
 export type MonitorPolicyInput = {
@@ -632,8 +630,6 @@ export type PolicyRule = {
   id?: Maybe<Scalars['Long']>;
   name?: Maybe<Scalars['String']>;
   thresholdMetricName?: Maybe<Scalars['String']>;
-  vendor?: Scalars['String'];
-  isNew?: Maybe<boolean>;
 }
 
 export type EventDefsByVendorRequest = {
@@ -653,7 +649,6 @@ export type PolicyRuleInput = {
   id?: InputMaybe<Scalars['Long']>;
   name?: InputMaybe<Scalars['String']>;
   thresholdMetricName?: InputMaybe<Scalars['String']>;
-  vendor?: string
 }
 
 /** Query root */

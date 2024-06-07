@@ -65,7 +65,7 @@ import useSnackbar from '@/composables/useSnackbar'
 import { useMonitoringPoliciesMutations } from '@/store/Mutations/monitoringPoliciesMutations'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { CreateEditMode } from '@/types'
-import { PolicyRule } from '@/types/graphql'
+import { MonitoringPolicyRule } from '@/types/policies'
 import Add from '@featherds/icon/action/Add'
 import Copy from '@featherds/icon/action/ContentCopy'
 import Delete from '@featherds/icon/action/Delete'
@@ -86,18 +86,18 @@ const columns: { id: string; label: string }[] = [
   { id: 'Actions', label: 'Actions' }
 ]
 
-const copyRule = (rule: PolicyRule) => {
+const copyRule = (rule: MonitoringPolicyRule) => {
   monitoringPoliciesStore.copyRule(rule)
 }
 const createRule = () => {
   monitoringPoliciesStore.setRuleEditMode(CreateEditMode.Create)
   monitoringPoliciesStore.openAlertRuleDrawer(undefined)
 }
-const editRule = (rule: PolicyRule) => {
+const editRule = (rule: MonitoringPolicyRule) => {
   monitoringPoliciesStore.setRuleEditMode(CreateEditMode.Edit)
   monitoringPoliciesStore.openAlertRuleDrawer(rule)
 }
-const countAlertsAndOpenDeleteModal = async (rule: PolicyRule) => {
+const countAlertsAndOpenDeleteModal = async (rule: MonitoringPolicyRule) => {
   if (monitoringPoliciesStore.selectedPolicy?.rules?.length && monitoringPoliciesStore.selectedPolicy?.rules?.length > 1) {
     monitoringPoliciesStore.selectedRule = rule
     deleteMsg.value = `Deleting rule ${monitoringPoliciesStore.selectedRule?.name} removes ${monitoringPoliciesStore.cachedAffectedAlertsByRule?.get(monitoringPoliciesStore.selectedRule.id) ?? 0} associated alerts. Do you wish to proceed?`

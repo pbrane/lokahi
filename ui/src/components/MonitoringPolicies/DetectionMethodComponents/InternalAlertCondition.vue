@@ -59,13 +59,14 @@
 
 <script setup lang="ts">
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { AlertCondition, AlertEventDefinition, Severity } from '@/types/graphql'
+import { AlertEventDefinition, Severity } from '@/types/graphql'
+import { PolicyAlertCondition } from '@/types/policies'
 import Search from '@featherds/icon/action/Search'
 import { ISelectItemType } from '@featherds/select'
 
 const eventDefinitionOptions = ref([] as ISelectItemType[])
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
-const condition = ref({} as AlertCondition)
+const condition = ref({} as PolicyAlertCondition)
 const clearEvent = ref()
 
 const severityOptions = [

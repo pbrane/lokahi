@@ -77,6 +77,8 @@ const hideNextBtn = computed(() => {
     // must call default slot to keep hideNextBtn prop reactive
     return slots.default()[currentStep.value - 1].props?.hideNextBtn
   }
+
+  return false
 })
 
 const disableNextBtn = computed(() => {
@@ -84,18 +86,26 @@ const disableNextBtn = computed(() => {
     // must call default slot to keep disableNextBtn prop reactive
     return slots.default()[currentStep.value - 1].props?.disableNextBtn
   }
+
+  return false
 })
 
 // exposed for explicit manual use
 const next = () => {
-  if (currentStep.value === stepNumbers.value.length) return
+  if (currentStep.value === stepNumbers.value.length) {
+    return
+  }
+
   currentStep.value++
   updateContent()
 }
 
 // exposed for explicit manual use
 const prev = () => {
-  if (currentStep.value === 1) return
+  if (currentStep.value === 1) {
+    return
+  }
+
   currentStep.value--
   updateContent()
 }
@@ -108,7 +118,9 @@ const slideNext = () => {
   }
 
   // if last step, don't increase step count
-  if (currentStep.value === stepNumbers.value.length) return
+  if (currentStep.value === stepNumbers.value.length) {
+    return
+  }
 
   currentStep.value++
   updateContent()
@@ -126,7 +138,10 @@ const slidePrev = () => {
 }
 
 const updateContent = () => {
-  if (!slots.default) return
+  if (!slots.default) {
+    return
+  }
+
   const contentDiv = document.getElementById('content') as HTMLElement
   render(null, contentDiv) // unmount any previous VNode content
   currentContent.value = slots.default()[currentStep.value - 1] // get content as VNode
@@ -134,7 +149,10 @@ const updateContent = () => {
 }
 
 onMounted(() => {
-  if (!slots.default) return
+  if (!slots.default) {
+    return
+  }
+
   // spread number of steps into array (using .length), start with 1 instead of 0
   stepNumbers.value = Array.from({ length: slots.default().length }, (_, i) => i + 1)
   updateContent()

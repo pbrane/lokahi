@@ -75,14 +75,15 @@
 <script setup lang="ts">
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { CreateEditMode } from '@/types'
-import { AlertCondition, AlertEventDefinition, EventType, Severity } from '@/types/graphql'
+import { AlertEventDefinition, EventType, Severity } from '@/types/graphql'
+import { PolicyAlertCondition } from '@/types/policies'
 import { IAutocompleteItemType } from '@featherds/autocomplete'
 import Search from '@featherds/icon/action/Search'
 import { ISelectItemType } from '@featherds/select'
 
 const eventDefinitionOptions = ref([] as ISelectItemType[])
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
-const condition = ref({} as AlertCondition)
+const condition = ref({} as PolicyAlertCondition)
 const loading = ref(false)
 const selectedVendor = ref(undefined as unknown as IAutocompleteItemType)
 const vendorSearchResults = ref([] as IAutocompleteItemType[])

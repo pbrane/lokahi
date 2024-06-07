@@ -18,11 +18,14 @@
 
 <script lang="ts" setup>
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { NewOrUpdatedDiscovery } from '@/types/discovery'
+import { MonitoringPolicy } from '@/types/policies'
+
 const store = useMonitoringPoliciesStore()
 const router = useRouter()
+
 onMounted(() => store.getMonitoringPolicies())
-const handleRoute = (policy: NewOrUpdatedDiscovery ) => {
+
+const handleRoute = (policy: MonitoringPolicy) => {
   store.selectedPolicy = policy
   router.push({
     path: '/monitoring-policies'
@@ -62,6 +65,4 @@ const handleRoute = (policy: NewOrUpdatedDiscovery ) => {
     }
   }
 }
-
 </style>
-

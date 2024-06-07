@@ -53,9 +53,16 @@ import { TagSelectItem } from '@/types'
 const store = useMonitoringPoliciesStore()
 const tagQueries = useTagQueries()
 
-const selectTags = (tags: TagSelectItem[]) => (store.selectedPolicy!.tags = tags.map((tag) => tag.name))
-const formattedTags = computed(() => store.selectedPolicy?.tags?.map((tag: string) => ({ name: tag, id: tag })) || [])
+const selectTags = (tags: TagSelectItem[]) => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  store.selectedPolicy!.tags = tags.map((tag) => tag.name)
+}
+
+const formattedTags = computed(() => {
+  return store.selectedPolicy?.tags?.map((tag: string) => ({ name: tag, id: tag })) || []
+})
 </script>
+
 <style lang="scss" scoped>
 @use '@featherds/styles/themes/variables';
 @use '@featherds/styles/mixins/typography';

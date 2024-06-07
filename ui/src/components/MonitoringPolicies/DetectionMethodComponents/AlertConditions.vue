@@ -25,9 +25,9 @@
             <td>
               <div class="alert-conditions">
                 <BasicSelect
-                  :list="alert?.conditionsOptions"
-                  @item-selected="selectCondition"
-                  selectedId="1"
+                  :list="conditionsOptions"
+                  @item-selected="(cmp: any) => selectCondition(cmp, alert.id)"
+                  :selectedId="'GT'"
                   :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
                 />
               </div>
@@ -50,24 +50,32 @@
     </div>
 </template>
 <script  setup lang="ts">
-import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import WifiNoConnection from '@featherds/icon/notification/WifiNoConnection'
 import Error from '@featherds/icon/notification/Error'
 import Warning from '@featherds/icon/notification/Warning'
+import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { Comparators } from '@/types/index'
+import { ComparatorSigns, ComparatorText } from '../monitoringPolicies.constants'
 
 const isIcon = ref<boolean>(true)
 const threshold = ref('')
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
 
 const conditionsOptions = [
-  { id: 1, name: '> greater than' },
-  { id: 2, name: '> greater than' }
+  { id: Comparators.EQ, name: `${ComparatorSigns[Comparators.EQ]} ${ComparatorText[Comparators.EQ]}` },
+  { id: Comparators.NE, name: `${ComparatorSigns[Comparators.NE]} ${ComparatorText[Comparators.NE]}` },
+  { id: Comparators.GT, name: `${ComparatorSigns[Comparators.GT]} ${ComparatorText[Comparators.GT]}` },
+  { id: Comparators.GTE, name: `${ComparatorSigns[Comparators.GTE]} ${ComparatorText[Comparators.GTE]}` },
+  { id: Comparators.LT, name: `${ComparatorSigns[Comparators.LT]} ${ComparatorText[Comparators.LT]}` },
+  { id: Comparators.LTE, name: `${ComparatorSigns[Comparators.LTE]} ${ComparatorText[Comparators.LTE]}` }
 ]
+
 const icons = markRaw({
   WifiNoConnection,
   Warning,
   Error
 })
+
 const alertConditions = [
   {id: 1, isEnabled: false, alertSeverity: 'Critical', condition: '', threshold: '', thresholdValue: '90', conditionsOptions, icon: icons.Error},
   {id: 2, isEnabled: false, alertSeverity: 'Major', condition: '', threshold: '', thresholdValue: '1', conditionsOptions, icon: icons.WifiNoConnection},
@@ -79,7 +87,8 @@ const showSeverity = (value: any) => {
   return { style: value as string }
 }
 
-const selectCondition = (conditionType: any) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const selectCondition = (comparator: string, alertId: number) => {
   console.log('select condition')
 }
 
@@ -96,31 +105,37 @@ const selectCondition = (conditionType: any) => {
 .container {
   display: block;
   overflow-x: hidden;
+
   .subtitle {
     margin-bottom: 0.75rem;
     @include typography.subtitle1;
     color: var(--feather-cleared);
   }
+
   table {
     width: 100%;
     @include table.table;
     padding: 0px !important;
     border: 1px solid var(variables.$border-on-surface);
     border-radius: 4px;
+
     thead {
       background: var(variables.$background);
       border: 1px solid var(variables.$border-on-surface);
     }
-    tr{
+
+    tr {
       height: auto !important;
+
       td {
         .Major {
-            rotate: 180deg;
-          }
+          rotate: 180deg;
+        }
         .alert-conditions,.threshold-metric-input {
           margin-top: 0.8em;
         }
-         .threshold-metric-input{
+
+        .threshold-metric-input{
           display: flex;
           justify-content: flex-start;
           align-items: center;
@@ -130,25 +145,27 @@ const selectCondition = (conditionType: any) => {
             margin-top: 0.70rem;
             color: var(--feather-cleared);
           }
+        }
+        .threshold-metric-input:last-child {
+          :deep(.label-border) {
+             width: 14.19991px !important;
           }
-          .threshold-metric-input:last-child {
-            :deep(.label-border) {
-               width: 14.19991px !important;
-             }
         }
       }
     }
   .toggle-wrapper {
     :deep(li) {
-        display: flex;
+      display: flex;
     }
+
     :deep(.feather-list-item) {
       padding: 0px !important;
+
       &:deep(hover) {
         background: none !important;
       }
     }
    }
   }
- }
+}
 </style>

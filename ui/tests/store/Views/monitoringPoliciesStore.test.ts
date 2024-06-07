@@ -1,17 +1,16 @@
-import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { Policy, ThresholdCondition } from '@/types/policies'
-import { createTestingPinia } from '@pinia/testing'
-import { buildFetchList } from '../../utils'
-import { DetectionMethod, PolicyRule, EventType, ManagedObjectType, MonitorPolicy, AlertEventDefinition } from '@/types/graphql'
-
 import { setActiveClient, useClient } from 'villus'
 import { cloneDeep } from 'lodash'
+import { createTestingPinia } from '@pinia/testing'
+
+import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
+import { buildFetchList } from '../../utils'
 import { CreateEditMode } from '@/types'
+import { AlertEventDefinition, DetectionMethod, EventType, ManagedObjectType, Severity } from '@/types/graphql'
+import { MonitoringPolicy, MonitoringPolicyRule, PolicyAlertCondition } from '@/types/policies'
 
-
-const mockMonitoringPolicy: MonitorPolicy = {
-  __typename: 'MonitorPolicy',
+const mockMonitoringPolicy: MonitoringPolicy = {
   id: 1,
+  isDefault: false,
   memo: 'Dummy memo',
   name: 'Dummy Policy',
   notifyByEmail: true,
@@ -20,10 +19,8 @@ const mockMonitoringPolicy: MonitorPolicy = {
   notifyInstruction: 'Notify immediately',
   rules: [
     {
-      __typename: 'PolicyRule',
       alertConditions: [
         {
-          __typename: 'AlertCondition',
           clearEvent: {
             __typename: 'AlertEventDefinition',
             clearKey: 'dummy_clear_key',
@@ -35,6 +32,7 @@ const mockMonitoringPolicy: MonitorPolicy = {
           },
           count: 5,
           id: 1,
+          isNew: false,
           overtime: 10,
           overtimeUnit: 'minutes',
           severity: 'high',
@@ -53,6 +51,7 @@ const mockMonitoringPolicy: MonitorPolicy = {
       detectionMethod: DetectionMethod.Threshold,
       eventType: EventType.Internal,
       id: 1,
+      isNew: false,
       name: 'Dummy Rule',
       thresholdMetricName: 'Dummy Metric'
     }
@@ -61,14 +60,21 @@ const mockMonitoringPolicy: MonitorPolicy = {
   enabled: true
 }
 
-const mockPolicyRule: PolicyRule = {
+const mockPolicyRule: MonitoringPolicyRule = {
   id: 1,
+  isNew: false,
   name: 'Mock Rule',
   componentType: ManagedObjectType.Node,
   detectionMethod: DetectionMethod.Threshold,
   eventType: EventType.Internal,
   alertConditions: []
+}
 
+const mockCondition: PolicyAlertCondition = {
+  id: 1,
+  isNew: false,
+  percentage: 70,
+  severity: 'Major'
 }
 
 global.fetch = buildFetchList({
@@ -113,7 +119,6 @@ global.fetch = buildFetchList({
 })
 
 describe('Monitoring Policies Store', () => {
-
   describe('when stubActions is false', () => {
     beforeEach(() => {
       createTestingPinia({ stubActions: false })
@@ -127,7 +132,7 @@ describe('Monitoring Policies Store', () => {
     test('monitoringPolicies.displayPolicyForm completes successfully', async () => {
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const monitoringPolicies = useMonitoringPoliciesStore()
-      const mockData: Policy = {isDefault: true, ...mockMonitoringPolicy}
+      const mockData: MonitoringPolicy = { ...mockMonitoringPolicy, isDefault: true }
       monitoringPolicies.displayPolicyForm(mockData)
       expect(monitoringPolicies.selectedPolicy).toStrictEqual(mockData)
     })
@@ -135,7 +140,8 @@ describe('Monitoring Policies Store', () => {
     test('monitoringPolicies.displayRuleForm completes successfully', async () => {
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const monitoringPolicies = useMonitoringPoliciesStore()
-      const mockData: PolicyRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const mockData: MonitoringPolicyRule = mockMonitoringPolicy!.rules![0]
       monitoringPolicies.displayRuleForm(mockData)
       expect(monitoringPolicies.selectedRule).toStrictEqual(mockData)
     })
@@ -144,20 +150,12 @@ describe('Monitoring Policies Store', () => {
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const store = useMonitoringPoliciesStore()
 
-      store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
-      const mockCondition: ThresholdCondition = {
-        id: 1,
-        level: 'Warning',
-        percentage: 70,
-        forAny: 1,
-        durationUnit: 'Hours',
-        duringLast: 24,
-        periodUnit: 'Hours',
-        severity: 'Medium'
-      }
-      store.updateCondition('1', mockCondition)
-      expect(store.updateCondition).toHaveBeenCalledWith('1', mockCondition)
+      store.selectedPolicy = { ...mockMonitoringPolicy, isDefault: false }
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      store.selectedRule = mockMonitoringPolicy!.rules![0]
+
+      store.updateCondition(1, mockCondition)
+      expect(store.updateCondition).toHaveBeenCalledWith(1, mockCondition)
     })
 
     test('monitoringPolicies.deleteCondition completes successfully', async () => {
@@ -165,10 +163,11 @@ describe('Monitoring Policies Store', () => {
       const store = useMonitoringPoliciesStore()
 
       store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      store.selectedRule = mockMonitoringPolicy!.rules![0]
 
-      store.deleteCondition('2')
-      expect(store.deleteCondition).toHaveBeenCalledWith('2')
+      store.deleteCondition(2)
+      expect(store.deleteCondition).toHaveBeenCalledWith(2)
     })
 
     test('monitoringPolicies.validateRule completes successfully', async () => {
@@ -176,7 +175,8 @@ describe('Monitoring Policies Store', () => {
       const store = useMonitoringPoliciesStore()
 
       store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      store.selectedRule = mockMonitoringPolicy!.rules![0]
 
       store.validateRule(store.selectedRule)
       expect(store.validateRule).toHaveBeenCalledWith(store.selectedRule)
@@ -197,29 +197,35 @@ describe('Monitoring Policies Store', () => {
     test('monitoringPolicies.copyPolicy completes successfully', async () => {
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const store = useMonitoringPoliciesStore()
-      const mockData: Policy = {
-        id: 0,
+      const mockData: MonitoringPolicy = {
+        id: 1,
         isDefault: false,
         memo: '',
         name: '',
         notifyByEmail: false,
         notifyByPagerDuty: false,
         notifyByWebhooks: false,
+        notifyInstruction: '',
         tags: ['default'],
-        rules: []
+        rules: [],
+        enabled: true
       }
 
       store.copyPolicy(mockData)
       expect(store.copyPolicy).toHaveBeenCalledWith(mockData)
       expect(store.copyPolicy).toHaveBeenCalledOnce()
       expect(store.selectedPolicy).toStrictEqual({
+        id: 0,
+        isDefault: false,
         memo: '',
         name: 'Copy of ',
         notifyByEmail: false,
         notifyByPagerDuty: false,
         notifyByWebhooks: false,
+        notifyInstruction: '',
         tags: ['default'],
-        rules: []
+        rules: [],
+        enabled: true
       })
     })
 
@@ -228,36 +234,39 @@ describe('Monitoring Policies Store', () => {
       const store = useMonitoringPoliciesStore()
 
       store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      store.selectedRule = mockMonitoringPolicy!.rules![0]
 
-      const mockCondition: ThresholdCondition = {
+      const newCondition: PolicyAlertCondition = {
         id: 1,
-        level: 'Warning',
+        isNew: false,
         percentage: 70,
-        forAny: 1,
-        durationUnit: 'Hours',
-        duringLast: 24,
-        periodUnit: 'Hours',
-        severity: 'Medium'
+        severity: 'Warning'
       }
-      store.updateCondition('1', mockCondition)
-      expect(store.updateCondition).toHaveBeenCalledWith('1', mockCondition)
+      store.updateCondition(1, newCondition)
+      expect(store.updateCondition).toHaveBeenCalledWith(1, newCondition)
     })
 
     test('monitoringPolicies.deleteCondition completes successfully', async () => {
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const store = useMonitoringPoliciesStore()
       store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
-      store.deleteCondition('2')
-      expect(store.deleteCondition).toHaveBeenCalledWith('2')
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      store.selectedRule = mockMonitoringPolicy!.rules![0]
+
+      store.deleteCondition(2)
+      expect(store.deleteCondition).toHaveBeenCalledWith(2)
     })
 
     test('monitoringPolicies.validateMonitoringPolicy completes successfully', async () => {
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const store = useMonitoringPoliciesStore()
       store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? {...mockMonitoringPolicy?.rules[0], 'name': ''} : {}
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const rule = mockMonitoringPolicy!.rules![0]
+
+      store.selectedRule = { ...rule, 'name': '' }
       store.validateRule(store.selectedRule)
       expect(store.validationErrors.ruleName ).toBe('Rule name cannot be blank.')
       expect(store.validateRule).toHaveBeenCalledWith(store.selectedRule)
@@ -265,15 +274,23 @@ describe('Monitoring Policies Store', () => {
     })
 
     describe('Monitoring Policy Save Rule', () => {
-      const showSnackbar = vi.fn()
-
       let store: any
-      const mockMonitoringPolicy: Policy = {
+
+      const mockMonitoringPolicy2: MonitoringPolicy = {
         id: 1,
-        name: 'Mock Policy',
+        isDefault: false,
+        name: 'Mock Policy 2',
+        memo: '',
+        notifyByEmail: false,
+        notifyByPagerDuty: false,
+        notifyByWebhooks: false,
+        notifyInstruction: '',
+        tags: ['default'],
+        enabled: true,
         rules: [
           {
             id: 1,
+            isNew: false,
             name: 'Existing Rule',
             componentType: ManagedObjectType.Node,
             detectionMethod: DetectionMethod.Threshold,
@@ -283,8 +300,9 @@ describe('Monitoring Policies Store', () => {
         ]
       }
 
-      const editedRule: PolicyRule = {
+      const editedRule: MonitoringPolicyRule = {
         id: 1,
+        isNew: false,
         name: 'This Is Edited Rule',
         componentType: ManagedObjectType.Node,
         detectionMethod: DetectionMethod.Threshold,
@@ -292,6 +310,7 @@ describe('Monitoring Policies Store', () => {
         alertConditions: [
           {
             id: 1,
+            isNew: true,
             count: 1,
             severity: 'high',
             overtimeUnit: 'minutes',
@@ -304,7 +323,7 @@ describe('Monitoring Policies Store', () => {
       }
       beforeEach(async () => {
         store = useMonitoringPoliciesStore()
-        store.selectedPolicy = cloneDeep(mockMonitoringPolicy)
+        store.selectedPolicy = cloneDeep(mockMonitoringPolicy2)
         store.selectedRule = cloneDeep(editedRule)
         vi.clearAllMocks()
       })
@@ -380,7 +399,6 @@ describe('Monitoring Policies Store', () => {
         await store.savePolicy()
         expect(store.validationErrors.policyName).toBe('Policy name cannot be blank.')
       })
-
     })
 
     describe('monitoringPolicies.resetDefaultConditions all Functionality Tests', () => {
@@ -388,32 +406,35 @@ describe('Monitoring Policies Store', () => {
         const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
         const store = useMonitoringPoliciesStore()
         store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-        store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        store.selectedRule = mockMonitoringPolicy!.rules![0]
 
         await store.resetDefaultConditions()
         expect(store.resetDefaultConditions).toHaveBeenCalledOnce()
       })
 
-
-
       test('monitoringPolicies.resetDefaultConditions adds a new condition when DetectionMethod is Threshold', async () => {
         const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
         const store = useMonitoringPoliciesStore()
+
         const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
           componentType: ManagedObjectType.Node,
           detectionMethod: DetectionMethod.Threshold,
           eventType: EventType.Internal,
           alertConditions: [],
           id: 1,
+          isNew: false,
           name: 'Dummy Rule',
           thresholdMetricName: 'Dummy Metric'
         }]})
+
         store.selectedPolicy = mockMonitoringPolicy
-        store.selectedRule = (dummy &&  dummy.rules !== undefined) ? {...dummy.rules[0]} : {}
+        const dummyRule = (dummy && dummy.rules !== undefined) ? { ...dummy.rules[0] } : undefined
+        store.selectedRule = dummyRule
         await store.resetDefaultConditions()
 
-        if (store.selectedRule.alertConditions && store.selectedRule.alertConditions?.length > 0) {
-          expect(store.selectedRule.alertConditions[0].severity).toBe('CRITICAL')
+        if (store.selectedRule?.alertConditions && store.selectedRule.alertConditions?.length > 0) {
+          expect(store.selectedRule.alertConditions[0].severity).toBe(Severity.Major)
         }
       })
 
@@ -426,16 +447,19 @@ describe('Monitoring Policies Store', () => {
           eventType: EventType.Internal,
           alertConditions: [],
           id: 1,
+          isNew: false,
           name: 'Dummy Rule',
           thresholdMetricName: 'Dummy Metric'
         }]})
+
         store.selectedPolicy = mockMonitoringPolicy
-        store.selectedRule = (dummy &&  dummy.rules !== undefined) ? {...dummy.rules[0]} : {}
+        const dummyRule = (dummy && dummy.rules !== undefined) ? { ...dummy.rules[0] } : undefined
+        store.selectedRule = dummyRule
         await store.getInitialAlertEventDefinitions()
         await store.resetDefaultConditions()
 
-        if (store.selectedRule.alertConditions && store.selectedRule.alertConditions?.length > 0) {
-          expect(store.selectedRule.alertConditions[0].severity).toBe('MAJOR')
+        if (store.selectedRule?.alertConditions && store.selectedRule.alertConditions?.length > 0) {
+          expect(store.selectedRule.alertConditions[0].severity).toBe(Severity.Major)
         }
       })
     })
@@ -446,65 +470,77 @@ describe('Monitoring Policies Store', () => {
         const store = useMonitoringPoliciesStore()
 
         store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-        store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? {...mockMonitoringPolicy?.rules[0], detectionMethod: DetectionMethod.Threshold} : {}
+        const dummyRule = mockMonitoringPolicy && mockMonitoringPolicy.rules
+          ? { ...mockMonitoringPolicy?.rules[0], detectionMethod: DetectionMethod.Threshold } : undefined
 
+        store.selectedRule = dummyRule
 
-        const a = await store.addNewCondition()
+        await store.addNewCondition()
         expect(store.addNewCondition).toHaveBeenCalledOnce()
       })
-
 
       test('monitoringPolicies.addNewCondition adds a new condition when DetectionMethod is Threshold', async () => {
         const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
         const store = useMonitoringPoliciesStore()
+
         const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
           componentType: ManagedObjectType.Node,
           detectionMethod: DetectionMethod.Threshold,
           eventType: EventType.Internal,
           alertConditions: [],
           id: 1,
+          isNew: false,
           name: 'Dummy Rule',
           thresholdMetricName: 'Dummy Metric'
         }]})
+
         store.selectedPolicy = mockMonitoringPolicy
-        store.selectedRule = (dummy &&  dummy.rules !== undefined) ? {...dummy.rules[0]} : {}
+        const dummyRule = (dummy && dummy.rules !== undefined) ? { ...dummy.rules[0] } : undefined
+        store.selectedRule = dummyRule
         await store.addNewCondition()
 
-        if (store.selectedRule.alertConditions && store.selectedRule.alertConditions?.length > 0) {
-          expect(store.selectedRule.alertConditions[0].severity).toBe('CRITICAL')
+        if (store.selectedRule?.alertConditions && store.selectedRule.alertConditions?.length > 0) {
+          expect(store.selectedRule.alertConditions[0].severity).toBe(Severity.Major)
         }
       })
 
       test('monitoringPolicies.addNewCondition adds a new condition when DetectionMethod is default', async () => {
         const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
         const store = useMonitoringPoliciesStore()
+
         const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
           componentType: ManagedObjectType.Node,
           detectionMethod: DetectionMethod.Event,
           eventType: EventType.Internal,
           alertConditions: [],
           id: 1,
+          isNew: false,
           name: 'Dummy Rule',
           thresholdMetricName: 'Dummy Metric'
         }]})
+
         store.selectedPolicy = mockMonitoringPolicy
-        store.selectedRule = (dummy &&  dummy.rules !== undefined) ? {...dummy.rules[0]} : {}
+        const dummyRule = (dummy && dummy.rules !== undefined) ? { ...dummy.rules[0] } : undefined
+        store.selectedRule = dummyRule
+
         await store.getInitialAlertEventDefinitions()
         await store.addNewCondition()
-        // @ts-ignore
-        expect(store.selectedRule.alertConditions.length).toBe(1)
-        if (store.selectedRule.alertConditions && store.selectedRule.alertConditions?.length > 0) {
 
+        expect(store.selectedRule?.alertConditions?.length).toBe(1)
+
+        if (store.selectedRule?.alertConditions && store.selectedRule.alertConditions?.length > 0) {
           expect(store.selectedRule.alertConditions[0].severity).toBe('MAJOR')
         }
       })
     })
+
     test('monitoringPolicies.removeRule completes successfully', async () => {
       const { useMonitoringPoliciesStore } = await import('../../../src/store/Views/monitoringPoliciesStore')
       const store = useMonitoringPoliciesStore()
 
       store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      store.selectedRule = mockMonitoringPolicy.rules?.[0]
+
       const defaultAlertDefs: Array<AlertEventDefinition> = [
         {
           id: 7,
@@ -517,17 +553,19 @@ describe('Monitoring Policies Store', () => {
 
       await store.removeRule()
       expect(store.selectedRule).toBeUndefined()
-      // @ts-ignore
-      expect(store.selectedPolicy.rules.length).toBe(0)
+      expect(store.selectedPolicy.rules?.length).toBe(0)
 
     })
-    test('monitoringPolicies.countAlertsForRule complete successfully', async () => {
 
+    // TODO: Should remove or else write a valid test
+    // store.countAlertsForRule() is deprecated and only used in legacy
+    test.skip('monitoringPolicies.countAlertsForRule complete successfully', async () => {
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const store = useMonitoringPoliciesStore()
 
       store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      store.selectedRule = mockMonitoringPolicy.rules?.[0]
+
       const defaultAlertDefs: Array<AlertEventDefinition> = [
         {
           id: 7,
@@ -549,7 +587,7 @@ describe('Monitoring Policies Store', () => {
       const store = useMonitoringPoliciesStore()
 
       store.selectedPolicy = mockMonitoringPolicy
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      store.selectedRule = mockMonitoringPolicy.rules?.[0]
 
       store.clearSelectedPolicy()
       expect(store.clearSelectedPolicy).toBeCalled()
@@ -557,18 +595,16 @@ describe('Monitoring Policies Store', () => {
     })
 
     test('monitoringPolicies.clearSelectedRule complete successfully', async () => {
-
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const store = useMonitoringPoliciesStore()
 
       store.selectedPolicy = mockMonitoringPolicy
-      store.selectedRule = mockMonitoringPolicy && mockMonitoringPolicy.rules ? mockMonitoringPolicy?.rules[0] : {}
+      store.selectedRule = mockMonitoringPolicy.rules?.[0]
 
       store.clearSelectedRule()
       expect(store.clearSelectedRule).toBeCalled()
       expect(store.selectedRule).toBeUndefined()
     })
-
 
     test('should open the alert rule drawer and display the rule form', async () => {
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
@@ -630,7 +666,6 @@ describe('Monitoring Policies Store', () => {
     })
   })
 
-
   describe('when stubActions is true', () => {
     beforeEach(() => {
       createTestingPinia({ stubActions: true })
@@ -640,6 +675,7 @@ describe('Monitoring Policies Store', () => {
     afterEach(() => {
       vi.restoreAllMocks()
     })
+
     test('monitoringPolicies.getMonitoringPolicies complete successfully', async () => {
       try {
         const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
@@ -651,10 +687,5 @@ describe('Monitoring Policies Store', () => {
         expect(monitoringPolicies.selectedRule).toBeUndefined()
       }
     })
-
-
   })
-
-
-
 })

@@ -55,11 +55,12 @@
 
 <script setup lang="ts">
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { AlertCondition, Severity } from '@/types/graphql'
+import { Severity } from '@/types/graphql'
+import { PolicyAlertCondition } from '@/types/policies'
 import Search from '@featherds/icon/action/Search'
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
-const condition = ref({} as AlertCondition)
+const condition = ref({} as PolicyAlertCondition)
 
 const severityOptions = [
   { id: Severity.Critical, name: 'Critical' },

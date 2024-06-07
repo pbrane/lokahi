@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { Policy } from '@/types/policies'
+import { MonitoringPolicy } from '@/types/policies'
 import ExpandLess from '@featherds/icon/navigation/ExpandLess'
 import ExpandMore from '@featherds/icon/navigation/ExpandMore'
 import ContentCopy from '@featherds/icon/action/ContentCopy'
@@ -99,21 +99,27 @@ const icons = markRaw({
 })
 
 const props = defineProps<{
-  policy: Policy
+  policy: MonitoringPolicy
   index: number
 }>()
 
 const emit = defineEmits<{
-  (e: 'copyPolicyLegacy', policy: Policy): void,
-  (e: 'deletePolicy', policy: Policy): void,
-  (e: 'selectPolicy', policy: Policy): void
+  (e: 'copyPolicyLegacy', policy: MonitoringPolicy): void,
+  (e: 'deletePolicy', policy: MonitoringPolicy): void,
+  (e: 'selectPolicy', policy: MonitoringPolicy): void
 }>()
 
 const ruleStates = reactive<{ [x: string]: boolean }>({})
-const triggerRuleState = (ruleId: string) => (ruleStates[ruleId] = !ruleStates[ruleId])
+const triggerRuleState = (ruleId: number) => (ruleStates[ruleId] = !ruleStates[ruleId])
 
 // set first rule alert conditions open by default
-onMounted(() => (ruleStates[props.policy.rules?.[0].id] = true))
+onMounted(() => {
+  const id = props.policy.rules?.[0].id ?? -1
+
+  if (id >= 0) {
+    ruleStates[id] = true
+  }
+})
 </script>
 
 <style scoped lang="scss">

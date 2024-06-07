@@ -4,17 +4,20 @@ import featherInputFocusDirective from '@/directives/v-focus'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import MonitoringPoliciesDetailPanel from '@/components/MonitoringPolicies/MonitoringPoliciesDetailPanel.vue'
 import MonitoringPoliciesTable from '@/components/MonitoringPolicies/MonitoringPoliciesTable.vue'
-import { Policy } from '@/types/policies'
+import { MonitoringPolicy } from '@/types/policies'
 
-
-const mockMonitoringPolicy: Policy = {
+const mockMonitoringPolicy: MonitoringPolicy = {
+  id: 1,
   name: '',
   memo: '',
   notifyByEmail: false,
   notifyByPagerDuty: false,
   notifyByWebhooks: false,
+  notifyInstruction: '',
   tags: [ 'default' ],
-  rules: []
+  rules: [],
+  enabled: false,
+  isDefault: false
 }
 
 const wrapper = mount({
@@ -32,23 +35,32 @@ describe('Monitoring Policies', () => {
   test('The Monitoring Policies page container mounts correctly', () => {
     expect(wrapper).toBeTruthy()
   })
+
   test('Test if the create-policy-btn exists', () => {
     expect(wrapper.get('[data-test="create-policy-btn"]')).toBeTruthy()
   })
+
   test('Test if the MonitoringPoliciesTable component exists', () => {
     expect(wrapper.get('[data-test="MonitoringPoliciesTable"]')).toBeTruthy()
   })
+
   test('Test if the MonitoringPoliciesDetailPanel component exists', () => {
     expect(wrapper.find('[data-test="MonitoringPoliciesDetailPanel"]')).toBeTruthy()
   })
+
   test('The store populates with a selected policy when "New Policy" is clicked.', async () => {
     const store = useMonitoringPoliciesStore()
     const newPolicyBtn = wrapper.get('[data-test="create-policy-btn"]')
     expect(store.selectedPolicy).toBe(undefined)
+
     await newPolicyBtn.trigger('click')
+
+    const expectedPolicy = { ...mockMonitoringPolicy, id: 0, enabled: true }
+
     expect(store.displayPolicyForm).toHaveBeenCalledTimes(1)
-    expect(store.selectedPolicy).toStrictEqual(mockMonitoringPolicy)
+    expect(store.selectedPolicy).toStrictEqual(expectedPolicy)
   })
+
   test('renders detail panel when a policy is selected', async () => {
     const table = wrapper.findComponent(MonitoringPoliciesTable)
     await table.trigger('policy-selected')
