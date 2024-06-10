@@ -16,6 +16,7 @@
     <FeatherTextarea
       v-model.trim="store.selectedPolicy!.memo"
       label="Description" :maxlength="100"
+      data-test="policy-Description"
       :disabled="store.selectedPolicy.isDefault"
     />
     <FeatherCheckboxGroup
@@ -38,6 +39,7 @@
     <div class="subtitle">Tags</div>
     <BasicAutocomplete
       @itemsSelected="selectTags"
+      data-test="policy-Tag"
       :getItems="tagQueries.getTagsSearch"
       :label="'Tag name'"
       :items="tagQueries.tagsSearched"
