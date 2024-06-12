@@ -29,6 +29,8 @@ import lombok.Setter;
 public class ThresholdMetric {
     private Long id;
     private boolean enabled;
-    private Integer threshold;
+    private Float threshold;
     private String condition;
+    private String name;
+    private String expression;
 }

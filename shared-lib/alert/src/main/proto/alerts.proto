@@ -286,9 +286,11 @@ message AlertConditionProto {
 
 message ThresholdMetricProto {
   int64 id = 1;
-  bool enabled = 2;
-  int32 threshold = 3;
-  string condition = 4;
+  string name = 2;
+  bool enabled = 3;
+  float threshold = 4;
+  string condition = 5;
+  string expression = 6;
 }
 
 enum OverTimeUnit {

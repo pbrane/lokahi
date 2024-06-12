@@ -49,7 +49,13 @@ public class ThresholdMetric implements Serializable {
     private boolean enabled;
 
     @Column(name = "threshold")
-    private Integer threshold;
+    private Float threshold;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "expression")
+    private String expression;
 
     @Column(name = "condition")
     private String condition;

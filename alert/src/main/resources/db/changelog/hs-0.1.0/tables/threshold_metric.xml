@@ -9,8 +9,10 @@
                 <constraints primaryKey="true" primaryKeyName="pk_threshold_metric_id" />
             </column>
             <column name="enabled" type="boolean" defaultValueBoolean="false"> </column>
-            <column name="threshold" type="int"> </column>
+            <column name="threshold" type="float"> </column>
             <column name="condition" type="text" > </column>
+            <column name="name" type="text" > </column>
+            <column name="expression" type="text" > </column>
         </createTable>
     </changeSet>
 </databaseChangeLog>
