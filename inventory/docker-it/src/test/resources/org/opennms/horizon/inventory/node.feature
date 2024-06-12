@@ -43,3 +43,14 @@ Feature: Node
   Scenario: Attempt to insert duplicate IP address
     Given a new node with the node label "my-node" ip address "172.16.8.1" in location named "Default"
     Then add a new record with the location named "Default" the node label "node-1" and with the same IP address "172.16.8.1" it should fail with exception message "ALREADY_EXISTS: Ip address already exists for location"
+
+  Scenario: Add  nodes and verify pagination , sorting and searching on it
+    Given clear all existing nodes
+    Given a new node with label "node-label1", ip address "172.16.8.102" in location named "Default"  and with tags "tag"
+    Given a new node with label "node-label2", ip address "172.16.8.103" in location named "Default"  and with tags "tag1,tag2"
+    Given set sorting request of  sortBy "id" , ascending sort flag "1" , search type "label" and search value ""
+    Then fetch node pagable response and verify that total 2 node are retrieved in response
+    Given set sorting request of  sortBy "id" , ascending sort flag "1" , search type "label" and search value "node-label2"
+    Then fetch node pagable response and verify that total 1 node are retrieved in response
+    Given set sorting request of  sortBy "nodeLabel" , ascending sort flag "1" , search type "tag" and search value "tag2"
+    Then fetch node pagable response and verify that total 1 node are retrieved in response

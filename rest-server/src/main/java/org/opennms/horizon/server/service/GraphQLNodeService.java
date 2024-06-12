@@ -49,6 +49,7 @@ import org.opennms.horizon.server.model.inventory.IpInterface;
 import org.opennms.horizon.server.model.inventory.MonitoringLocation;
 import org.opennms.horizon.server.model.inventory.Node;
 import org.opennms.horizon.server.model.inventory.NodeCreate;
+import org.opennms.horizon.server.model.inventory.NodeSearchResponse;
 import org.opennms.horizon.server.model.inventory.NodeUpdate;
 import org.opennms.horizon.server.model.inventory.SnmpInterface;
 import org.opennms.horizon.server.model.inventory.TopNNode;
@@ -82,6 +83,20 @@ public class GraphQLNodeService {
         return Flux.fromIterable(client.listNodes(headerUtil.getAuthHeader(env)).stream()
                 .map(mapper::protoToNode)
                 .toList());
+    }
+
+    @GraphQLQuery
+    public Mono<NodeSearchResponse> searchNodes(
+            @GraphQLArgument(name = "pageSize") Integer pageSize,
+            @GraphQLArgument(name = "page") int page,
+            @GraphQLArgument(name = "sortBy") String sortBy,
+            @GraphQLArgument(name = "sortAscending") boolean sortAscending,
+            @GraphQLArgument(name = "searchValue") String searchValue,
+            @GraphQLArgument(name = "searchType") String searchType,
+            @GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(client.searchNodes(
+                        searchValue, searchType, pageSize, page, sortBy, sortAscending, headerUtil.getAuthHeader(env)))
+                .map(mapper::protoToNodeSearchResponse);
     }
 
     @GraphQLQuery

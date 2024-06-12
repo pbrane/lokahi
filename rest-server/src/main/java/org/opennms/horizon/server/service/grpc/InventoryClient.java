@@ -58,8 +58,10 @@ import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.NodeIdList;
 import org.opennms.horizon.inventory.dto.NodeLabelSearchQuery;
+import org.opennms.horizon.inventory.dto.NodeSearchResponseDTO;
 import org.opennms.horizon.inventory.dto.NodeServiceGrpc;
 import org.opennms.horizon.inventory.dto.NodeUpdateDTO;
+import org.opennms.horizon.inventory.dto.NodesSearchBy;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryListDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryServiceGrpc;
@@ -585,5 +587,27 @@ public class InventoryClient {
                 .stream()
                 .map(Long::intValue)
                 .collect(Collectors.toList());
+    }
+
+    public NodeSearchResponseDTO searchNodes(
+            String searchValue,
+            String searchType,
+            int pageSize,
+            int page,
+            String sortBy,
+            boolean sortAscending,
+            String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .searchNodes(NodesSearchBy.newBuilder()
+                        .setSearchValue(searchValue)
+                        .setSearchType(searchType)
+                        .setPageSize(pageSize)
+                        .setPage(page)
+                        .setSortBy(sortBy)
+                        .setSortAscending(sortAscending)
+                        .build());
     }
 }

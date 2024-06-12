@@ -21,6 +21,9 @@
  */
 package org.opennms.horizon.inventory.grpc;
 
+import static org.opennms.horizon.shared.utils.SystemInfoUtils.PAGE_SIZE_DEFAULT;
+import static org.opennms.horizon.shared.utils.SystemInfoUtils.SORT_BY_DEFAULT;
+
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
@@ -37,6 +40,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -58,8 +62,10 @@ import org.opennms.horizon.inventory.dto.NodeIdList;
 import org.opennms.horizon.inventory.dto.NodeIdQuery;
 import org.opennms.horizon.inventory.dto.NodeLabelSearchQuery;
 import org.opennms.horizon.inventory.dto.NodeList;
+import org.opennms.horizon.inventory.dto.NodeSearchResponseDTO;
 import org.opennms.horizon.inventory.dto.NodeServiceGrpc;
 import org.opennms.horizon.inventory.dto.NodeUpdateDTO;
+import org.opennms.horizon.inventory.dto.NodesSearchBy;
 import org.opennms.horizon.inventory.dto.SearchBy;
 import org.opennms.horizon.inventory.dto.SearchIpInterfaceQuery;
 import org.opennms.horizon.inventory.dto.SnmpInterfaceDTO;
@@ -77,9 +83,13 @@ import org.opennms.horizon.inventory.service.NodeService;
 import org.opennms.horizon.inventory.service.SnmpInterfaceService;
 import org.opennms.horizon.inventory.service.TagService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
+import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.opennms.taskset.contract.ScanType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -622,5 +632,19 @@ public class NodeGrpcService extends NodeServiceGrpc.NodeServiceImplBase {
                             .build();
                     responseObserver.onError(StatusProto.toStatusRuntimeException(status));
                 });
+    }
+
+    @Override
+    public void searchNodes(NodesSearchBy request, StreamObserver<NodeSearchResponseDTO> responseStreamObserver) {
+        String tenantId = Objects.requireNonNull(GrpcConstants.TENANT_ID_CONTEXT_KEY.get());
+        Pageable pageRequest = PageRequest.of(
+                request.getPage(),
+                request.getPageSize() != 0 ? request.getPageSize() : PAGE_SIZE_DEFAULT,
+                Sort.by(
+                        request.getSortAscending() ? Sort.Direction.ASC : Sort.Direction.DESC,
+                        !request.getSortBy().isEmpty() ? request.getSortBy() : SORT_BY_DEFAULT));
+
+        responseStreamObserver.onNext(nodeService.searchNodes(tenantId, request, pageRequest));
+        responseStreamObserver.onCompleted();
     }
 }

@@ -21,14 +21,18 @@
  */
 package org.opennms.horizon.inventory.service;
 
+import static org.opennms.horizon.shared.utils.SystemInfoUtils.TAG;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -46,7 +50,9 @@ import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.NodeOperation;
 import org.opennms.horizon.inventory.dto.NodeOperationProto;
+import org.opennms.horizon.inventory.dto.NodeSearchResponseDTO;
 import org.opennms.horizon.inventory.dto.NodeUpdateDTO;
+import org.opennms.horizon.inventory.dto.NodesSearchBy;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
 import org.opennms.horizon.inventory.dto.TagEntityIdDTO;
 import org.opennms.horizon.inventory.exception.DBConstraintsException;
@@ -81,6 +87,8 @@ import org.opennms.taskset.contract.TaskDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -172,7 +180,7 @@ public class NodeService {
                 ipInterface.setSnmpPrimary(true);
                 ipInterface.setLocation(node.getMonitoringLocation());
                 ipInterfaceRepository.save(ipInterface);
-                node.setIpInterfaces(List.of(ipInterface));
+                node.setIpInterfaces(Set.of(ipInterface));
             }
         } catch (DataIntegrityViolationException e) {
             LOG.error("Ip address already exists for a given location", e);
@@ -462,5 +470,27 @@ public class NodeService {
                     .build();
             nodeKafkaProducer.nodeOperationInKafka(nodeDeleteOperation);
         }
+    }
+
+    public NodeSearchResponseDTO searchNodes(String tenantId, NodesSearchBy request, Pageable pageRequest) {
+        Page<Node> nodesPage;
+        if (request.getSearchType().equalsIgnoreCase(TAG)) {
+            List<Long> tagIds = Arrays.stream(request.getSearchValue().split(","))
+                    .map(Long::valueOf)
+                    .toList();
+            nodesPage = nodeRepository.findByTenantIdAndTagIds(tenantId, tagIds, pageRequest);
+        } else {
+            nodesPage = nodeRepository.findByTenantIdAndNodeLabelOrAliasLike(
+                    tenantId, request.getSearchValue(), pageRequest);
+        }
+
+        return NodeSearchResponseDTO.newBuilder()
+                .addAllNodes(
+                        nodesPage.map(mapper::modelToDTOWithoutSnmpAndAzure).toList())
+                .setLastPage(Math.max(0, nodesPage.getTotalPages() - 1))
+                .setTotalNodes(nodesPage.getTotalElements())
+                .setNextPage(nodesPage.hasNext() ? nodesPage.nextPageable().getPageNumber() : 0)
+                .setTenantId(tenantId)
+                .build();
     }
 }
