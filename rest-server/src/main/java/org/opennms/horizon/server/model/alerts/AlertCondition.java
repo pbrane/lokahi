@@ -35,4 +35,5 @@ public class AlertCondition extends BaseModel {
     private String severity;
     private AlertEventDefinition clearEvent;
     private ThresholdMetric thresholdMetric;
+    private String alertMessage;
 }

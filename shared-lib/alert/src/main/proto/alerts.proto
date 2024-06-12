@@ -282,6 +282,7 @@ message AlertConditionProto {
   Severity severity = 7;
   AlertEventDefinitionProto clearEvent = 8;
   ThresholdMetricProto thresholdMetric = 9;
+  string alertMessage = 10;
 }
 
 message ThresholdMetricProto {

@@ -7,6 +7,7 @@
     <changeSet id="hs-0.1.0-alert_condition_threshold_metric" author="jahanzebakhtar">
         <addColumn tableName="alert_condition">
             <column name="metric_threshold_id" type="bigint"/>
+            <column name="alert_message" type="text"/>
         </addColumn>
         <addForeignKeyConstraint constraintName="fk_alert_condition_metric_threshold_id"
             baseTableName="alert_condition" baseColumnNames="metric_threshold_id" referencedTableName="threshold_metric" referencedColumnNames="id"/>
