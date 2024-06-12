@@ -43,6 +43,9 @@ public class SystemInfoUtils {
     private static final String s_version;
     private static String s_packageName;
     private static String s_packageDescription;
+    public static final int PAGE_SIZE_DEFAULT = 10;
+    public static final String SORT_BY_DEFAULT = "id";
+    public static final String TAG = "tag";
 
     static {
         s_instanceId = System.getProperty(OPENNMS_INSTANCE_ID_SYS_PROP, DEFAULT_INSTANCE_ID);

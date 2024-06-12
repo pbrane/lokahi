@@ -133,7 +133,23 @@ message NodeOperationProto {
   NodeOperation operation = 1;
   NodeDTO nodeDto = 2;
 }
+message NodesSearchBy {
+  string search_value=1;
+  string search_type = 2;
+  int32 page_size = 3;
+  int32 page = 4;
+  string sort_by = 5;
+  bool sort_ascending = 6;
 
+}
+message NodeSearchResponseDTO {
+  string tenant_id = 1;
+  repeated NodeDTO nodes = 2;
+  int32 next_page = 3;
+  int32 last_page = 4;
+  int64 total_nodes = 5;
+
+}
 
 service NodeService {
   rpc createNode(NodeCreateDTO) returns (NodeDTO) {};
@@ -153,4 +169,5 @@ service NodeService {
   rpc listSnmpInterfaces(SearchBy) returns (SnmpInterfacesList) {};
   rpc getDiscoveriesByNode(google.protobuf.Int64Value) returns (ActiveDiscoveryList) {};
   rpc getMonitoringPoliciesByNode(google.protobuf.Int64Value) returns (MonitoringPolicies) {};
+  rpc searchNodes(NodesSearchBy) returns (NodeSearchResponseDTO) {};
 }

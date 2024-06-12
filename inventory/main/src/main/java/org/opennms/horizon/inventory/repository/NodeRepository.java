@@ -26,6 +26,8 @@ import java.util.Optional;
 import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.model.TenantCount;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -87,4 +89,25 @@ public interface NodeRepository extends JpaRepository<Node, Long> {
 
     @Query("SELECT COUNT(n.id) FROM Node n WHERE n.tenantId = :tenantId ")
     long countDistinctNodes(@Param("tenantId") String tenantId);
+
+    @Query(
+            value =
+                    "SELECT n FROM Node n LEFT JOIN FETCH n.monitoringLocation  LEFT JOIN FETCH n.ipInterfaces LEFT JOIN FETCH n.tags AS t   "
+                            + "WHERE n.tenantId = :tenantId "
+                            + "AND (LOWER(n.nodeLabel) LIKE LOWER(CONCAT('%', :nodeLabelSearchTerm, '%'))"
+                            + "OR LOWER(n.nodeAlias) LIKE LOWER(CONCAT('%', :nodeLabelSearchTerm, '%')))",
+            countQuery = "SELECT count(n) FROM Node n LEFT JOIN n.tags AS t WHERE n.tenantId = :tenantId")
+    Page<Node> findByTenantIdAndNodeLabelOrAliasLike(
+            @Param("tenantId") String tenantId,
+            @Param("nodeLabelSearchTerm") String nodeLabelSearchTerm,
+            Pageable pageable);
+
+    @Query(
+            value =
+                    "SELECT n FROM Node n LEFT JOIN FETCH n.monitoringLocation  LEFT JOIN FETCH n.ipInterfaces LEFT JOIN FETCH n.tags AS t   "
+                            + " WHERE n.tenantId = :tenantId AND "
+                            + " t.id IN :idList",
+            countQuery = "SELECT count(n) FROM Node n LEFT JOIN n.tags AS t WHERE n.tenantId = :tenantId")
+    Page<Node> findByTenantIdAndTagIds(
+            @Param("tenantId") String tenantId, @Param("idList") List<Long> idList, Pageable pageable);
 }

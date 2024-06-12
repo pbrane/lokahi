@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - 'develop'
+      - 'features/**'
   pull_request:
 # This workflow is triggered instead of individual workflows that filter based on paths.
 # If we want to fully separate individual workflows out of this one, we need fully reproducible builds.
 # Just use this one for now. The downside is it will run redundant workflows for code that didn't change.
     branches:
       - 'develop'
+      - 'features/**'
   workflow_call:
     inputs:
       image-tag:
@@ -177,14 +179,14 @@ jobs:
       - name: Create & set up cluster
         shell: bash
         working-directory: install-local
-        run: |          
+        run: |
 
           # Delete cluster if exists
           kind delete clusters kind-test
 
           # Setup localhost DNS
           sudo echo "127.0.0.1 onmshs" | sudo tee -a /etc/hosts
-          
+
           # Build cluster with Lokahi installed.
           ./install-local.sh cicd onmshs "${{ inputs.image-tag || github.sha }}" "${{ inputs.image-registry || 'ghcr.io' }}/opennms-cloud"
 
@@ -213,7 +215,7 @@ jobs:
           MINION_INGRESS_TLS=true
           MINION_INGRESS_CA=$(realpath ../install-local/tmp/ca.crt)
           MINION_INGRESS_OVERRIDE_AUTHORITY=minion.onmshs
-          
+
           export INGRESS_BASE_URL KEYCLOAK_BASE_URL KEYCLOAK_REALM KEYCLOAK_USERNAME KEYCLOAK_PASSWORD KEYCLOAK_CLIENT_ID
           export MINION_IMAGE_NAME MINION_INGRESS_URL MINION_INGRESS_PORT MINION_INGRESS_TLS MINION_INGRESS_CA MINION_INGRESS_OVERRIDE_AUTHORITY
           PROJECT_VERSION="$(mvn -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive -q org.codehaus.mojo:exec-maven-plugin:1.6.0:exec)"
@@ -336,7 +338,7 @@ jobs:
             docker-assembly/target/docker/opennms/lokahi-minion/latest/build/ \
             -f docker-assembly/src/main/docker/app/Dockerfile \
             --platform linux/amd64,linux/arm64,linux/arm/v7
-      
+
   update:
     name: Update
 

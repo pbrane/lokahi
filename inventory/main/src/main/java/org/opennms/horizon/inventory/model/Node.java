@@ -38,7 +38,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -94,7 +96,7 @@ public class Node {
     private long monitoringLocationId;
 
     @OneToMany(mappedBy = "node", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<IpInterface> ipInterfaces = new ArrayList<>();
+    private Set<IpInterface> ipInterfaces = new HashSet<>();
 
     @OneToMany(mappedBy = "node", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<SnmpInterface> snmpInterfaces = new ArrayList<>();
@@ -103,7 +105,7 @@ public class Node {
     private List<AzureInterface> azureInterfaces = new ArrayList<>();
 
     @ManyToMany(mappedBy = "nodes")
-    private List<Tag> tags = new ArrayList<>();
+    private Set<Tag> tags = new HashSet<>();
 
     @Column(name = "system_objectid")
     private String objectId;

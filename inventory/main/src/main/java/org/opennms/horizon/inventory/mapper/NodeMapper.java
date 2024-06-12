@@ -67,4 +67,13 @@ public interface NodeMapper extends DateTimeMapper {
         @Mapping(target = "systemContact", source = "systemContact", qualifiedByName = "emptyString"),
     })
     void updateFromNodeInfo(NodeInfoResult nodeInfoResult, @MappingTarget Node node);
+
+    @Mappings({
+        @Mapping(source = "ipInterfaces", target = "ipInterfacesList"),
+        @Mapping(source = "discoveryIds", target = "discoveryIdsList"),
+        @Mapping(source = "tags", target = "tagsList"),
+        @Mapping(source = "monitoringLocation.location", target = "location")
+    })
+    @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    NodeDTO modelToDTOWithoutSnmpAndAzure(Node model);
 }

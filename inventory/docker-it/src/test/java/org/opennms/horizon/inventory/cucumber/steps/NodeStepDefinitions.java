@@ -30,7 +30,9 @@ import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.Assert;
@@ -39,14 +41,21 @@ import org.opennms.horizon.inventory.cucumber.InventoryBackgroundHelper;
 import org.opennms.horizon.inventory.cucumber.RetryUtils;
 import org.opennms.horizon.inventory.cucumber.kafkahelper.KafkaTestHelper;
 import org.opennms.horizon.inventory.dto.IpInterfaceList;
+import org.opennms.horizon.inventory.dto.ListAllTagsParamsDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.NodeLabelSearchQuery;
 import org.opennms.horizon.inventory.dto.NodeList;
 import org.opennms.horizon.inventory.dto.NodeOperationProto;
+import org.opennms.horizon.inventory.dto.NodeSearchResponseDTO;
 import org.opennms.horizon.inventory.dto.NodeUpdateDTO;
+import org.opennms.horizon.inventory.dto.NodesSearchBy;
 import org.opennms.horizon.inventory.dto.SearchIpInterfaceQuery;
+import org.opennms.horizon.inventory.dto.TagCreateDTO;
+import org.opennms.horizon.inventory.dto.TagListDTO;
+import org.opennms.horizon.inventory.dto.TagListParamsDTO;
+import org.opennms.horizon.shared.utils.SystemInfoUtils;
 
 @Slf4j
 public class NodeStepDefinitions {
@@ -57,8 +66,12 @@ public class NodeStepDefinitions {
     private NodeList fetchedNodeList;
     private IpInterfaceList ipInterfaceList;
     private String nodeTopic;
+    private NodeSearchResponseDTO nodeSearchResponse;
+    private NodesSearchBy nodesSearchBy;
 
     private Exception lastException;
+
+    private final String DEFAULT_TAG = "test_tag";
 
     public NodeStepDefinitions(
             RetryUtils retryUtils, KafkaTestHelper kafkaTestHelper, InventoryBackgroundHelper backgroundHelper) {
@@ -105,22 +118,26 @@ public class NodeStepDefinitions {
 
     @Given("a new node with label {string}, ip address {string} in location named {string}")
     public void aNewNodeWithLabelIpAddressAndLocationWithoutClear(String label, String ipAddress, String location) {
-        aNewNodeWithLabelIpAddressAndLocation(label, ipAddress, location, true);
+        aNewNodeWithLabelIpAddressAndLocation(label, ipAddress, location, true, DEFAULT_TAG);
     }
 
     @Given("a new node with label {string}, ip address {string} in location named {string} without clear all")
     public void aNewNodeWithLabelIpAddressAndLocationClear(String label, String ipAddress, String location) {
-        aNewNodeWithLabelIpAddressAndLocation(label, ipAddress, location, false);
+        aNewNodeWithLabelIpAddressAndLocation(label, ipAddress, location, false, DEFAULT_TAG);
     }
 
     private void aNewNodeWithLabelIpAddressAndLocation(
-            String label, String ipAddress, String location, boolean isClear) {
+            String label, String ipAddress, String location, boolean isClear, String tag) {
         if (isClear) {
             deleteAllNodes();
         }
+        List<TagCreateDTO> tags = Arrays.stream(tag.split(","))
+                .map(x -> TagCreateDTO.newBuilder().setName(x).build())
+                .toList();
         var nodeServiceBlockingStub = backgroundHelper.getNodeServiceBlockingStub();
         nodeServiceBlockingStub.createNode(NodeCreateDTO.newBuilder()
                 .setLabel(label)
+                .addAllTags(tags)
                 .setManagementIp(ipAddress)
                 .setLocationId(backgroundHelper.findLocationId(location))
                 .build());
@@ -362,5 +379,53 @@ public class NodeStepDefinitions {
         } catch (Exception e) {
             assertEquals(message, e.getMessage());
         }
+    }
+
+    @Given("clear all existing nodes")
+    public void clearAllExistingNodes() {
+        deleteAllNodes();
+    }
+
+    @Given("a new node with label {string}, ip address {string} in location named {string}  and with tags {string}")
+    public void aNewNodeWithLabelIpAddressInLocationNamedAndWithTags(
+            String label, String ipAddress, String locationName, String tagName) {
+        aNewNodeWithLabelIpAddressAndLocation(label, ipAddress, locationName, false, tagName);
+    }
+
+    @Given(
+            "set sorting request of  sortBy {string} , ascending sort flag {string} , search type {string} and search value {string}")
+    public void setSortingRequestOfSortByAscendingSortFlagSearchTypeAndSearchValue(
+            String sortBy, String ascendingSort, String searchType, String searchValue) {
+        if (searchType.equalsIgnoreCase(SystemInfoUtils.TAG)) {
+            searchValue = getTagIdsByLabels(searchValue);
+        }
+        nodesSearchBy = NodesSearchBy.newBuilder()
+                .setSearchValue(searchValue)
+                .setPage(0)
+                .setSortBy(sortBy)
+                .setPageSize(5)
+                .setSearchType(searchType)
+                .setSortAscending(Boolean.parseBoolean(ascendingSort))
+                .build();
+    }
+
+    @Then("fetch node pagable response and verify that total {int} node are retrieved in response")
+    public void fetchNodePagableResponseAndVerifyThatTotalNodeAreRetrievedInResponse(int size) {
+        nodeSearchResponse = backgroundHelper.getNodeServiceBlockingStub().searchNodes(nodesSearchBy);
+        assertEquals(nodeSearchResponse.getTotalNodes(), size);
+    }
+
+    public String getTagIdsByLabels(String tagLabels) {
+        ListAllTagsParamsDTO tagsParamsDTOS = Arrays.stream(tagLabels.split(","))
+                .map(x -> ListAllTagsParamsDTO.newBuilder()
+                        .setParams(
+                                TagListParamsDTO.newBuilder().setSearchTerm(x).build())
+                        .build())
+                .findFirst()
+                .get();
+        TagListDTO tagListDTO = backgroundHelper.getTagServiceBlockingStub().getTags(tagsParamsDTOS);
+        return tagListDTO.getTagsList().stream()
+                .map(x -> String.valueOf(x.getId()))
+                .collect(Collectors.joining(","));
     }
 }

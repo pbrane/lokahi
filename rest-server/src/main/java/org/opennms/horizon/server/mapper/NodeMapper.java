@@ -27,6 +27,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeSearchResponseDTO;
 import org.opennms.horizon.inventory.dto.NodeUpdateDTO;
 import org.opennms.horizon.server.model.inventory.Node;
 import org.opennms.horizon.server.model.inventory.NodeCreate;
@@ -50,4 +51,7 @@ public interface NodeMapper {
     NodeCreateDTO nodeCreateToProto(NodeCreate request);
 
     NodeUpdateDTO nodeUpdateToProto(NodeUpdate request);
+
+    org.opennms.horizon.server.model.inventory.NodeSearchResponse protoToNodeSearchResponse(
+            NodeSearchResponseDTO nodeProto);
 }

@@ -41,12 +41,13 @@ import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
@@ -155,7 +156,7 @@ public class NodeServiceTest {
         Node node = mock(Node.class);
         MonitoringLocation monitoringLocation = mock(MonitoringLocation.class);
         when(node.getMonitoringLocation()).thenReturn(monitoringLocation);
-        List<Tag> tags = getTags();
+        Set<Tag> tags = getTags();
         when(node.getTags()).thenReturn(tags);
 
         Optional<Node> optNode = Optional.of(node);
@@ -167,8 +168,8 @@ public class NodeServiceTest {
         verify(mockNodeRepository).deleteById(any());
     }
 
-    private List<Tag> getTags() {
-        List<Tag> tags = new ArrayList<>();
+    private Set<Tag> getTags() {
+        Set<Tag> tags = new HashSet<>();
         Tag t2 = mock(Tag.class);
         when(t2.getNodes()).thenReturn(Arrays.asList(mock(Node.class)));
         when(t2.getName()).thenReturn("FRED");

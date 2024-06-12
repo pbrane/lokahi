@@ -181,13 +181,13 @@ OpenNMS: # we might be able to remove this
     databaseName: "desenv"
     databaseSchemaName: "notification"
     databaseHost: "postgres"
-    mailFrom: lokahi@dispatch.opennms.com
-    smtpHost: mail.opennms.com
-    smtpPort: 587
-    smtpStartTls: true
-    smtpAuth: true
-    smtpUsername: lokahi@dispatch.opennms.com
-    smtpPassword: 8bkakKQZ
+    mailFrom: admin@test.opennms.org
+    smtpHost: mail-server
+    smtpPort: 1025
+    smtpStartTls: false
+    smtpAuth: false
+    smtpUsername: ~
+    smtpPassword: ~
     resources:
       limits:
         cpu: "2"
