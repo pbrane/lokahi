@@ -54,7 +54,7 @@ import org.opennms.horizon.alertservice.db.repository.MonitorPolicyRepository;
 import org.opennms.horizon.alertservice.db.repository.PolicyRuleRepository;
 import org.opennms.horizon.alertservice.db.repository.SystemPolicyTagRepository;
 import org.opennms.horizon.alertservice.db.repository.TagRepository;
-import org.opennms.horizon.alertservice.db.repository.ThresholdMatricRepository;
+import org.opennms.horizon.alertservice.db.repository.ThresholdMetricRepository;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
 import org.opennms.horizon.alertservice.service.routing.MonitoringPolicyProducer;
 import org.opennms.horizon.alertservice.service.routing.TagOperationProducer;
@@ -78,7 +78,7 @@ public class MonitorPolicyService {
     private final PolicyRuleRepository policyRuleRepository;
     private final AlertDefinitionRepository definitionRepo;
     private final AlertRepository alertRepository;
-    private final ThresholdMatricRepository thresholdMatricRepository;
+    private final ThresholdMetricRepository thresholdMetricRepository;
 
     private final TagRepository tagRepository;
     private final TagOperationProducer tagOperationProducer;
@@ -159,7 +159,7 @@ public class MonitorPolicyService {
     private void createOrUpdateThresholdMetric(AlertCondition alertCondition) {
         if (alertCondition.getRule().getEventType().equals(EventType.METRIC_THRESHOLD)
                 && alertCondition.getThresholdMetric() != null)
-            alertCondition.setThresholdMetric(thresholdMatricRepository.save(alertCondition.getThresholdMetric()));
+            alertCondition.setThresholdMetric(thresholdMetricRepository.save(alertCondition.getThresholdMetric()));
     }
 
     private MonitorPolicyProto handleDefaultTagOperationUpdate(Set<Tag> requestedNewTags, final String tenantId) {

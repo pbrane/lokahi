@@ -26,4 +26,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ThresholdMatricRepository extends JpaRepository<ThresholdMetric, Long> {}
+public interface ThresholdMetricRepository extends JpaRepository<ThresholdMetric, Long> {}
