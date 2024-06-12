@@ -291,6 +291,7 @@ message ThresholdMetricProto {
   float threshold = 4;
   string condition = 5;
   string expression = 6;
+
 }
 
 enum OverTimeUnit {
