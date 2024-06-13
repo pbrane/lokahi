@@ -1,7 +1,7 @@
 <template>
-  <div v-if="graphs.dataSets.value.length" class="container">
+  <div v-if="graphs.dataSets.value.length" :class="isCpuOrMemoryUtilizationGraph ? 'utilization-container' : 'container'">
     <div class="canvas-wrapper">
-      <FeatherTooltip title="Download to PDF" v-slot="{ attrs, on }">
+      <FeatherTooltip title="Download to PDF" v-slot="{ attrs, on }" v-if="!isCpuOrMemoryUtilizationGraph">
         <FeatherButton v-bind="attrs" v-on="on" icon="Download" class="download-icon" @click="onDownload">
           <FeatherIcon :icon="DownloadFile" />
         </FeatherButton>
@@ -13,33 +13,34 @@
 
 <script setup lang="ts">
 import { useGraphs } from '@/composables/useGraphs'
-import { ChartOptions, TitleOptions, ChartData } from 'chart.js'
+import { ChartData, ChartOptions, TitleOptions } from 'chart.js'
 import Chart from 'chart.js/auto'
 // import zoomPlugin from 'chartjs-plugin-zoom'
-import { PropType } from 'vue'
-import { downloadCanvas } from './utils'
+import useTheme from '@/composables/useTheme'
 import { GraphProps } from '@/types/graphs'
 import DownloadFile from '@featherds/icon/action/DownloadFile'
-import useTheme from '@/composables/useTheme'
 import 'chartjs-adapter-date-fns'
-import { format, add } from 'date-fns'
+import { add, format } from 'date-fns'
+import { PropType } from 'vue'
+import { downloadCanvas } from './utils'
+import { getChartGridColor, getColorFromFeatherVar, humanFileSizeFromBits } from '../utils'
 
-import { getColorFromFeatherVar, humanFileSizeFromBits, getChartGridColor } from '../utils'
 const emits = defineEmits(['has-data'])
 const graphs = useGraphs()
+const { onThemeChange, isDark } = useTheme()
 const props = defineProps({
   graph: {
     required: true,
     type: Object as PropType<GraphProps>
   },
-  type: { type: String, default: 'latency' }
+  type: { type: String, default: 'latency' },
+  metricType: { type: String }
 })
-const { onThemeChange, isDark } = useTheme()
+const isCpuOrMemoryUtilizationGraph = computed(() => props.metricType === 'cpu' || props.metricType === 'memory')
 
 const colorFromFeatherVar = computed(() =>
   isDark.value ? getColorFromFeatherVar('primary-text-on-color') : getColorFromFeatherVar('primary-text-on-surface')
 )
-
 let chart: any = {}
 const formatAxisBasedOnType = (context: number) => {
   let formattedAxis = context.toFixed(1)
@@ -179,21 +180,24 @@ const onDownload = () => {
   const canvas = document.getElementById(props.graph.label) as HTMLCanvasElement
   downloadCanvas(canvas, props.graph.label)
 }
-watch(props, async () => {
+const loadMetricDataAndRenderGraph = async (update?: boolean) => {
+  await graphs.getMetrics(props.graph)
+  render(update)
+}
+watch([props, isDark], () => {
   if (props.graph.metrics) {
-    await graphs.getMetrics(props.graph)
-    render()
+    loadMetricDataAndRenderGraph()
   }
 })
-onMounted(async () => {
-  await graphs.getMetrics(props.graph)
-  render()
+onMounted(() => {
+  loadMetricDataAndRenderGraph()
 })
 onThemeChange(() => {
   options.value.scales.x.ticks.color = colorFromFeatherVar.value
   options.value.scales.y.ticks.color = colorFromFeatherVar.value
   render(true)
 })
+defineExpose({ onDownload, loadMetricDataAndRenderGraph })
 </script>
 
 <!-- TODO: make theme switching works in graphs -->
@@ -207,18 +211,31 @@ onThemeChange(() => {
   border: 1px solid var(variables.$secondary-text-on-surface);
   border-radius: 10px;
   padding: var(variables.$spacing-m);
+
+  .canvas-wrapper {
+    width: 100%;
+
+    .download-icon {
+      position: absolute;
+      right: 15px;
+      top: 19px;
+
+      svg {
+        font-size: 15px;
+      }
+    }
+  }
 }
 
-.canvas-wrapper {
-  width: 100%;
+.utilization-container {
+  padding: var(variables.$spacing-m);
+  width: 100vw;
+  .canvas-wrapper {
+    width: 100%;
 
-  .download-icon {
-    position: absolute;
-    right: 15px;
-    top: 19px;
-
-    svg {
-      font-size: 15px;
+    .canvas {
+      width: 100% !important;
+      height: 100% !important;
     }
   }
 }

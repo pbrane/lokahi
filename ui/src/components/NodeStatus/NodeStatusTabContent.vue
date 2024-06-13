@@ -20,12 +20,14 @@
       </div>
       <div class="card">
         <NodeGraph
-          title="CPU Utilization"
+          title="CPU Utilization (%) 24h"
+          type="cpu"
         />
       </div>
       <div class="card">
         <NodeGraph
-          title="Memory Utilization"
+          title="Memory Utilization (%) 24h"
+          type="memory"
         />
       </div>
     </div>
