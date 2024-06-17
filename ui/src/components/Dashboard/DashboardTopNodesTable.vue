@@ -53,6 +53,7 @@
               :key="topNode.nodeLabel + topNode.avgResponseTime"
             >
               <td>{{ topNode.nodeLabel }}</td>
+              <td>{{ topNode.nodeAlias || topNode.nodeLabel}}</td>
               <td>{{ topNode.location }}</td>
               <td>{{ topNode.avgResponseTime ? `${+topNode.avgResponseTime.toFixed(2)}ms` : `--` }}</td>
               <td>{{ +topNode.reachability.toFixed(2) }}%</td>
@@ -87,6 +88,7 @@ const icons = markRaw({
 
 const columns = [
   { id: 'nodeLabel', label: 'Node' },
+  { id: 'nodeAlias', label: 'nodeAlias' },
   { id: 'location', label: 'Location' },
   { id: 'avgResponseTime', label: 'Response Time' },
   { id: 'reachability', label: 'Reachability' }
