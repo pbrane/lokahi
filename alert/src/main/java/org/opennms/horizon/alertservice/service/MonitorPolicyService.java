@@ -39,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.opennms.horizon.alerts.proto.AlertType;
+import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alerts.proto.MonitorPolicyProto;
 import org.opennms.horizon.alerts.proto.PolicyRuleProto;
 import org.opennms.horizon.alertservice.db.entity.AlertCondition;
@@ -53,6 +54,7 @@ import org.opennms.horizon.alertservice.db.repository.MonitorPolicyRepository;
 import org.opennms.horizon.alertservice.db.repository.PolicyRuleRepository;
 import org.opennms.horizon.alertservice.db.repository.SystemPolicyTagRepository;
 import org.opennms.horizon.alertservice.db.repository.TagRepository;
+import org.opennms.horizon.alertservice.db.repository.ThresholdMetricRepository;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
 import org.opennms.horizon.alertservice.service.routing.MonitoringPolicyProducer;
 import org.opennms.horizon.alertservice.service.routing.TagOperationProducer;
@@ -76,6 +78,7 @@ public class MonitorPolicyService {
     private final PolicyRuleRepository policyRuleRepository;
     private final AlertDefinitionRepository definitionRepo;
     private final AlertRepository alertRepository;
+    private final ThresholdMetricRepository thresholdMetricRepository;
 
     private final TagRepository tagRepository;
     private final TagOperationProducer tagOperationProducer;
@@ -137,6 +140,7 @@ public class MonitorPolicyService {
             return handleDefaultTagOperationUpdate(policy.getTags(), tenantId);
         } else {
             updateData(policy, tenantId, request.getEnabled());
+            createThresholdMetricFromPolicy(policy);
             MonitorPolicy newPolicy = repository.save(policy);
             createAlertDefinitionFromPolicy(newPolicy);
             var existingTags = tagRepository.findByTenantIdAndPolicyId(newPolicy.getTenantId(), newPolicy.getId());
@@ -146,6 +150,16 @@ public class MonitorPolicyService {
             monitoringPolicyProducer.sendMonitoringPolicy(newPolicy);
             return policyMapper.map(newPolicy);
         }
+    }
+
+    private void createThresholdMetricFromPolicy(MonitorPolicy policy) {
+        policy.getRules().forEach(rule -> rule.getAlertConditions().forEach(this::createOrUpdateThresholdMetric));
+    }
+
+    private void createOrUpdateThresholdMetric(AlertCondition alertCondition) {
+        if (alertCondition.getRule().getEventType().equals(EventType.METRIC_THRESHOLD)
+                && alertCondition.getThresholdMetric() != null)
+            alertCondition.setThresholdMetric(thresholdMetricRepository.save(alertCondition.getThresholdMetric()));
     }
 
     private MonitorPolicyProto handleDefaultTagOperationUpdate(Set<Tag> requestedNewTags, final String tenantId) {
@@ -351,34 +365,38 @@ public class MonitorPolicyService {
     }
 
     private void createOrUpdateAlertDefinition(AlertCondition condition) {
-        String uei = condition.getTriggerEvent().getEventUei();
-        definitionRepo
-                .findFirstByAlertConditionId(condition.getId())
-                .ifPresentOrElse(
-                        definition -> {
-                            if (!uei.equals(definition.getUei())) {
-                                log.info("update alert definition for event {} ", condition.getTriggerEvent());
+        if (!condition.getRule().getEventType().equals(EventType.METRIC_THRESHOLD)
+                && condition.getTriggerEvent() != null) {
+            String uei = condition.getTriggerEvent().getEventUei();
+            definitionRepo
+                    .findFirstByAlertConditionId(condition.getId())
+                    .ifPresentOrElse(
+                            definition -> {
+                                if (!uei.equals(definition.getUei())) {
+                                    log.info("update alert definition for event {} ", condition.getTriggerEvent());
+                                    definition.setReductionKey(
+                                            condition.getTriggerEvent().getReductionKey());
+                                    definition.setUei(uei);
+                                    definition.setType(getAlertTypeFromEventDefinition(condition.getTriggerEvent()));
+                                    definition.setClearKey(
+                                            condition.getTriggerEvent().getClearKey());
+                                    definitionRepo.save(definition);
+                                }
+                            },
+                            () -> {
+                                log.info("creating alert definition for event {}", condition.getTriggerEvent());
+                                AlertDefinition definition = new AlertDefinition();
+                                definition.setUei(uei);
+                                definition.setTenantId(condition.getTenantId());
                                 definition.setReductionKey(
                                         condition.getTriggerEvent().getReductionKey());
-                                definition.setUei(uei);
                                 definition.setType(getAlertTypeFromEventDefinition(condition.getTriggerEvent()));
                                 definition.setClearKey(
                                         condition.getTriggerEvent().getClearKey());
+                                definition.setAlertCondition(condition);
                                 definitionRepo.save(definition);
-                            }
-                        },
-                        () -> {
-                            log.info("creating alert definition for event {}", condition.getTriggerEvent());
-                            AlertDefinition definition = new AlertDefinition();
-                            definition.setUei(uei);
-                            definition.setTenantId(condition.getTenantId());
-                            definition.setReductionKey(
-                                    condition.getTriggerEvent().getReductionKey());
-                            definition.setType(getAlertTypeFromEventDefinition(condition.getTriggerEvent()));
-                            definition.setClearKey(condition.getTriggerEvent().getClearKey());
-                            definition.setAlertCondition(condition);
-                            definitionRepo.save(definition);
-                        });
+                            });
+        }
     }
 
     private AlertType getAlertTypeFromEventDefinition(EventDefinition eventDefinition) {

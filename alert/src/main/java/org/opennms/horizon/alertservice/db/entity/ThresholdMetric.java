@@ -19,21 +19,44 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.server.model.alerts;
+package org.opennms.horizon.alertservice.db.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.io.Serial;
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
-import org.opennms.horizon.server.model.BaseModel;
 
+@Entity
+@Table(name = "threshold_metric")
 @Getter
 @Setter
-public class AlertCondition extends BaseModel {
-    private AlertEventDefinition triggerEvent;
-    private Integer count;
-    private Integer overtime;
-    private String overtimeUnit;
-    private String severity;
-    private AlertEventDefinition clearEvent;
-    private ThresholdMetric thresholdMetric;
-    private String alertMessage;
+public class ThresholdMetric implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 7825119801706458618L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "enabled")
+    private boolean enabled;
+
+    @Column(name = "threshold")
+    private Float threshold;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "expression")
+    private String expression;
+
+    @Column(name = "condition")
+    private String condition;
 }

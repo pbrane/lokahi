@@ -21,23 +21,19 @@
  */
 package org.opennms.horizon.alertservice.mapper;
 
-import org.mapstruct.BeanMapping;
+import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
-import org.opennms.horizon.alerts.proto.AlertConditionProto;
-import org.opennms.horizon.alertservice.db.entity.AlertCondition;
+import org.opennms.horizon.alerts.proto.ThresholdMetricProto;
+import org.opennms.horizon.alertservice.db.entity.ThresholdMetric;
 
 @Mapper(
         componentModel = "spring",
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-        uses = {EventDefinitionMapper.class, ThresholdMetricMapper.class})
-public interface AlertConditionMapper {
+        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
+public interface ThresholdMetricMapper {
 
-    @Mapping(target = "rule", ignore = true)
-    @Mapping(target = "alertDefinition", ignore = true)
-    AlertCondition protoToEntity(AlertConditionProto proto);
+    ThresholdMetric protoToEntity(ThresholdMetricProto proto);
 
-    @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    AlertConditionProto entityToProto(AlertCondition event);
+    ThresholdMetricProto entityToProto(ThresholdMetric thresholdMetric);
 }

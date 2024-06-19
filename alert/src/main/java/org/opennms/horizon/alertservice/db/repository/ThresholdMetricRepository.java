@@ -19,25 +19,11 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.alertservice.mapper;
+package org.opennms.horizon.alertservice.db.repository;
 
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.NullValueCheckStrategy;
-import org.opennms.horizon.alerts.proto.AlertConditionProto;
-import org.opennms.horizon.alertservice.db.entity.AlertCondition;
+import org.opennms.horizon.alertservice.db.entity.ThresholdMetric;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@Mapper(
-        componentModel = "spring",
-        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-        uses = {EventDefinitionMapper.class, ThresholdMetricMapper.class})
-public interface AlertConditionMapper {
-
-    @Mapping(target = "rule", ignore = true)
-    @Mapping(target = "alertDefinition", ignore = true)
-    AlertCondition protoToEntity(AlertConditionProto proto);
-
-    @BeanMapping(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    AlertConditionProto entityToProto(AlertCondition event);
-}
+@Repository
+public interface ThresholdMetricRepository extends JpaRepository<ThresholdMetric, Long> {}

@@ -75,6 +75,7 @@ import org.opennms.horizon.alertservice.db.repository.MonitorPolicyRepository;
 import org.opennms.horizon.alertservice.db.repository.PolicyRuleRepository;
 import org.opennms.horizon.alertservice.db.repository.SystemPolicyTagRepository;
 import org.opennms.horizon.alertservice.db.repository.TagRepository;
+import org.opennms.horizon.alertservice.db.repository.ThresholdMetricRepository;
 import org.opennms.horizon.alertservice.db.tenant.GrpcTenantLookupImpl;
 import org.opennms.horizon.alertservice.db.tenant.TenantLookup;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
@@ -97,6 +98,7 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
     private AlertDefinitionRepository mockAlertDefinitionRepo;
     private AlertRepository mockAlertRepository;
     private TagRepository mockTagRepository;
+    private ThresholdMetricRepository mockThresholdMetricRepository;
     private TagOperationProducer mockTagOperationProducer;
     private Alert alert1, alert2;
     private ManagedChannel channel;
@@ -125,6 +127,7 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
         mockTagRepository = mock(TagRepository.class);
         mockTagOperationProducer = mock(TagOperationProducer.class);
         mockSystemPolicyTagRepository = mock(SystemPolicyTagRepository.class);
+        mockThresholdMetricRepository = mock(ThresholdMetricRepository.class);
 
         spyMonitorPolicyService = spy(new MonitorPolicyService(
                 policyMapper,
@@ -133,6 +136,7 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
                 mockPolicyRuleRepository,
                 mockAlertDefinitionRepo,
                 mockAlertRepository,
+                mockThresholdMetricRepository,
                 mockTagRepository,
                 mockTagOperationProducer,
                 monitoringPolicyProducer));
