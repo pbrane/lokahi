@@ -20,7 +20,7 @@ Feature: Monitor policy gRPC Functionality
       | SNMP Cold Start  | CRITICAL |
       | SNMP Warm Start  | MAJOR    |
       | Device Unreachable  | CRITICAL    |
-      | Device Service Restored  | CRITICAL    |
+      | Device Service Restored  | CLEARED    |
 
   Scenario: Verify alert can be created based on the default policy
     Given Tenant id "new-tenant"

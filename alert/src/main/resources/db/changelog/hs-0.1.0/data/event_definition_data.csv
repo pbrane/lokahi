@@ -1,9 +1,9 @@
 id,event_uei,name,reduction_key,clear_key,event_type
-1,uei.opennms.org/generic/traps/SNMP_Cold_Start,SNMP Cold Start,%s:%s:%d,,SNMP_TRAP
-2,uei.opennms.org/generic/traps/SNMP_Warm_Start,SNMP Warm Start,%s:%s:%d,,SNMP_TRAP
-3,uei.opennms.org/generic/traps/SNMP_Authen_Failure,SNMP Authen Failure,%s:%s:%d,,SNMP_TRAP
-4,uei.opennms.org/generic/traps/SNMP_Link_Down,SNMP Link Down,%s:%s:%d,,SNMP_TRAP
-5,uei.opennms.org/generic/traps/SNMP_Link_Up,SNMP Link Up,%s:%s:%d,%s:uei.opennms.org/generic/traps/SNMP_Link_Down:%d,SNMP_TRAP
-6,uei.opennms.org/generic/traps/SNMP_EGP_Down,SNMP EGP Down,%s:%s:%d,,SNMP_TRAP
-7,uei.opennms.org/internal/node/serviceUnreachable,Device Unreachable,%s:%s:%d,,INTERNAL
-8,uei.opennms.org/internal/node/serviceRestored,Device Service Restored,%s:%s:%d,%s:uei.opennms.org/internal/node/serviceUnreachable:%d,INTERNAL
+1,uei.opennms.org/generic/traps/SNMP_Cold_Start,SNMP Cold Start,%uei%:%dpname%:%nodeid%:%interface%,,SNMP_TRAP
+2,uei.opennms.org/generic/traps/SNMP_Warm_Start,SNMP Warm Start,%uei%:%dpname%:%nodeid%:%interface%,,SNMP_TRAP
+3,uei.opennms.org/generic/traps/SNMP_Authen_Failure,SNMP Authen Failure,%uei%:%dpname%:%nodeid%:%interface%,,SNMP_TRAP
+4,uei.opennms.org/generic/traps/SNMP_Link_Down,SNMP Link Down,uei.opennms.org/nodes/snmp/interfaceOperDown:%dpname%:%nodeid%:%parm[#1]%,,SNMP_TRAP
+5,uei.opennms.org/generic/traps/SNMP_Link_Up,SNMP Link Up,%uei%:%dpname%:%nodeid%:%parm[#1]%,uei.opennms.org/nodes/snmp/interfaceOperDown:%dpname%:%nodeid%:%parm[#1]%,SNMP_TRAP
+6,uei.opennms.org/generic/traps/SNMP_EGP_Down,SNMP EGP Down,%uei%:%dpname%:%nodeid%:%interface%,,SNMP_TRAP
+7,uei.opennms.org/internal/node/serviceUnreachable,Device Unreachable,%uei%:%dpname%:%nodeid%:%interface%:%service% ,,INTERNAL
+8,uei.opennms.org/internal/node/serviceRestored,Device Service Restored,%uei%:%dpname%:%nodeid%:%interface%,uei.opennms.org/internal/node/serviceUnreachable:%dpname%:%nodeid%:%interface%:%service% ,INTERNAL

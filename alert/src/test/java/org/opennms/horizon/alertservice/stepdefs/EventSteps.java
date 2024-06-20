@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventLog;
+import org.opennms.horizon.events.proto.EventParameter;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -58,6 +59,28 @@ public class EventSteps {
                         .setUei(uei))
                 .build();
 
+        kafkaTestHelper.sendToTopic(background.getEventTopic(), eventLog.toByteArray(), tenantSteps.getTenantId());
+    }
+
+    @When("An event is sent with UEI {string} , dp name {string} and parameter {string} on node {int}")
+    public void anEventIsSentWithUEIDpNameAndParameterOnNode(String uie, String dpName, String param, int nodeId) {
+        this.sendEvent(uie, nodeId, System.currentTimeMillis(), dpName, param);
+    }
+
+    public void sendEvent(String uei, int nodeId, long producedTimeMs, String dbName, String parmValue) {
+        EventLog eventLog = EventLog.newBuilder()
+                .setTenantId(tenantSteps.getTenantId())
+                .addEvents(Event.newBuilder()
+                        .setTenantId(tenantSteps.getTenantId())
+                        .setProducedTimeMs(producedTimeMs)
+                        .addParameters(EventParameter.newBuilder()
+                                .setName(parmValue)
+                                .setValue(parmValue)
+                                .build())
+                        .setLocationId(dbName)
+                        .setNodeId(nodeId)
+                        .setUei(uei))
+                .build();
         kafkaTestHelper.sendToTopic(background.getEventTopic(), eventLog.toByteArray(), tenantSteps.getTenantId());
     }
 }

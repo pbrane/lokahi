@@ -39,8 +39,9 @@
     <include file="/db/changelog/hs-0.1.0/tables/update-vendor-for-existing-event-defs.xml"/>
     <include file="/db/changelog/hs-0.1.0/tables/update_monitor_policy_add_enabled_column.xml"/>
     <include file="/db/changelog/hs-0.1.0/tables/update_system_policy_tag_add_enabled_column.xml"/>
-
     <include file="/db/changelog/hs-0.1.0/tables/update_node_add_nodeinfo.xml"/>
+
+    <include file="/db/changelog/hs-0.1.0/data/update_reduction_and_clear_key_format.xml"/>
     <include file="/db/changelog/hs-0.1.0/tables/threshold_metric.xml"/>
     <include file="/db/changelog/hs-0.1.0/tables/alert_condition_threshold_metric.xml"/>
     <include file="/db/changelog/hs-0.1.0/tables/alert_condition_event_definition_remove-not-null-constraint.xml"/>

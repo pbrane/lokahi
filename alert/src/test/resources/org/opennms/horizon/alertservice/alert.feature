@@ -222,3 +222,16 @@ Feature: Alert Service Basic Functionality
     Then Verify alert topic has 2 messages for the tenant
     Then Verify count of affected node by monitoring policy
 
+
+  Scenario: When an event is received from Kafka, a new alert is created with reduction  key according to the specified format
+  When An event is sent with UEI "uei.opennms.org/generic/traps/SNMP_Link_Up" , dp name "test-db" and parameter "test trap" on node 10
+  Then List alerts for the tenant, until JSON response matches the following JSON path expressions
+    | alerts.size() == 1     |
+    | alerts[0].counter == 1 |
+  Then Verify alert created with reduction key "uei.opennms.org/generic/traps/SNMP_Link_Up:test-db:10:test trap"
+  When An event is sent with UEI "uei.opennms.org/generic/traps/SNMP_Link_Down" , dp name "test-db" and parameter "test trap" on node 10
+  Then List alerts for the tenant, with timeout 15000ms, until JSON response matches the following JSON path expressions
+      | alerts.size() == 2          |
+      | alerts[0].counter == 1      |
+  Then Verify alert with uei "uei.opennms.org/generic/traps/SNMP_Link_Up" clear key is matched reduction key  of  alert of uie "uei.opennms.org/generic/traps/SNMP_Link_Down".
+

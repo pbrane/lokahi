@@ -50,7 +50,8 @@ public class EventXmlToProtoMapperImpl implements EventXmlToProtoMapper {
                         .setLocationId(event.getDistPoller())
                         .setEventLabel(event.getEventLabel())
                         .setSeverity(getProtoSeverity(org.opennms.horizon.events.api.Severity.get(event.getSeverity())))
-                        .setIpAddress(event.getInterface());
+                        .setIpAddress(event.getInterface())
+                        .setHost(event.getHost());
         if (event.getDescr() != null) {
             eventBuilder.setDescription(event.getDescr());
         }

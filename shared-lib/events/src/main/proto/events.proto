@@ -55,6 +55,7 @@ message Event {
   string location_name = 12; // prevent need for inter service id lookup
   Severity severity = 13;
   string event_label = 14;
+  string host = 15;
 }
 
 message EventInfo {

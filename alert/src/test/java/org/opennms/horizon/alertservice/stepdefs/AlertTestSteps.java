@@ -43,6 +43,7 @@ import java.time.Instant;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -443,5 +444,33 @@ public class AlertTestSteps {
 
             throw new RuntimeException(e);
         }
+    }
+
+    @Then("Verify alert created with reduction key {string}")
+    public void verifyAlertCreatedWithReductionKey(String reductionKey) {
+        var requestBuilder = ListAlertsRequest.newBuilder().setSortBy("id").setSortAscending(true);
+        clientUtils.setTenantId(tenantSteps.getTenantId());
+        ListAlertsResponse listAlertsResponse =
+                clientUtils.getAlertServiceStub().listAlerts(requestBuilder.build());
+        alertsFromLastResponse = listAlertsResponse.getAlertsList();
+        alertsFromLastResponse.stream()
+                .findFirst()
+                .ifPresent(alert -> assertEquals(alert.getReductionKey(), reductionKey));
+    }
+
+    @Then("Verify alert with uei {string} clear key is matched reduction key  of  alert of uie {string}.")
+    public void verifyAlertWithUeiClearKeyIsMatchedReductionKeyOfAlertOfUie(String upUie, String downUie) {
+        var requestBuilder = ListAlertsRequest.newBuilder().setSortBy("id").setSortAscending(true);
+        clientUtils.setTenantId(tenantSteps.getTenantId());
+        List<Alert> alerts = clientUtils
+                .getAlertServiceStub()
+                .listAlerts(requestBuilder.build())
+                .getAlertsList();
+        Optional<Alert> upAlertOpt =
+                alerts.stream().filter(a -> a.getUei().equals(upUie)).findFirst();
+        Optional<Alert> downAlertOpt =
+                alerts.stream().filter(a -> a.getUei().equals(downUie)).findFirst();
+
+        assertEquals(upAlertOpt.get().getClearKey(), downAlertOpt.get().getReductionKey());
     }
 }

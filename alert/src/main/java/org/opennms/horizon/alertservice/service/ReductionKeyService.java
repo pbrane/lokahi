@@ -28,12 +28,17 @@ import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alertservice.db.entity.Alert;
 import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
 import org.opennms.horizon.events.proto.Event;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ReductionKeyService {
     public static final String ARCHIVE_SUFFIX = ":archive:";
+    Logger LOG = LoggerFactory.getLogger(ReductionKeyService.class);
+
+    private final AlertReductionKeyExpander alertReductionKeyExpander;
 
     public String renderArchiveReductionKey(Alert alert, Event event) {
         String archiveSuffix = ARCHIVE_SUFFIX + event.getProducedTimeMs();
@@ -45,22 +50,13 @@ public class ReductionKeyService {
     }
 
     public String renderReductionKey(@NonNull Event event, @NonNull AlertDefinition alertDefinition) {
-        return String.format(
-                alertDefinition.getReductionKey(),
-                event.getTenantId(),
-                event.getUei(),
-                event.getNodeId(),
-                alertDefinition.getAlertCondition().getRule().getPolicy().getId());
+        return alertReductionKeyExpander.expandParms(alertDefinition.getReductionKey(), event);
     }
 
     public @Nullable String renderClearKey(Event event, AlertDefinition alertDefinition) {
         if (Strings.isNullOrEmpty(alertDefinition.getClearKey())) {
             return null;
         }
-        return String.format(
-                alertDefinition.getClearKey(),
-                event.getTenantId(),
-                event.getNodeId(),
-                alertDefinition.getAlertCondition().getRule().getPolicy().getId());
+        return alertReductionKeyExpander.expandParms(alertDefinition.getClearKey(), event);
     }
 }

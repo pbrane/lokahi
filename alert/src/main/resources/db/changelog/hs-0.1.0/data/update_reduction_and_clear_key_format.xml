@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+
+
+    <changeSet id="hs-0.1.0-update_reduction-and-clear-key-format" author="Mohammad-Junid">
+        <update tableName="alert_definition">
+            <column
+                name="reduction_key"
+                value="%uei%:%dpname%:%nodeid%:%interface%"/>
+            <where>
+                uei IN ('uei.opennms.org/generic/traps/SNMP_Cold_Start',
+                'uei.opennms.org/generic/traps/SNMP_Warm_Start',
+                'uei.opennms.org/internal/node/serviceUnreachable',
+                'uei.opennms.org/internal/node/serviceRestored')
+            </where>
+        </update>
+
+        <update tableName="alert_definition">
+            <column
+                name="clear_key"
+                value="uei.opennms.org/internal/node/serviceUnreachable:%dpname%:%nodeid%:%interface%"/>
+            <where>
+                uei = 'uei.opennms.org/internal/node/serviceRestored'
+            </where>
+        </update>
+
+        <update tableName="alert_condition">
+            <column
+                name="severity"
+                value="CLEARED"/>
+            <where>
+                trigger_event_definition_id = (select id from event_definition where
+                event_uei = 'uei.opennms.org/internal/node/serviceRestored')
+            </where>
+        </update>
+
+        <sql>
+            UPDATE event_definition
+            SET clear_key =
+            CASE
+            WHEN clear_key LIKE '%:%d'
+            THEN SUBSTRING(clear_key, 1, LENGTH(clear_key) - 3)
+            ELSE clear_key
+            END
+            WHERE clear_key IS NOT NULL;
+        </sql>
+
+        <!-- Remove trailing :%d from clear_key in alert_definition table -->
+        <sql>
+            UPDATE alert_definition
+            SET clear_key =
+            CASE
+            WHEN clear_key LIKE '%:%d'
+            THEN SUBSTRING(clear_key, 1, LENGTH(clear_key) - 3)
+            ELSE clear_key
+            END
+            WHERE clear_key IS NOT NULL;
+        </sql>
+
+    </changeSet>
+
+</databaseChangeLog>
