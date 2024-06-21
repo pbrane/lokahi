@@ -270,7 +270,7 @@ import { DiscoveryType } from './discovery.constants'
 const props = defineProps({
   discovery: { type: Object as PropType<NewOrUpdatedDiscovery>, default: () => ({}) },
   discoveryErrors: { type: Object as PropType<Record<string, string>>, default: () => ({}) },
-  updateDiscoveryValue: { type: Function as PropType<(key: string, value: string) => void>, default: () => ({}) }
+  updateDiscoveryValue: { type: Function as PropType<(key: string, value: any) => void>, default: () => ({}) }
 })
 const isOverallDisabled = computed(() => !!(props.discovery.type === DiscoveryType.Azure && props.discovery.id))
 const selectedTab = ref()
@@ -342,11 +342,9 @@ const parseDiscoveriesTargets = (discoveryTargets?: string | undefined): string[
 
 const updateDiscoveryValues = (key: string, value: any) => {
   const parsedTargets = parseDiscoveriesTargets(value as string | undefined)
+
   if (props.discovery.meta && 'discoveryTargets' in props.discovery.meta) {
-    props.discovery.meta = {
-      ...props.discovery.meta,
-      discoveryTargets: parsedTargets
-    }
+    props.updateDiscoveryValue('discoveryTargets', parsedTargets)
   }
 }
 

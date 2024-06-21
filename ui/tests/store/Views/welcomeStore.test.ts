@@ -130,7 +130,7 @@ describe('Welcome Store', () => {
     const welcomeStore = useWelcomeStore()
     welcomeStore.validateOnKeyup = true
     await welcomeStore.updateFirstDiscovery('name', '')
-    expect(welcomeStore.firstDiscoveryErrors.name).toBe('')
+    expect(welcomeStore.firstDiscoveryErrors.name).toBe('Please enter a name.')
   })
 
   it('can update minion status copy', async () => {

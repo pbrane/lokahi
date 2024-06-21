@@ -32,7 +32,7 @@
         :graph="graphProps"
         :metricType="$props.type"
         type="percentage"
-        @has-data="displayEmptyMsgIfNoData" 
+        @has-data="displayEmptyMsgIfNoData"
       />
     </section>
   </div>
@@ -66,13 +66,13 @@ const graphProps = computed<GraphProps>(() => {
     ifName: ''
   }
 })
+
 const displayEmptyMsgIfNoData = (hasData: boolean) => {
   if (hasMetricData.value) {
     return
   }
   hasMetricData.value = hasData
 }
-
 </script>
 
 <style lang="scss" scoped>
@@ -102,5 +102,4 @@ const displayEmptyMsgIfNoData = (hasData: boolean) => {
   justify-content: space-between;
   gap: 2rem;
 }
-
 </style>

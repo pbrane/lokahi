@@ -1351,7 +1351,7 @@ export type TopNNodesQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Int']>;
 }>
 
-export type TopNNodesQuery = { __typename?: 'Query', nodeCount?: number, topNNode?: Array<{ __typename?: 'TopNNode', nodeLabel?: string, nodeAlias?:string, location?: string, avgResponseTime: number, reachability: number }>, allNodeStatus?: Array<{ __typename?: 'NodeStatus', id: any, status?: string }> }
+export type TopNNodesQuery = { __typename?: 'Query', nodeCount?: number, topNNode?: Array<{ __typename?: 'TopNNode', nodeLabel?: string, nodeAlias?: string, location?: string, avgResponseTime: number, reachability: number }>, allNodeStatus?: Array<{ __typename?: 'NodeStatus', id: any, status?: string }> }
 
 export type DownloadTopNQueryVariables = Exact<{
   downloadFormat: DownloadFormat;
