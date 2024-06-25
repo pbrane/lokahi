@@ -18,12 +18,14 @@
             <div class="footer">
               <FeatherButton
                 secondary
+                data-test="handleCancel-btn"
                 @click="handleCancel"
                 class="cancel-button"
               >
                 CANCEL
               </FeatherButton>
               <ButtonWithSpinner
+                data-test="savePolicy-btn"
                 primary
                 @click.prevent="savePolicy"
                 :disabled="savePolicyEnableDisable"
