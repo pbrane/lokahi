@@ -10,59 +10,57 @@ import MonitoringPoliciesCreateAlertRules from '@/components/MonitoringPolicies/
 import { cloneDeep } from 'lodash'
 
 const mockMonitoringPolicy: MonitoringPolicy = {
-    id: 1,
-    isDefault: false,
-    memo: 'Dummy memo',
-    name: 'Dummy Policy',
-    notifyByEmail: true,
-    notifyByPagerDuty: false,
-    notifyByWebhooks: true,
-    notifyInstruction: 'Notify immediately',
-    rules: [
-      {
-        alertConditions: [
-          {
-            clearEvent: {
-              __typename: 'AlertEventDefinition',
-              clearKey: 'dummy_clear_key',
-              eventType: EventType.Internal,
-              id: 1,
-              name: 'Dummy Alert Event',
-              reductionKey: 'dummy_reduction_key',
-              uei: 'dummy_uei'
-            },
-            count: 5,
+  id: 1,
+  isDefault: false,
+  memo: 'Dummy memo',
+  name: 'Dummy Policy',
+  notifyByEmail: true,
+  notifyByPagerDuty: false,
+  notifyByWebhooks: true,
+  notifyInstruction: 'Notify immediately',
+  rules: [
+    {
+      alertConditions: [
+        {
+          clearEvent: {
+            __typename: 'AlertEventDefinition',
+            clearKey: 'dummy_clear_key',
+            eventType: EventType.Internal,
             id: 1,
-            isNew: false,
-            overtime: 10,
-            overtimeUnit: 'minutes',
-            severity: 'high',
-            triggerEvent: {
-              __typename: 'AlertEventDefinition',
-              clearKey: 'dummy_clear_key',
-              eventType: EventType.Internal,
-              id: 1,
-              name: 'Dummy Alert Event',
-              reductionKey: 'dummy_reduction_key',
-              uei: 'dummy_uei'
-            }
+            name: 'Dummy Alert Event',
+            reductionKey: 'dummy_reduction_key',
+            uei: 'dummy_uei'
+          },
+          count: 5,
+          id: 1,
+          isNew: false,
+          overtime: 10,
+          overtimeUnit: 'minutes',
+          severity: 'high',
+          triggerEvent: {
+            __typename: 'AlertEventDefinition',
+            clearKey: 'dummy_clear_key',
+            eventType: EventType.Internal,
+            id: 1,
+            name: 'Dummy Alert Event',
+            reductionKey: 'dummy_reduction_key',
+            uei: 'dummy_uei'
           }
-        ],
-        componentType: ManagedObjectType.Node,
-        detectionMethod: DetectionMethod.Threshold,
-        eventType: EventType.Internal,
-        id: 1,
-        isNew: false,
-        name: 'Dummy Rule',
-        thresholdMetricName: 'Dummy Metric'
-      }
-    ],
-    tags: ['tag1', 'tag2'],
-    enabled: true
-  
+        }
+      ],
+      componentType: ManagedObjectType.Node,
+      detectionMethod: DetectionMethod.Threshold,
+      eventType: EventType.Internal,
+      id: 1,
+      isNew: false,
+      name: 'Dummy Rule',
+      thresholdMetricName: 'Dummy Metric'
+    }
+  ],
+  tags: ['tag1', 'tag2'],
+  enabled: true
 }
 
- 
 const wrapper = mount({
   component: MonitoringPoliciesRules,
   shallow: false,
@@ -80,7 +78,7 @@ describe('Monitoring Policies Rules', () => {
   })
 
   test('renders MonitoringPoliciesCreateAlertRules when isCheckAlertRule is true', async () => {
-    const isCheckAlertRuleCondition=   await wrapper.vm.isCheckAlertRule 
+    const isCheckAlertRuleCondition = await wrapper.vm.isCheckAlertRule
     const MonitoringPoliciesCreateAlertRulesCheck = wrapper.findComponent(MonitoringPoliciesCreateAlertRules)
     expect(MonitoringPoliciesCreateAlertRulesCheck).toBeTruthy()
     expect(isCheckAlertRuleCondition).toBe(true)
@@ -117,8 +115,8 @@ describe('Monitoring Policies Rules', () => {
     const store = useMonitoringPoliciesStore()
     store.selectedPolicy = cloneDeep(mockMonitoringPolicy)
 
-    await nextTick();
-    const isCheckAlertRuleCondition = await wrapper.vm.isCheckAlertRule 
+    await nextTick()
+    const isCheckAlertRuleCondition = await wrapper.vm.isCheckAlertRule
     const MonitoringPoliciesAlertsRulesTableCheck = wrapper.findComponent(MonitoringPoliciesAlertsRulesTable)
     expect(MonitoringPoliciesAlertsRulesTableCheck).toBeTruthy()
     expect(isCheckAlertRuleCondition).toBe(false)

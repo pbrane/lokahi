@@ -36,12 +36,6 @@ const router = createRouter({
       component: () => import('@/containers/Discovery.vue')
     },
     {
-      // older monitoring policy page
-      path: '/monitoring-policies-legacy',
-      name: 'Monitoring Policies Legacy',
-      component: () => import('@/containers/MonitoringPoliciesLegacy.vue')
-    },
-    {
       path: '/monitoring-policies',
       name: 'Monitoring Policies',
       component: () => import('@/containers/MonitoringPolicies.vue')

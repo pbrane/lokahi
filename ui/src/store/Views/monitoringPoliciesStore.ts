@@ -330,15 +330,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.displayPolicyForm(copiedPolicy)
       router.push('/monitoring-policies/0')
     },
-    copyPolicyLegacy(policy: MonitoringPolicy) {
-      const copiedPolicy = cloneDeep(policy)
-      copiedPolicy.name = `Copy of ${copiedPolicy.name}`
-      copiedPolicy.isDefault = false
-      copiedPolicy.id = 0
-      copiedPolicy.name = ''
-
-      this.displayPolicyForm(copiedPolicy)
-    },
     copyRule(rule: MonitoringPolicyRule) {
       const copiedRule = cloneDeep(rule)
       copiedRule.name = `Copy of ${rule.name}`
@@ -370,14 +361,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.selectedRule = undefined
       this.getMonitoringPolicies()
     },
-    // TODO: Remove, only used in legacy
-    async countAlertsForRule() {
-      if (this.selectedRule?.id) {
-        const { getAlertCountByRuleId } = useMonitoringPoliciesQueries()
-        const count = await getAlertCountByRuleId(this.selectedRule?.id)
-        this.numOfAlertsForRule = count
-      }
-    },
     async removePolicy() {
       const { deleteMonitoringPolicy } = useMonitoringPoliciesMutations()
 
@@ -388,14 +371,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.selectedPolicy = undefined
       this.getMonitoringPolicies()
       this.clearSelectedPolicy()
-    },
-    // TODO: Remove, only used in legacy
-    async countAlerts() {
-      if (this.selectedPolicy?.id) {
-        const { getAlertCountByPolicyId } = useMonitoringPoliciesQueries()
-        const count = await getAlertCountByPolicyId(this.selectedPolicy?.id)
-        this.numOfAlertsForPolicy = count
-      }
     },
     openAlertRuleDrawer(rule?: MonitoringPolicyRule) {
       this.displayRuleForm(rule)

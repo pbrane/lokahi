@@ -364,12 +364,14 @@ describe('Monitoring Policies Store', () => {
 
     describe('monitoringPolicies.savePolicy', () => {
       let store: any
+
       beforeEach(async () => {
         store = useMonitoringPoliciesStore()
 
         store.selectedRule = cloneDeep(mockPolicyRule)
         vi.clearAllMocks()
       })
+
       test('monitoringPolicies.savePolicy completes successfully', async () => {
         await store.savePolicy()
         expect(store.savePolicy).toHaveBeenCalledOnce()
@@ -557,32 +559,7 @@ describe('Monitoring Policies Store', () => {
 
     })
 
-    // TODO: Should remove or else write a valid test
-    // store.countAlertsForRule() is deprecated and only used in legacy
-    test.skip('monitoringPolicies.countAlertsForRule complete successfully', async () => {
-      const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
-      const store = useMonitoringPoliciesStore()
-
-      store.selectedPolicy = {...mockMonitoringPolicy, isDefault: false}
-      store.selectedRule = mockMonitoringPolicy.rules?.[0]
-
-      const defaultAlertDefs: Array<AlertEventDefinition> = [
-        {
-          id: 7,
-          name: 'Device Unreachable',
-          eventType: EventType.Internal,
-          uei: 'uei.opennms.org/internal/node/serviceUnreachable'
-        }
-      ]
-      store.cachedEventDefinitions?.set('internal', defaultAlertDefs)
-
-      await store.countAlertsForRule()
-      expect(store.countAlertsForRule).toBeCalled()
-      expect(store.numOfAlertsForRule).toBe(5)
-    })
-
     test('monitoringPolicies.clearSelectedPolicy complete successfully', async () => {
-
       const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
       const store = useMonitoringPoliciesStore()
 
