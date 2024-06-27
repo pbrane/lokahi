@@ -82,6 +82,11 @@ const router = createRouter({
       component: () => import('@/containers/Flows.vue')
     },
     {
+      path: '/settings',
+      name: 'Settings',
+      component: () => import('@/containers/Settings.vue')
+    },
+    {
       path: '/welcome',
       name: 'Welcome',
       component: () => import('@/containers/Welcome.vue')

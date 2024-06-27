@@ -59,6 +59,12 @@
       />
 
       <NavigationRailNavItem
+        title="Settings"
+        href="/settings"
+        :icon="Icons.AccountCircle"
+      />
+
+      <NavigationRailNavItem
         title="Map"
         href="/map"
         :icon="Icons.MapIcon"
@@ -95,7 +101,7 @@ import Warning from '@featherds/icon/notification/Warning'
 import Location from '@featherds/icon/action/Location'
 import Documentation from '@featherds/icon/communication/Documentation'
 import NavigationRailNavItem from '@/components/Layout/NavigationRailNavItem.vue'
-
+import AccountCircle from '@featherds/icon/action/AccountCircle'
 const Icons = markRaw({
   Home,
   Business,
@@ -105,6 +111,7 @@ const Icons = markRaw({
   Warning,
   Location,
   Documentation,
+  AccountCircle,
   MapIcon
 })
 
