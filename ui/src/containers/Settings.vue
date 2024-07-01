@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { FeatherTab, FeatherTabContainer, FeatherTabPanel } from "@featherds/tabs";
+import { FeatherTab, FeatherTabContainer, FeatherTabPanel } from '@featherds/tabs'
 </script>
 
 <style lang="scss" scoped>

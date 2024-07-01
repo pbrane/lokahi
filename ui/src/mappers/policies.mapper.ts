@@ -2,6 +2,7 @@ import { Comparators } from '@/types/index'
 import {
   AlertCondition,
   AlertConditionInput,
+  EventType,
   MonitorPolicy,
   MonitorPolicyInput,
   PolicyRule,
@@ -107,8 +108,8 @@ export const mapMonitoringPolicyToServer = (policy: MonitoringPolicy): MonitorPo
   } as MonitorPolicy
 }
 
-export const mapToAlertConditionInput = (condition: PolicyAlertCondition): AlertConditionInput => {
-  // don't send: clearEvent, alertMessage, alertRegex
+export const mapToAlertConditionInput = (condition: PolicyAlertCondition, eventType: EventType): AlertConditionInput => {
+  // don't send: clearEvent, alertRegex
 
   let alertConditionInput: AlertConditionInput = {
     clearEvent: condition.clearEvent,
@@ -118,6 +119,13 @@ export const mapToAlertConditionInput = (condition: PolicyAlertCondition): Alert
     severity: condition.severity,
     triggerEvent: condition.triggerEvent
   } as AlertConditionInput
+
+  if (eventType === EventType.Internal || EventType.SnmpTrap) {
+    alertConditionInput = {
+      ...alertConditionInput,
+      alertMessage: condition.alertMessage
+    }
+  }
 
   if (!condition.isNew && condition.id) {
     alertConditionInput = {
@@ -133,7 +141,7 @@ export const mapToPolicyRuleInput = (rule: MonitoringPolicyRule): PolicyRuleInpu
   // don't send: vendor
 
   let policyRuleInput = {
-    alertConditions: rule.alertConditions?.map(mapToAlertConditionInput),
+    alertConditions: rule.alertConditions?.map((condition) => mapToAlertConditionInput(condition, rule.eventType)),
     componentType: rule.componentType,
     detectionMethod: rule.detectionMethod,
     eventType: rule.eventType,
