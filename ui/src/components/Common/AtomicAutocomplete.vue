@@ -6,16 +6,16 @@
     <div
       @click="wrapperClickCheck()"
       tabIndex="0"
-      for="atomic-input"
+      :for="`atomic-input-${id}`"
       class="atomic-input-wrapper"
     >
       <div class="pre">
         <FeatherIcon :icon="Search" />
       </div>
       <div class="main">
-        <label for="atomic-input">{{ inputLabel }}</label>
+        <label :for="`atomic-input-${id}`">{{ inputLabel }}</label>
         <input
-          id="atomic-input"
+          :id="`atomic-input-${id}`"
           tabIndex="0"
           :value="inputValue"
           @keydown="keyDownCheck"
@@ -79,9 +79,11 @@
 import Search from '@featherds/icon/action/Search'
 import KeyboardArrowDown from '@featherds/icon/navigation/ExpandMore'
 import { PropType } from 'vue'
+import { v4 as uuidv4 } from 'uuid'
 
 const wrapper = ref()
 const listRef = ref()
+const id = ref<string>()
 const props = defineProps({
   errMsg: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
@@ -123,6 +125,10 @@ const wrapperClickCheck = () => {
 }
 
 const shortenedList = computed(() => (props.results?.length > 10 ? props.results?.slice(0, 10) : props.results))
+
+onMounted(() => {
+  id.value = uuidv4()
+})
 </script>
 <style lang="scss" scoped>
 @use '@featherds/styles/themes/variables';
