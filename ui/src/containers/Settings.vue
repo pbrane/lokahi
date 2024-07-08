@@ -13,7 +13,9 @@
         <FeatherTab>User Management</FeatherTab>
         <FeatherTab>Integrations</FeatherTab>
       </template>
-      <FeatherTabPanel>User Management</FeatherTabPanel>
+      <FeatherTabPanel>
+        <UserManagement />
+      </FeatherTabPanel>
       <FeatherTabPanel>Third Party Integrations</FeatherTabPanel>
     </FeatherTabContainer>
   </section>

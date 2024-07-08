@@ -160,6 +160,7 @@ declare module 'vue' {
     TopologyModal: typeof import('./src/components/Topology/TopologyModal.vue')['default']
     TopologyRightDrawer: typeof import('./src/components/Topology/TopologyRightDrawer.vue')['default']
     TopologySearch: typeof import('./src/components/Topology/TopologySearch.vue')['default']
+    UserManagement: typeof import('./src/components/Settings/UserManagement.vue')['default']
     ViewSelect: typeof import('./src/components/Topology/ViewSelect.vue')['default']
     WelcomeSlideOne: typeof import('./src/components/Welcome/WelcomeSlideOne.vue')['default']
     WelcomeSlideThree: typeof import('./src/components/Welcome/WelcomeSlideThree.vue')['default']
