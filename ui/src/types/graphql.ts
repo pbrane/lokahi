@@ -949,6 +949,19 @@ export type SnmpInterfaceRef = {
   node?: Maybe<NodeRef>;
 }
 
+export type User = {
+  __typename?: 'User';
+  id?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
+  lastName?: Maybe<Scalars['String']>;
+  password?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  roles?: Maybe<Array<Maybe<Scalars['String']>>>;
+  enabled?: Scalars['Boolean'];
+  username?: Maybe<Scalars['String']>;
+  createdTimestamp?: Scalars['Long'];
+}
+
 export type TsData = {
   __typename?: 'TSData';
   result?: Maybe<Array<Maybe<TsResult>>>;
@@ -1295,6 +1308,8 @@ export type ListAlertEventDefinitionsQueryVariables = Exact<{
 }>
 
 export type ListVendorQuery = { __typename?: 'Query', listVendors: string[] }
+
+export type ListGetAllUsersQuery = { __typename?: 'Query', getAllUsers: [{ __typename: 'User', id?: string, username?: string, firstName?: string, lastName?: string, enabled?: boolean, email?: string, createdTimestamp?: number }] }
 
 export type ListAlertEventDefinitionsByVendorQuery = { __typename?: 'Query', alertEventDefsByVendor?: { vendor: string, alertEventDefinitionList: Array<{ __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType, uei?: string, clearKey?: string, reductionKey?: string }> } }
 
@@ -1660,4 +1675,5 @@ export const AlertsByNodeDocument = { 'kind': 'Document', 'definitions': [{ 'kin
 export const ListAlertEventDefinitionsByVendorDocument = { 'kind': 'Document', 'definitions': [{ 'kind': 'OperationDefinition', 'operation': 'query', 'name': { 'kind': 'Name', 'value': 'alertEventDefsByVendor' }, 'variableDefinitions': [{ 'kind': 'VariableDefinition', 'variable': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'eventType' } }, 'type': { 'kind': 'NonNullType', 'type': { 'kind': 'NamedType', 'name': { 'kind': 'Name', 'value': 'EventType' } } } }, { 'kind': 'VariableDefinition', 'variable': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'vendor' } }, 'type': { 'kind': 'NonNullType', 'type': { 'kind': 'NamedType', 'name': { 'kind': 'Name', 'value': 'String' } } } }], 'selectionSet': { 'kind': 'SelectionSet', 'selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'alertEventDefsByVendor' }, 'arguments': [{ 'kind': 'Argument', 'name': { 'kind': 'Name', 'value': 'request' }, 'value': { 'kind': 'ObjectValue', 'fields': [{ 'kind': 'ObjectField', 'name': { 'kind': 'Name', 'value': 'eventType' }, 'value': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'eventType' } } }, { 'kind': 'ObjectField', 'name': { 'kind': 'Name', 'value': 'vendor' }, 'value': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'vendor' } } }] } }], 'selectionSet': { 'kind': 'SelectionSet', 'selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'vendor' } }, { 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'alertEventDefinitionList' }, 'selectionSet': { 'kind': 'SelectionSet', 'selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'id' } }, { 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'name' } }, { 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'eventType' } }, { 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'uei' } }, { 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'clearKey' } }, { 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'reductionKey' } }] } }] } }] } }] } as unknown as DocumentNode<ListAlertEventDefinitionsByVendorQuery, EventDefsByVendorRequest>
 export const ListVendorDocument = { 'kind': 'Document', 'definitions': [{ 'kind': 'OperationDefinition', 'operation': 'query', 'name': { 'kind': 'Name', 'value': 'listVendors' }, 'selectionSet': { 'kind': 'SelectionSet', 'selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'listVendors' } }] } }] } as unknown as DocumentNode<ListVendorQuery, unknown>
 export const CountAffectedNodesByMonitoingPolicy = { 'kind': 'Document', 'definitions': [{ 'kind': 'OperationDefinition', 'operation': 'query', 'name': { 'kind': 'Name', 'value': 'getNodesCountByMonitoringPolicy' }, 'variableDefinitions': [{ 'kind': 'VariableDefinition', 'variable': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'id' } }, 'type': { 'kind': 'NonNullType', 'type': { 'kind': 'NamedType', 'name': { 'kind': 'Name', 'value': 'Long' } } } }], 'selectionSet': { 'kind': 'SelectionSet', 'selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'getNodesCountByMonitoringPolicy' }, 'arguments': [{ 'kind': 'Argument', 'name': { 'kind': 'Name', 'value': 'id' }, 'value': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'id' } } }] }] } }] } as unknown as DocumentNode<CountAffectedNodesByMonitoringPolicyQuery, CountAffectedNodesByMonitoringPolicyVariables>
+export const ListGetAllUsersDocument = {'kind': 'Document','definitions': [{'kind': 'OperationDefinition','operation': 'query','name': {'kind': 'Name','value': 'getAllUsers'},'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'getAllUsers'},'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'id'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'firstName'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'lastName'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'username'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'enabled'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'email'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'createdTimestamp'}}]}}]}}]} as unknown as DocumentNode < ListGetAllUsersQuery, unknown >
 /* eslint-enable @stylistic/comma-spacing, @stylistic/key-spacing */

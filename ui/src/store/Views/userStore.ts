@@ -2,6 +2,8 @@ import { createId } from '@/components/utils'
 import { CreateEditMode } from '@/types'
 import { User } from '@/types/users'
 import { defineStore } from 'pinia'
+import { useUserQueries } from '../Queries/userQueries'
+import { mapUserFromServer } from '@/mappers/users.mapper'
 
 type TState = {
   usersList?: User[],
@@ -11,13 +13,15 @@ type TState = {
 }
 
 const defaultUser: User = {
-  id: createId(),
+  id: `${createId()}`,
+  username: '',
   firstName: '',
   lastName: '',
   password: '',
   email: '',
-  role: '',
-  enabled: false
+  roles: [],
+  enabled: false,
+  createdTimestamp: new Date().getTime()
 }
 
 const EMAIL_REGEX = new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
@@ -32,7 +36,9 @@ export const useUserStore = defineStore('userStore', {
   }),
   actions: {
     async getUsersList() {
-      // Fetch User List Query
+      const queries = useUserQueries()
+      await queries.loadAllUsers()
+      this.usersList = queries.allUsersList.map(mapUserFromServer)
     },
     updateUser(user: User) {
       this.userEditMode = CreateEditMode.Edit
@@ -73,8 +79,12 @@ export const useUserStore = defineStore('userStore', {
 
       // On Successfully saving user
 
+      this.clearSelectedUser()
       this.userEditMode = CreateEditMode.None
 
+    },
+    clearSelectedUser() {
+      this.selectedUser = undefined
     },
     deleteUser(id: number) {
       if (id) {
