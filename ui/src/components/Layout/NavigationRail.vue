@@ -69,6 +69,11 @@
         href="/map"
         :icon="Icons.MapIcon"
       />
+      <NavigationRailNavItem
+        title="Services"
+        href="/services"
+        :icon="Icons.MapIcon"
+      />
 
       <NavigationRailNavItem
         v-if="false"

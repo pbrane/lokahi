@@ -66,6 +66,11 @@ const router = createRouter({
       component: () => import('@/containers/Locations.vue')
     },
     {
+      path: '/services',
+      name: 'Services',
+      component: () => import('@/containers/ServiceInventory.vue')
+    },
+    {
       // older node page
       path: '/node/:id',
       name: 'Node',
