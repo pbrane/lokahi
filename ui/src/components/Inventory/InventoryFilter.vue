@@ -1,15 +1,18 @@
 <template>
   <ul class="filter-container">
     <li v-if="!onlyTags" class="autocomplete flex margin-bottom">
-      <FeatherSelect class="filter-type-selector" label="Search Type" textProp="name"
-        :options="[{ id: 1, name: 'Labels' }, { id: 2, name: 'Tags' }]" :modelValue="inventoryStore.searchType"
+      <FeatherSelect
+       class="filter-type-selector"
+       label="Search Type" textProp="name"
+       :options="InventoryFilterComparator"
+       :modelValue="inventoryStore.searchType"
         @update:modelValue="inventoryStore.setSearchType">
       </FeatherSelect>
-      <FeatherAutocomplete v-if="inventoryStore.searchType.name === 'Tags'" type="multi"
+      <FeatherAutocomplete v-if="inventoryStore.searchType.name === InventoryComparator[InventoryFilter.TAGS]" type="multi"
         :modelValue="inventoryStore.tagsSelected" @update:modelValue="searchNodesByTags"
         :results="tagQueries.tagsSearched" @search="tagQueries.getTagsSearch" class="inventory-auto" label="Search"
         :allow-new="false" textProp="name" render-type="multi" data-test="search-by-tags" ref="searchNodesByTagsRef" />
-      <FeatherInput v-if="inventoryStore.searchType.name === 'Labels'" @update:model-value="searchNodesByLabel"
+      <FeatherInput v-if="inventoryStore.searchType.name === InventoryComparator[InventoryFilter.LABELS]" @update:model-value="searchNodesByLabel"
         label="Search" class="inventory-search" data-test="search" ref="searchNodesByLabelRef">
       </FeatherInput>
       <div class="pointer">
@@ -35,18 +38,19 @@
 </template>
 
 <script lang="ts" setup>
-import { IIcon, NewInventoryNode, fncArgVoid } from '@/types'
+import { IIcon, InventoryFilter, NewInventoryNode, fncArgVoid } from '@/types'
 import { useInventoryStore } from '@/store/Views/inventoryStore'
-import { useInventoryQueries } from '@/store/Queries/inventoryQueries'
 import { useTagQueries } from '@/store/Queries/tagQueries'
 import { Tag } from '@/types/graphql'
 import { PropType } from 'vue'
 import { useTagStore } from '@/store/Components/tagStore'
 import FilterAlt from '@featherds/icon/action/FilterAlt'
+import useSpinner from '@/composables/useSpinner'
+import { InventoryComparator } from '../MonitoringPolicies/monitoringPolicies.constants'
 
+const { startSpinner, stopSpinner } = useSpinner()
 const inventoryStore = useInventoryStore()
 const tagStore = useTagStore()
-const inventoryQueries = useInventoryQueries()
 const tagQueries = useTagQueries()
 
 defineProps({
@@ -72,25 +76,27 @@ const filterIcon: IIcon = {
 }
 
 const searchNodesByLabelRef = ref()
-
+const InventoryFilterComparator = [
+  { id: 1,  name: InventoryComparator[InventoryFilter.TAGS], value: 'tag'},
+  { id: 2, name: InventoryComparator[InventoryFilter.LABELS], value: 'labels'}]
 // Current BE setup only allows search by names OR tags.
 // so we clear the other search to avoid confusion
 const searchNodesByLabel: fncArgVoid = useDebounceFn((val: string | undefined) => {
-
-  if (!val) {
-    inventoryQueries.buildNetworkInventory()
-  } else {
-    inventoryStore.filterNodesByLabel(val)
+  if (val) {
+    startSpinner()
+    inventoryStore.inventoryNodesDefaultFilter.searchValue = val
+    inventoryStore.inventoryNodesPagination.page = 0
+    inventoryStore.init()
+    stopSpinner()
   }
 })
 
 const searchNodesByTags: fncArgVoid = (tags: Tag[]) => {
+  const str = tags.map(tag => tag.id).join(', ')
   inventoryStore.tagsSelected = tags
-  if (tags.length === 0) {
-    inventoryQueries.buildNetworkInventory()
-  } else {
-    inventoryStore.filterNodesByTags()
-  }
+  inventoryStore.inventoryNodesDefaultFilter.searchValue = str
+  inventoryStore.inventoryNodesPagination.page = 0
+  inventoryStore.init()
 }
 </script>
 

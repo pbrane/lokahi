@@ -21,18 +21,34 @@ interface InventoryNode {
   type: MonitoredStates.DETECTED | MonitoredStates.MONITORED | MonitoredStates.UNMONITORED
 }
 
-interface NewInventoryNode {
-  id: number
-  ipInterfaces: [{ id: number, ipAddress: string, nodeId: number, snmpPrimary: boolean }],
-  location: { id: number, location: string },
-  monitoredState: string,
-  monitoringLocationId: number,
-  nodeLabel: string,
-  scanType: string,
-  tags: [{ id: number, name: string }],
-  nodeAlias: string
+interface IpInterface {
+  id: number;
+  ipAddress: string;
+  nodeId: number;
+  snmpPrimary: boolean;
 }
 
+interface Location {
+  id: number;
+  location: string;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+}
+
+interface NewInventoryNode {
+  id: number;
+  ipInterfaces: IpInterface[];
+  location: Location;
+  monitoredState: string;
+  monitoringLocationId: number;
+  nodeLabel: string;
+  scanType: string;
+  tags: Tag[];
+  nodeAlias: string | null;
+}
 interface RawMetric {
   metric: {
     __name__: string,
@@ -52,6 +68,13 @@ interface RawMetrics {
     resultType: string,
     result: Array<RawMetric>
   }
+}
+
+interface InventoryItemFilters {
+  sortAscending?: boolean
+  sortBy?: string
+  searchValue?: string,
+  searchType?: string,
 }
 
 export interface InventoryItem extends NewInventoryNode {

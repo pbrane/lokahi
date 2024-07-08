@@ -11,10 +11,15 @@
               scope="col"
               :property="col.id"
               :sort="(sort as any)[col.id]"
-              v-on:sort-changed="sortChanged"
+              v-on:sort-changed="sortChanged(col.id, $event)"
             >
               {{ col.label }}
             </FeatherSortHeader>
+            <th>Tags</th>
+            <th>Monitoring Location</th>
+            <th>Latency</th>
+            <th>Uptime</th>
+            <th>Status</th>
             <th/>
           </tr>
         </thead>
@@ -38,6 +43,20 @@
             </tr>
           </TransitionGroup>
         </table>
+        <div v-if="!hasNodes || total === 0">
+          <EmptyList :content="emptyListContent" data-test="empty-list" />
+        </div>
+      </div>
+      <div class="alert-list-bottom" v-if="hasNodes">
+        <FeatherPagination
+          v-model="page"
+          :pageSize="pageSize"
+          :total="total"
+          :pageSizes="[10, 20, 50]"
+          @update:model-value="onPageChanged"
+          @update:pageSize="onPageSizeChanged"
+          data-test="pagination"
+        />
       </div>
     </TableCard>
   </div>
@@ -50,7 +69,11 @@ import { PropType } from 'vue'
 import { SORT } from '@featherds/table'
 import { BadgeTypes } from '../Common/commonTypes'
 import TextBadge from '../Common/TextBadge.vue'
+import { useInventoryStore } from '@/store/Views/inventoryStore'
+import useSpinner from '@/composables/useSpinner'
 
+const { startSpinner, stopSpinner } = useSpinner()
+const store = useInventoryStore()
 defineProps({
   tabContent: {
     type: Object as PropType<InventoryItem[]>,
@@ -62,29 +85,58 @@ defineProps({
   }
 })
 
+const emptyListContent = {
+  msg: 'No results found.'
+}
+
 const sort = reactive({
-  NodeName: SORT.ASCENDING,
-  ManagementIP: SORT.NONE,
-  Tags: SORT.NONE,
-  MonitoringLocation: SORT.NONE,
-  Latency: SORT.NONE,
-  Uptime: SORT.NONE,
-  Status: SORT.NONE
+  NodeName: SORT.NONE,
+  ManagementIP: SORT.NONE
 }) as any
 
 const columns: { id: string; label: string }[] = [
-  { id: 'NodeName', label: 'Node Name' },
-  { id: 'ManagementIP', label: 'Management IP' },
-  { id: 'Tags', label: 'Tags' },
-  { id: 'MonitoringLocation', label: 'Monitoring Location' },
-  { id: 'Latency', label: 'Latency' },
-  { id: 'Uptime', label: 'Uptime' },
-  { id: 'Status', label: 'Status' }
+  { id: 'nodeAlias', label: 'Node Name' },
+  { id: 'nodeLabel', label: 'Management IP' }
 ]
 
+const page = computed(() => store.inventoryNodesPagination.page || 1)
+const pageSize = computed(() => store.inventoryNodesPagination.pageSize)
+const total = computed(() => store.inventoryNodesPagination.total)
+const data = computed(() => store.nodes || [])
+
+const hasNodes = computed(() => {
+  return (data.value || []).length > 0
+})
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const sortChanged = (sortObj: Record<string, string>) => {
-  console.log('sort inventory')
+const sortChanged = (columnId: string, sortObj: Record<string, string>) => {
+  startSpinner()
+  let sortByNode
+  if (sortObj.value === 'asc' || sortObj.value === 'desc') {
+    const sortAscending = sortObj.value === 'asc'
+    sortByNode = { sortAscending, sortBy: columnId }
+  } else {
+    const sortAscending = true
+    sortByNode = { sortAscending, sortBy: 'id' }
+  }
+  store.inventeriesByNodeSortChanged(sortByNode)
+  for (const prop in sort) {
+    sort[prop] = SORT.NONE
+  }
+  sort[sortObj.property] = sortObj.value
+  stopSpinner()
+}
+
+const onPageChanged = (p: number) => {
+  startSpinner()
+  store.setInventoriesByNodePage(p)
+  stopSpinner()
+}
+
+const onPageSizeChanged = (p: number) => {
+  startSpinner()
+  store.setInventoriesByNodePageSize(p)
+  stopSpinner()
 }
 
 const metricsAsTextBadges = (metrics?: RawMetric) => {

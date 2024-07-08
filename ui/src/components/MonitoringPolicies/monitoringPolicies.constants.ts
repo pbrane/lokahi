@@ -1,4 +1,4 @@
-import { Comparators, KeyValueStringType } from '@/types/index'
+import { Comparators, InventoryFilter, KeyValueStringType } from '@/types/index'
 
 export enum ThresholdMetrics {
   OVER_UTILIZATION = 'OVER_UTILIZATION',
@@ -36,4 +36,9 @@ export const ComparatorText: KeyValueStringType = Object.freeze({
   [Comparators.GTE]: 'greater than or equal to',
   [Comparators.LT]: 'less than',
   [Comparators.LTE]: 'less than or equal to'
+})
+
+export const InventoryComparator: KeyValueStringType = Object.freeze({
+  [InventoryFilter.TAGS]: 'tags',
+  [InventoryFilter.LABELS]: 'labels'
 })

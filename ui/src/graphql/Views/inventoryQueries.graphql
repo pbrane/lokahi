@@ -102,8 +102,22 @@ query FindAllNodesByMonitoredState($monitoredState: String!) {
   }
 }
 
-query BuildNetworkInventoryPage {
-  findAllNodes {
+query BuildNetworkInventoryPage(
+    $pageSize: Int!,
+    $page: Int!,
+    $sortBy: String!
+    $sortAscending: Boolean!,
+    $searchValue: String!,
+    $searchType: String!
+) {
+  searchNodes(
+    pageSize: $pageSize,
+    page: $page,
+    sortBy: $sortBy,
+    sortAscending: $sortAscending,
+    searchValue: $searchValue,
+    searchType: $searchType
+  ) {
     id
     ipInterfaces {
       id
@@ -125,6 +139,10 @@ query BuildNetworkInventoryPage {
     scanType
     nodeAlias
   }
+   nextPage
+   totalNodes
+   lastPage
+  }
   allMetrics: metric(name: "response_time_msec") {
     status
     data {
@@ -136,4 +154,3 @@ query BuildNetworkInventoryPage {
       }
     }
   }
-}

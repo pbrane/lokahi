@@ -106,3 +106,8 @@ export enum Comparators {
   LT = 'LT',
   LTE = 'LTE'
 }
+
+export enum InventoryFilter {
+  TAGS = 'TAGS',
+  LABELS = 'LABELS'
+}

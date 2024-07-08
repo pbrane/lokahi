@@ -5,6 +5,8 @@ import {
   FindAllNodesByTagsDocument,
   FindAllNodesByNodeLabelSearchDocument
 } from '@/types/graphql'
+import { Pagination } from '@/types/alerts'
+import { InventoryItemFilters } from '@/types'
 
 export const useInventoryQueries = defineStore('inventoryQueries', () => {
 
@@ -32,19 +34,25 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     return data
   }
 
-  const {
-    onData: receivedNetworkInventory,
-    isFetching: networkInventoryFetching,
-    execute: buildNetworkInventory
-  } = useQuery({
-    query: BuildNetworkInventoryPageDocument,
-    fetchOnMount: false,
-    cachePolicy: 'network-only'
-  })
+  const buildNetworkInventory = async (filters?: InventoryItemFilters, paginations?: Pagination) => {
+    const { execute, data } = useQuery({
+      query: BuildNetworkInventoryPageDocument,
+      variables: {
+        pageSize: paginations?.pageSize,
+        page: paginations?.page || 0,
+        sortBy: filters?.sortBy,
+        sortAscending: filters?.sortAscending || true,
+        searchValue: filters?.searchValue || '',
+        searchType: filters?.searchType
+      },
+      fetchOnMount: false,
+      cachePolicy: 'network-only'
+    })
+    await execute()
+    return toRaw(data.value)
+  }
 
   return {
-    receivedNetworkInventory,
-    networkInventoryFetching,
     buildNetworkInventory,
     getNodesByTags,
     getNodesByLabel

@@ -25,6 +25,17 @@
       <InventoryNodeTagEditOverlay v-if="tagStore.isTagEditMode" :node="node" />
     </div>
   </div>
+  <div class="inventory-card-list" v-if="hasNodes">
+    <FeatherPagination
+      v-model="page"
+      :pageSize="pageSize"
+      :total="total"
+      :pageSizes="[10, 20, 50]"
+      @update:model-value="onPageChanged"
+      @update:pageSize="onPageSizeChanged"
+      data-test="pagination"
+    />
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -34,6 +45,7 @@ import { useTagStore } from '@/store/Components/tagStore'
 import { useInventoryStore } from '@/store/Views/inventoryStore'
 import { BadgeTypes } from '../Common/commonTypes'
 import TextBadge from '../Common/TextBadge.vue'
+import useSpinner from '@/composables/useSpinner'
 
 defineProps({
   tabContent: {
@@ -46,9 +58,18 @@ defineProps({
   }
 })
 
+const { startSpinner, stopSpinner } = useSpinner()
 const tagStore = useTagStore()
 const inventoryStore = useInventoryStore()
 const isTagManagerReset = computed(() => inventoryStore.isTagManagerReset)
+const page = computed(() => inventoryStore.inventoryNodesPagination.page || 1)
+const pageSize = computed(() => inventoryStore.inventoryNodesPagination.pageSize)
+const total = computed(() => inventoryStore.inventoryNodesPagination.total)
+const data = computed(() => inventoryStore.nodes || [])
+
+const hasNodes = computed(() => {
+  return (data.value || []).length > 0
+})
 const router = useRouter()
 
 watch(isTagManagerReset, (isReset) => {
@@ -89,6 +110,17 @@ const metricsAsTextBadges = (metrics?: RawMetric) => {
   return badges
 }
 
+const onPageChanged = (p: number) => {
+  startSpinner()
+  inventoryStore.setInventoriesByNodePage(p)
+  stopSpinner()
+}
+
+const onPageSizeChanged = (p: number) => {
+  startSpinner()
+  inventoryStore.setInventoriesByNodePageSize(p)
+  stopSpinner()
+}
 </script>
 
 <style lang="scss" scoped>
@@ -160,5 +192,12 @@ const metricsAsTextBadges = (metrics?: RawMetric) => {
 
 .text-badge-row {
   display:flex;
+}
+
+.inventory-card-list {
+  margin-bottom: 10px;
+ :deep(.feather-pagination) {
+  border: none !important;
+ }
 }
 </style>
