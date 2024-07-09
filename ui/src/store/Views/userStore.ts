@@ -9,7 +9,8 @@ type TState = {
   usersList?: User[],
   selectedUser?: User,
   validationErrors: any,
-  userEditMode: CreateEditMode
+  userEditMode: CreateEditMode,
+  isModalVisible: boolean
 }
 
 const defaultUser: User = {
@@ -32,7 +33,8 @@ export const useUserStore = defineStore('userStore', {
     usersList: [],
     selectedUser: undefined,
     validationErrors: {},
-    userEditMode: CreateEditMode.None
+    userEditMode: CreateEditMode.None,
+    isModalVisible: false
   }),
   actions: {
     async getUsersList() {
@@ -75,12 +77,14 @@ export const useUserStore = defineStore('userStore', {
         return
       }
 
+      console.log('save User')
       // Save Logic Here
 
       // On Successfully saving user
 
       this.clearSelectedUser()
       this.userEditMode = CreateEditMode.None
+      this.isModalVisible = false
 
     },
     clearSelectedUser() {
@@ -92,6 +96,12 @@ export const useUserStore = defineStore('userStore', {
       } else {
         throw new Error('Select a user to delete')
       }
+    },
+    closeModalHandler() {
+      this.isModalVisible = false
+    },
+    openModalHandler() {
+      this.isModalVisible = true
     }
   }
 })

@@ -1,5 +1,6 @@
 <template>
 <section class="container">
+  <UserModal v-if="store.isModalVisible" />
   <TableCard class="card border user-management-wrapper">
       <div class="header">
         <div class="title-container">
@@ -44,8 +45,8 @@
               <td>{{ data.firstName }} {{ data.lastName }}</td>
               <td>{{ data.email }}</td>
               <td> <FeatherIcon class="my-primary-icon" :icon="Edit" @click="handleEditUser(data.id)" /> </td>
-              <td> <FeatherIcon class="my-primary-icon" :icon="Email" @click="handleEmailUser(data.id)" />  </td>
-              <td> <FeatherIcon class="my-primary-icon" :icon="Remove" @click="handleRemoveUser(data.id)" />  </td>
+              <td> <FeatherIcon class="my-primary-icon" :icon="Email" @click="handleEmailUser(data.id)" /> </td>
+              <td> <FeatherIcon class="my-primary-icon" :icon="Remove" @click="handleRemoveUser(data.id)" /> </td>
             </tr>
           </TransitionGroup>
         </table>
@@ -100,7 +101,8 @@ const setUserTableSort = (sortObj: Record<string, string>) => {
   store.getUsersList()
 }
 const handleAddUser = () => {
-  console.log('Everything is fine')
+  store.openModalHandler()
+  store.createUser()
 }
 const handleEditUser = (id: string) => {
   console.log('handleEditUser is clicked', id)
