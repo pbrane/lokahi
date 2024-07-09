@@ -3,7 +3,13 @@ import { CreateEditMode } from '@/types'
 import { User } from '@/types/users'
 import { defineStore } from 'pinia'
 import { useUserQueries } from '../Queries/userQueries'
-import { mapUserFromServer } from '@/mappers/users.mapper'
+import { mapUserFromServer, mapUserToServer } from '@/mappers/users.mapper'
+import { UserRepresentationInput } from '@/types/graphql'
+import { useUsersMutations } from '../Mutations/usersMutations'
+import { cloneDeep } from 'lodash'
+import useSnackbar from '@/composables/useSnackbar'
+
+const { showSnackbar } = useSnackbar()
 
 type TState = {
   usersList?: User[],
@@ -49,43 +55,73 @@ export const useUserStore = defineStore('userStore', {
     },
     createUser() {
       this.userEditMode = CreateEditMode.Create
-      this.selectedUser = defaultUser
+      this.selectedUser = cloneDeep(defaultUser)
+    },
+    checkForDuplicateUsernameOrEmail(): User {
+      return this.usersList?.find((user) => user.email === this.selectedUser?.email || user.username === this.selectedUser?.username) as User
     },
     validateUser(user: User) {
       const firstName = (user.firstName.trim() || '').toLowerCase()
       const lastName = (user.lastName.trim() || '').toLowerCase()
       const email = (user.email.trim() || '').toLowerCase()
       const password = (user.password.trim() || '')
+      const username = (user.username.trim() || '').toLowerCase()
       let isValid = true
+      if (!username) {
+        this.validationErrors.username = 'Please enter a valid username'
+        isValid = false
+      }
       if (!firstName) {
         this.validationErrors.firstName = 'Please enter first name'
         isValid = false
-      } else if (!lastName) {
+      }
+      if (!lastName) {
         this.validationErrors.lastName = 'Please enter last name'
         isValid = false
-      } else if (!EMAIL_REGEX.test(email)) {
+      }
+      if (!EMAIL_REGEX.test(email)) {
         this.validationErrors.email = 'Please enter a valid email'
         isValid = false
-      } else if (!PASSWORD_REGEX.test(password)) {
+      }
+      if (!PASSWORD_REGEX.test(password)) {
         this.validationErrors.password = 'Please enter a valid password'
         isValid = false
       }
       return isValid
     },
-    saveUser() {
+    async saveUser() {
+      this.validationErrors = {}
       if (!this.selectedUser || !this.validateUser(this.selectedUser)) {
         return
       }
+      if (this.checkForDuplicateUsernameOrEmail()?.email === this.selectedUser.email) {
+        showSnackbar({
+          msg: 'User exists with same email address.',
+          error: true
+        })
+        return
+      }
+      if (this.checkForDuplicateUsernameOrEmail()?.username === this.selectedUser.username) {
+        showSnackbar({
+          msg: 'User exists with same username.',
+          error: true
+        })
+        return
+      }
+      const {createNewUser, errorWhileCreatingUser} = useUsersMutations()
+      const userInput: UserRepresentationInput = mapUserToServer(this.selectedUser, this.userEditMode)
 
-      console.log('save User')
-      // Save Logic Here
+      await createNewUser({user: userInput})
 
-      // On Successfully saving user
-
-      this.clearSelectedUser()
-      this.userEditMode = CreateEditMode.None
-      this.isModalVisible = false
-
+      if (!errorWhileCreatingUser.value) {
+        this.closeModalHandler()
+        await this.getUsersList()
+      } else {
+        showSnackbar({
+          msg: 'Unexpected error occurred while creating User.',
+          error: true
+        })
+      }
     },
     clearSelectedUser() {
       this.selectedUser = undefined
@@ -98,6 +134,9 @@ export const useUserStore = defineStore('userStore', {
       }
     },
     closeModalHandler() {
+      this.userEditMode = CreateEditMode.None
+      this.validationErrors = {}
+      this.clearSelectedUser()
       this.isModalVisible = false
     },
     openModalHandler() {

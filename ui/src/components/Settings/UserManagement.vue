@@ -101,8 +101,8 @@ const setUserTableSort = (sortObj: Record<string, string>) => {
   store.getUsersList()
 }
 const handleAddUser = () => {
-  store.openModalHandler()
   store.createUser()
+  store.openModalHandler()
 }
 const handleEditUser = (id: string) => {
   console.log('handleEditUser is clicked', id)

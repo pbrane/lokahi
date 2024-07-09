@@ -962,6 +962,29 @@ export type User = {
   createdTimestamp?: Scalars['Long'];
 }
 
+export type UserRepresentationInput = {
+  id?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
+  lastName?: Maybe<Scalars['String']>;
+  self?: Maybe<Scalars['String']>;
+  origin?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  enabled?: Maybe<Scalars['Boolean']>;
+  username?: Maybe<Scalars['String']>;
+  createdTimestamp?: Maybe<Scalars['Long']>;
+  requiredActions?: Maybe<Array<Maybe<Scalars['String']>>>;
+  credentials?: Maybe<Array<Maybe<CredentialRepresentationInput>>>;
+}
+
+export type CredentialRepresentationInput = {
+  id?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  userLabel?: Maybe<Scalars['String']>;
+  createdDate?: Maybe<Scalars['Long']>;
+  value?: Maybe<Scalars['String']>;
+  temporary?: Maybe<Scalars['Boolean']>;
+}
+
 export type TsData = {
   __typename?: 'TSData';
   result?: Maybe<Array<Maybe<TsResult>>>;
@@ -1229,7 +1252,13 @@ export type CreateMonitorPolicyMutationVariables = Exact<{
   policy: MonitorPolicyInput;
 }>
 
+export type AddUserVariables = Exact<{
+  user: UserRepresentationInput;
+}>
+
 export type CreateMonitorPolicyMutation = { __typename?: 'Mutation', createMonitorPolicy?: { __typename?: 'MonitorPolicy', id?: any } }
+
+export type AddUserMutation = { __typename?: 'Mutation', addUser?: string }
 
 export type DeletePolicyByIdMutationVariables = Exact<{
   id: Scalars['Long'];
@@ -1685,4 +1714,5 @@ export const ListAlertEventDefinitionsByVendorDocument = { 'kind': 'Document', '
 export const ListVendorDocument = { 'kind': 'Document', 'definitions': [{ 'kind': 'OperationDefinition', 'operation': 'query', 'name': { 'kind': 'Name', 'value': 'listVendors' }, 'selectionSet': { 'kind': 'SelectionSet', 'selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'listVendors' } }] } }] } as unknown as DocumentNode<ListVendorQuery, unknown>
 export const CountAffectedNodesByMonitoingPolicy = { 'kind': 'Document', 'definitions': [{ 'kind': 'OperationDefinition', 'operation': 'query', 'name': { 'kind': 'Name', 'value': 'getNodesCountByMonitoringPolicy' }, 'variableDefinitions': [{ 'kind': 'VariableDefinition', 'variable': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'id' } }, 'type': { 'kind': 'NonNullType', 'type': { 'kind': 'NamedType', 'name': { 'kind': 'Name', 'value': 'Long' } } } }], 'selectionSet': { 'kind': 'SelectionSet', 'selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'getNodesCountByMonitoringPolicy' }, 'arguments': [{ 'kind': 'Argument', 'name': { 'kind': 'Name', 'value': 'id' }, 'value': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'id' } } }] }] } }] } as unknown as DocumentNode<CountAffectedNodesByMonitoringPolicyQuery, CountAffectedNodesByMonitoringPolicyVariables>
 export const ListGetAllUsersDocument = {'kind': 'Document','definitions': [{'kind': 'OperationDefinition','operation': 'query','name': {'kind': 'Name','value': 'getAllUsers'},'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'getAllUsers'},'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'id'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'firstName'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'lastName'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'username'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'enabled'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'email'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'createdTimestamp'}}]}}]}}]} as unknown as DocumentNode < ListGetAllUsersQuery, unknown >
+export const AddUserDocument = {'kind': 'Document','definitions': [{'kind': 'OperationDefinition','operation': 'mutation','name': {'kind': 'Name','value': 'AddUser'},'variableDefinitions': [{'kind': 'VariableDefinition','variable': {'kind': 'Variable','name': {'kind': 'Name','value': 'user'}},'type': {'kind': 'NonNullType','type': {'kind': 'NamedType','name': {'kind': 'Name','value': 'UserRepresentationInput'}}}}],'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'addUser'},'arguments': [{'kind': 'Argument','name': {'kind': 'Name','value': 'user'},'value': {'kind': 'Variable','name': {'kind': 'Name','value': 'user'}}}]}]}}]} as unknown as DocumentNode< AddUserMutation, AddUserVariables >
 /* eslint-enable @stylistic/comma-spacing, @stylistic/key-spacing */

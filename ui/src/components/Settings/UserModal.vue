@@ -1,5 +1,5 @@
 <template>
-  <PrimaryModal :visible="store.isModalVisible" :class="[modal.cssClass, 'user-modal']">
+  <PrimaryModal v-if="store.selectedUser" :visible="store.isModalVisible" :class="[modal.cssClass, 'user-modal']">
     <template #content>
       <section class="feather-row">
         <h3 class="feather-col-6">{{ store.userEditMode === CreateEditMode.Create ? "Add User" : "Edit User" }}</h3>
@@ -7,11 +7,11 @@
           <FeatherIcon :icon="deleteIcon" @click="store.closeModalHandler()" class="pointer" />
         </div>
       </section>
-     <section class="user-labels" v-if="store.selectedUser">
+     <section class="user-labels">
        <div class="name-div">
          <FeatherInput
            v-model.trim="store.selectedUser.firstName"
-           label="First Name"
+           label="First Name*"
            v-focus
            data-test="user-firstName-input"
            :error="store.validationErrors.firstName"
@@ -19,7 +19,7 @@
          />
           <FeatherInput
            v-model.trim="store.selectedUser.lastName"
-           label="Last Name"
+           label="Last Name*"
            v-focus
            data-test="user-lastName-input"
            :error="store.validationErrors.lastName"
@@ -35,7 +35,7 @@
         />
        <FeatherInput
         v-model.trim="store.selectedUser.username"
-        label="UserName*"
+        label="Username*"
         data-test="user-username-input"
         :error="store.validationErrors.username"
         class="user-username"
@@ -78,9 +78,9 @@ const modal = ref<ModalPrimary>({
   saveLabel: 'Apply',
   hideTitle: true
 })
-const handleButtonAction = () => {
+const handleButtonAction = async () => {
   if (store.userEditMode === CreateEditMode.Create) {
-    store.saveUser()
+    await store.saveUser()
   } else {
     console.log('Update User')
   }
