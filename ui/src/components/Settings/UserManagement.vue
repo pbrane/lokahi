@@ -44,7 +44,7 @@
             <tr v-for="data of store.usersList" v-bind:key="data.id">
               <td>{{ data.firstName }} {{ data.lastName }}</td>
               <td>{{ data.email }}</td>
-              <td> <FeatherIcon class="my-primary-icon" :icon="Edit" @click="handleEditUser(data.id)" /> </td>
+              <td> <FeatherIcon class="my-primary-icon" :icon="Edit" @click="handleEditUser(data)" /> </td>
               <td> <FeatherIcon class="my-primary-icon" :icon="Email" @click="handleEmailUser(data.id)" /> </td>
               <td> <FeatherIcon class="my-primary-icon" :icon="Remove" @click="handleRemoveUser(data.id)" /> </td>
             </tr>
@@ -67,6 +67,7 @@ import { SORT } from '@featherds/table'
 import Edit from '@featherds/icon/action/Edit'
 import Email from '@featherds/icon/action/Email'
 import Remove from '@featherds/icon/action/Remove'
+import { User } from '@/types/users'
 const store = useUserStore()
 
 let pagination = reactive({
@@ -104,8 +105,9 @@ const handleAddUser = () => {
   store.createUser()
   store.openModalHandler()
 }
-const handleEditUser = (id: string) => {
-  console.log('handleEditUser is clicked', id)
+const handleEditUser = (selectedUser: User) => {
+  store.updateUser(selectedUser)
+  store.openModalHandler()
 }
 const handleEmailUser = (id: string) => {
   console.log('handleEmailUser is clicked', id)

@@ -50,15 +50,20 @@ export const useUserStore = defineStore('userStore', {
     },
     updateUser(user: User) {
       this.userEditMode = CreateEditMode.Edit
-      this.selectedUser = user
-      console.log(this.selectedUser)
+      this.selectedUser = cloneDeep(user)
     },
     createUser() {
       this.userEditMode = CreateEditMode.Create
       this.selectedUser = cloneDeep(defaultUser)
     },
     checkForDuplicateUsernameOrEmail(): User {
-      return this.usersList?.find((user) => user.email === this.selectedUser?.email || user.username === this.selectedUser?.username) as User
+      let userList
+      if (this.userEditMode === CreateEditMode.Edit) {
+        userList = this.usersList?.filter((user) => user.id !== this.selectedUser?.id)
+      } else {
+        userList = this.usersList
+      }
+      return userList?.find((user) => user.email === this.selectedUser?.email || user.username === this.selectedUser?.username) as User
     },
     validateUser(user: User) {
       const firstName = (user.firstName.trim() || '').toLowerCase()
@@ -83,7 +88,7 @@ export const useUserStore = defineStore('userStore', {
         this.validationErrors.email = 'Please enter a valid email'
         isValid = false
       }
-      if (!PASSWORD_REGEX.test(password)) {
+      if (!PASSWORD_REGEX.test(password) && this.userEditMode === CreateEditMode.Create) {
         this.validationErrors.password = 'Please enter a valid password'
         isValid = false
       }
@@ -122,6 +127,34 @@ export const useUserStore = defineStore('userStore', {
           error: true
         })
       }
+    },
+    async updateUserData() {
+      this.validationErrors = {}
+      if (!this.selectedUser || !this.validateUser(this.selectedUser)) {
+        return
+      }
+      if (this.checkForDuplicateUsernameOrEmail()?.email === this.selectedUser.email) {
+        showSnackbar({
+          msg: 'User exists with same email address.',
+          error: true
+        })
+        return
+      }
+      const {updateUser, errorWhileUpdatingUser} = useUsersMutations()
+      const userInput: UserRepresentationInput = mapUserToServer(this.selectedUser, this.userEditMode)
+
+      await updateUser({user: userInput})
+
+      if (!errorWhileUpdatingUser.value) {
+        this.closeModalHandler()
+        await this.getUsersList()
+      } else {
+        showSnackbar({
+          msg: 'Unexpected error occurred while updating User.',
+          error: true
+        })
+      }
+
     },
     clearSelectedUser() {
       this.selectedUser = undefined

@@ -37,10 +37,12 @@
         v-model.trim="store.selectedUser.username"
         label="Username*"
         data-test="user-username-input"
+        :disabled="store.userEditMode === CreateEditMode.Edit"
         :error="store.validationErrors.username"
         class="user-username"
         />
       <FeatherProtectedInput
+        v-if="store.userEditMode === CreateEditMode.Create"
         v-model.trim="store.selectedUser.password"
         label="Password*"
         data-test="user-password-input"
@@ -54,7 +56,7 @@
         {{ modal.cancelLabel }}
       </FeatherButton>
       <FeatherButton primary @click="handleButtonAction()">
-        {{ store.userEditMode === CreateEditMode.Create ? "Add" : "Edit" }}
+        {{ store.userEditMode === CreateEditMode.Create ? "Add" : "Update" }}
       </FeatherButton>
     </template>
   </PrimaryModal>
@@ -82,7 +84,7 @@ const handleButtonAction = async () => {
   if (store.userEditMode === CreateEditMode.Create) {
     await store.saveUser()
   } else {
-    console.log('Update User')
+    await store.updateUserData()
   }
 }
 </script>
