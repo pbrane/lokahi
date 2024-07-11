@@ -62,7 +62,7 @@ public class HttpsMonitorTest {
     public void testHttpsMonitorDownStatus() throws Exception {
         httpsMonitor = new HttpsMonitor();
         testConfig = prepareHttpsMonitorParams(
-                "www.opennms.org", "100-200", "https://www.opennms.org/", Arrays.asList(443), 3, 3000);
+                "www.opennms.org", "201-202", "https://www.opennms.org/", Arrays.asList(443), 3, 3000);
         CompletableFuture<ServiceMonitorResponse> response = httpsMonitor.poll(testConfig);
         ServiceMonitorResponse serviceMonitorResponse = response.get();
         assertEquals(ServiceMonitorResponse.Status.Down, serviceMonitorResponse.getStatus());
