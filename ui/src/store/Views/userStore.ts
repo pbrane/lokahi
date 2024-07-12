@@ -56,14 +56,29 @@ export const useUserStore = defineStore('userStore', {
       this.userEditMode = CreateEditMode.Create
       this.selectedUser = cloneDeep(defaultUser)
     },
-    checkForDuplicateUsernameOrEmail(): User {
-      let userList
+    checkForDuplicateUsernameOrEmail(): boolean {
+      let userList: User[] | undefined
       if (this.userEditMode === CreateEditMode.Edit) {
-        userList = this.usersList?.filter((user) => user.id !== this.selectedUser?.id)
+        userList = this.usersList?.filter(user => user.id !== this.selectedUser?.id)
       } else {
         userList = this.usersList
       }
-      return userList?.find((user) => user.email === this.selectedUser?.email || user.username === this.selectedUser?.username) as User
+    
+      const duplicateUser = userList?.find((user: User) => 
+        user.email.toLowerCase() === this.selectedUser?.email.toLowerCase() ||
+        user.username.toLowerCase() === this.selectedUser?.username.toLowerCase()
+      )
+    
+      if (duplicateUser) {
+        if (duplicateUser.email.toLowerCase() === this.selectedUser?.email.toLowerCase()) {
+          showSnackbar({ msg: 'User exists with the same email address.', error: true })
+        } 
+        else if (duplicateUser.username.toLowerCase() === this.selectedUser?.username.toLowerCase()) {
+          showSnackbar({ msg: 'User exists with the same username.', error: true })
+        }
+        return true
+      }
+      return false
     },
     validateUser(user: User) {
       const firstName = (user.firstName.trim() || '').toLowerCase()
@@ -96,23 +111,10 @@ export const useUserStore = defineStore('userStore', {
     },
     async saveUser() {
       this.validationErrors = {}
-      if (!this.selectedUser || !this.validateUser(this.selectedUser)) {
+      if (!this.selectedUser || !this.validateUser(this.selectedUser) || this.checkForDuplicateUsernameOrEmail()) {
         return
       }
-      if (this.checkForDuplicateUsernameOrEmail()?.email === this.selectedUser.email) {
-        showSnackbar({
-          msg: 'User exists with same email address.',
-          error: true
-        })
-        return
-      }
-      if (this.checkForDuplicateUsernameOrEmail()?.username === this.selectedUser.username) {
-        showSnackbar({
-          msg: 'User exists with same username.',
-          error: true
-        })
-        return
-      }
+     
       const {createNewUser, errorWhileCreatingUser} = useUsersMutations()
       const userInput: UserRepresentationInput = mapUserToServer(this.selectedUser, this.userEditMode)
 
@@ -130,16 +132,10 @@ export const useUserStore = defineStore('userStore', {
     },
     async updateUserData() {
       this.validationErrors = {}
-      if (!this.selectedUser || !this.validateUser(this.selectedUser)) {
+      if (!this.selectedUser || !this.validateUser(this.selectedUser) || this.checkForDuplicateUsernameOrEmail()) {
         return
       }
-      if (this.checkForDuplicateUsernameOrEmail()?.email === this.selectedUser.email) {
-        showSnackbar({
-          msg: 'User exists with same email address.',
-          error: true
-        })
-        return
-      }
+   
       const {updateUser, errorWhileUpdatingUser} = useUsersMutations()
       const userInput: UserRepresentationInput = mapUserToServer(this.selectedUser, this.userEditMode)
 
@@ -158,13 +154,6 @@ export const useUserStore = defineStore('userStore', {
     },
     clearSelectedUser() {
       this.selectedUser = undefined
-    },
-    deleteUser(id: number) {
-      if (id) {
-        // Delete user Logic
-      } else {
-        throw new Error('Select a user to delete')
-      }
     },
     closeModalHandler() {
       this.userEditMode = CreateEditMode.None

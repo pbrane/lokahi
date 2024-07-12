@@ -46,7 +46,20 @@
               <td>{{ data.email }}</td>
               <td> <FeatherIcon class="my-primary-icon" :icon="Edit" @click="handleEditUser(data)" /> </td>
               <td> <FeatherIcon class="my-primary-icon" :icon="Email" @click="handleEmailUser(data.id)" /> </td>
-              <td> <FeatherIcon class="my-primary-icon" :icon="Remove" @click="handleRemoveUser(data.id)" /> </td>
+              <td>
+                <FeatherTooltip
+                  :title="data.enabled ? 'Disable User' : 'Enable User'"
+                  v-slot="{ attrs, on }"
+                  :pointer-alignment="PointerAlignment.center"
+                  :placement="PopoverPlacement.top"
+                >
+                  <FeatherIcon
+                    v-bind="attrs" v-on="on"
+                    :class= "data.enabled ? 'my-primary-icon enable' : 'my-primary-icon disable'"
+                    :icon="Remove"
+                    @click="handleRevokeUser(data)" />
+                </FeatherTooltip>
+              </td>
             </tr>
           </TransitionGroup>
         </table>
@@ -68,6 +81,7 @@ import Edit from '@featherds/icon/action/Edit'
 import Email from '@featherds/icon/action/Email'
 import Remove from '@featherds/icon/action/Remove'
 import { User } from '@/types/users'
+import { PointerAlignment, PopoverPlacement } from '@featherds/tooltip'
 const store = useUserStore()
 
 let pagination = reactive({
@@ -112,8 +126,12 @@ const handleEditUser = (selectedUser: User) => {
 const handleEmailUser = (id: string) => {
   console.log('handleEmailUser is clicked', id)
 }
-const handleRemoveUser = (id: string) => {
-  console.log('handleRemoveUser is clicked', id)
+const handleRevokeUser = (selectedUser: User) => {
+  store.updateUser(selectedUser)
+  if (store.selectedUser) {
+    store.selectedUser.enabled = !store.selectedUser?.enabled
+  }
+  store.updateUserData()
 }
 onMounted(async () => await store.getUsersList())
 </script>
@@ -184,6 +202,12 @@ onMounted(async () => await store.getUsersList())
           font-size: 1.5rem;
           color: var(variables.$primary);
           cursor: pointer;
+        }
+        .my-primary-icon.disable{
+          color: var(variables.$error);
+        }
+        .my-primary-icon.enable{
+          color: var(variables.$success);
         }
       }
     }
