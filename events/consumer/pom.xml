@@ -73,6 +73,11 @@
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.opennms.lokahi.shared</groupId>
+      <artifactId>inventory</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>

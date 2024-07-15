@@ -5,6 +5,9 @@ Feature: Event Service Basic Functionality
     Given [Event] External GRPC Port in system property "application-external-grpc-port"
     Given [Event] Grpc TenantId "event-tenant-stream-id"
     Given [Event] Create Grpc Connection for Events
+    Given Kafka bootstrap URL in system property "kafka.bootstrap-servers"
+    Given Kafka node topic "node"
+    Given Kafka event topic "events"
 
   Scenario:
     Given Initialize Trap Producer With Topic "traps" and BootstrapServer "kafka.bootstrap-servers"

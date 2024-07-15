@@ -22,24 +22,33 @@
 package org.opennms.horizon.events.persistence.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.events.persistence.mapper.EventMapper;
+import org.opennms.horizon.events.persistence.mapper.NodeInfoMapper;
+import org.opennms.horizon.events.persistence.mapper.NodeMapper;
+import org.opennms.horizon.events.persistence.model.Node;
+import org.opennms.horizon.events.persistence.model.NodeInfo;
 import org.opennms.horizon.events.persistence.repository.EventRepository;
+import org.opennms.horizon.events.persistence.repository.NodeRepository;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventLogListResponse;
 import org.opennms.horizon.events.proto.EventsSearchBy;
+import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.inventory.dto.NodeOperationProto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class EventService {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
 
-    public EventService(EventRepository eventRepository, EventMapper eventMapper) {
-        this.eventRepository = eventRepository;
-        this.eventMapper = eventMapper;
-    }
+    private final NodeMapper nodeMapper;
+    private final NodeInfoMapper nodeInfoMapper;
+    private final NodeRepository nodeRepository;
 
     public List<Event> findEvents(String tenantId) {
         return eventRepository.findAllByTenantId(tenantId).stream()
@@ -73,5 +82,47 @@ public class EventService {
         responseBuilder.setTotalEvents(eventPage.getTotalElements());
 
         return responseBuilder.build();
+    }
+
+    public void saveNode(NodeDTO nodeDTO) {
+        Optional<Node> optNode = nodeRepository.findByIdAndTenantId(nodeDTO.getId(), nodeDTO.getTenantId());
+
+        optNode.ifPresentOrElse(
+                node -> {
+                    updateNode(node, nodeDTO);
+                },
+                () -> {
+                    createNode(nodeDTO);
+                });
+    }
+
+    private void createNode(NodeDTO nodeDTO) {
+        Node node = nodeMapper.map(nodeDTO);
+        NodeInfo nodeInfo = nodeInfoMapper.map(nodeDTO);
+        node.setNodeInfo(nodeInfo);
+        nodeRepository.save(node);
+    }
+
+    private void updateNode(Node node, NodeDTO nodeDTO) {
+        node.setNodeLabel(nodeDTO.getNodeLabel());
+        NodeInfo nodeInfo = nodeInfoMapper.map(nodeDTO);
+        node.setNodeInfo(nodeInfo);
+        nodeRepository.save(node);
+    }
+
+    private void deleteNode(NodeDTO nodeDTO) {
+        Node node = nodeMapper.map(nodeDTO);
+        nodeRepository.delete(node);
+    }
+
+    public void deleteAllEventByNodeId(NodeOperationProto nodeOperationProto) {
+        eventRepository.deleteEventByNodeIdAndTenantId(
+                nodeOperationProto.getNodeDto().getId(),
+                nodeOperationProto.getNodeDto().getTenantId());
+
+        deleteNode(NodeDTO.newBuilder()
+                .setId(nodeOperationProto.getNodeDto().getId())
+                .setTenantId(nodeOperationProto.getNodeDto().getTenantId())
+                .build());
     }
 }

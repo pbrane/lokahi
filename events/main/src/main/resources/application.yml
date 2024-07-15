@@ -29,6 +29,7 @@ grpc:
 kafka:
   raw-traps-topic: "traps"
   trap-events-topic: "events"
+  node-changed: "node"
   internal-events-topic: "internal-event"
 
 keycloak:

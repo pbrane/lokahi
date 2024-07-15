@@ -42,6 +42,7 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.hamcrest.Matchers;
 import org.opennms.horizon.events.EventsBackgroundHelper;
+import org.opennms.horizon.events.kafkahelper.KafkaTestHelper;
 import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventLog;
 import org.opennms.horizon.events.proto.EventsSearchBy;
@@ -58,6 +59,8 @@ public class EventStepDefinitions {
     private String tenantId;
     private String uei = "uei.opennms.org/generic/traps/SNMP_Cold_Start";
     private final List<Event.Builder> builders = new ArrayList<>();
+    private final KafkaTestHelper kafkaTestHelper;
+    private final BackgroundSteps background;
 
     @Given("[Event] External GRPC Port in system property {string}")
     public void externalGRPCPortInSystemProperty(String propertyName) {
@@ -148,6 +151,7 @@ public class EventStepDefinitions {
                     .setUei(map.get("uei"))
                     .setIpAddress(map.get("ip_address"))
                     .setLocationId(map.get("location_id"))
+                    .setNodeId(map.containsKey("node_id") ? Long.parseLong(map.get("node_id")) : 0l)
                     .build();
 
             builders.add(builder);
@@ -166,21 +170,7 @@ public class EventStepDefinitions {
                 .addAllEvents(eventList)
                 .build();
 
-        var producerRecord = new ProducerRecord<String, byte[]>(topic, eventLog.toByteArray());
-
-        Properties producerConfig = new Properties();
-        if (backgroundHelper.getBootstrapServer() == null) {
-            System.out.println("null");
-        }
-        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, backgroundHelper.getBootstrapServer());
-        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
-        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getCanonicalName());
-        try (KafkaProducer<String, byte[]> kafkaProducer = new KafkaProducer<>(producerConfig)) {
-            kafkaProducer.send(producerRecord);
-        } catch (Exception e) {
-            LOG.error(e.toString());
-        }
-        System.out.println("Producer");
+        kafkaTestHelper.sendToTopic(background.getEventTopic(), eventLog.toByteArray(), tenantId);
     }
 
     @Then("verify events persisted with uei {string} with total rows {int}")
