@@ -9,7 +9,7 @@
 import LeafletMap from '../components/Map/LeafletMap.vue'
 </script>
 
-<style setup lang="scss">
+<style lang="scss" scoped>
 @use '@featherds/styles/themes/variables';
 .map {
   border-top: 2px solid var(variables.$border-on-surface);

@@ -63,17 +63,16 @@ export const useUserStore = defineStore('userStore', {
       } else {
         userList = this.usersList
       }
-    
-      const duplicateUser = userList?.find((user: User) => 
+
+      const duplicateUser = userList?.find((user: User) =>
         user.email.toLowerCase() === this.selectedUser?.email.toLowerCase() ||
         user.username.toLowerCase() === this.selectedUser?.username.toLowerCase()
       )
-    
+
       if (duplicateUser) {
         if (duplicateUser.email.toLowerCase() === this.selectedUser?.email.toLowerCase()) {
           showSnackbar({ msg: 'User exists with the same email address.', error: true })
-        } 
-        else if (duplicateUser.username.toLowerCase() === this.selectedUser?.username.toLowerCase()) {
+        } else if (duplicateUser.username.toLowerCase() === this.selectedUser?.username.toLowerCase()) {
           showSnackbar({ msg: 'User exists with the same username.', error: true })
         }
         return true
@@ -114,7 +113,7 @@ export const useUserStore = defineStore('userStore', {
       if (!this.selectedUser || !this.validateUser(this.selectedUser) || this.checkForDuplicateUsernameOrEmail()) {
         return
       }
-     
+
       const {createNewUser, errorWhileCreatingUser} = useUsersMutations()
       const userInput: UserRepresentationInput = mapUserToServer(this.selectedUser, this.userEditMode)
 
@@ -135,7 +134,7 @@ export const useUserStore = defineStore('userStore', {
       if (!this.selectedUser || !this.validateUser(this.selectedUser) || this.checkForDuplicateUsernameOrEmail()) {
         return
       }
-   
+
       const {updateUser, errorWhileUpdatingUser} = useUsersMutations()
       const userInput: UserRepresentationInput = mapUserToServer(this.selectedUser, this.userEditMode)
 
