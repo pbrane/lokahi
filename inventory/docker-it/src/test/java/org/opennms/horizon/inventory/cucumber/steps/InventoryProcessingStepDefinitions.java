@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -72,16 +73,15 @@ import org.opennms.horizon.inventory.dto.TagListParamsDTO;
 import org.opennms.horizon.shared.common.tag.proto.Operation;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationList;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationProto;
-import org.opennms.inventory.types.ServiceType;
 import org.opennms.node.scan.contract.IpInterfaceResult;
 import org.opennms.node.scan.contract.NodeScanResult;
 import org.opennms.node.scan.contract.ServiceResult;
 import org.opennms.node.scan.contract.SnmpInterfaceResult;
 import org.opennms.taskset.contract.DiscoveryScanResult;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.PingResponse;
 import org.opennms.taskset.contract.ScannerResponse;
 import org.opennms.taskset.contract.TaskResult;
+import org.opennms.taskset.contract.TaskType;
 import org.opennms.taskset.contract.TenantLocationSpecificTaskSetResults;
 import org.opennms.taskset.service.contract.UpdateSingleTaskOp;
 import org.opennms.taskset.service.contract.UpdateTasksRequest;
@@ -104,7 +104,7 @@ public class InventoryProcessingStepDefinitions {
     private NodeList nodeList;
     private Int64Value nodeIdCreated;
     private String taskIpAddress;
-    private MonitorType monitorType;
+    private String monitorType;
     private KafkaConsumerRunner kafkaConsumerRunner;
     private final String tagTopic = "tag-operation";
     private NodeScanResult nodeScanResult;
@@ -433,12 +433,12 @@ public class InventoryProcessingStepDefinitions {
             NodeScanResult nodeScanResult = NodeScanResult.newBuilder()
                     .setNodeId(nodeIdCreated.getValue())
                     .addDetectorResult(ServiceResult.newBuilder()
-                            .setService(ServiceType.ICMP)
+                            .setService("ICMP")
                             .setIpAddress(ipAddress)
                             .setStatus(true)
                             .build())
                     .addDetectorResult(ServiceResult.newBuilder()
-                            .setService(ServiceType.SNMP)
+                            .setService("SNMP")
                             .setIpAddress(ipAddress)
                             .setStatus(true)
                             .build())
@@ -476,12 +476,15 @@ public class InventoryProcessingStepDefinitions {
         Executors.newSingleThreadExecutor().execute(kafkaConsumerRunner);
     }
 
-    @Then("verify the task set update is published for device with nodeScan within {int}ms")
-    public void verifyTheTaskSetUpdateIsPublishedForDeviceWithNodeScanWithinMs(int timeout) {
+    @Then("verify the task set update is published for device with nodeScan and type {string} within {int}ms")
+    public void verifyTheTaskSetUpdateIsPublishedForDeviceWithNodeScanAndTypeWithinMs(String taskType, int timeout) {
         long nodeId = node.getId();
         String taskIdPattern = "nodeScan=node_id/" + nodeId;
         await().atMost(timeout, TimeUnit.MILLISECONDS)
-                .until(() -> matchesTaskPatternForUpdate(taskIdPattern).get(), Matchers.is(true));
+                .until(
+                        () -> matchesTaskPatternForUpdate(taskIdPattern, taskType)
+                                .get(),
+                        Matchers.is(true));
     }
 
     @Given("Device Task IP address = {string}")
@@ -491,40 +494,41 @@ public class InventoryProcessingStepDefinitions {
 
     @Given("Monitor Type {string}")
     public void monitorType(String monitorType) {
-        switch (monitorType) {
-            case "ICMP":
-                this.monitorType = MonitorType.ICMP;
-                break;
-
-            case "SNMP":
-                this.monitorType = MonitorType.SNMP;
-                break;
-
-            default:
-                throw new RuntimeException("Unrecognized monitor type " + monitorType);
-        }
+        this.monitorType = monitorType;
     }
 
-    @Then("verify the task set update is published for device with task suffix {string} within {int}ms")
-    public void verifyTheTaskSetUpdateIsPublishedForDeviceWithTaskSuffixWithinMs(String taskNameSuffix, int timeout) {
-        String taskIdPattern = "nodeId:\\d+/ip=" + taskIpAddress + "/" + taskNameSuffix;
+    @Then(
+            "verify the task set update is published for device with type {string} and task suffix {string} within {int}ms")
+    public void verifyTheTaskSetUpdateIsPublishedForDeviceWithTypeAndTaskSuffixWithinMs(
+            String taskType, String taskNameSuffix, int timeout) {
+        String taskIdPattern = createTaskIdPattern(taskNameSuffix, taskType);
         await().atMost(timeout, TimeUnit.MILLISECONDS)
                 .pollDelay(2000, TimeUnit.MILLISECONDS)
                 .pollInterval(2000, TimeUnit.MILLISECONDS)
-                .until(() -> matchesTaskPatternForUpdate(taskIdPattern).get(), Matchers.is(true));
+                .until(
+                        () -> matchesTaskPatternForUpdate(taskIdPattern, taskType)
+                                .get(),
+                        Matchers.is(true));
     }
 
-    @Then("verify the task set update is published with removal of task with suffix {string} within {int}ms")
-    public void verifyTheTaskSetUpdateIsPublishedWithRemovalOfTaskWithSuffixWithinMs(String taskSuffix, int timeout) {
-        String taskIdPattern = "nodeId:\\d+/ip=" + taskIpAddress + "/" + taskSuffix;
+    @Then(
+            "verify the task set update is published with removal of task having type {string} with suffix {string} within {int}ms")
+    public void verifyTheTaskSetUpdateIsPublishedWithRemovalOfTaskWithSuffixWithinMs(
+            String taskType, String taskSuffix, int timeout) {
+        String taskIdPattern = createTaskIdPattern(taskSuffix, taskType);
         await().atMost(timeout, TimeUnit.MILLISECONDS)
                 .pollDelay(2000, TimeUnit.MILLISECONDS)
                 .pollInterval(2000, TimeUnit.MILLISECONDS)
-                .until(() -> matchesTaskPatternForDelete(taskIdPattern).get(), Matchers.is(true));
+                .until(
+                        () -> matchesTaskPatternForDelete(taskIdPattern, taskType)
+                                .get(),
+                        Matchers.is(true));
     }
 
-    private AtomicBoolean matchesTaskPattern(String taskIdPattern, PublishType publishType) {
+    private AtomicBoolean matchesTaskPattern(String taskIdPattern, String taskType, PublishType publishType) {
         AtomicBoolean matched = new AtomicBoolean(false);
+        Pattern pattern = Pattern.compile(taskIdPattern);
+
         var list = kafkaConsumerRunner.getValues();
         var tasks = new ArrayList<UpdateTasksRequest>();
         for (byte[] taskSet : list) {
@@ -544,33 +548,61 @@ public class InventoryProcessingStepDefinitions {
                     .filter(UpdateSingleTaskOp::hasRemoveTask)
                     .collect(Collectors.toList());
             if (publishType.equals(PublishType.UPDATE)) {
-                boolean matchForTaskId = addTasks.stream().anyMatch(updateSingleTaskOp -> updateSingleTaskOp
-                        .getAddTask()
-                        .getTaskDefinition()
-                        .getId()
-                        .matches(taskIdPattern));
+                boolean matchForTaskId = addTasks.stream()
+                        .filter(s -> taskType.equals(
+                                s.getAddTask().getTaskDefinition().getType().name()))
+                        .anyMatch(updateSingleTaskOp -> pattern.matcher(updateSingleTaskOp
+                                        .getAddTask()
+                                        .getTaskDefinition()
+                                        .getId())
+                                .matches());
+
                 if (matchForTaskId) {
                     matched.set(true);
                 }
             }
             if (publishType.equals(PublishType.REMOVE)) {
-                boolean matchForTaskId = removeTasks.stream()
-                        .anyMatch(updateSingleTaskOp ->
-                                updateSingleTaskOp.getRemoveTask().getTaskId().matches(taskIdPattern));
-                if (matchForTaskId) {
-                    matched.set(true);
+                boolean matchForTaskId;
+                if (taskType.equals(TaskType.MONITOR.name())) {
+                    matchForTaskId = removeTasks.stream()
+                            .filter(s -> taskType.equals(
+                                    s.getAddTask().getTaskDefinition().getType().name()))
+                            .anyMatch(updateSingleTaskOp -> pattern.matcher(
+                                            updateSingleTaskOp.getRemoveTask().getTaskId())
+                                    .matches());
+
+                    if (!matchForTaskId) {
+                        matched.set(true);
+                    }
+
+                } else {
+                    matchForTaskId = removeTasks.stream().anyMatch(updateSingleTaskOp -> pattern.matcher(
+                                    updateSingleTaskOp.getRemoveTask().getTaskId())
+                            .matches());
+
+                    if (matchForTaskId) {
+                        matched.set(true);
+                    }
                 }
             }
         }
         return matched;
     }
 
-    AtomicBoolean matchesTaskPatternForUpdate(String taskIdPattern) {
-        return matchesTaskPattern(taskIdPattern, PublishType.UPDATE);
+    AtomicBoolean matchesTaskPatternForUpdate(String taskIdPattern, String taskType) {
+        return matchesTaskPattern(taskIdPattern, taskType, PublishType.UPDATE);
     }
 
-    AtomicBoolean matchesTaskPatternForDelete(String taskIdPattern) {
-        return matchesTaskPattern(taskIdPattern, PublishType.REMOVE);
+    AtomicBoolean matchesTaskPatternForDelete(String taskIdPattern, String taskType) {
+        return matchesTaskPattern(taskIdPattern, taskType, PublishType.REMOVE);
+    }
+
+    String createTaskIdPattern(String taskNameSuffix, String taskType) {
+        return switch (taskType) {
+            case "MONITOR" -> "^monitor:tenant-stream:\\d+:" + Pattern.quote(taskNameSuffix) + ":\\d+$";
+            case "COLLECTOR" -> "nodeId:\\d+/ip=" + taskIpAddress + "/" + taskNameSuffix;
+            default -> null;
+        };
     }
 
     @Then("shutdown kafka consumer")

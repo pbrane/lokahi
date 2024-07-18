@@ -23,7 +23,6 @@ package org.opennms.horizon.server.service;
 
 import static java.util.Objects.isNull;
 import static org.opennms.horizon.server.service.metrics.Constants.AVG_RESPONSE_TIME;
-import static org.opennms.horizon.server.service.metrics.Constants.AZURE_MONITOR_TYPE;
 import static org.opennms.horizon.server.service.metrics.Constants.AZURE_SCAN_TYPE;
 import static org.opennms.horizon.server.service.metrics.Constants.INSTANCE_KEY;
 import static org.opennms.horizon.server.service.metrics.Constants.MONITOR_KEY;
@@ -38,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
+import org.opennms.horizon.inventory.dto.MonitoredServiceQuery;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.server.model.TSResult;
 import org.opennms.horizon.server.model.TimeRangeUnit;
@@ -75,7 +75,7 @@ public class NodeStatusService {
     public Mono<NodeStatus> getNodeStatus(NodeDTO node, String monitorType, ResolutionEnvironment env) {
 
         if (AZURE_SCAN_TYPE.equals(node.getScanType())) {
-            return getStatusMetric(node.getId(), "azure-node-" + node.getId(), AZURE_MONITOR_TYPE, env)
+            return getStatusMetric("azure-" + node.getId(), env) // TODO: follow up issue: LOK-2653
                     .map(result -> getNodeStatus(node.getId(), result));
         } else {
             if (node.getIpInterfacesCount() > 0) {
@@ -98,9 +98,25 @@ public class NodeStatusService {
 
     private Mono<NodeStatus> getNodeStatusByInterface(
             long id, String monitorType, IpInterfaceDTO ipInterface, ResolutionEnvironment env) {
-        String ipAddress = ipInterface.getIpAddress();
 
-        return getStatusMetric(id, ipAddress, monitorType, env).map(result -> getNodeStatus(id, result));
+        return Mono.fromCallable(() -> client.getMonitoredService(
+                        MonitoredServiceQuery.newBuilder()
+                                .setMonitoredServiceType(monitorType)
+                                .setNodeId(id)
+                                .setIpAddress(ipInterface.getIpAddress())
+                                .setTenantId(ipInterface.getTenantId())
+                                .build(),
+                        headerUtil.getAuthHeader(env)))
+                .flatMap(monitoredService -> getStatusMetric(monitoredService.getMonitoredEntityId(), env)
+                        .map(result -> getNodeStatus(id, result)))
+                .onErrorResume(e -> {
+                    LOG.error(
+                            "Exception while fetching monitored service for node id : {} , ip-address : {}",
+                            id,
+                            ipInterface.getIpAddress(),
+                            e);
+                    return Mono.just(new NodeStatus(id, false));
+                });
     }
 
     private NodeStatus getNodeStatus(long id, TimeSeriesQueryResult result) {
@@ -131,11 +147,8 @@ public class NodeStatusService {
         return new NodeStatus(id, status);
     }
 
-    private Mono<TimeSeriesQueryResult> getStatusMetric(
-            long id, String instance, String monitorType, ResolutionEnvironment env) {
+    private Mono<TimeSeriesQueryResult> getStatusMetric(String instance, ResolutionEnvironment env) {
         Map<String, String> labels = new HashMap<>();
-        labels.put(NODE_ID_KEY, String.valueOf(id));
-        labels.put(MONITOR_KEY, monitorType);
         labels.put(INSTANCE_KEY, instance);
 
         return graphQLTSDBMetricsService.getMetric(
@@ -146,18 +159,22 @@ public class NodeStatusService {
             NodeDTO node, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
         IpInterfaceDTO ipInterface = getPrimaryInterface(node);
         Map<String, String> labels = new HashMap<>();
-        labels.put(NODE_ID_KEY, String.valueOf(node.getId()));
-        labels.put(MONITOR_KEY, Constants.DEFAULT_MONITOR_TYPE);
-        labels.put(INSTANCE_KEY, ipInterface.getIpAddress());
+        var monitoredService = client.getMonitoredService(
+                MonitoredServiceQuery.newBuilder()
+                        .setMonitoredServiceType(Constants.DEFAULT_MONITOR_TYPE)
+                        .setNodeId(node.getId())
+                        .setIpAddress(ipInterface.getIpAddress())
+                        .setTenantId(ipInterface.getTenantId())
+                        .build(),
+                headerUtil.getAuthHeader(env));
+        labels.put(INSTANCE_KEY, monitoredService.getMonitoredEntityId());
 
         var request = new MonitoredServiceStatusRequest();
-        request.setNodeId(node.getId());
-        request.setMonitorType(Constants.DEFAULT_MONITOR_TYPE);
-        request.setIpAddress(ipInterface.getIpAddress());
+        request.setMonitoredEntityId(monitoredService.getMonitoredEntityId());
         // Defaults to 24hr window for first observation time.
         long firstObservationTime = Instant.now().minus(24, ChronoUnit.HOURS).toEpochMilli();
         try {
-            var monitorStatusProto = client.getMonitorStatus(request, headerUtil.getAuthHeader(env));
+            var monitorStatusProto = client.getMonitoredEntityState(request, headerUtil.getAuthHeader(env));
             firstObservationTime = monitorStatusProto.getFirstObservationTime();
         } catch (Exception e) {
             LOG.warn("Exception while getting monitor status for request {}", request);

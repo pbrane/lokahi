@@ -29,7 +29,7 @@ syntax = "proto3";
 
 import "google/protobuf/any.proto";
 
-package opennms.icmp;
+package opennms.http;
 option java_multiple_files = true;
 option java_package = "org.opennms.monitors.http.contract";
 
@@ -66,5 +66,3 @@ message Header {
 message Port {
   repeated int32 port = 1;
 }
-
-

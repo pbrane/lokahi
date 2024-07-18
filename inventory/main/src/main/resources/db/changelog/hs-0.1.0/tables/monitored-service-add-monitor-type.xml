@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="Junaid-Khan" id="0.1.0-monitored-service">
+
+        <addColumn tableName="monitored_service">
+            <column name="monitor_type" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="0.1.1-monitored-service" author="Junaid-Khan">
+        <preConditions onFail="HALT">
+            <changeSetExecuted id="0.1.0-monitored-service" author="Junaid-Khan" changeLogFile="db/changelog/hs-0.1.0/tables/monitored-service-add-monitor-type.xml"/>
+        </preConditions>
+        <sql>
+            UPDATE monitored_service AS ms SET monitor_type = (SELECT DISTINCT(st.service_name) FROM monitored_service_type AS st  WHERE st.id = ms.monitored_service_type_id);
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="0.1.2-monitored-service" author="Junaid-Khan">
+        <dropForeignKeyConstraint baseTableName="monitored_service"
+                                  constraintName="fk_monitored_service_monitored_service_type_id"/>
+    </changeSet>
+
+
+
+    <changeSet id="0.1.3-monitored-service" author="Junaid-Khan">
+        <dropColumn tableName="monitored_service" columnName="monitored_service_type_id"/>
+    </changeSet>
+
+    <changeSet author="0.1.4-monitored-service" id="Junaid-Khan">
+        <dropTable tableName="monitored_service_type"/>
+    </changeSet>
+</databaseChangeLog>

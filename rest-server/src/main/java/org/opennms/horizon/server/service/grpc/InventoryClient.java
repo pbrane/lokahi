@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryCreateDTO;
 import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryDTO;
 import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryServiceGrpc;
@@ -44,9 +45,13 @@ import org.opennms.horizon.inventory.dto.IdList;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.ListAllTagsParamsDTO;
 import org.opennms.horizon.inventory.dto.ListTagsByEntityIdParamsDTO;
-import org.opennms.horizon.inventory.dto.MonitorStatusServiceGrpc;
+import org.opennms.horizon.inventory.dto.MonitorEntityResponse;
+import org.opennms.horizon.inventory.dto.MonitoredEntityServiceGrpc;
+import org.opennms.horizon.inventory.dto.MonitoredEntityStateDTO;
+import org.opennms.horizon.inventory.dto.MonitoredEntityStatusServiceGrpc;
+import org.opennms.horizon.inventory.dto.MonitoredServiceDTO;
+import org.opennms.horizon.inventory.dto.MonitoredServiceGrpc;
 import org.opennms.horizon.inventory.dto.MonitoredServiceQuery;
-import org.opennms.horizon.inventory.dto.MonitoredServiceStatusDTO;
 import org.opennms.horizon.inventory.dto.MonitoredState;
 import org.opennms.horizon.inventory.dto.MonitoredStateQuery;
 import org.opennms.horizon.inventory.dto.MonitoringLocationCreateDTO;
@@ -69,6 +74,10 @@ import org.opennms.horizon.inventory.dto.PassiveDiscoveryToggleDTO;
 import org.opennms.horizon.inventory.dto.PassiveDiscoveryUpsertDTO;
 import org.opennms.horizon.inventory.dto.SearchBy;
 import org.opennms.horizon.inventory.dto.SearchIpInterfaceQuery;
+import org.opennms.horizon.inventory.dto.SearchQuery;
+import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityRequest;
+import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityResponse;
+import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityServiceGrpc;
 import org.opennms.horizon.inventory.dto.SnmpInterfaceDTO;
 import org.opennms.horizon.inventory.dto.TagCreateListDTO;
 import org.opennms.horizon.inventory.dto.TagEntityIdDTO;
@@ -96,7 +105,12 @@ public class InventoryClient {
     private AzureActiveDiscoveryServiceGrpc.AzureActiveDiscoveryServiceBlockingStub
             azureActiveDiscoveryServiceBlockingStub;
     private PassiveDiscoveryServiceGrpc.PassiveDiscoveryServiceBlockingStub passiveDiscoveryServiceBlockingStub;
-    private MonitorStatusServiceGrpc.MonitorStatusServiceBlockingStub monitorStatusServiceBlockingStub;
+    private MonitoredEntityServiceGrpc.MonitoredEntityServiceBlockingStub monitoredEntityServiceBlockingStub;
+    private MonitoredEntityStatusServiceGrpc.MonitoredEntityStatusServiceBlockingStub
+            monitoredEntityStatusServiceBlockingStub;
+    private SimpleMonitoredEntityServiceGrpc.SimpleMonitoredEntityServiceBlockingStub
+            simpleMonitoredEntityServiceBlockingStub;
+    private MonitoredServiceGrpc.MonitoredServiceBlockingStub monitoredServiceBlockingStub;
 
     protected void initialStubs() {
         locationStub = MonitoringLocationServiceGrpc.newBlockingStub(channel);
@@ -108,13 +122,25 @@ public class InventoryClient {
         icmpActiveDiscoveryServiceBlockingStub = IcmpActiveDiscoveryServiceGrpc.newBlockingStub(channel);
         azureActiveDiscoveryServiceBlockingStub = AzureActiveDiscoveryServiceGrpc.newBlockingStub(channel);
         passiveDiscoveryServiceBlockingStub = PassiveDiscoveryServiceGrpc.newBlockingStub(channel);
-        monitorStatusServiceBlockingStub = MonitorStatusServiceGrpc.newBlockingStub(channel);
+        monitoredEntityServiceBlockingStub = MonitoredEntityServiceGrpc.newBlockingStub(channel);
+        monitoredEntityStatusServiceBlockingStub = MonitoredEntityStatusServiceGrpc.newBlockingStub(channel);
+        simpleMonitoredEntityServiceBlockingStub = SimpleMonitoredEntityServiceGrpc.newBlockingStub(channel);
+        monitoredServiceBlockingStub = MonitoredServiceGrpc.newBlockingStub(channel);
     }
 
     public void shutdown() {
         if (channel != null && !channel.isShutdown()) {
             channel.shutdown();
         }
+    }
+
+    public MonitoredServiceDTO getMonitoredService(MonitoredServiceQuery request, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return monitoredServiceBlockingStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .getMonitoredService(request);
     }
 
     public List<ActiveDiscoveryDTO> listActiveDiscoveries(String accessToken) {
@@ -526,19 +552,50 @@ public class InventoryClient {
                 .getValue();
     }
 
-    public MonitoredServiceStatusDTO getMonitorStatus(MonitoredServiceStatusRequest request, String accessToken) {
-        MonitoredServiceQuery monitoredStateQuery = MonitoredServiceQuery.newBuilder()
-                .setNodeId(request.getNodeId())
-                .setMonitoredServiceType(request.getMonitorType())
-                .setIpAddress(request.getIpAddress())
-                .build();
-
+    public MonitoredEntityStateDTO getMonitoredEntityState(MonitoredServiceStatusRequest request, String accessToken) {
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
-        return monitorStatusServiceBlockingStub
+        return monitoredEntityStatusServiceBlockingStub
                 .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
-                .getMonitoredServiceStatus(monitoredStateQuery);
+                .getMonitoredEntityState(StringValue.of(request.getMonitoredEntityId()));
+    }
+
+    public List<MonitorEntityResponse> getAllMonitoredEntitiesByLocation(long locationId, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return monitoredEntityServiceBlockingStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .getAllMonitoredEntitiesByLocation(Int64Value.of(locationId))
+                .getListMonitorEntityResponseList();
+    }
+
+    public List<MonitorEntityResponse> getAllMonitoredEntitiesBySearchTerm(
+            long locationId, String providerId, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+
+        SearchQuery query = SearchQuery.newBuilder()
+                .setLocationId(locationId)
+                .setProviderId(providerId)
+                .build();
+
+        return monitoredEntityServiceBlockingStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .getAllMonitoredEntitiesBySearchTerm(query)
+                .getListMonitorEntityResponseList();
+    }
+
+    public List<MonitorEntityResponse> getAllMonitoredEntities(String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return monitoredEntityServiceBlockingStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .getAllMonitoredEntities(Empty.getDefaultInstance())
+                .getListMonitorEntityResponseList();
     }
 
     public long getNodeCount(String accessToken) {
@@ -592,22 +649,60 @@ public class InventoryClient {
     public NodeSearchResponseDTO searchNodes(
             String searchValue,
             String searchType,
-            int pageSize,
+            Integer pageSize,
             int page,
             String sortBy,
             boolean sortAscending,
             String accessToken) {
+        int pageSizeValue = pageSize != null ? pageSize : 0;
+        var nodeSearchByBuilder = NodesSearchBy.newBuilder()
+                .setPageSize(pageSizeValue)
+                .setPage(page)
+                .setSortAscending(sortAscending);
+
+        if (Strings.isNotBlank(searchType)) {
+            nodeSearchByBuilder.setSearchType(searchType);
+        }
+        if (Strings.isNotBlank(searchValue)) {
+            nodeSearchByBuilder.setSearchValue(searchValue);
+        }
+        if (Strings.isNotBlank(sortBy)) {
+            nodeSearchByBuilder.setSortBy(sortBy);
+        }
         Metadata metadata = new Metadata();
         metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
         return nodeStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
-                .searchNodes(NodesSearchBy.newBuilder()
-                        .setSearchValue(searchValue)
-                        .setSearchType(searchType)
-                        .setPageSize(pageSize)
-                        .setPage(page)
-                        .setSortBy(sortBy)
-                        .setSortAscending(sortAscending)
-                        .build());
+                .searchNodes(nodeSearchByBuilder.build());
+    }
+
+    public List<SimpleMonitoredEntityResponse> getAllSimpleMonitoredEntities(String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return this.simpleMonitoredEntityServiceBlockingStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .list(Empty.getDefaultInstance())
+                .getEntryList();
+    }
+
+    public SimpleMonitoredEntityResponse upsertSimpleMonitoredEntity(
+            SimpleMonitoredEntityRequest entity, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return this.simpleMonitoredEntityServiceBlockingStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .upsert(entity);
+    }
+
+    public boolean deleteSimpleMonitoredEntity(String id, String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return this.simpleMonitoredEntityServiceBlockingStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .delete(StringValue.of(id))
+                .getValue();
     }
 }

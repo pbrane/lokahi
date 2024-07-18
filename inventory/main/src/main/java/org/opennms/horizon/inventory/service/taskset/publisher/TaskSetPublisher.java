@@ -28,5 +28,5 @@ public interface TaskSetPublisher {
 
     void publishNewTasks(String tenantId, Long locationId, List<TaskDefinition> taskList);
 
-    void publishTaskDeletion(String tenantId, Long locationId, List<TaskDefinition> taskList);
+    void publishTaskDeletion(String tenantId, Long locationId, List<String> taskIdList);
 }

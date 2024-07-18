@@ -48,6 +48,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.opennms.horizon.inventory.dto.IpInterfaceDTO;
+import org.opennms.horizon.inventory.dto.MonitoredServiceDTO;
 import org.opennms.horizon.inventory.dto.MonitoringLocationDTO;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
@@ -286,6 +287,12 @@ public class GraphQLNodeServiceTest {
         TimeSeriesQueryResult tsQueryResult = buildTsQueryResult(true);
 
         doReturn(nodeDTO4).when(mockClient).getNodeById(anyLong(), eq(accessToken));
+
+        final var monitoredService = MonitoredServiceDTO.newBuilder()
+                .setMonitoredEntityId("discovery:1")
+                .build();
+        doReturn(monitoredService).when(mockClient).getMonitoredService(any(), eq(accessToken));
+
         doReturn(Mono.just(tsQueryResult))
                 .when(graphQLTSDBMetricsService)
                 .getMetric(any(ResolutionEnvironment.class), anyString(), anyMap(), anyInt(), any(TimeRangeUnit.class));
@@ -299,7 +306,8 @@ public class GraphQLNodeServiceTest {
                 .jsonPath("$.data.nodeStatus.status")
                 .isEqualTo("UP");
         verify(mockClient).getNodeById(eq(nodeDTO4.getId()), eq(accessToken));
-        verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
+        verify(mockClient).getMonitoredService(any(), eq(accessToken));
+        verify(mockHeaderUtil, times(2)).getAuthHeader(any(ResolutionEnvironment.class));
     }
 
     @Test
@@ -307,6 +315,12 @@ public class GraphQLNodeServiceTest {
         TimeSeriesQueryResult tsQueryResult = buildTsQueryResult(false);
 
         doReturn(nodeDTO4).when(mockClient).getNodeById(anyLong(), eq(accessToken));
+
+        final var monitoredService = MonitoredServiceDTO.newBuilder()
+                .setMonitoredEntityId("discovery:1")
+                .build();
+        doReturn(monitoredService).when(mockClient).getMonitoredService(any(), eq(accessToken));
+
         doReturn(Mono.just(tsQueryResult))
                 .when(graphQLTSDBMetricsService)
                 .getMetric(any(ResolutionEnvironment.class), anyString(), anyMap(), anyInt(), any(TimeRangeUnit.class));
@@ -320,7 +334,8 @@ public class GraphQLNodeServiceTest {
                 .jsonPath("$.data.nodeStatus.status")
                 .isEqualTo("DOWN");
         verify(mockClient).getNodeById(eq(nodeDTO4.getId()), eq(accessToken));
-        verify(mockHeaderUtil, times(1)).getAuthHeader(any(ResolutionEnvironment.class));
+        verify(mockClient).getMonitoredService(any(), eq(accessToken));
+        verify(mockHeaderUtil, times(2)).getAuthHeader(any(ResolutionEnvironment.class));
     }
 
     @Test

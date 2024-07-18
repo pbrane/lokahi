@@ -22,7 +22,7 @@
 package org.opennms.horizon.minion.plugin.api;
 
 import com.google.protobuf.Any;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * Interface for a ListenerFactory, which constructs Listeners.
@@ -39,5 +39,8 @@ public interface ServiceConnectorFactory {
      *                          not when the connect() method on the ServiceConnector throws an exception.
      * @return
      */
-    ServiceConnector create(Consumer<ServiceMonitorResponse> resultProcessor, Any config, Runnable disconnectHandler);
+    ServiceConnector create(
+            BiConsumer<ServiceMonitorRequest, ServiceMonitorResponse> resultProcessor,
+            Any config,
+            Runnable disconnectHandler);
 }

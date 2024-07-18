@@ -22,14 +22,15 @@
 package org.opennms.horizon.minion.plugin.api;
 
 import java.util.Map;
-import org.opennms.taskset.contract.MonitorType;
 
 public interface ServiceMonitorResponse {
+
     /**
+     * Returns timestamp when response time was actually generated.
      *
-     * @return type of monitor that produced the response.
+     * @return Timestamp of a response.
      */
-    MonitorType getMonitorType();
+    long getTimestamp();
 
     /**
      *
@@ -44,30 +45,13 @@ public interface ServiceMonitorResponse {
     String getReason();
 
     /**
-     *
-     * @return IP address that was monitored
-     */
-    String getIpAddress();
-
-    long getNodeId();
-
-    long getMonitoredServiceId();
-
-    /**
      *  TODO: standardize the unit (ms or sec?)
      *
      * @return amount of time device took to respond to the monitor request
      */
     double getResponseTime();
 
-    Map<String, Number> getAdditionalMetrics();
-
-    /**
-     * Returns timestamp when response time was actually generated.
-     *
-     * @return Timestamp of a response.
-     */
-    long getTimestamp();
+    Map<String, Double> getAdditionalMetrics();
 
     enum Status {
         /**

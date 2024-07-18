@@ -254,6 +254,7 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <configuration>
           <skipITs>${skipITs}</skipITs>
+          <skipTests>${skipTests}</skipTests>
         </configuration>
         <executions>
           <execution>

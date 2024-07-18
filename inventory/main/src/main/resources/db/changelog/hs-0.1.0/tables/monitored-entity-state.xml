@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="fooker" id="0.1.2-monitored-entity-state">
+        <renameTable oldTableName="monitored_service_state" newTableName="monitored_entity_state" />
+
+        <dropForeignKeyConstraint constraintName="fk_monitored_service_state_monitored_service"
+                                 baseTableName="monitored_entity_state"/>
+
+        <modifyDataType tableName="monitored_entity_state" columnName="monitored_service_id" newDataType="TEXT" />
+        <renameColumn tableName="monitored_entity_state" oldColumnName="monitored_service_id"
+                      newColumnName="monitored_entity_id" />
+    </changeSet>
+</databaseChangeLog>

@@ -42,7 +42,6 @@ import org.opennms.horizon.tenantmetrics.TenantMetricsTracker;
 import org.opennms.horizon.timeseries.cortex.CortexTSS;
 import org.opennms.horizon.tsdata.MetricNameConstants;
 import org.opennms.taskset.contract.CollectorResponse;
-import org.opennms.taskset.contract.MonitorType;
 import prometheus.PrometheusTypes;
 
 public class TaskSetCollectorAzureResponseProcessorTest {
@@ -63,8 +62,7 @@ public class TaskSetCollectorAzureResponseProcessorTest {
         mockCortexTSS = Mockito.mock(CortexTSS.class);
         mockTenantMetricsTracker = Mockito.mock(TenantMetricsTracker.class);
 
-        testLabelValues =
-                new String[] {"x-instance-x", "x-location-x", "x-system-id-x", MonitorType.ICMP.name(), "131313"};
+        testLabelValues = new String[] {"x-instance-x", "x-location-x", "x-system-id-x", "ICMP", "131313"};
 
         target = new TaskSetCollectorAzureResponseProcessor(mockCortexTSS, mockTenantMetricsTracker);
     }
@@ -82,7 +80,7 @@ public class TaskSetCollectorAzureResponseProcessorTest {
         //
         var timeSeriesBuilderMatcher = new PrometheusTimeSeriersBuilderArgumentMatcher(
                 TEST_AZURE_METRIC_VALUE,
-                MonitorType.ICMP,
+                "ICMP",
                 "x_alias_x",
                 MetricNameConstants.METRIC_AZURE_PUBLIC_IP_TYPE + "/resourceName");
         Mockito.verify(mockCortexTSS).store(Mockito.eq("x-tenant-id-x"), Mockito.argThat(timeSeriesBuilderMatcher));
@@ -100,7 +98,7 @@ public class TaskSetCollectorAzureResponseProcessorTest {
         // Verify the Results
         //
         var timeSeriesBuilderMatcher = new PrometheusTimeSeriersBuilderArgumentMatcher(
-                TEST_AZURE_METRIC_VALUE, MonitorType.ICMP, "x_alias_x", MetricNameConstants.METRIC_AZURE_NODE_TYPE);
+                TEST_AZURE_METRIC_VALUE, "ICMP", "x_alias_x", MetricNameConstants.METRIC_AZURE_NODE_TYPE);
         Mockito.verify(mockCortexTSS).store(Mockito.eq("x-tenant-id-x"), Mockito.argThat(timeSeriesBuilderMatcher));
     }
 
@@ -159,7 +157,7 @@ public class TaskSetCollectorAzureResponseProcessorTest {
         testCollectorResponse = CollectorResponse.newBuilder()
                 .setIpAddress("x-ip-address-x")
                 .setNodeId(131313L)
-                .setMonitorType(MonitorType.ICMP)
+                .setMonitorType("ICMP")
                 .setResult(Any.pack(testAzureResponseMetric))
                 .build();
     }
@@ -168,13 +166,13 @@ public class TaskSetCollectorAzureResponseProcessorTest {
             implements ArgumentMatcher<PrometheusTypes.TimeSeries.Builder> {
 
         private final double metricValue;
-        private final MonitorType monitorType;
+        private final String monitorType;
         private final String metricName;
 
         private final String instance;
 
         public PrometheusTimeSeriersBuilderArgumentMatcher(
-                double metricValue, MonitorType monitorType, String metricName, String instance) {
+                double metricValue, String monitorType, String metricName, String instance) {
             this.metricValue = metricValue;
             this.monitorType = monitorType;
             this.metricName = metricName;
@@ -200,7 +198,7 @@ public class TaskSetCollectorAzureResponseProcessorTest {
                         && (Objects.equals(instance, labelMap.get("instance")))
                         && (Objects.equals("x-location-x", labelMap.get("location_id")))
                         && (Objects.equals("x-system-id-x", labelMap.get("system_id")))
-                        && (Objects.equals(monitorType.name(), labelMap.get("monitor")))
+                        && (Objects.equals(monitorType, labelMap.get("monitor")))
                         && (Objects.equals("131313", labelMap.get("node_id"))));
             }
 

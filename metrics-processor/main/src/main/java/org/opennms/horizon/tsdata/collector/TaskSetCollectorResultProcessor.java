@@ -23,7 +23,6 @@ package org.opennms.horizon.tsdata.collector;
 
 import java.io.IOException;
 import org.opennms.taskset.contract.CollectorResponse;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,15 +59,14 @@ public class TaskSetCollectorResultProcessor {
             collectorResponse.getIpAddress(),
             location,
             taskResult.getIdentity().getSystemId(),
-            collectorResponse.getMonitorType().name(),
-            String.valueOf(collectorResponse.getNodeId())
+            collectorResponse.getMonitorType()
         };
 
         if (collectorResponse.hasResult()) {
-            MonitorType monitorType = collectorResponse.getMonitorType();
-            if (monitorType.equals(MonitorType.SNMP)) {
+            final var monitorType = collectorResponse.getMonitorType();
+            if (monitorType.equals("SNMP")) {
                 taskSetCollectorSnmpResponseProcessor.processSnmpCollectorResponse(tenantId, location, taskResult);
-            } else if (monitorType.equals(MonitorType.AZURE)) {
+            } else if (monitorType.equals("AZURE")) {
                 taskSetCollectorAzureResponseProcessor.processAzureCollectorResponse(
                         tenantId, location, collectorResponse, labelValues);
             } else {

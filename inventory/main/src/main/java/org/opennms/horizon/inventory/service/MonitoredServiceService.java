@@ -29,7 +29,6 @@ import org.opennms.horizon.inventory.dto.MonitoredServiceDTO;
 import org.opennms.horizon.inventory.mapper.MonitoredServiceMapper;
 import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.MonitoredService;
-import org.opennms.horizon.inventory.model.MonitoredServiceType;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.MonitoredServiceRepository;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
@@ -43,21 +42,17 @@ public class MonitoredServiceService {
     private final MonitoredServiceMapper mapper;
     private final IpInterfaceRepository ipInterfaceRepository;
 
-    public MonitoredService createSingle(
-            MonitoredServiceDTO newMonitoredService,
-            MonitoredServiceType monitoredServiceType,
-            IpInterface ipInterface) {
-
-        String tenantId = newMonitoredService.getTenantId();
+    public MonitoredService createSingle(IpInterface ipInterface, String monitorType) {
 
         Optional<MonitoredService> monitoredServiceOpt =
-                modelRepo.findByTenantIdTypeAndIpInterface(tenantId, monitoredServiceType, ipInterface);
+                modelRepo.findByTenantIdTypeAndIpInterface(ipInterface.getTenantId(), monitorType, ipInterface);
 
         if (monitoredServiceOpt.isEmpty()) {
 
-            MonitoredService monitoredService = mapper.dtoToModel(newMonitoredService);
+            MonitoredService monitoredService = new MonitoredService();
+            monitoredService.setTenantId(ipInterface.getTenantId());
             monitoredService.setIpInterface(ipInterface);
-            monitoredService.setMonitoredServiceType(monitoredServiceType);
+            monitoredService.setMonitorType(monitorType);
 
             modelRepo.save(monitoredService);
             return monitoredService;

@@ -27,7 +27,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.opennms.horizon.minion.plugin.api.*;
-import org.opennms.inventory.service.ServiceInventory;
 import org.opennms.ssh.contract.SshMonitorRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +51,6 @@ public class SshMonitor implements ServiceMonitor {
             }
 
             sshMonitorRequest = config.unpack(SshMonitorRequest.class);
-            final ServiceInventory serviceInventory = sshMonitorRequest.getServiceInventory();
 
             LOG.debug("Address: {}", sshMonitorRequest.getAddress());
             LOG.debug("Port: {}", sshMonitorRequest.getPort());
@@ -67,13 +65,10 @@ public class SshMonitor implements ServiceMonitor {
                     .thenApply(pollStatus -> {
                         ServiceMonitorResponseImpl serviceMonitorResponse = ServiceMonitorResponseImpl.builder()
                                 .reason(pollStatus.getReason())
-                                .ipAddress(ipAddress)
                                 .status(
                                         pollStatus.getStatusName().equalsIgnoreCase("up")
                                                 ? ServiceMonitorResponse.Status.Up
                                                 : ServiceMonitorResponse.Status.Down)
-                                .nodeId(serviceInventory.getNodeId())
-                                .monitoredServiceId(serviceInventory.getMonitorServiceId())
                                 .build();
                         return serviceMonitorResponse;
                     });
@@ -85,8 +80,6 @@ public class SshMonitor implements ServiceMonitor {
                     sshMonitorRequest.getPort());
             return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder()
                     .reason(e.getMessage())
-                    .nodeId(sshMonitorRequest.getServiceInventory().getNodeId())
-                    .monitoredServiceId(sshMonitorRequest.getServiceInventory().getMonitorServiceId())
                     .status(ServiceMonitorResponse.Status.Unknown)
                     .build());
         }

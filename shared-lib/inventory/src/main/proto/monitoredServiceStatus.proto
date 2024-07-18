@@ -34,15 +34,14 @@ package opennms.inventory;
 option java_multiple_files = true;
 option java_package = "org.opennms.horizon.inventory.dto";
 
-message MonitoredServiceStatusDTO {
+message MonitoredEntityStateDTO {
   int64 id = 1;
   string tenant_id = 2;
-  int64 monitored_service_id = 3;
+  string monitored_entity_id = 3;
   bool state = 4;
   int64 first_observation_time = 5;
 }
 
-service MonitorStatusService {
-  rpc getServiceStatus(google.protobuf.Int64Value) returns (MonitoredServiceStatusDTO) {};
-  rpc getMonitoredServiceStatus(MonitoredServiceQuery) returns (MonitoredServiceStatusDTO) {};
+service MonitoredEntityStatusService {
+  rpc getMonitoredEntityState(google.protobuf.StringValue) returns (MonitoredEntityStateDTO) {};
 }

@@ -36,8 +36,9 @@ option java_package = "org.opennms.horizon.inventory.dto";
 message MonitoredServiceDTO {
   int64 id = 1;
   string tenant_id = 2;
-  int64 monitored_service_type_id = 3;
+  string monitor_type = 3;
   int64 ip_interface_id = 4;
+  string monitored_entity_id = 5;
 }
 
 message MonitoredServiceQuery {

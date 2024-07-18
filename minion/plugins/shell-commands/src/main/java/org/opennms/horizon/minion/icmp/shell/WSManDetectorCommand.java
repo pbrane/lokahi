@@ -31,7 +31,6 @@ import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.opennms.horizon.minion.plugin.api.ServiceDetectorManager;
 import org.opennms.horizon.minion.plugin.api.registries.DetectorRegistry;
-import org.opennms.inventory.service.ServiceInventory;
 import org.opennms.node.scan.contract.ServiceResult;
 import org.opennms.wsman.contract.WsmanConfiguration;
 import org.opennms.wsman.contract.WsmanDetectorRequest;
@@ -131,10 +130,10 @@ public class WSManDetectorCommand implements Action {
                         .setRetries(retry)
                         .build())
                 .setServerVersionValue(serverVersion)
-                .setServiceInventory(ServiceInventory.newBuilder()
-                        .setNodeId(nodeId)
-                        .setMonitorServiceId(monServiceId)
-                        .build())
+                /*                .setServiceInventory(ServiceInventory.newBuilder()
+                .setNodeId(nodeId)
+                .setMonitorServiceId(monServiceId)
+                .build())*/
                 .build());
 
         try {

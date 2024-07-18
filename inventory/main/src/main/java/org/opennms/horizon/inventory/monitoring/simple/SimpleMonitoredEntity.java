@@ -19,16 +19,36 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.inventory.mapper;
+package org.opennms.horizon.inventory.monitoring.simple;
 
-import org.mapstruct.Mapper;
-import org.opennms.horizon.inventory.dto.MonitoredServiceStatusDTO;
-import org.opennms.horizon.inventory.model.MonitoredServiceState;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import java.util.UUID;
+import lombok.Data;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import org.opennms.horizon.inventory.monitoring.MonitoredEntity;
 
-@Mapper(componentModel = "spring")
-public interface MonitoredServiceStatusMapper extends DateTimeMapper {
+@Entity
+@Data
+public class SimpleMonitoredEntity {
+    @Id
+    private UUID id;
 
-    MonitoredServiceState dtoToModel(MonitoredServiceStatusDTO dto);
+    private String name;
 
-    MonitoredServiceStatusDTO modelToDTO(MonitoredServiceState model);
+    private String tenantId;
+    private long locationId;
+
+    private String type;
+
+    @Column(columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private String config;
+
+    public String getMonitoredEntityId() {
+        return MonitoredEntity.joinId(
+                SimpleMonitoredEntityProvider.PROVIDER_ID, this.getId().toString());
+    }
 }

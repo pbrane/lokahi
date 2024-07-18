@@ -23,7 +23,9 @@ package org.opennms.horizon.minion.taskset.worker;
 
 import org.opennms.horizon.minion.plugin.api.CollectionSet;
 import org.opennms.horizon.minion.plugin.api.ScanResultsResponse;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitorRequest;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
+import org.opennms.taskset.contract.TaskDefinition;
 
 public interface TaskExecutionResultProcessor {
     /**
@@ -37,10 +39,14 @@ public interface TaskExecutionResultProcessor {
     /**
      * Queue the given monitor result to be sent out.
      *
-     * @param uuid
+     * @param taskDefinition
+     * @param serviceMonitorRequest
      * @param serviceMonitorResponse
      */
-    void queueSendResult(String uuid, ServiceMonitorResponse serviceMonitorResponse);
+    void queueSendResult(
+            TaskDefinition taskDefinition,
+            ServiceMonitorRequest serviceMonitorRequest,
+            ServiceMonitorResponse serviceMonitorResponse);
 
-    void queueSendResult(String uuid, CollectionSet collectionSet);
+    void queueSendResult(TaskDefinition taskDefinition, CollectionSet collectionSet);
 }

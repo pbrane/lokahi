@@ -22,12 +22,12 @@
 package org.opennms.horizon.inventory.mapper;
 
 import org.mapstruct.Mapper;
-import org.opennms.horizon.inventory.dto.MonitoredServiceTypeDTO;
-import org.opennms.horizon.inventory.model.MonitoredServiceType;
+import org.mapstruct.Mapping;
+import org.opennms.horizon.inventory.dto.MonitoredEntityStateDTO;
+import org.opennms.horizon.inventory.model.MonitoredEntityState;
 
 @Mapper(componentModel = "spring")
-public interface MonitoredServiceTypeMapper {
-    MonitoredServiceType dtoToModel(MonitoredServiceTypeDTO dto);
-
-    MonitoredServiceTypeDTO modelToDTO(MonitoredServiceType model);
+public interface MonitoredEntityStateMapper extends DateTimeMapper {
+    @Mapping(target = "state", source = "model.serviceState")
+    MonitoredEntityStateDTO modelToDTO(MonitoredEntityState model);
 }

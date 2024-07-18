@@ -35,7 +35,6 @@ import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
 import org.opennms.monitors.ntp.contract.NTPMonitorRequest;
-import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,9 +91,7 @@ public class NtpMonitor implements ServiceMonitor {
                         LOG.info("NTP polling successful. Response time: {}ms", responseTime);
                         responseCompletableFuture.complete(ServiceMonitorResponseImpl.builder()
                                 .responseTime(responseTime)
-                                .ipAddress(request.getInetAddress())
                                 .status(ServiceMonitorResponse.Status.Up)
-                                .monitorType(MonitorType.NTP)
                                 .build());
                         break;
                     }
@@ -170,9 +167,7 @@ public class NtpMonitor implements ServiceMonitor {
 
     public void errorResponse(
             CompletableFuture<ServiceMonitorResponse> responseCompletableFuture, ServiceMonitorResponse.Status status) {
-        responseCompletableFuture.complete(ServiceMonitorResponseImpl.builder()
-                .status(status)
-                .monitorType(MonitorType.NTP)
-                .build());
+        responseCompletableFuture.complete(
+                ServiceMonitorResponseImpl.builder().status(status).build());
     }
 }

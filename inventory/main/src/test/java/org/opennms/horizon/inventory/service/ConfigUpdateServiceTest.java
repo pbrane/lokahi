@@ -130,10 +130,9 @@ public class ConfigUpdateServiceTest {
                         Mockito.eq(TEST_LOCATION_ID),
                         Mockito.argThat(argument -> ((argument.size() == 2)
                                 && (Objects.equals(
-                                        argument.get(0).getId(),
-                                        TrapConfigService.TRAPS_CONFIG + "@" + TEST_LOCATION_TEXT))
+                                        argument.get(0), TrapConfigService.TRAPS_CONFIG + "@" + TEST_LOCATION_TEXT))
                                 && (Objects.equals(
-                                        argument.get(1).getId(),
+                                        argument.get(1),
                                         FlowsConfigService.FLOWS_CONFIG + "@" + TEST_LOCATION_TEXT)))));
     }
 

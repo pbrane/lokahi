@@ -31,6 +31,7 @@ import org.opennms.horizon.inventory.grpc.discovery.ActiveDiscoveryGrpcService;
 import org.opennms.horizon.inventory.grpc.discovery.AzureActiveDiscoveryGrpcService;
 import org.opennms.horizon.inventory.grpc.discovery.IcmpActiveDiscoveryGrpcService;
 import org.opennms.horizon.inventory.grpc.discovery.PassiveDiscoveryGrpcService;
+import org.opennms.horizon.inventory.monitoring.simple.SimpleMonitoredEntityGrpcService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -86,8 +87,10 @@ public class GrpcConfig {
             ActiveDiscoveryGrpcService activeDiscoveryGrpcService,
             IcmpActiveDiscoveryGrpcService icmpActiveDiscoveryGrpcService,
             PassiveDiscoveryGrpcService passiveDiscoveryGrpcService,
-            MonitoredServiceStatusGrpcService monitoredServiceStatusGrpcService,
-            MonitoredServiceGrpcService monitoredServiceGrpcService) {
+            MonitoredEntityStatusGrpcService monitoredEntityStatusGrpcService,
+            MonitoredServiceGrpcService monitoredServiceGrpcService,
+            MonitoredEntityGrpcService monitoredEntitySearchServiceGrpc,
+            SimpleMonitoredEntityGrpcService simpleMonitoredEntityGrpcService) {
         GrpcServerManager manager = new GrpcServerManager(port, interceptor);
         manager.startServer(
                 locationGrpc,
@@ -99,7 +102,9 @@ public class GrpcConfig {
                 icmpActiveDiscoveryGrpcService,
                 passiveDiscoveryGrpcService,
                 monitoredServiceGrpcService,
-                monitoredServiceStatusGrpcService);
+                monitoredEntityStatusGrpcService,
+                monitoredEntitySearchServiceGrpc,
+                simpleMonitoredEntityGrpcService);
         return manager;
     }
 }

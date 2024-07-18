@@ -31,13 +31,10 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.opennms.horizon.azure.api.AzureScanItem;
 import org.opennms.horizon.azure.api.AzureScanNetworkInterfaceItem;
 import org.opennms.horizon.azure.api.AzureScanResponse;
 import org.opennms.horizon.inventory.dto.ListTagsByEntityIdParamsDTO;
-import org.opennms.horizon.inventory.dto.MonitoredServiceDTO;
-import org.opennms.horizon.inventory.dto.MonitoredServiceTypeDTO;
 import org.opennms.horizon.inventory.dto.NodeCreateDTO;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.TagCreateDTO;
@@ -47,17 +44,16 @@ import org.opennms.horizon.inventory.exception.EntityExistException;
 import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.MonitoredService;
-import org.opennms.horizon.inventory.model.MonitoredServiceType;
 import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.model.SnmpInterface;
 import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery;
+import org.opennms.horizon.inventory.monitoring.MonitoredEntityService;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
 import org.opennms.horizon.inventory.repository.discovery.active.AzureActiveDiscoveryRepository;
 import org.opennms.horizon.inventory.service.AzureInterfaceService;
 import org.opennms.horizon.inventory.service.IpInterfaceService;
 import org.opennms.horizon.inventory.service.MonitoredServiceService;
-import org.opennms.horizon.inventory.service.MonitoredServiceTypeService;
 import org.opennms.horizon.inventory.service.NodeService;
 import org.opennms.horizon.inventory.service.SnmpConfigService;
 import org.opennms.horizon.inventory.service.SnmpInterfaceService;
@@ -66,12 +62,10 @@ import org.opennms.horizon.inventory.service.discovery.active.IcmpActiveDiscover
 import org.opennms.horizon.inventory.service.taskset.TaskSetHandler;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.node.scan.contract.IpInterfaceResult;
-import org.opennms.node.scan.contract.NodeInfoResult;
 import org.opennms.node.scan.contract.NodeScanResult;
 import org.opennms.node.scan.contract.ServiceResult;
 import org.opennms.node.scan.contract.SnmpInterfaceResult;
 import org.opennms.taskset.contract.DiscoveryScanResult;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.PingResponse;
 import org.opennms.taskset.contract.ScanType;
 import org.opennms.taskset.contract.ScannerResponse;
@@ -93,8 +87,8 @@ public class ScannerResponseService {
     private final SnmpConfigService snmpConfigService;
     private final IcmpActiveDiscoveryService icmpActiveDiscoveryService;
     private final IpInterfaceRepository ipInterfaceRepository;
-    private final MonitoredServiceTypeService monitoredServiceTypeService;
     private final MonitoredServiceService monitoredServiceService;
+    private final MonitoredEntityService monitoredEntityService;
 
     public void accept(String tenantId, Long locationId, ScannerResponse response)
             throws InvalidProtocolBufferException {
@@ -103,17 +97,17 @@ public class ScannerResponseService {
         switch (getType(response)) {
             case AZURE_SCAN -> {
                 AzureScanResponse azureResponse = result.unpack(AzureScanResponse.class);
-                log.debug("received azure scan result: {}", azureResponse);
+                log.info("received azure scan result: {}", azureResponse);
                 processAzureScanResponse(tenantId, locationId, azureResponse);
             }
             case NODE_SCAN -> {
                 NodeScanResult nodeScanResult = result.unpack(NodeScanResult.class);
-                log.debug("received node scan result: {}", nodeScanResult);
+                log.info("received node scan result: {}", nodeScanResult);
                 processNodeScanResponse(tenantId, nodeScanResult, locationId);
             }
             case DISCOVERY_SCAN -> {
                 DiscoveryScanResult discoveryScanResult = result.unpack(DiscoveryScanResult.class);
-                log.debug("received discovery result: {}", discoveryScanResult);
+                log.info("received discovery result: {}", discoveryScanResult);
                 processDiscoveryScanResponse(tenantId, locationId, discoveryScanResult);
             }
             case UNRECOGNIZED -> log.warn("Unrecognized scan type");
@@ -176,6 +170,8 @@ public class ScannerResponseService {
                 }
             }
         }
+
+        // this.monitoredEntityService.publishTaskSet(tenantId, locationId);
     }
 
     private void updateNodeWithDiscoveryIds(NodeDTO nodeDTO, Long discoveryId) {
@@ -222,12 +218,7 @@ public class ScannerResponseService {
                     node = nodeService.createNode(createDTO, ScanType.AZURE_SCAN, tenantId);
                     long nodeId = node.getId();
 
-                    var nodeInfoResult = NodeInfoResult.newBuilder()
-                            .setSystemLocation(azureScanItem.getLocation())
-                            .setSystemName(azureScanItem.getName())
-                            .setSystemDescr(getSystemDescr(azureScanItem))
-                            .build();
-                    nodeService.updateNodeInfo(node, nodeInfoResult);
+                    nodeService.updateNodeInfo(node, azureScanItem, discovery);
 
                     for (AzureScanNetworkInterfaceItem networkInterfaceItem :
                             azureScanItem.getNetworkInterfaceItemsList()) {
@@ -237,7 +228,6 @@ public class ScannerResponseService {
                                 tenantId, node, azureInterface, networkInterfaceItem);
                     }
 
-                    taskSetHandler.sendAzureMonitorTasks(discovery, azureScanItem, nodeId);
                     taskSetHandler.sendAzureCollectorTasks(discovery, azureScanItem, nodeId);
                 }
                 nodeService.updateNodeMonitoredState(node.getId(), node.getTenantId());
@@ -252,16 +242,8 @@ public class ScannerResponseService {
                 log.error("Ip address already exists for a given location ", e);
             }
         }
-    }
 
-    private String getSystemDescr(AzureScanItem azureScanItem) {
-        if (Strings.isNotEmpty(azureScanItem.getOsName()) && Strings.isNotEmpty(azureScanItem.getOsVersion())) {
-            return String.format("%s (%s)", azureScanItem.getOsName(), azureScanItem.getOsVersion());
-        } else if (Strings.isNotEmpty(azureScanItem.getOsName())) {
-            return azureScanItem.getOsName();
-        } else {
-            return azureScanItem.getOsVersion();
-        }
+        // this.monitoredEntityService.publishTaskSet(tenantId, locationId);
     }
 
     private void processNodeScanResponse(String tenantId, NodeScanResult result, Long locationId) {
@@ -302,12 +284,13 @@ public class ScannerResponseService {
                     locationId,
                     result.getNodeId());
         }
+
+        // this.monitoredEntityService.publishTaskSet(tenantId, locationId);
     }
 
     private void processDetectorResults(String tenantId, Long locationId, Node node, ServiceResult serviceResult) {
 
         log.info("Received Detector tenantId={}; locationId={}; response={}", serviceResult, tenantId, locationId);
-
         InetAddress ipAddress = InetAddressUtils.getInetAddress(serviceResult.getIpAddress());
         Optional<IpInterface> ipInterfaceOpt =
                 ipInterfaceService.findByIpAddressAndLocationIdAndTenantIdModel(ipAddress, locationId, tenantId);
@@ -318,17 +301,20 @@ public class ScannerResponseService {
             if (serviceResult.getStatus()) {
                 var monitoredService = createMonitoredService(serviceResult, ipInterface);
                 // TODO: Combine Monitor type and Service type
-                MonitorType monitorType =
-                        MonitorType.valueOf(serviceResult.getService().name());
-
-                taskSetHandler.sendMonitorTask(
-                        locationId, monitorType, ipInterface, node.getId(), monitoredService.getId());
-                taskSetHandler.sendCollectorTask(locationId, monitorType, ipInterface, node);
+                taskSetHandler.sendCollectorTask(locationId, serviceResult.getService(), ipInterface, node);
+                Map<String, String> labels = new HashMap<>();
+                labels.put("node_id", Long.toString(node.getId()));
+                labels.put("ip_address", InetAddressUtils.toIpAddrString(ipAddress));
+                var monitoredEntityId = monitoredService.getMonitoredEntityId();
+                var monitoredEntity =
+                        this.monitoredEntityService.findServiceById(tenantId, locationId, monitoredEntityId);
+                monitoredEntity.ifPresent(
+                        me -> this.monitoredEntityService.publishTaskSetForDiscovery(tenantId, locationId, me, labels));
 
             } else {
                 log.info(
                         "{} not detected on tenantId={}; locationId={}; ip={}",
-                        serviceResult.getService().name(),
+                        serviceResult.getService(),
                         tenantId,
                         locationId,
                         ipAddress.getAddress());
@@ -343,19 +329,8 @@ public class ScannerResponseService {
     }
 
     private MonitoredService createMonitoredService(ServiceResult serviceResult, IpInterface ipInterface) {
-        String tenantId = ipInterface.getTenantId();
 
-        MonitoredServiceType monitoredServiceType =
-                monitoredServiceTypeService.createSingle(MonitoredServiceTypeDTO.newBuilder()
-                        // TODO: Combine Monitor type and Service type
-                        .setServiceName(serviceResult.getService().name())
-                        .setTenantId(tenantId)
-                        .build());
-
-        MonitoredServiceDTO newMonitoredService =
-                MonitoredServiceDTO.newBuilder().setTenantId(tenantId).build();
-
-        return monitoredServiceService.createSingle(newMonitoredService, monitoredServiceType, ipInterface);
+        return monitoredServiceService.createSingle(ipInterface, serviceResult.getService());
     }
 
     private List<TagCreateDTO> getTagCreateDTO(long discoveryId, String tenantId) {

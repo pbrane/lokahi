@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Optional;
 import org.opennms.horizon.minion.plugin.api.CollectionSet;
 import org.opennms.horizon.minion.plugin.api.ScanResultsResponse;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitorRequest;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutionResultProcessor;
 import org.opennms.horizon.shared.ipc.rpc.IpcIdentity;
@@ -34,6 +35,7 @@ import org.opennms.taskset.contract.CollectorResponse;
 import org.opennms.taskset.contract.Identity;
 import org.opennms.taskset.contract.MonitorResponse;
 import org.opennms.taskset.contract.ScannerResponse;
+import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
 import org.slf4j.Logger;
@@ -60,7 +62,9 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
 
     @Override
     public void queueSendResult(String id, ScanResultsResponse response) {
-        TaskSetResults taskSetResults = formatTaskSetResults(id, response);
+        final var scanResponse = formatScanResultsResponse(response);
+
+        TaskSetResults taskSetResults = formatTaskSetResults(id, scanResponse);
         log.info("Scan Status: id = {}, results = {} ", id, response.getResults());
         try {
             taskSetSinkDispatcher.send(taskSetResults);
@@ -70,10 +74,34 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
     }
 
     @Override
-    public void queueSendResult(String id, ServiceMonitorResponse response) {
-        log.info("Poll Status: id = {} , status = {}; ", id, response.getStatus());
+    public void queueSendResult(
+            TaskDefinition taskDefinition,
+            ServiceMonitorRequest serviceMonitorRequest,
+            ServiceMonitorResponse response) {
+        log.info(
+                "Poll Status: id = {}, meid = {}, status = {}; ",
+                taskDefinition.getId(),
+                serviceMonitorRequest.getMonitoredEntityId(),
+                response.getStatus());
+        final var monitorResponse = MonitorResponse.newBuilder()
+                .setResponseTimeMs(response.getResponseTime())
+                .setStatus(Optional.of(response)
+                        .map(ServiceMonitorResponse::getStatus)
+                        .map(Object::toString)
+                        .orElse(MonitorResponse.getDefaultInstance().getStatus()))
+                .setReason(Optional.of(response)
+                        .map(ServiceMonitorResponse::getReason)
+                        .orElse(MonitorResponse.getDefaultInstance().getReason()))
+                .putAllMetrics(Optional.of(response)
+                        .flatMap(r -> Optional.ofNullable(r.getAdditionalMetrics()))
+                        .orElse(Collections.emptyMap()))
+                .setTimestamp(response.getTimestamp())
+                .setMonitoredEntityId(serviceMonitorRequest.getMonitoredEntityId())
+                .setMonitorType(serviceMonitorRequest.getMonitorType())
+                .putAllMetricLabels(taskDefinition.getMetricLabelsMap())
+                .build();
 
-        TaskSetResults taskSetResults = formatTaskSetResults(id, response);
+        final var taskSetResults = formatTaskSetResults(taskDefinition.getId(), monitorResponse);
 
         try {
             taskSetSinkDispatcher.send(taskSetResults);
@@ -83,9 +111,10 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
     }
 
     @Override
-    public void queueSendResult(String id, CollectionSet collectionSet) {
-        TaskSetResults taskSetResults = formatTaskSetResults(id, collectionSet);
-        log.info("Collect Status: id = {}, status = {} ", id, collectionSet.getStatus());
+    public void queueSendResult(TaskDefinition taskDefinition, CollectionSet collectionSet) {
+        final var collectorResponse = formatCollectorResponse(taskDefinition, collectionSet);
+        TaskSetResults taskSetResults = formatTaskSetResults(taskDefinition.getId(), collectorResponse);
+        log.info("Collect Status: id = {}, status = {} ", taskDefinition.getId(), collectionSet.getStatus());
         try {
             taskSetSinkDispatcher.send(taskSetResults);
         } catch (InterruptedException e) {
@@ -97,9 +126,7 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
     // Internals
     // ----------------------------------------
 
-    private TaskSetResults formatTaskSetResults(String id, ScanResultsResponse result) {
-        ScannerResponse scannerResponse = formatScanResultsResponse(result);
-
+    private TaskSetResults formatTaskSetResults(String id, ScannerResponse scannerResponse) {
         TaskResult taskResult = TaskResult.newBuilder()
                 .setId(id)
                 .setScannerResponse(scannerResponse)
@@ -112,9 +139,7 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
         return taskSetResults;
     }
 
-    private TaskSetResults formatTaskSetResults(String id, ServiceMonitorResponse result) {
-        MonitorResponse monitorResponse = formatMonitorResponse(result);
-
+    private TaskSetResults formatTaskSetResults(String id, MonitorResponse monitorResponse) {
         TaskResult taskResult = TaskResult.newBuilder()
                 .setId(id)
                 .setMonitorResponse(monitorResponse)
@@ -138,36 +163,7 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
                 .build();
     }
 
-    private MonitorResponse formatMonitorResponse(ServiceMonitorResponse smr) {
-        MonitorResponse result = MonitorResponse.newBuilder()
-                .setMonitorType(Optional.of(smr)
-                        .map(ServiceMonitorResponse::getMonitorType)
-                        .orElse(MonitorResponse.getDefaultInstance().getMonitorType()))
-                .setIpAddress(Optional.of(smr)
-                        .map(ServiceMonitorResponse::getIpAddress)
-                        .orElse(MonitorResponse.getDefaultInstance().getIpAddress()))
-                .setResponseTimeMs(smr.getResponseTime())
-                .setStatus(Optional.of(smr)
-                        .map(ServiceMonitorResponse::getStatus)
-                        .map(Object::toString)
-                        .orElse(MonitorResponse.getDefaultInstance().getStatus()))
-                .setReason(Optional.of(smr)
-                        .map(ServiceMonitorResponse::getReason)
-                        .orElse(MonitorResponse.getDefaultInstance().getReason()))
-                .putAllMetrics(Optional.of(smr)
-                        .map(ServiceMonitorResponse::getAdditionalMetrics)
-                        .orElse(Collections.EMPTY_MAP))
-                .setNodeId(smr.getNodeId())
-                .setMonitorServiceId(smr.getMonitoredServiceId())
-                .setTimestamp(smr.getTimestamp())
-                .build();
-
-        return result;
-    }
-
-    private TaskSetResults formatTaskSetResults(String id, CollectionSet collectionSet) {
-        CollectorResponse collectorResponse = formatCollectorResponse(collectionSet);
-
+    private TaskSetResults formatTaskSetResults(String id, CollectorResponse collectorResponse) {
         TaskResult taskResult = TaskResult.newBuilder()
                 .setId(id)
                 .setCollectorResponse(collectorResponse)
@@ -177,15 +173,15 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
         return TaskSetResults.newBuilder().addResults(taskResult).build();
     }
 
-    private CollectorResponse formatCollectorResponse(CollectionSet collectionSet) {
+    private CollectorResponse formatCollectorResponse(TaskDefinition taskDefinition, CollectionSet collectionSet) {
 
         return CollectorResponse.newBuilder()
                 .setStatus(collectionSet.getStatus())
                 .setNodeId(collectionSet.getNodeId())
                 .setIpAddress(collectionSet.getIpAddress())
-                .setMonitorType(collectionSet.getMonitorType())
                 .setTimestamp(collectionSet.getTimeStamp())
                 .setResult(Any.pack(collectionSet.getResults()))
+                .setMonitorType(taskDefinition.getPluginName())
                 .build();
     }
 }

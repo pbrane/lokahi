@@ -34,7 +34,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.inventory.service.taskset.TaskUtils;
 import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetPublisher;
-import org.opennms.taskset.contract.TaskDefinition;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -73,15 +72,9 @@ public class ConfigUpdateService {
     public void removeConfigsFromTaskSet(String tenantId, Long locationId) {
 
         executorService.execute(() -> {
-            TaskDefinition trapsConfig = TaskDefinition.newBuilder()
-                    .setId(TaskUtils.identityForConfig(TRAPS_CONFIG, locationId))
-                    .build();
-            TaskDefinition flowsConfig = TaskDefinition.newBuilder()
-                    .setId(TaskUtils.identityForConfig(FLOWS_CONFIG, locationId))
-                    .build();
-            var tasks = new ArrayList<TaskDefinition>();
-            tasks.add(trapsConfig);
-            tasks.add(flowsConfig);
+            var tasks = new ArrayList<String>();
+            tasks.add(TaskUtils.identityForConfig(TRAPS_CONFIG, locationId));
+            tasks.add(TaskUtils.identityForConfig(FLOWS_CONFIG, locationId));
             taskSetPublisher.publishTaskDeletion(tenantId, locationId, tasks);
         });
     }

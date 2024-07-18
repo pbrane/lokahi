@@ -22,7 +22,6 @@
 package org.opennms.horizon.minion.plugin.api;
 
 import com.google.protobuf.Message;
-import org.opennms.taskset.contract.MonitorType;
 
 public interface CollectionSet {
 
@@ -35,6 +34,4 @@ public interface CollectionSet {
     String getIpAddress();
 
     boolean getStatus();
-
-    MonitorType getMonitorType();
 }

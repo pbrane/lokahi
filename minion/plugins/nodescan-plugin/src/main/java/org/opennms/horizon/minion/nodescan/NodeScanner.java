@@ -102,18 +102,17 @@ public class NodeScanner implements Scanner {
             ipAddresses.forEach(ipAddress -> {
                 detectors.forEach(detector -> {
                     try {
-                        var serviceDetectorManager = detectorRegistry.getService(
-                                detector.getService().name());
+                        var serviceDetectorManager = detectorRegistry.getService(detector.getService());
                         var serviceDetector = serviceDetectorManager.create();
                         switch (detector.getService()) {
-                            case SNMP -> {
+                            case "SNMP" -> {
                                 SnmpDetectorRequest detectorRequest = SnmpDetectorRequest.newBuilder()
                                         .setAgentConfig(mapSnmpAgentConfig(finalAgentConfig))
                                         .build();
                                 var snmpDetectorFuture = serviceDetector.detect(ipAddress, Any.pack(detectorRequest));
                                 futures.add(snmpDetectorFuture);
                             }
-                            case ICMP -> {
+                            case "ICMP" -> {
                                 IcmpDetectorRequest icmpDetectorRequest =
                                         IcmpDetectorRequest.newBuilder().build();
                                 var icmpDetectorFuture =

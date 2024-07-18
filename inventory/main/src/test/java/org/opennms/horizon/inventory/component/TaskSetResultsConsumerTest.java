@@ -38,17 +38,18 @@ import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventLog;
 import org.opennms.horizon.events.proto.EventParameter;
 import org.opennms.horizon.inventory.exception.InventoryRuntimeException;
+import org.opennms.horizon.inventory.model.MonitoredEntityState;
 import org.opennms.horizon.inventory.model.MonitoredService;
-import org.opennms.horizon.inventory.model.MonitoredServiceState;
+import org.opennms.horizon.inventory.monitoring.MonitoredEntity;
+import org.opennms.horizon.inventory.monitoring.MonitoredEntityService;
+import org.opennms.horizon.inventory.repository.MonitoredEntityStateRepository;
 import org.opennms.horizon.inventory.repository.MonitoredServiceRepository;
-import org.opennms.horizon.inventory.repository.MonitoredServiceStateRepository;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.service.taskset.response.MonitorResponseService;
 import org.opennms.horizon.inventory.service.taskset.response.ScannerResponseService;
 import org.opennms.horizon.shared.events.EventConstants;
 import org.opennms.taskset.contract.CollectorResponse;
 import org.opennms.taskset.contract.MonitorResponse;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.ScannerResponse;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TenantLocationSpecificTaskSetResults;
@@ -66,7 +67,9 @@ public class TaskSetResultsConsumerTest {
 
     private MonitoredServiceRepository mockMonitoredServiceRepository;
 
-    private MonitoredServiceStateRepository mockMonitoredServiceStateRepository;
+    private MonitoredEntityStateRepository mockMonitoredEntityStateRepository;
+
+    private MonitoredEntityService mockMonitoredEntityService;
 
     private MonitoringLocationRepository mockMonitoringLocationRepository;
 
@@ -77,15 +80,17 @@ public class TaskSetResultsConsumerTest {
 
         mockScannerResponseService = Mockito.mock(ScannerResponseService.class);
 
-        mockMonitoredServiceStateRepository = Mockito.mock(MonitoredServiceStateRepository.class);
+        mockMonitoredEntityStateRepository = Mockito.mock(MonitoredEntityStateRepository.class);
         mockMonitoredServiceRepository = Mockito.mock(MonitoredServiceRepository.class);
+        mockMonitoredEntityService = Mockito.mock(MonitoredEntityService.class);
         mockMonitoringLocationRepository = Mockito.mock(MonitoringLocationRepository.class);
         mockEventProducer = Mockito.mock(InternalEventProducer.class);
 
         monitorResponseService = Mockito.spy(new MonitorResponseService(
-                mockMonitoredServiceStateRepository,
+                mockMonitoredEntityStateRepository,
                 mockMonitoredServiceRepository,
                 mockMonitoringLocationRepository,
+                mockMonitoredEntityService,
                 mockEventProducer));
 
         target = new TaskSetResultsConsumer(mockScannerResponseService, monitorResponseService);
@@ -230,27 +235,24 @@ public class TaskSetResultsConsumerTest {
 
         Mockito.when(mockMonitoredServiceRepository.findByIdAndTenantId(1, tenantId))
                 .thenReturn(Optional.of(new MonitoredService()));
-        Mockito.when(mockMonitoredServiceStateRepository.findByTenantIdAndMonitoredServiceId(tenantId, 1))
-                .thenReturn(Optional.of(new MonitoredServiceState()));
+        Mockito.when(mockMonitoredEntityStateRepository.findByTenantIdAndMonitoredEntityId(tenantId, "test:1"))
+                .thenReturn(Optional.of(new MonitoredEntityState()));
 
         var monitorResponse1 = MonitorResponse.newBuilder()
-                .setMonitorType(MonitorType.ICMP)
-                .setMonitorServiceId(1)
-                .setNodeId(1)
+                .setMonitorType("ICMP")
+                .setMonitoredEntityId("test:1")
                 .setStatus("Up")
                 .setResponseTimeMs(1.0d)
                 .build();
         var monitorResponse2 = MonitorResponse.newBuilder()
-                .setMonitorType(MonitorType.ICMP)
-                .setMonitorServiceId(1)
-                .setNodeId(1)
+                .setMonitorType("ICMP")
+                .setMonitoredEntityId("test:1")
                 .setStatus("Down")
                 .setReason("reason")
                 .build();
         var monitorResponse3 = MonitorResponse.newBuilder()
-                .setMonitorType(MonitorType.ICMP)
-                .setMonitorServiceId(1)
-                .setNodeId(1)
+                .setMonitorType("ICMP")
+                .setMonitoredEntityId("test:1")
                 .setStatus("Up")
                 .setResponseTimeMs(1.1d)
                 .build();
@@ -266,6 +268,12 @@ public class TaskSetResultsConsumerTest {
                 .addResults(testResult2)
                 .addResults(testResult3)
                 .build();
+
+        Mockito.when(mockMonitoredEntityService.findServiceById(tenantId, TEST_LOCATION_ID, "test:1"))
+                .thenReturn(Optional.of(MonitoredEntity.builder()
+                        .entityId("test:1")
+                        .locationId(TEST_LOCATION_ID)
+                        .build()));
 
         //
         // Execute
@@ -283,20 +291,20 @@ public class TaskSetResultsConsumerTest {
         Mockito.verify(monitorResponseService, Mockito.timeout(3000))
                 .updateMonitoredState("x-tenant-id-x", TEST_LOCATION_ID_TEXT, monitorResponse3);
 
-        var serviceName = EventParameter.newBuilder().setName("serviceName").setValue(MonitorType.ICMP.toString());
-        var serviceId = EventParameter.newBuilder().setName("serviceId").setValue("1");
+        var serviceName = EventParameter.newBuilder().setName("serviceName").setValue("ICMP");
+        var monitoredEntityId =
+                EventParameter.newBuilder().setName("monitoredEntityId").setValue("test:1");
 
         Mockito.verify(mockEventProducer)
                 .sendEvent(EventLog.newBuilder()
                         .setTenantId(tenantId)
                         .addEvents(Event.newBuilder()
                                 .setTenantId(tenantId)
-                                .setNodeId(1)
                                 .setDescription("reason")
                                 .setUei(EventConstants.SERVICE_UNREACHABLE_EVENT_UEI)
                                 .setLocationId(TEST_LOCATION_ID_TEXT)
-                                .addParameters(serviceName)
-                                .addParameters(serviceId))
+                                .addParameters(monitoredEntityId)
+                                .addParameters(serviceName))
                         .build());
 
         Mockito.verify(mockEventProducer)
@@ -304,11 +312,10 @@ public class TaskSetResultsConsumerTest {
                         .setTenantId(tenantId)
                         .addEvents(Event.newBuilder()
                                 .setTenantId(tenantId)
-                                .setNodeId(1)
                                 .setUei(EventConstants.SERVICE_RESTORED_EVENT_UEI)
                                 .setLocationId(TEST_LOCATION_ID_TEXT)
-                                .addParameters(serviceName)
-                                .addParameters(serviceId))
+                                .addParameters(monitoredEntityId)
+                                .addParameters(serviceName))
                         .build());
 
         Mockito.verifyNoMoreInteractions(monitorResponseService);

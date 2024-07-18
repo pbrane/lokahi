@@ -52,6 +52,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("searchTerm") String searchTerm,
             Pageable pageable);
 
+    @Query(
+            value = "SELECT e FROM Event e WHERE e.tenantId = :tenantId AND e.nodeId = :nodeId",
+            countQuery = "SELECT count(e)  FROM Event e  WHERE e.tenantId = :tenantId AND e.nodeId = :nodeId ")
+    Page<Event> findByNodeIdAndTenantId(
+            @Param("tenantId") String tenantId, @Param("nodeId") Long nodeId, Pageable pageable);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM Event e WHERE e.nodeId = :nodeId AND e.tenantId = :tenantId")

@@ -27,7 +27,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MonitoredServiceStatusRequest {
-    private String ipAddress;
-    private String monitorType;
-    private long nodeId;
+    private String monitoredEntityId;
 }

@@ -32,6 +32,10 @@
     <include file="db/changelog/hs-0.1.0/tables/node-alias.xml"/>
     <include file="db/changelog/hs-0.1.0/tables/node-active-discovery-ids.xml"/>
     <include file="db/changelog/hs-0.1.0/tables/tag-teanent-constraint.xml"/>
+    <include file="/db/changelog/hs-0.1.0/tables/monitored-entity-state.xml"/>
+    <include file="/db/changelog/hs-0.1.0/tables/simple-monitored-entity.xml"/>
 
     <include file="db/changelog/hs-0.1.0/tables/ip-interface-add-new-column.xml"/>
+    <include file="db/changelog/hs-0.1.0/tables/monitored-service-add-monitor-type.xml"/>
+
 </databaseChangeLog>

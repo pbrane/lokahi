@@ -36,7 +36,6 @@ import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.snmp.SnmpHelper;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
 import org.opennms.horizon.shared.snmp.SnmpValue;
-import org.opennms.inventory.types.ServiceType;
 import org.opennms.node.scan.contract.ServiceResult;
 import org.opennms.snmp.contract.SnmpDetectorRequest;
 
@@ -74,7 +73,7 @@ public class SnmpDetectorTest {
         ServiceResult serviceDetectorResponse = response.get();
 
         assertTrue(serviceDetectorResponse.getStatus());
-        assertEquals(ServiceType.SNMP, serviceDetectorResponse.getService());
+        assertEquals("SNMP", serviceDetectorResponse.getService());
         assertEquals(testRequest.getHost(), serviceDetectorResponse.getIpAddress());
     }
 
@@ -90,7 +89,7 @@ public class SnmpDetectorTest {
         ServiceResult serviceDetectorResponse = response.get();
 
         assertFalse(serviceDetectorResponse.getStatus());
-        assertEquals(ServiceType.SNMP, serviceDetectorResponse.getService());
+        assertEquals("SNMP", serviceDetectorResponse.getService());
         assertEquals(testRequest.getHost(), serviceDetectorResponse.getIpAddress());
     }
 

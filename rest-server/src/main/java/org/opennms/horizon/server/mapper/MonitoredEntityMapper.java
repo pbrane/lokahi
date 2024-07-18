@@ -23,13 +23,11 @@ package org.opennms.horizon.server.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
-import org.opennms.horizon.inventory.dto.MonitoredServiceStatusDTO;
-import org.opennms.horizon.server.model.inventory.MonitoredServiceStatus;
+import org.opennms.horizon.inventory.dto.MonitorEntityResponse;
+import org.opennms.horizon.server.model.inventory.MonitoredEntityDTO;
 
 @Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-public interface MonitoredServiceStatusMapper {
+public interface MonitoredEntityMapper {
 
-    MonitoredServiceStatusDTO modelToProto(MonitoredServiceStatus monitoredServiceStatus);
-
-    MonitoredServiceStatus protoToModel(MonitoredServiceStatusDTO monitoredServiceStatusDTO);
+    MonitoredEntityDTO protoToModel(MonitorEntityResponse monitorEntityResponse);
 }

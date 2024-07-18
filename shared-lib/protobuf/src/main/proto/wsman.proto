@@ -28,7 +28,7 @@
 syntax = "proto3";
 
 import "google/protobuf/any.proto";
-import "service-inventory.proto";
+//import "service-inventory.proto";
 
 package opennms.wsman;
 option java_multiple_files = true;
@@ -59,7 +59,7 @@ message WSMANGroup {
 message WsmanDetectorRequest {
   WsmanConfiguration agentConfiguration = 1;
   WSManVersion server_version = 2;
-  opennms.inventory.service.ServiceInventory service_inventory = 3;
+  //opennms.inventory.service.ServiceInventory service_inventory = 3;
 }
 
 message WsmanMonitorRequest {
@@ -67,7 +67,7 @@ message WsmanMonitorRequest {
   WsmanConfiguration agentConfiguration = 1;
   WSManVersion server_version = 2;
   string rule = 3;
-  opennms.inventory.service.ServiceInventory service_inventory = 4;
+  //opennms.inventory.service.ServiceInventory service_inventory = 4;
   //i.e:
   //"#IdentifyingDescriptions matches '.*ServiceTag' and #OtherIdentifyingInfo matches 'C7BBBP1'"
   //"#IdentifyingDescriptions matches '.*ServiceTag' and #OtherIdentifyingInfo matches '{nodeLabel}'"

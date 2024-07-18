@@ -23,6 +23,7 @@ package org.opennms.horizon.inventory.service;
 
 import static org.opennms.horizon.shared.utils.SystemInfoUtils.TAG;
 
+import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
@@ -40,6 +41,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
+import org.opennms.horizon.azure.api.AzureScanItem;
 import org.opennms.horizon.inventory.component.NodeKafkaProducer;
 import org.opennms.horizon.inventory.component.TagPublisher;
 import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryDTO;
@@ -62,11 +65,14 @@ import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.mapper.IpInterfaceMapper;
 import org.opennms.horizon.inventory.mapper.NodeMapper;
 import org.opennms.horizon.inventory.mapper.discovery.ActiveDiscoveryMapper;
+import org.opennms.horizon.inventory.model.DiscoveryMonitoredEntityProvider;
 import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.MonitoringLocation;
 import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.model.Tag;
 import org.opennms.horizon.inventory.model.discovery.active.ActiveDiscovery;
+import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery;
+import org.opennms.horizon.inventory.monitoring.MonitoredEntity;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
@@ -75,15 +81,16 @@ import org.opennms.horizon.inventory.repository.discovery.active.ActiveDiscovery
 import org.opennms.horizon.inventory.service.taskset.CollectorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.MonitorTaskSetService;
 import org.opennms.horizon.inventory.service.taskset.ScannerTaskSetService;
+import org.opennms.horizon.inventory.service.taskset.TaskUtils;
 import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetPublisher;
 import org.opennms.horizon.shared.common.tag.proto.Operation;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationProto;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.horizon.snmp.api.SnmpConfiguration;
 import org.opennms.node.scan.contract.NodeInfoResult;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.ScanType;
 import org.opennms.taskset.contract.TaskDefinition;
+import org.opennms.taskset.contract.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -289,26 +296,33 @@ public class NodeService {
             var node = optionalNode.get();
             var tenantId = node.getTenantId();
             var location = node.getMonitoringLocationId();
-            var tasks = getTasksForNode(node);
+            var tasks = getTasksForNodeForDeletion(node);
             removeAssociatedTags(node);
             deleteNodeInKafka(node);
             nodeRepository.deleteById(id);
-            executorService.execute(() -> taskSetPublisher.publishTaskDeletion(tenantId, location, tasks));
+            executorService.execute(() -> taskSetPublisher.publishTaskDeletion(
+                    tenantId,
+                    location,
+                    tasks.stream().map(TaskDefinition::getId).toList()));
         }
     }
 
-    public List<TaskDefinition> getTasksForNode(Node node) {
+    public List<TaskDefinition> getTasksForNodeForDeletion(Node node) {
+        // This only needs TaskIds to be identical.
         var tasks = new ArrayList<TaskDefinition>();
         scannerTaskSetService.getNodeScanTasks(node).ifPresent(tasks::add);
         node.getIpInterfaces().forEach(ipInterface -> {
             ipInterface.getMonitoredServices().forEach((ms) -> {
-                String serviceName = ms.getMonitoredServiceType().getServiceName();
-                var monitorType = MonitorType.valueOf(serviceName);
-                var monitorTask =
-                        monitorTaskSetService.getMonitorTask(monitorType, ipInterface, node.getId(), ms.getId(), null);
-                Optional.ofNullable(monitorTask).ifPresent(tasks::add);
-                var collectorTask = collectorTaskSetService.getCollectorTask(monitorType, ipInterface, node, null);
+                var collectorTask =
+                        collectorTaskSetService.getCollectorTask(ms.getMonitorType(), ipInterface, node, null);
                 Optional.ofNullable(collectorTask).ifPresent(tasks::add);
+                var meId = MonitoredEntity.joinId(DiscoveryMonitoredEntityProvider.ID, Long.toString(ms.getId()));
+                var monitorTask = TaskDefinition.newBuilder()
+                        .setId(Joiner.on(":").join("monitor", node.getTenantId(), node.getMonitoringLocationId(), meId))
+                        .setType(TaskType.MONITOR)
+                        .setSchedule(TaskUtils.DEFAULT_SCHEDULE)
+                        .build();
+                tasks.add(monitorTask);
             });
         });
         return tasks;
@@ -358,16 +372,44 @@ public class NodeService {
             if (validIpAddress) {
                 // Overwrite node label with System name if label is an IP Address.
                 node.setNodeLabel(nodeInfo.getSystemName());
-            } else {
-                log.debug(
-                        "Node already has a nodeLabel - keeping the existing value: node-label={}; system-name={}",
-                        node.getNodeLabel(),
-                        nodeInfo.getSystemName());
             }
         }
 
         nodeRepository.save(node);
         updateNodeInKafka(node.getId(), node.getTenantId());
+    }
+
+    @Transactional
+    public void updateNodeInfo(
+            final Node node, final AzureScanItem azureScanItem, final AzureActiveDiscovery discovery) {
+        node.setSystemName(azureScanItem.getName());
+        node.setSystemDescr(getAzureSystemDescription(azureScanItem));
+        node.setSystemLocation(azureScanItem.getLocation());
+
+        node.setAzureResource(azureScanItem.getName());
+        node.setAzureResourceGroup(azureScanItem.getResourceGroup());
+        node.setAzureClientId(discovery.getClientId());
+        node.setAzureClientSecret(discovery.getClientSecret());
+        node.setAzureSubscriptionId(discovery.getSubscriptionId());
+        node.setAzureDirectoryId(discovery.getDirectoryId());
+
+        // Overwrite node label with System name if label is an IP Address.
+        if (StringUtils.isNotEmpty(azureScanItem.getName()) && isValidInetAddress(node.getNodeLabel())) {
+            node.setNodeLabel(azureScanItem.getName());
+        }
+
+        nodeRepository.save(node);
+        updateNodeInKafka(node.getId(), node.getTenantId());
+    }
+
+    static String getAzureSystemDescription(AzureScanItem azureScanItem) {
+        if (Strings.isNotEmpty(azureScanItem.getOsName()) && Strings.isNotEmpty(azureScanItem.getOsVersion())) {
+            return String.format("%s (%s)", azureScanItem.getOsName(), azureScanItem.getOsVersion());
+        } else if (Strings.isNotEmpty(azureScanItem.getOsName())) {
+            return azureScanItem.getOsName();
+        } else {
+            return azureScanItem.getOsVersion();
+        }
     }
 
     private Boolean isValidInetAddress(String ipAddress) {

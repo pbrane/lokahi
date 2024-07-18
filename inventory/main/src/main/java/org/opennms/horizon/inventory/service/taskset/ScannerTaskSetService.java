@@ -50,7 +50,6 @@ import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.horizon.snmp.api.SnmpConfiguration;
 import org.opennms.icmp.contract.IpRange;
 import org.opennms.icmp.contract.PingSweepRequest;
-import org.opennms.inventory.types.ServiceType;
 import org.opennms.node.scan.contract.DetectRequest;
 import org.opennms.node.scan.contract.NodeScanRequest;
 import org.opennms.taskset.contract.TaskDefinition;
@@ -114,15 +113,9 @@ public class ScannerTaskSetService {
                 taskDefinition -> taskSetPublisher.publishNewTasks(tenantId, locationId, List.of(taskDefinition)));
     }
 
-    public void removeDiscoveryScanTask(Long locationId, long activeDiscoveryId, String tenantId) {
-        String taskId = identityForDiscoveryTask(locationId, activeDiscoveryId);
-        var taskDef = TaskDefinition.newBuilder()
-                .setType(TaskType.SCANNER)
-                .setPluginName(DISCOVERY_TASK_PLUGIN_NAME)
-                .setId(taskId)
-                .build();
-
-        taskSetPublisher.publishTaskDeletion(tenantId, locationId, List.of(taskDef));
+    public void removeDiscoveryScanTask(long locationId, long activeDiscoveryId, String tenantId) {
+        final var taskId = identityForDiscoveryTask(locationId, activeDiscoveryId);
+        taskSetPublisher.publishTaskDeletion(tenantId, locationId, List.of(taskId));
     }
 
     Optional<TaskDefinition> createDiscoveryTask(List<String> ipAddresses, Long locationId, long activeDiscoveryId) {
@@ -242,10 +235,10 @@ public class ScannerTaskSetService {
                             .setNodeId(node.getId())
                             .setPrimaryIp(ip.getIpAddress())
                             .addDetector(DetectRequest.newBuilder()
-                                    .setService(ServiceType.SNMP)
+                                    .setService("SNMP")
                                     .build())
                             .addDetector(DetectRequest.newBuilder()
-                                    .setService(ServiceType.ICMP)
+                                    .setService("ICMP")
                                     .build())
                             .addAllSnmpConfigs(snmpConfigs)
                             .build());

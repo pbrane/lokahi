@@ -44,13 +44,13 @@ import org.opennms.horizon.inventory.exception.LocationNotFoundException;
 import org.opennms.horizon.inventory.model.AzureInterface;
 import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery;
+import org.opennms.horizon.inventory.monitoring.MonitoredEntityService;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.NodeRepository;
 import org.opennms.horizon.inventory.repository.discovery.active.AzureActiveDiscoveryRepository;
 import org.opennms.horizon.inventory.service.AzureInterfaceService;
 import org.opennms.horizon.inventory.service.IpInterfaceService;
 import org.opennms.horizon.inventory.service.MonitoredServiceService;
-import org.opennms.horizon.inventory.service.MonitoredServiceTypeService;
 import org.opennms.horizon.inventory.service.NodeService;
 import org.opennms.horizon.inventory.service.SnmpConfigService;
 import org.opennms.horizon.inventory.service.SnmpInterfaceService;
@@ -74,8 +74,8 @@ public class ScannerResponseServiceTest {
     private final SnmpConfigService snmpConfigService = mock(SnmpConfigService.class);
     private final IcmpActiveDiscoveryService icmpActiveDiscoveryService = mock(IcmpActiveDiscoveryService.class);
     private final IpInterfaceRepository ipInterfaceRepository = mock(IpInterfaceRepository.class);
-    private final MonitoredServiceTypeService monitoredServiceTypeService = mock(MonitoredServiceTypeService.class);
     private final MonitoredServiceService monitoredServiceService = mock(MonitoredServiceService.class);
+    private final MonitoredEntityService monitoredEntityService = mock(MonitoredEntityService.class);
     private ScannerResponseService scannerResponseService = new ScannerResponseService(
             azureActiveDiscoveryRepository,
             nodeRepository,
@@ -88,8 +88,8 @@ public class ScannerResponseServiceTest {
             snmpConfigService,
             icmpActiveDiscoveryService,
             ipInterfaceRepository,
-            monitoredServiceTypeService,
-            monitoredServiceService);
+            monitoredServiceService,
+            monitoredEntityService);
 
     public static final long nodeId = 1L;
     public static final String nodeLabel = "nodeLabel";
@@ -207,8 +207,6 @@ public class ScannerResponseServiceTest {
                         argThat(prepareObjectMatcher(node)),
                         argThat(prepareObjectMatcher(azureInterface2)),
                         argThat(prepareObjectMatcher(networkItem2)));
-        verify(taskSetHandler, times(1))
-                .sendAzureMonitorTasks(argThat(prepareObjectMatcher(discovery)), eq(azureScanItem), eq(nodeId));
         verify(taskSetHandler, times(1))
                 .sendAzureCollectorTasks(argThat(prepareObjectMatcher(discovery)), eq(azureScanItem), eq(nodeId));
     }

@@ -33,12 +33,14 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.opennms.horizon.inventory.monitoring.MonitoredEntity;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
 @Entity
 public class MonitoredService {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -47,12 +49,8 @@ public class MonitoredService {
     @Column(name = "tenant_id")
     private String tenantId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "monitored_service_type_id", referencedColumnName = "id")
-    private MonitoredServiceType monitoredServiceType;
-
-    @Column(name = "monitored_service_type_id", insertable = false, updatable = false)
-    private long monitoredServiceTypeId;
+    @Column(name = "monitor_type")
+    private String monitorType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ip_interface_id", referencedColumnName = "id")
@@ -60,4 +58,9 @@ public class MonitoredService {
 
     @Column(name = "ip_interface_id", insertable = false, updatable = false)
     private long ipInterfaceId;
+
+    public String getMonitoredEntityId() {
+        return MonitoredEntity.joinId(
+                DiscoveryMonitoredEntityProvider.ID, DiscoveryMonitoredEntityProvider.createMonitoredEntityId(this));
+    }
 }

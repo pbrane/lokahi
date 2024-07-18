@@ -25,10 +25,10 @@ import static org.opennms.horizon.minion.snmp.SnmpMonitorUtils.meetsCriteria;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
@@ -42,7 +42,6 @@ import org.opennms.horizon.shared.snmp.SnmpObjId;
 import org.opennms.horizon.shared.snmp.SnmpValue;
 import org.opennms.horizon.shared.snmp.StrategyResolver;
 import org.opennms.snmp.contract.SnmpMonitorRequest;
-import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,25 +112,25 @@ public class SnmpMonitor implements ServiceMonitor {
     @Override
     public CompletableFuture<ServiceMonitorResponse> poll(Any config) {
 
-        CompletableFuture<ServiceMonitorResponse> future;
-        String hostAddress = null;
-        SnmpMonitorRequest snmpMonitorRequest = null;
+        if (!config.is(SnmpMonitorRequest.class)) {
+            throw new IllegalArgumentException("config must be an SnmpRequest; type-url=" + config.getTypeUrl());
+        }
 
-        // Establish SNMP session with interface
-        //
+        final SnmpMonitorRequest snmpMonitorRequest;
         try {
-            if (!config.is(SnmpMonitorRequest.class)) {
-                throw new IllegalArgumentException("config must be an SnmpRequest; type-url=" + config.getTypeUrl());
-            }
-
             snmpMonitorRequest = config.unpack(SnmpMonitorRequest.class);
+        } catch (InvalidProtocolBufferException ex) {
+            LOG.error("Invalid poller config", ex);
+            throw new RuntimeException(ex);
+        }
 
-            // Retrieve this interface's SNMP peer object
-            SnmpAgentConfig agentConfig =
-                    SnmpConfigUtils.mapAgentConfig(snmpMonitorRequest.getHost(), snmpMonitorRequest.getAgentConfig());
+        // Retrieve this interface's SNMP peer object
+        final SnmpAgentConfig agentConfig =
+                SnmpConfigUtils.mapAgentConfig(snmpMonitorRequest.getHost(), snmpMonitorRequest.getAgentConfig());
 
-            hostAddress = snmpMonitorRequest.getHost();
+        final String hostAddress = snmpMonitorRequest.getHost();
 
+        try {
             // Get configuration parameters
             //
             String oid = snmpMonitorRequest.hasField(oidFieldDescriptor)
@@ -140,71 +139,33 @@ public class SnmpMonitor implements ServiceMonitor {
             String operator = protobufDefaultNullHelper(snmpMonitorRequest, operatorFieldDescriptor);
             String operand = protobufDefaultNullHelper(snmpMonitorRequest, operandFieldDescriptor);
 
-            final String finalHostAddress = hostAddress;
             SnmpObjId snmpObjectId = SnmpObjId.get(oid);
 
             long startTimestamp = System.nanoTime();
 
-            final SnmpMonitorRequest finalSnmpMonitorRequest = snmpMonitorRequest; // Final reference for inside lambda
-
-            future = snmpHelper
+            return snmpHelper
                     .getAsync(agentConfig, new SnmpObjId[] {snmpObjectId})
-                    .thenApply(result -> processSnmpResponse(
-                            result,
-                            finalHostAddress,
-                            snmpObjectId,
-                            operator,
-                            operand,
-                            startTimestamp,
-                            finalSnmpMonitorRequest.getServiceInventory().getNodeId(),
-                            finalSnmpMonitorRequest.getServiceInventory().getMonitorServiceId()))
-                    .completeOnTimeout(
-                            this.createTimeoutResponse(
-                                    finalHostAddress,
-                                    finalSnmpMonitorRequest
-                                            .getServiceInventory()
-                                            .getMonitorServiceId(),
-                                    finalSnmpMonitorRequest
-                                            .getServiceInventory()
-                                            .getNodeId()),
-                            agentConfig.getTimeout(),
-                            TimeUnit.MILLISECONDS)
-                    .exceptionally(thrown -> this.createExceptionResponse(
-                            thrown,
-                            finalHostAddress,
-                            finalSnmpMonitorRequest.getServiceInventory().getMonitorServiceId(),
-                            finalSnmpMonitorRequest.getServiceInventory().getNodeId()));
-
-            return future;
+                    .thenApply(result ->
+                            processSnmpResponse(result, hostAddress, snmpObjectId, operator, operand, startTimestamp))
+                    .completeOnTimeout(this.createTimeoutResponse(), agentConfig.getTimeout(), TimeUnit.MILLISECONDS)
+                    .exceptionally(this::createExceptionResponse);
         } catch (NumberFormatException e) {
             LOG.debug("Number operator used in a non-number evaluation", e);
             return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder()
-                    .reason(e.getMessage())
-                    .nodeId(Objects.requireNonNull(snmpMonitorRequest)
-                            .getServiceInventory()
-                            .getNodeId())
-                    .monitoredServiceId(snmpMonitorRequest.getServiceInventory().getMonitorServiceId())
                     .status(Status.Unknown)
+                    .reason(e.getMessage())
                     .build());
         } catch (IllegalArgumentException e) {
             LOG.debug("Invalid SNMP Criteria", e);
             return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder()
-                    .reason(e.getMessage())
-                    .nodeId(Objects.requireNonNull(snmpMonitorRequest)
-                            .getServiceInventory()
-                            .getNodeId())
-                    .monitoredServiceId(snmpMonitorRequest.getServiceInventory().getMonitorServiceId())
                     .status(Status.Unknown)
+                    .reason(e.getMessage())
                     .build());
         } catch (Throwable t) {
             LOG.debug("Unexpected exception during SNMP poll of interface {}", hostAddress, t);
             return CompletableFuture.completedFuture(ServiceMonitorResponseImpl.builder()
-                    .reason(t.getMessage())
-                    .nodeId(Objects.requireNonNull(snmpMonitorRequest)
-                            .getServiceInventory()
-                            .getNodeId())
-                    .monitoredServiceId(snmpMonitorRequest.getServiceInventory().getMonitorServiceId())
                     .status(Status.Unknown)
+                    .reason(t.getMessage())
                     .build());
         }
     }
@@ -227,28 +188,21 @@ public class SnmpMonitor implements ServiceMonitor {
             SnmpObjId oid,
             String operator,
             String operand,
-            long startTimestamp,
-            long nodeId,
-            long monitorServiceId) {
+            long startTimestamp) {
         long endTimestamp = System.nanoTime();
         long elapsedTimeNs = (endTimestamp - startTimestamp);
         double elapsedTimeMs = (double) elapsedTimeNs / NANOSECOND_PER_MILLISECOND;
 
-        ServiceMonitorResponseImplBuilder builder = ServiceMonitorResponseImpl.builder()
-                .monitorType(MonitorType.SNMP)
-                .status(Status.Unknown)
-                .responseTime(elapsedTimeMs)
-                .ipAddress(hostAddress)
-                .nodeId(nodeId)
-                .monitoredServiceId(monitorServiceId);
+        ServiceMonitorResponseImplBuilder builder =
+                ServiceMonitorResponseImpl.builder().status(Status.Unknown).responseTime(elapsedTimeMs);
 
-        Map<String, Number> metrics = new HashMap<>();
+        Map<String, Double> metrics = new HashMap<>();
 
         if (result[0] != null) {
             LOG.debug("poll: SNMP poll succeeded, addr={} oid={} value={}", hostAddress, oid, result);
 
             if (result[0].isNumeric()) {
-                metrics.put("observedValue", result[0].toLong());
+                metrics.put("observedValue", (double) result[0].toLong());
             }
 
             if (meetsCriteria(result[0], operator, operand)) {
@@ -277,29 +231,20 @@ public class SnmpMonitor implements ServiceMonitor {
     }
 
     // NOTE: this is called at call-setup time, not after the timeout.
-    private ServiceMonitorResponse createTimeoutResponse(String hostAddress, long monitoredServiceId, long nodeId) {
+    private ServiceMonitorResponse createTimeoutResponse() {
         return ServiceMonitorResponseImpl.builder()
-                .monitorType(MonitorType.SNMP)
                 .status(Status.Unknown)
-                .ipAddress(hostAddress)
                 .reason("timeout")
                 .responseTime(-1)
-                .monitoredServiceId(monitoredServiceId)
-                .nodeId(nodeId)
                 .build();
     }
 
-    private ServiceMonitorResponse createExceptionResponse(
-            Throwable thrown, String hostAddress, long monitoredServiceId, long nodeId) {
+    private ServiceMonitorResponse createExceptionResponse(Throwable thrown) {
         LOG.debug("SNMP poll failed", thrown);
 
         ServiceMonitorResponse response = ServiceMonitorResponseImpl.builder()
-                .monitorType(MonitorType.SNMP)
                 .status(Status.Unknown)
-                .ipAddress(hostAddress)
                 .reason(thrown.getMessage())
-                .monitoredServiceId(monitoredServiceId)
-                .nodeId(nodeId)
                 .build();
 
         return response;

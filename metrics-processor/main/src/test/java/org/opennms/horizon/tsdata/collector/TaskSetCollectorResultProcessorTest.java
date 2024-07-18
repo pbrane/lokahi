@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.opennms.taskset.contract.CollectorResponse;
 import org.opennms.taskset.contract.Identity;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskResult;
 
 public class TaskSetCollectorResultProcessorTest {
@@ -65,21 +64,20 @@ public class TaskSetCollectorResultProcessorTest {
         var testResultAny = Any.getDefaultInstance();
 
         testCollectorResponseAzure = templateCollectoResponse.toBuilder()
-                .setMonitorType(MonitorType.AZURE)
+                .setMonitorType("AZURE")
                 .setResult(testResultAny)
                 .build();
 
         testCollectorResponseSnmp = templateCollectoResponse.toBuilder()
-                .setMonitorType(MonitorType.SNMP)
+                .setMonitorType("SNMP")
                 .setResult(testResultAny)
                 .build();
 
-        testCollectorResponseMissingResult = templateCollectoResponse.toBuilder()
-                .setMonitorType(MonitorType.SNMP)
-                .build();
+        testCollectorResponseMissingResult =
+                templateCollectoResponse.toBuilder().setMonitorType("SNMP").build();
 
         testCollectorResponseUnrecognizedMonitorType = templateCollectoResponse.toBuilder()
-                .setMonitorType(MonitorType.UNKNOWN)
+                .setMonitorType("UNKNOWN")
                 .setResult(testResultAny)
                 .build();
 
@@ -106,9 +104,7 @@ public class TaskSetCollectorResultProcessorTest {
                         Mockito.eq("x-tenant-id-x"),
                         Mockito.eq("x-location-x"),
                         Mockito.same(testCollectorResponseAzure),
-                        Mockito.eq(new String[] {
-                            "x-ip-address-x", "x-location-x", "x-system-id-x", MonitorType.AZURE.name(), "131313"
-                        }));
+                        Mockito.eq(new String[] {"x-ip-address-x", "x-location-x", "x-system-id-x", "AZURE"}));
     }
 
     @Test

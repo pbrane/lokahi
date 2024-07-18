@@ -22,6 +22,7 @@
 package org.opennms.horizon.inventory.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.List;
@@ -33,7 +34,6 @@ import org.opennms.horizon.inventory.dto.MonitoredServiceDTO;
 import org.opennms.horizon.inventory.mapper.MonitoredServiceMapper;
 import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.MonitoredService;
-import org.opennms.horizon.inventory.model.MonitoredServiceType;
 import org.opennms.horizon.inventory.repository.IpInterfaceRepository;
 import org.opennms.horizon.inventory.repository.MonitoredServiceRepository;
 
@@ -50,38 +50,41 @@ public class MonitoredServiceServiceTest {
     private MonitoredService testMonitoredService1;
     private MonitoredService testMonitoredService2;
     private MonitoredService testMonitoredService3;
-    private MonitoredServiceType testMonitoredServiceType;
     private IpInterface testIpInterface;
     private IpInterfaceRepository ipInterfaceRepository;
 
     private MonitoredServiceService target;
+    private String monitorType;
 
     @BeforeEach
     public void setUp() {
         mockMonitoredServiceRepository = Mockito.mock(MonitoredServiceRepository.class);
         mockMonitoredServiceMapper = Mockito.mock(MonitoredServiceMapper.class);
         ipInterfaceRepository = Mockito.mock(IpInterfaceRepository.class);
-
+        monitorType = "x-service-name-x";
         testMonitoredServiceDTO1 = MonitoredServiceDTO.newBuilder()
+                .setMonitorType(monitorType)
                 .setTenantId(TEST_TENANT_ID)
                 .setId(1313)
                 .build();
 
         testMonitoredServiceDTO2 = MonitoredServiceDTO.newBuilder()
+                .setMonitorType(monitorType)
                 .setTenantId(TEST_TENANT_ID)
                 .setId(1717)
                 .build();
 
         testMonitoredServiceDTO3 = MonitoredServiceDTO.newBuilder()
+                .setMonitorType(monitorType)
                 .setTenantId(TEST_TENANT_ID)
                 .setId(1919)
                 .build();
 
-        testMonitoredServiceType = new MonitoredServiceType();
-        testMonitoredServiceType.setServiceName("x-service-name-x"); // e.g. SSH
-
         testMonitoredService1 = new MonitoredService();
         testMonitoredService1.setId(1313);
+        testMonitoredService1.setTenantId(TEST_TENANT_ID);
+        testMonitoredService1.setMonitorType(monitorType);
+        testMonitoredService1.setIpInterface(testIpInterface);
 
         testMonitoredService2 = new MonitoredService();
         testMonitoredService2.setId(1717);
@@ -91,6 +94,7 @@ public class MonitoredServiceServiceTest {
 
         testIpInterface = new IpInterface();
         testIpInterface.setHostname("x-hostname-x");
+        testIpInterface.setTenantId(TEST_TENANT_ID);
 
         target = new MonitoredServiceService(
                 mockMonitoredServiceRepository, mockMonitoredServiceMapper, ipInterfaceRepository);
@@ -102,20 +106,19 @@ public class MonitoredServiceServiceTest {
         // Setup Test Data and Interactions
         //
         Mockito.when(mockMonitoredServiceRepository.findByTenantIdTypeAndIpInterface(
-                        TEST_TENANT_ID, testMonitoredServiceType, testIpInterface))
+                        TEST_TENANT_ID, monitorType, testIpInterface))
                 .thenReturn(Optional.empty());
-        Mockito.when(mockMonitoredServiceMapper.dtoToModel(testMonitoredServiceDTO1))
-                .thenReturn(testMonitoredService1);
-
         //
         // Execute
         //
-        target.createSingle(testMonitoredServiceDTO1, testMonitoredServiceType, testIpInterface);
+        MonitoredService result = target.createSingle(testIpInterface, monitorType);
 
         //
         // Verify the Results
         //
-        Mockito.verify(mockMonitoredServiceRepository).save(testMonitoredService1);
+        assertNotNull(result);
+        assertSame(testMonitoredService1.getTenantId(), result.getTenantId());
+        assertSame(testMonitoredService1.getMonitorType(), result.getMonitorType());
     }
 
     @Test
@@ -124,13 +127,13 @@ public class MonitoredServiceServiceTest {
         // Setup Test Data and Interactions
         //
         Mockito.when(mockMonitoredServiceRepository.findByTenantIdTypeAndIpInterface(
-                        TEST_TENANT_ID, testMonitoredServiceType, testIpInterface))
+                        TEST_TENANT_ID, monitorType, testIpInterface))
                 .thenReturn(Optional.of(testMonitoredService1));
 
         //
         // Execute
         //
-        target.createSingle(testMonitoredServiceDTO1, testMonitoredServiceType, testIpInterface);
+        target.createSingle(testIpInterface, monitorType);
 
         //
         // Verify the Results

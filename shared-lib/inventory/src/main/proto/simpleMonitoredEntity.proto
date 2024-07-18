@@ -27,16 +27,39 @@
  *******************************************************************************/
 syntax = "proto3";
 
-import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
-
+import "google/protobuf/empty.proto";
+import "google/protobuf/any.proto";
 
 package opennms.inventory;
 option java_multiple_files = true;
 option java_package = "org.opennms.horizon.inventory.dto";
 
-message MonitoredServiceTypeDTO {
-  int64 id = 1;
-  string tenant_id = 2;
-  string service_name = 3;
+
+message SimpleMonitoredEntityResponse {
+  string id = 1;
+  string name = 2;
+  int64 locationId = 3;
+  string type = 4;
+  string config = 5; // JSON config
+
+  string monitoredEntityId = 6;
+}
+
+message SimpleMonitoredEntityResponseList {
+  repeated SimpleMonitoredEntityResponse entry = 1;
+}
+
+message SimpleMonitoredEntityRequest {
+  string id = 1;
+  string name = 2;
+  int64 locationId = 3;
+  string type = 4;
+  string config = 5;
+}
+
+service SimpleMonitoredEntityService {
+  rpc list(google.protobuf.Empty) returns(SimpleMonitoredEntityResponseList) {};
+  rpc upsert(SimpleMonitoredEntityRequest) returns(SimpleMonitoredEntityResponse) {};
+  rpc delete(google.protobuf.StringValue) returns(google.protobuf.BoolValue) {};
 }

@@ -68,7 +68,6 @@ import org.opennms.horizon.grpc.TestCloudToMinionMessageHandler;
 import org.opennms.horizon.grpc.TestEmptyMessageHandler;
 import org.opennms.horizon.kafkahelper.KafkaTestHelper;
 import org.opennms.taskset.contract.MonitorResponse;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TaskSetResults;
@@ -479,7 +478,6 @@ public class MinionGatewayTestSteps {
 
             assertNotNull("TaskResult is not null", taskResult);
             assertNotNull("TaskResult contains a monitor response", taskResult.getMonitorResponse());
-            assertEquals("127.0.0.1", taskResult.getMonitorResponse().getIpAddress());
             assertEquals("OK", taskResult.getMonitorResponse().getStatus());
             assertEquals(13.999, taskResult.getMonitorResponse().getResponseTimeMs(), 0.00000001);
         } finally {
@@ -665,10 +663,9 @@ public class MinionGatewayTestSteps {
 
     private MinionToCloudMessage prepareTaskSetMonitorResultMessage() {
         MonitorResponse monitorResponse = MonitorResponse.newBuilder()
-                .setMonitorType(MonitorType.ICMP)
+                .setMonitorType("ICMP")
                 .setResponseTimeMs(13.999)
                 .setStatus("OK")
-                .setIpAddress("127.0.0.1")
                 .build();
 
         TaskResult taskResult =

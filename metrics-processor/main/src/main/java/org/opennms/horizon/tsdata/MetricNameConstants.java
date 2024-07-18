@@ -32,5 +32,9 @@ public interface MetricNameConstants {
     String METRIC_AZURE_PUBLIC_IP_TYPE = "publicIPAddresses";
     String METRIC_AZURE_NETWORK_INTERFACE_TYPE = "networkInterfaces";
 
-    String[] MONITOR_METRICS_LABEL_NAMES = {METRIC_INSTANCE_LABEL, "location_id", "system_id", "monitor", "node_id"};
+    String[] MONITOR_METRICS_LABEL_NAMES = {METRIC_INSTANCE_LABEL, "location_id", "system_id", "monitor"};
+
+    String[] AZURE_MONITOR_METRICS_LABEL_NAMES = {
+        METRIC_INSTANCE_LABEL, "location_id", "system_id", "monitor", "node_id"
+    };
 }

@@ -21,6 +21,7 @@
  */
 package org.opennms.horizon.minion.http;
 
+import com.google.common.base.Strings;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.BufferedReader;
@@ -48,7 +49,6 @@ import org.opennms.horizon.shared.utils.IPLike;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.monitors.http.contract.AuthParams;
 import org.opennms.monitors.http.contract.HttpMonitorRequest;
-import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -232,14 +232,12 @@ public class HttpMonitor implements ServiceMonitor {
         PollStatus pollStatus = httpClient.determinePollStatusResponse();
         if (pollStatus != null && httpClient.getPollStatus() == PollStatus.SERVICE_AVAILABLE) {
             future.complete(ServiceMonitorResponseImpl.builder()
-                    .monitorType(MonitorType.HTTP)
                     .status(ServiceMonitorResponse.Status.Up)
                     .responseTime(pollStatus.getResponseTime() != null ? pollStatus.getResponseTime() : 0.0)
                     .reason(pollStatus.getReason())
                     .build());
         } else {
             future.complete(ServiceMonitorResponseImpl.builder()
-                    .monitorType(MonitorType.HTTP)
                     .status(ServiceMonitorResponse.Status.Down)
                     .responseTime(pollStatus.getResponseTime() != null ? pollStatus.getResponseTime() : 0.0)
                     .reason(pollStatus.getReason())
@@ -272,8 +270,11 @@ public class HttpMonitor implements ServiceMonitor {
     }
 
     static String determineBasicAuthentication(final HttpMonitorRequest httpMonitorRequest) {
-        String credentials = buildCredential(httpMonitorRequest.getAuthParams());
-        return credentials;
+        if (!httpMonitorRequest.hasAuthParams()) {
+            return null;
+        }
+
+        return buildCredential(httpMonitorRequest.getAuthParams());
     }
 
     private static String buildCredential(AuthParams authParams) {
@@ -371,6 +372,10 @@ public class HttpMonitor implements ServiceMonitor {
         }
 
         private String determineVirtualHost(final InetAddress addr, final HttpMonitorRequest httpMonitorRequest) {
+            if (!Strings.isNullOrEmpty(httpMonitorRequest.getHostName())) {
+                return httpMonitorRequest.getHostName();
+            }
+
             final String host = InetAddressUtils.str(addr);
             // Wrap IPv6 addresses in square brackets
             if (addr instanceof Inet6Address) {

@@ -34,7 +34,6 @@ import org.opennms.core.wsman.cxf.CXFWSManClientFactory;
 import org.opennms.core.wsman.exceptions.WSManException;
 import org.opennms.core.wsman.utils.WsmanEndpointUtils;
 import org.opennms.horizon.minion.plugin.api.ServiceDetector;
-import org.opennms.inventory.types.ServiceType;
 import org.opennms.node.scan.contract.ServiceResult;
 import org.opennms.wsman.contract.WsmanConfiguration;
 import org.opennms.wsman.contract.WsmanDetectorRequest;
@@ -115,7 +114,7 @@ public class WsmanDetector implements ServiceDetector {
             }
 
             return ServiceResult.newBuilder()
-                    .setService(ServiceType.WSMAN)
+                    .setService("WSMAN")
                     .setIpAddress(wsmanDetectorRequest.getAgentConfiguration().getHost())
                     .setStatus(serviceStatus)
                     .build();
@@ -131,7 +130,7 @@ public class WsmanDetector implements ServiceDetector {
 
     private ServiceResult getDetectedResult(String host) {
         return ServiceResult.newBuilder()
-                .setService(ServiceType.WSMAN)
+                .setService("WSMAN")
                 .setIpAddress(host)
                 .setStatus(true)
                 .build();
@@ -139,7 +138,7 @@ public class WsmanDetector implements ServiceDetector {
 
     private ServiceResult getErrorResult(String host) {
         return ServiceResult.newBuilder()
-                .setService(ServiceType.WSMAN)
+                .setService("WSMAN")
                 .setIpAddress(host)
                 .setStatus(false)
                 .build();

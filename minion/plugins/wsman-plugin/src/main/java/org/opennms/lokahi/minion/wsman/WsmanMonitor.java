@@ -41,8 +41,6 @@ import org.opennms.horizon.minion.plugin.api.PollStatus;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponseImpl;
-import org.opennms.inventory.service.ServiceInventory;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.wsman.contract.WsmanConfiguration;
 import org.opennms.wsman.contract.WsmanMonitorRequest;
 import org.slf4j.Logger;
@@ -110,49 +108,31 @@ public class WsmanMonitor implements ServiceMonitor {
             LOG.debug("Max Envelope Size: {}", wsmanConfiguration.getMaxEnvelopeSize());
             LOG.debug("Connection Timeout: {}", wsmanConfiguration.getConnectionTimeout());
             LOG.debug("Receive Timeout: {}", wsmanConfiguration.getReceiveTimeout());
-            LOG.debug("ServiceInventory: {}", wsmanMonitorRequest.getServiceInventory());
+            /*            LOG.debug("ServiceInventory: {}", wsmanMonitorRequest.getServiceInventory());
             LOG.debug("Node-Id: {}", wsmanMonitorRequest.getServiceInventory().getNodeId());
             LOG.debug(
                     "Monitor-Service-Id: {}",
-                    wsmanMonitorRequest.getServiceInventory().getMonitorServiceId());
+                    wsmanMonitorRequest.getServiceInventory().getMonitorServiceId());*/
 
             InetAddress iNet = InetAddress.getByName(wsmanConfiguration.getHost());
 
             final String ipAddress = iNet.getHostAddress();
-            final ServiceInventory serviceInventory = wsmanMonitorRequest.getServiceInventory();
 
             future = pollAsync(wsmanMonitorRequest, LOG)
                     .thenApply(pollStatus -> {
                         ServiceMonitorResponse serviceMonitorResponse = ServiceMonitorResponseImpl.builder()
                                 .reason(pollStatus.getReason())
-                                .ipAddress(ipAddress)
-                                .monitorType(MonitorType.WSMAN)
                                 .status(
                                         pollStatus.getStatusName().equalsIgnoreCase("up")
                                                 ? ServiceMonitorResponse.Status.Up
                                                 : ServiceMonitorResponse.Status.Down)
-                                .nodeId(serviceInventory.getNodeId())
-                                .monitoredServiceId(serviceInventory.getMonitorServiceId())
                                 .build();
                         return serviceMonitorResponse;
                     })
-                    .completeOnTimeout(
-                            ServiceMonitorResponseImpl.builder()
-                                    .ipAddress(ipAddress)
-                                    .monitorType(MonitorType.WSMAN)
-                                    .monitoredServiceId(serviceInventory.getMonitorServiceId())
-                                    .nodeId(serviceInventory.getNodeId())
-                                    .build(),
-                            3000,
-                            TimeUnit.MILLISECONDS)
+                    .completeOnTimeout(ServiceMonitorResponseImpl.builder().build(), 3000, TimeUnit.MILLISECONDS)
                     .exceptionally(thrown -> ServiceMonitorResponseImpl.builder()
-                            .monitorType(MonitorType.WSMAN)
                             .status(ServiceMonitorResponse.Status.Unknown)
-                            .ipAddress(ipAddress)
-                            .monitorType(MonitorType.WSMAN)
                             .reason(thrown.getMessage())
-                            .monitoredServiceId(serviceInventory.getMonitorServiceId())
-                            .nodeId(serviceInventory.getNodeId())
                             .build());
 
             LOG.debug("POLL - WsManMonitor returned normally.");

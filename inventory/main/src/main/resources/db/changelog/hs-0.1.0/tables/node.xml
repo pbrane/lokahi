@@ -44,4 +44,15 @@
                                  referencedTableName="monitoring_location" referencedColumnNames="id"/>
 
     </changeSet>
+
+    <changeSet id="0.1.1-node-azure-info" author="fooker">
+        <addColumn tableName="node">
+            <column name="azure_resource" type="varchar"/>
+            <column name="azure_resource_group" type="varchar"/>
+            <column name="azure_client_id" type="varchar"/>
+            <column name="azure_client_secret" type="varchar"/>
+            <column name="azure_subscription_id" type="varchar"/>
+            <column name="azure_directory_id" type="varchar"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

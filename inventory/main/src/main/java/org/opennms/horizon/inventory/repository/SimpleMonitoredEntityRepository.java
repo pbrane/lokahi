@@ -19,18 +19,20 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.server.model.inventory;
+package org.opennms.horizon.inventory.repository;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.util.List;
+import java.util.UUID;
+import org.opennms.horizon.inventory.monitoring.simple.SimpleMonitoredEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@Getter
-@Setter
-public class MonitoredServiceStatus {
+@Repository
+public interface SimpleMonitoredEntityRepository extends JpaRepository<SimpleMonitoredEntity, UUID> {
 
-    private long id;
-    private String tenantId;
-    private long monitoredServiceId;
-    private boolean state;
-    private long firstObservationTime;
+    SimpleMonitoredEntity getByTenantIdAndId(final String tenantId, final UUID id);
+
+    List<SimpleMonitoredEntity> findByTenantId(final String tenantId);
+
+    List<SimpleMonitoredEntity> findByTenantIdAndLocationId(final String tenantId, final long locationId);
 }

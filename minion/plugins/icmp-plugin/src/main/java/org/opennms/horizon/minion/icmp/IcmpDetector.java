@@ -33,7 +33,6 @@ import org.opennms.horizon.shared.icmp.Pinger;
 import org.opennms.horizon.shared.icmp.PingerFactory;
 import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.icmp.contract.IcmpDetectorRequest;
-import org.opennms.inventory.types.ServiceType;
 import org.opennms.node.scan.contract.ServiceResult;
 
 public class IcmpDetector implements ServiceDetector {
@@ -134,7 +133,7 @@ public class IcmpDetector implements ServiceDetector {
         public void handleResponse(InetAddress address, EchoPacket response) {
             future.complete(ServiceResult.newBuilder()
                     .setIpAddress(InetAddressUtils.str(address))
-                    .setService(ServiceType.ICMP)
+                    .setService("ICMP")
                     .setStatus(true)
                     .build());
         }
@@ -143,7 +142,7 @@ public class IcmpDetector implements ServiceDetector {
         public void handleTimeout(InetAddress address, EchoPacket request) {
             future.complete(ServiceResult.newBuilder()
                     .setIpAddress(InetAddressUtils.str(address))
-                    .setService(ServiceType.ICMP)
+                    .setService("ICMP")
                     .setStatus(false)
                     .build());
         }
@@ -152,7 +151,7 @@ public class IcmpDetector implements ServiceDetector {
         public void handleError(InetAddress address, EchoPacket request, Throwable t) {
             future.complete(ServiceResult.newBuilder()
                     .setIpAddress(InetAddressUtils.str(address))
-                    .setService(ServiceType.ICMP)
+                    .setService("ICMP")
                     .setStatus(false)
                     .build());
         }

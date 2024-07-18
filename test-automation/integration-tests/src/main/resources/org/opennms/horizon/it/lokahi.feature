@@ -36,9 +36,9 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
       Then Add a device with label "local1" IP address "127.1.0.1" and location "External"
       Then Add a device with label "local2" IP address "127.1.0.2" and location "External"
       Then Add a device with label "local3" IP address "127.1.0.3" and location "External"
-      Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.1" with timeout 120000ms
-      Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.2" with timeout 120000ms
-      Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.3" with timeout 120000ms
+      Then Read the "response_time_msec" metrics with label "ip_address" set to "127.1.0.1" with timeout 120000ms
+      Then Read the "response_time_msec" metrics with label "ip_address" set to "127.1.0.2" with timeout 120000ms
+      Then Read the "response_time_msec" metrics with label "ip_address" set to "127.1.0.3" with timeout 120000ms
       # Delete the node {string} from inventory in location {string}
       # The following has errors, but with deleting the tenant, we can ignore for now.
       #Then Delete the node "local1" from inventory in location "External"
@@ -74,9 +74,9 @@ Feature: Minion Monitoring via Echo Messages Logged in Prometheus
     Then Add a device with label "local1" IP address "127.1.0.1" and location "Metrics"
     Then Add a device with label "local2" IP address "127.1.0.2" and location "Metrics"
     Then Add a device with label "local3" IP address "127.1.0.3" and location "Metrics"
-    Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.1" with timeout 120000ms
-    Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.2" with timeout 120000ms
-    Then Read the "response_time_msec" metrics with label "instance" set to "127.1.0.3" with timeout 120000ms
+    Then Read the "response_time_msec" metrics with label "ip_address" set to "127.1.0.1" with timeout 120000ms
+    Then Read the "response_time_msec" metrics with label "ip_address" set to "127.1.0.2" with timeout 120000ms
+    Then Read the "response_time_msec" metrics with label "ip_address" set to "127.1.0.3" with timeout 120000ms
     Then Delete the first node from inventory
     Then Delete the first node from inventory
     Then Delete the first node from inventory

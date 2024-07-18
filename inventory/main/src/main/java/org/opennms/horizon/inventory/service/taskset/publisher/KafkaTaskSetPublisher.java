@@ -60,15 +60,14 @@ public class KafkaTaskSetPublisher implements TaskSetPublisher {
     }
 
     @Override
-    public void publishTaskDeletion(String tenantId, Long locationId, List<TaskDefinition> taskList) {
+    public void publishTaskDeletion(String tenantId, Long locationId, List<String> taskIdList) {
         log.info(
-                "Publishing task removal for location for tenantId={}; locationId={}; taskDef={}",
+                "Publishing task removal for location for tenantId={}; locationId={}; taskId={}",
                 tenantId,
                 locationId,
-                taskList);
+                taskIdList);
         publishTaskSetUpdate(
-                (updateBuilder) -> taskList.forEach(
-                        (taskDefinition) -> addRemovalOpToUpdate(updateBuilder, taskDefinition.getId())),
+                (updateBuilder) -> taskIdList.forEach((taskId) -> addRemovalOpToUpdate(updateBuilder, taskId)),
                 tenantId,
                 locationId);
     }

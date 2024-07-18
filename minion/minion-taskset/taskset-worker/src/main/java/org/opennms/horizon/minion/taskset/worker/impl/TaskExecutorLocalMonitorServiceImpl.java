@@ -21,18 +21,21 @@
  */
 package org.opennms.horizon.minion.taskset.worker.impl;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.opennms.horizon.minion.plugin.api.ServiceMonitor;
-import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
+import java.util.function.BiConsumer;
+import org.opennms.horizon.minion.plugin.api.ServiceMonitorRequest;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.registries.MonitorRegistry;
 import org.opennms.horizon.minion.scheduler.OpennmsScheduler;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutionResultProcessor;
 import org.opennms.horizon.minion.taskset.worker.TaskExecutorLocalService;
 import org.opennms.horizon.shared.logging.Logging;
+import org.opennms.taskset.contract.MonitorSetConfig;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +55,6 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
     private OpennmsScheduler scheduler;
     private TaskExecutionResultProcessor resultProcessor;
     private MonitorRegistry monitorRegistry;
-    private ServiceMonitor monitor = null;
     private ExecutorService executor;
     private AtomicBoolean active = new AtomicBoolean(false);
 
@@ -123,55 +125,73 @@ public class TaskExecutorLocalMonitorServiceImpl implements TaskExecutorLocalSer
     }
 
     private void executeIteration() {
+        final MonitorSetConfig monitors;
         try {
-            if (monitor == null) {
-                ServiceMonitor lazyMonitor = lookupMonitor(taskDefinition);
-                if (lazyMonitor != null) {
-                    this.monitor = lazyMonitor;
+            monitors = this.taskDefinition.getConfiguration().unpack(MonitorSetConfig.class);
+        } catch (final InvalidProtocolBufferException e) {
+            log.error("Failed to unpack monitor task configuration", e);
+            return;
+        }
+
+        final var futures = new ArrayList<CompletableFuture<ServiceMonitorResponse>>();
+        for (final var config : monitors.getMonitorConfigList()) {
+            final var monitorManager = monitorRegistry.getService(config.getMonitorType());
+            if (monitorManager == null) {
+                log.warn("Skipping service monitor execution; monitor not found: {}", config.getMonitorType());
+                continue;
+            }
+
+            try {
+                final var monitor = monitorManager.create();
+
+                final var request = ServiceMonitorRequest.builder()
+                        .taskId(this.taskDefinition.getId())
+                        .monitoredEntityId(config.getMonitoredEntityId())
+                        .monitorType(config.getMonitorType())
+                        .configuration(config.getConfiguration())
+                        .build();
+
+                final var future =
+                        monitor.poll(request.getConfiguration()).whenComplete(this.handleExecutionComplete(request));
+
+                futures.add(future);
+
+            } catch (Exception exc) {
+                // TODO: throttle - we can get very large numbers of these in a short time
+                if (log.isDebugEnabled()) {
+                    log.debug("error executing workflow {}", taskDefinition.getId(), exc);
+                } else {
+                    log.warn("error executing workflow {} , message = {}", taskDefinition.getId(), exc.getMessage());
                 }
             }
-            if (monitor != null) {
-                // TBD888: populate host, or stop?
-                CompletableFuture<ServiceMonitorResponse> future = monitor.poll(taskDefinition.getConfiguration());
-                future.whenCompleteAsync(this::handleExecutionComplete, executor);
-
-            } else {
-                log.info("Skipping service monitor execution; monitor not found: monitor="
-                        + taskDefinition.getPluginName());
-            }
-        } catch (Exception exc) {
-            // TODO: throttle - we can get very large numbers of these in a short time
-            if (log.isDebugEnabled()) {
-                log.debug("error executing workflow {}", taskDefinition.getId(), exc);
-            } else {
-                log.warn("error executing workflow {} , message = {}", taskDefinition.getId(), exc.getMessage());
-            }
         }
+
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).whenComplete((result, ex) -> {
+            this.active.set(false);
+        });
     }
 
-    private void handleExecutionComplete(ServiceMonitorResponse serviceMonitorResponse, Throwable exc) {
-        log.trace("Completed execution: workflow-uuid={}", taskDefinition.getId());
-        active.set(false);
+    private BiConsumer<ServiceMonitorResponse, Throwable> handleExecutionComplete(
+            final ServiceMonitorRequest serviceMonitorRequest) {
+        return (ServiceMonitorResponse serviceMonitorResponse, Throwable exc) -> {
+            if (exc == null) {
+                resultProcessor.queueSendResult(taskDefinition, serviceMonitorRequest, serviceMonitorResponse);
 
-        if (exc == null) {
-            resultProcessor.queueSendResult(taskDefinition.getId(), serviceMonitorResponse);
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("error executing workflow; workflow-uuid= {}", taskDefinition.getId(), exc);
             } else {
-                log.warn(
-                        "error executing workflow; workflow-uuid= {}, message = {}",
-                        taskDefinition.getId(),
-                        exc.getMessage());
+                if (log.isDebugEnabled()) {
+                    log.debug(
+                            "error executing workflow; workflow-uuid={}, monitor={}",
+                            taskDefinition.getId(),
+                            serviceMonitorRequest.getMonitoredEntityId(),
+                            exc);
+                } else {
+                    log.warn(
+                            "error executing workflow; workflow-uuid={}, monitor={}, message={}",
+                            taskDefinition.getId(),
+                            serviceMonitorRequest.getMonitoredEntityId(),
+                            exc.getMessage());
+                }
             }
-        }
-    }
-
-    private ServiceMonitor lookupMonitor(TaskDefinition taskDefinition) {
-        String pluginName = taskDefinition.getPluginName();
-
-        ServiceMonitorManager result = monitorRegistry.getService(pluginName);
-
-        return result.create();
+        };
     }
 }

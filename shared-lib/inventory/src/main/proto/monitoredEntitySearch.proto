@@ -27,11 +27,33 @@
  *******************************************************************************/
 syntax = "proto3";
 
-package opennms.inventory.service;
-option java_multiple_files = true;
-option java_package = "org.opennms.inventory.service";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/any.proto";
 
-message ServiceInventory {
-  int64 node_id = 1;
-  int64 monitor_service_id = 2;
+package opennms.inventory;
+option java_multiple_files = true;
+option java_package = "org.opennms.horizon.inventory.dto";
+
+
+message MonitorEntityResponse {
+  string id = 1;
+  int64 locationId = 2;
+  string type = 3;
+  //google.protobuf.Any config = 4; // TODO: need to be change LOK-2545
+}
+
+message ListMonitorEntities {
+  repeated MonitorEntityResponse listMonitorEntityResponse = 1;
+}
+
+message SearchQuery {
+  optional int64  locationId = 1;
+  optional string providerId = 2;
+}
+
+service MonitoredEntityService {
+  rpc getAllMonitoredEntitiesByLocation(google.protobuf.Int64Value) returns(ListMonitorEntities) {};
+  rpc getAllMonitoredEntitiesBySearchTerm(SearchQuery) returns(ListMonitorEntities) {};
+  rpc getAllMonitoredEntities(google.protobuf.Empty) returns(ListMonitorEntities){};
 }

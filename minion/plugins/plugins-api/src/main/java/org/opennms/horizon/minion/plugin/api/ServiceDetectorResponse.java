@@ -21,14 +21,12 @@
  */
 package org.opennms.horizon.minion.plugin.api;
 
-import org.opennms.taskset.contract.MonitorType;
-
 public interface ServiceDetectorResponse {
 
     /**
      * @return type of monitor that produced the response.
      */
-    MonitorType getMonitorType();
+    String getMonitorType();
 
     /**
      * @return true if the service was detected, false otherwise

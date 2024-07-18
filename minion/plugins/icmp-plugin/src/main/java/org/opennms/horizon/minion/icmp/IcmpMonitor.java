@@ -36,7 +36,6 @@ import org.opennms.horizon.shared.icmp.PingResponseCallback;
 import org.opennms.horizon.shared.icmp.Pinger;
 import org.opennms.horizon.shared.icmp.PingerFactory;
 import org.opennms.icmp.contract.IcmpMonitorRequest;
-import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,10 +98,7 @@ public class IcmpMonitor implements ServiceMonitor {
                     effectiveRequest.getTimeout(),
                     effectiveRequest.getRetries(),
                     effectiveRequest.getPacketSize(),
-                    new MyPingResponseCallback(
-                            future,
-                            effectiveRequest.getServiceInventory().getNodeId(),
-                            effectiveRequest.getServiceInventory().getMonitorServiceId()));
+                    new MyPingResponseCallback(future));
         } catch (Exception e) {
             future.completeExceptionally(e);
         }
@@ -134,11 +130,8 @@ public class IcmpMonitor implements ServiceMonitor {
         }
 
         if (!request.hasField(timeoutFieldDescriptor)) {
-            request.getServiceInventory();
             resultBuilder.setTimeout(PingConstants.DEFAULT_TIMEOUT);
         }
-
-        resultBuilder.setServiceInventory(request.getServiceInventory());
 
         return resultBuilder.build();
     }
@@ -150,14 +143,9 @@ public class IcmpMonitor implements ServiceMonitor {
     private static class MyPingResponseCallback implements PingResponseCallback {
         private final Logger logger = LoggerFactory.getLogger(MyPingResponseCallback.class);
         private final CompletableFuture<ServiceMonitorResponse> future;
-        private final long nodeId;
-        private final long monitoredServiceId;
 
-        public MyPingResponseCallback(
-                CompletableFuture<ServiceMonitorResponse> future, long nodeId, long monitoredServiceId) {
+        public MyPingResponseCallback(CompletableFuture<ServiceMonitorResponse> future) {
             this.future = future;
-            this.nodeId = nodeId;
-            this.monitoredServiceId = monitoredServiceId;
         }
 
         @Override
@@ -166,36 +154,24 @@ public class IcmpMonitor implements ServiceMonitor {
             double responseTimeMillis = responseTimeMicros / 1000.0;
 
             future.complete(ServiceMonitorResponseImpl.builder()
-                    .monitorType(MonitorType.ICMP)
                     .status(Status.Up)
                     .responseTime(responseTimeMillis)
-                    .nodeId(nodeId)
-                    .monitoredServiceId(monitoredServiceId)
-                    .ipAddress(inetAddress.getHostAddress())
                     .build());
         }
 
         @Override
         public void handleTimeout(InetAddress inetAddress, EchoPacket echoPacket) {
             future.complete(ServiceMonitorResponseImpl.builder()
-                    .monitorType(MonitorType.ICMP)
                     .status(Status.Unknown)
-                    .nodeId(nodeId)
-                    .monitoredServiceId(monitoredServiceId)
                     .reason("timeout")
-                    .ipAddress(inetAddress.getHostAddress())
                     .build());
         }
 
         @Override
         public void handleError(InetAddress inetAddress, EchoPacket echoPacket, Throwable throwable) {
             future.complete(ServiceMonitorResponseImpl.builder()
-                    .monitorType(MonitorType.ICMP)
                     .status(Status.Down)
-                    .nodeId(nodeId)
                     .reason(throwable.getMessage())
-                    .monitoredServiceId(monitoredServiceId)
-                    .ipAddress(inetAddress.getHostAddress())
                     .build());
         }
     }

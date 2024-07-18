@@ -121,4 +121,22 @@ public class Node {
 
     @Column(name = "system_contact")
     private String systemContact;
+
+    @Column(name = "azure_resource")
+    private String azureResource;
+
+    @Column(name = "azure_resource_group")
+    private String azureResourceGroup;
+
+    @Column(name = "azure_client_id")
+    private String azureClientId;
+
+    @Column(name = "azure_client_secret")
+    private String azureClientSecret;
+
+    @Column(name = "azure_subscription_id")
+    private String azureSubscriptionId;
+
+    @Column(name = "azure_directory_id")
+    private String azureDirectoryId;
 }

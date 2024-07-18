@@ -47,7 +47,6 @@ import org.opennms.horizon.shared.utils.InetAddressUtils;
 import org.opennms.horizon.snmp.api.SnmpConfiguration;
 import org.opennms.snmp.contract.SnmpCollectorPart;
 import org.opennms.snmp.contract.SnmpCollectorRequest;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
 import org.springframework.stereotype.Component;
@@ -62,8 +61,8 @@ public class CollectorTaskSetService {
     private final SnmpCollectorConfig snmpCollectorConfig;
 
     public TaskDefinition getCollectorTask(
-            MonitorType monitorType, IpInterface ipInterface, Node node, SnmpConfiguration snmpConfiguration) {
-        if (MonitorType.SNMP.equals(monitorType)) {
+            String monitorType, IpInterface ipInterface, Node node, SnmpConfiguration snmpConfiguration) {
+        if ("SNMP".equals(monitorType)) {
             return addSnmpCollectorTask(ipInterface, node, snmpConfiguration);
         }
         return null;
@@ -71,7 +70,7 @@ public class CollectorTaskSetService {
 
     public TaskDefinition addSnmpCollectorTask(
             IpInterface ipInterface, Node node, SnmpConfiguration snmpConfiguration) {
-        String monitorTypeValue = MonitorType.SNMP.name();
+        String monitorTypeValue = "SNMP";
         String ipAddress = InetAddressUtils.toIpAddrString(ipInterface.getIpAddress());
 
         List<SnmpInterface> snmpInterfaces = getSnmpInterfaces(node.getId());

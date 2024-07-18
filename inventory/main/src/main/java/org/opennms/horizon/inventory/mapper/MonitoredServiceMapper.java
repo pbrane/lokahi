@@ -27,7 +27,5 @@ import org.opennms.horizon.inventory.model.MonitoredService;
 
 @Mapper(componentModel = "spring")
 public interface MonitoredServiceMapper {
-    MonitoredService dtoToModel(MonitoredServiceDTO dto);
-
     MonitoredServiceDTO modelToDTO(MonitoredService model);
 }

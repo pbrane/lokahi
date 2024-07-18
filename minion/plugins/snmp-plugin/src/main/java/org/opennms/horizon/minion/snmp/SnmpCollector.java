@@ -47,7 +47,6 @@ import org.opennms.horizon.snmp.api.SnmpResponseMetric;
 import org.opennms.horizon.snmp.api.SnmpResultMetric;
 import org.opennms.horizon.snmp.api.SnmpV3Configuration;
 import org.opennms.snmp.contract.SnmpCollectorRequest;
-import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,7 +156,6 @@ public class SnmpCollector implements ServiceCollector {
     private ServiceCollectorResponseImpl generateFailureResponse(CollectionRequest request) {
         return ServiceCollectorResponseImpl.builder()
                 .nodeId(request.getNodeId())
-                .monitorType(MonitorType.SNMP)
                 .status(false)
                 .ipAddress(request.getIpAddress())
                 .build();
@@ -172,7 +170,6 @@ public class SnmpCollector implements ServiceCollector {
         return ServiceCollectorResponseImpl.builder()
                 .results(response)
                 .nodeId(nodeId)
-                .monitorType(MonitorType.SNMP)
                 .status(true)
                 .timeStamp(System.currentTimeMillis())
                 .ipAddress(ipAddress)

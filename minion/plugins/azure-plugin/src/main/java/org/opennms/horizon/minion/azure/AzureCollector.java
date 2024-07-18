@@ -46,7 +46,6 @@ import org.opennms.horizon.shared.azure.http.AzureHttpException;
 import org.opennms.horizon.shared.azure.http.dto.instanceview.AzureInstanceView;
 import org.opennms.horizon.shared.azure.http.dto.login.AzureOAuthToken;
 import org.opennms.horizon.shared.azure.http.dto.metrics.AzureMetrics;
-import org.opennms.taskset.contract.MonitorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,7 +134,6 @@ public class AzureCollector implements ServiceCollector {
                 future.complete(ServiceCollectorResponseImpl.builder()
                         .results(results)
                         .nodeId(collectionRequest.getNodeId())
-                        .monitorType(MonitorType.AZURE)
                         .status(true)
                         .timeStamp(System.currentTimeMillis())
                         .ipAddress(AZURE_NODE_PREFIX + collectionRequest.getNodeId())
@@ -144,7 +142,6 @@ public class AzureCollector implements ServiceCollector {
             } else {
                 future.complete(ServiceCollectorResponseImpl.builder()
                         .nodeId(collectionRequest.getNodeId())
-                        .monitorType(MonitorType.AZURE)
                         .status(false)
                         .timeStamp(System.currentTimeMillis())
                         .ipAddress(AZURE_NODE_PREFIX + collectionRequest.getNodeId())
@@ -158,7 +155,6 @@ public class AzureCollector implements ServiceCollector {
                     e);
             future.complete(ServiceCollectorResponseImpl.builder()
                     .nodeId(collectionRequest.getNodeId())
-                    .monitorType(MonitorType.AZURE)
                     .status(false)
                     .timeStamp(System.currentTimeMillis())
                     .ipAddress(AZURE_NODE_PREFIX + collectionRequest.getNodeId())

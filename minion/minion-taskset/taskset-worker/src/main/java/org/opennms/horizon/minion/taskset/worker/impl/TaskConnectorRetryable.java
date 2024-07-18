@@ -69,7 +69,9 @@ public class TaskConnectorRetryable implements RetryableExecutor {
         ServiceConnectorFactory serviceConnectorFactory = lookupServiceConnectorFactory(taskDefinition);
 
         serviceConnector = serviceConnectorFactory.create(
-                result -> resultProcessor.queueSendResult(taskDefinition.getId(), result), config, onDisconnect);
+                (request, result) -> resultProcessor.queueSendResult(taskDefinition, request, result),
+                config,
+                onDisconnect);
 
         log.info("Attempting to connect: workflow-uuid={}", taskDefinition.getId());
         serviceConnector.connect();

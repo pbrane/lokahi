@@ -28,7 +28,6 @@ import org.opennms.horizon.minion.plugin.api.ServiceDetector;
 import org.opennms.horizon.shared.snmp.SnmpAgentConfig;
 import org.opennms.horizon.shared.snmp.SnmpHelper;
 import org.opennms.horizon.shared.snmp.SnmpObjId;
-import org.opennms.inventory.types.ServiceType;
 import org.opennms.node.scan.contract.ServiceResult;
 import org.opennms.snmp.contract.SnmpDetectorRequest;
 import org.slf4j.Logger;
@@ -81,7 +80,7 @@ public class SnmpDetector implements ServiceDetector {
 
     private ServiceResult getDetectedResult(String host) {
         return ServiceResult.newBuilder()
-                .setService(ServiceType.SNMP)
+                .setService("SNMP")
                 .setIpAddress(host)
                 .setStatus(true)
                 .build();
@@ -89,7 +88,7 @@ public class SnmpDetector implements ServiceDetector {
 
     private ServiceResult getErrorResult(String host) {
         return ServiceResult.newBuilder()
-                .setService(ServiceType.SNMP)
+                .setService("SNMP")
                 .setIpAddress(host)
                 .setStatus(false)
                 .build();

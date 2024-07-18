@@ -31,6 +31,9 @@ import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 import "icmp.proto";
 import "snmp.proto";
+import "http.proto";
+import "ntp.proto";
+import "ssh.proto";
 import "traps-config.proto";
 import "azure.proto";
 import "nodescan.proto";
@@ -57,15 +60,15 @@ enum ScanType {
   DISCOVERY_SCAN = 2;
 }
 
-enum MonitorType {
-  UNKNOWN = 0;
-  ICMP = 1;
-  SNMP = 2;
-  ECHO = 3;
-  AZURE = 4;
-  HTTP = 5;
-  NTP = 6;
-  WSMAN=7;
+message MonitorSetConfig {
+
+  message MonitorConfig {
+    string monitoredEntityId = 1;
+    string monitorType = 2;
+    google.protobuf.Any configuration = 7;
+  }
+
+  repeated MonitorConfig monitorConfig = 1;
 }
 
 message TaskDefinition {
@@ -76,7 +79,7 @@ message TaskDefinition {
   string schedule = 5;
   uint64 node_id = 6;
   google.protobuf.Any configuration = 7;
-  uint64 monitor_service_id = 8;
+  map<string, string> metric_labels = 8;
 }
 
 
@@ -112,13 +115,14 @@ message ScannerResponse {
 message MonitorResponse {
   string status = 1;
   string reason = 2;
-  string ip_address = 3;
+  // string ip_address = 3;  // TODO fooker: cleanup
   double response_time_ms = 4;
-  MonitorType monitor_type = 5;
+  string monitor_type = 5;
   map<string, double> metrics = 6;
-  uint64 node_id = 7;
+  uint64 node_id = 7; // TODO fooker: cleanup
   uint64 timestamp = 8;
-  uint64 monitor_service_id = 9;
+  string monitored_entity_id = 9;
+  map<string, string> metric_labels = 10;
 }
 
 message CollectorResponse {
@@ -127,7 +131,7 @@ message CollectorResponse {
   uint64 node_id = 3;
   // results varies for each collector.
   google.protobuf.Any result = 4;
-  MonitorType monitor_type = 5;
+  string monitor_type = 5;
   uint64 timestamp = 6;
 }
 

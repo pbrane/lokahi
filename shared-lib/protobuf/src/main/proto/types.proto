@@ -32,10 +32,3 @@ import "google/protobuf/any.proto";
 package opennms.inventory.types;
 option java_multiple_files = true;
 option java_package = "org.opennms.inventory.types";
-
-enum ServiceType {
-  UNKNOWN = 0;
-  ICMP = 1;
-  SNMP = 2;
-  WSMAN = 3;
-}

@@ -52,7 +52,6 @@ import org.opennms.horizon.inventory.service.MonitoringLocationService;
 import org.opennms.horizon.inventory.service.MonitoringSystemService;
 import org.opennms.horizon.inventory.util.Clock;
 import org.opennms.taskset.contract.MonitorResponse;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskResult;
 import org.opennms.taskset.contract.TenantLocationSpecificTaskSetResults;
 import org.springframework.beans.factory.annotation.Value;
@@ -212,8 +211,7 @@ public class MinionHeartbeatConsumer {
         MonitorResponse monitorResponse = MonitorResponse.newBuilder()
                 .setStatus("UP")
                 .setResponseTimeMs(responseTime)
-                .setMonitorType(MonitorType.ECHO)
-                .setIpAddress(systemId) // for minion only
+                .setMonitorType("ECHO")
                 .setTimestamp(System.currentTimeMillis())
                 .build();
         TaskResult result = TaskResult.newBuilder()

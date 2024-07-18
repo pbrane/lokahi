@@ -43,7 +43,6 @@ import org.opennms.horizon.timeseries.cortex.CortexTSS;
 import org.opennms.horizon.tsdata.MetricNameConstants;
 import org.opennms.taskset.contract.CollectorResponse;
 import org.opennms.taskset.contract.Identity;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskResult;
 import prometheus.PrometheusTypes;
 
@@ -66,8 +65,7 @@ public class TaskSetCollectorSnmpResponseProcessorTest {
 
         prepareCollectorResponseTestData();
 
-        testLabelValues =
-                new String[] {"x-instance-x", "x-location-x", "x-system-id-x", MonitorType.SNMP.name(), "131313"};
+        testLabelValues = new String[] {"x-instance-x", "x-location-x", "x-system-id-x", "SNMP", "131313"};
 
         target = new TaskSetCollectorSnmpResponseProcessor(mockCortexTSS, mockTenantMetricsTracker);
     }
@@ -83,23 +81,23 @@ public class TaskSetCollectorSnmpResponseProcessorTest {
         // Verify the Results
         //
         var int32ResultStoreMatcher =
-                new PrometheusTimeSeriersBuilderArgumentMatcher(3200320032.0, MonitorType.SNMP, "x_int32_alias_x");
+                new PrometheusTimeSeriersBuilderArgumentMatcher(3200320032.0, "SNMP", "x_int32_alias_x");
         Mockito.verify(mockCortexTSS).store(Mockito.eq("x-tenant-id-x"), Mockito.argThat(int32ResultStoreMatcher));
 
         var counter32ResultStoreMatcher =
-                new PrometheusTimeSeriersBuilderArgumentMatcher(640001.0, MonitorType.SNMP, "x_counter32_alias_x");
+                new PrometheusTimeSeriersBuilderArgumentMatcher(640001.0, "SNMP", "x_counter32_alias_x");
         Mockito.verify(mockCortexTSS).store(Mockito.eq("x-tenant-id-x"), Mockito.argThat(counter32ResultStoreMatcher));
 
         var timeticksResultStoreMatcher =
-                new PrometheusTimeSeriersBuilderArgumentMatcher(640002.0, MonitorType.SNMP, "x_timeticks_alias_x");
+                new PrometheusTimeSeriersBuilderArgumentMatcher(640002.0, "SNMP", "x_timeticks_alias_x");
         Mockito.verify(mockCortexTSS).store(Mockito.eq("x-tenant-id-x"), Mockito.argThat(timeticksResultStoreMatcher));
 
         var gauge32ResultStoreMatcher =
-                new PrometheusTimeSeriersBuilderArgumentMatcher(640003.0, MonitorType.SNMP, "x_gauge32_alias_x");
+                new PrometheusTimeSeriersBuilderArgumentMatcher(640003.0, "SNMP", "x_gauge32_alias_x");
         Mockito.verify(mockCortexTSS).store(Mockito.eq("x-tenant-id-x"), Mockito.argThat(gauge32ResultStoreMatcher));
 
         var counter64ResultStoreMatcher =
-                new PrometheusTimeSeriersBuilderArgumentMatcher(640004.0, MonitorType.SNMP, "x_counter64_alias_x");
+                new PrometheusTimeSeriersBuilderArgumentMatcher(640004.0, "SNMP", "x_counter64_alias_x");
         Mockito.verify(mockCortexTSS).store(Mockito.eq("x-tenant-id-x"), Mockito.argThat(counter64ResultStoreMatcher));
 
         Mockito.verifyNoMoreInteractions(mockCortexTSS);
@@ -120,7 +118,7 @@ public class TaskSetCollectorSnmpResponseProcessorTest {
         CollectorResponse collectorResponse = CollectorResponse.newBuilder()
                 .setResult(Any.pack(snmpResponse))
                 .setTimestamp(timestamp.toEpochMilli())
-                .setMonitorType(MonitorType.SNMP)
+                .setMonitorType("SNMP")
                 .build();
         TaskResult taskResult =
                 TaskResult.newBuilder().setCollectorResponse(collectorResponse).build();
@@ -183,7 +181,7 @@ public class TaskSetCollectorSnmpResponseProcessorTest {
         testCollectorResponseAllResultTypes = CollectorResponse.newBuilder()
                 .setIpAddress("x-instance-x")
                 .setNodeId(131313)
-                .setMonitorType(MonitorType.SNMP)
+                .setMonitorType("SNMP")
                 .setResult(Any.pack(snmpResponseMetricAllTypes))
                 .build();
 
@@ -206,11 +204,10 @@ public class TaskSetCollectorSnmpResponseProcessorTest {
             implements ArgumentMatcher<List<PrometheusTypes.TimeSeries>> {
 
         private final double metricValue;
-        private final MonitorType monitorType;
+        private final String monitorType;
         private final String metricName;
 
-        public PrometheusTimeSeriersBuilderArgumentMatcher(
-                double metricValue, MonitorType monitorType, String metricName) {
+        public PrometheusTimeSeriersBuilderArgumentMatcher(double metricValue, String monitorType, String metricName) {
             this.metricValue = metricValue;
             this.monitorType = monitorType;
             this.metricName = metricName;
@@ -237,7 +234,7 @@ public class TaskSetCollectorSnmpResponseProcessorTest {
                 return ((Objects.equals(metricName, labelMap.get(MetricNameConstants.METRIC_NAME_LABEL)))
                         && (Objects.equals("x-location-x", labelMap.get("location")))
                         && (Objects.equals("x-system-id-x", labelMap.get("system_id")))
-                        && (Objects.equals(monitorType.name(), labelMap.get("monitor")))
+                        && (Objects.equals(monitorType, labelMap.get("monitor")))
                         && (Objects.equals("131313", labelMap.get("node_id"))));
             }
 

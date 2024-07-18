@@ -1,3 +1,4 @@
+@inventory-processing
 Feature: Inventory Processing
 
   Background: Common Test Setup
@@ -28,7 +29,7 @@ Feature: Inventory Processing
     Then verify the new node return fields match
     Then retrieve the list of nodes from Inventory
     Then verify that the new node is in the list returned from inventory
-    Then verify the task set update is published for device with nodeScan within 30000ms
+    Then verify the task set update is published for device with nodeScan and type "SCANNER" within 30000ms
     Then shutdown kafka consumer
 
 
@@ -51,20 +52,17 @@ Feature: Inventory Processing
     Then add a new device with label "test-label" and ip address "192.168.30.1" and location named "MINION"
     Then lookup node with location "MINION" and ip address "192.168.30.1"
     Then send Device Detection to Kafka topic "task-set.results" for an ip address "192.168.30.1" at location "MINION"
-    Then verify the task set update is published for device with task suffix "icmp-monitor" within 30000ms
-    Then verify the task set update is published for device with task suffix "snmp-monitor" within 30000ms
-    Then verify the task set update is published for device with task suffix "snmp-collector" within 30000ms
+    Then verify the task set update is published for device with type "MONITOR" and task suffix "discovery" within 40000ms
+    Then verify the task set update is published for device with type "COLLECTOR" and task suffix "snmp-collector" within 40000ms
     Then shutdown kafka consumer
-
 
   Scenario: Deletion of a device causes Task Definitions Removals to be Requested
     Given Device IP Address "192.168.30.1" in location named "MINION"
     Given Device Task IP address = "192.168.30.1"
     Given Subscribe to kafka topic "task-set-publisher"
     Then remove the device
-    Then verify the task set update is published with removal of task with suffix "icmp-monitor" within 30000ms
-    Then verify the task set update is published with removal of task with suffix "snmp-monitor" within 30000ms
-    Then verify the task set update is published with removal of task with suffix "snmp-collector" within 30000ms
+    Then verify the task set update is published with removal of task having type "MONITOR" with suffix "discovery" within 40000ms
+    Then verify the task set update is published with removal of task having type "COLLECTOR" with suffix "snmp-collector" within 40000ms
     Then shutdown kafka consumer
 
   @node-scan-interfaces

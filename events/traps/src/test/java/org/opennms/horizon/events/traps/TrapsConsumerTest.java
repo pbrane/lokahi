@@ -157,7 +157,7 @@ public class TrapsConsumerTest {
         testXmlEventLog.setEvents(events);
         events.addEvent(testXmlEvent);
 
-        Event testEvent = Event.newBuilder().setNodeId(-1).build();
+        Event testEvent = Event.newBuilder().build();
 
         EventLog testProtoEventLog = EventLog.newBuilder().addEvents(testEvent).build();
 

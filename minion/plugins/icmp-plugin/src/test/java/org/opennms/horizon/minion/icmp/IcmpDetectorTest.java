@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.opennms.horizon.shared.icmp.PingerFactory;
 import org.opennms.icmp.contract.IcmpDetectorRequest;
-import org.opennms.inventory.types.ServiceType;
 import org.opennms.minion.icmp.best.BestMatchPingerFactory;
 import org.opennms.node.scan.contract.ServiceResult;
 
@@ -66,7 +65,7 @@ public class IcmpDetectorTest {
         ServiceResult serviceDetectorResponse = response.get();
 
         assertTrue(serviceDetectorResponse.getStatus());
-        assertEquals(ServiceType.ICMP, serviceDetectorResponse.getService());
+        assertEquals("ICMP", serviceDetectorResponse.getService());
         assertEquals(testRequest.getHost(), serviceDetectorResponse.getIpAddress());
     }
 }

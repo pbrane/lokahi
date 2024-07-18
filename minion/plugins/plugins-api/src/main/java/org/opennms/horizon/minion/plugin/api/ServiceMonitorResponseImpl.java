@@ -24,22 +24,19 @@ package org.opennms.horizon.minion.plugin.api;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
-import org.opennms.taskset.contract.MonitorType;
 
 @Builder
 @Data
 public class ServiceMonitorResponseImpl implements ServiceMonitorResponse {
-    private Status status;
-    private String reason;
-    private String ipAddress;
-    private double responseTime;
-    private Map<String, Number> additionalMetrics;
-    private MonitorType monitorType;
-    private long nodeId;
-    private long monitoredServiceId;
 
     @Builder.Default
     private long timestamp = System.currentTimeMillis();
+
+    private Status status;
+    private String reason;
+
+    private double responseTime;
+    private Map<String, Double> additionalMetrics;
 
     public static ServiceMonitorResponse unknown() {
         return builder().status(Status.Unknown).build();

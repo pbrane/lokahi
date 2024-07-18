@@ -23,12 +23,9 @@ package org.opennms.horizon.inventory.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -39,7 +36,7 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 @Entity
-public class MonitoredServiceState {
+public class MonitoredEntityState {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,15 +46,11 @@ public class MonitoredServiceState {
     @Column(name = "tenant_id")
     private String tenantId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "monitored_service_id", referencedColumnName = "id")
-    private MonitoredService monitoredService;
+    @Column(name = "monitored_entity_id")
+    private String monitoredEntityId;
 
     @Column(name = "service_state")
     private Boolean serviceState = true;
-
-    @Column(name = "monitored_service_id", insertable = false, updatable = false)
-    private long monitoredServiceId;
 
     @NotNull
     @Column(name = "first_observation_time", columnDefinition = "TIMESTAMP")

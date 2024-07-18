@@ -62,12 +62,13 @@ public class TaskSetMonitorResultProcessor {
                 taskResult.getId());
 
         String[] labelValues = {
-            monitorResponse.getIpAddress(),
+            monitorResponse.getMonitoredEntityId(),
             locationId,
             taskResult.getIdentity().getSystemId(),
-            monitorResponse.getMonitorType().name(),
-            String.valueOf(monitorResponse.getNodeId())
+            monitorResponse.getMonitorType()
         };
+
+        // TODO fooker: Add generic label list to response
 
         PrometheusTypes.TimeSeries.Builder builder = PrometheusTypes.TimeSeries.newBuilder();
 
@@ -76,6 +77,13 @@ public class TaskSetMonitorResultProcessor {
         builder.addLabels(PrometheusTypes.Label.newBuilder()
                 .setName(MetricNameConstants.METRIC_NAME_LABEL)
                 .setValue(CortexTSS.sanitizeMetricName(MetricNameConstants.METRICS_NAME_RESPONSE)));
+
+        if (!monitorResponse.getMonitorType().equals("ECHO")) {
+            taskResult.getMonitorResponse().getMetricLabelsMap().forEach((name, value) -> {
+                builder.addLabels(
+                        PrometheusTypes.Label.newBuilder().setName(name).setValue(value));
+            });
+        }
 
         long timestamp = Optional.of(monitorResponse.getTimestamp())
                 .filter(ts -> ts > 0)
@@ -121,12 +129,9 @@ public class TaskSetMonitorResultProcessor {
 
     private void addLabels(MonitorResponse response, String[] labelValues, PrometheusTypes.TimeSeries.Builder builder) {
         for (int i = 0; i < MetricNameConstants.MONITOR_METRICS_LABEL_NAMES.length; i++) {
-            if (!"node_id".equals(MetricNameConstants.MONITOR_METRICS_LABEL_NAMES[i])
-                    || !"ECHO".equals(response.getMonitorType().name())) {
-                builder.addLabels(PrometheusTypes.Label.newBuilder()
-                        .setName(CortexTSS.sanitizeLabelName(MetricNameConstants.MONITOR_METRICS_LABEL_NAMES[i]))
-                        .setValue(CortexTSS.sanitizeLabelValue(labelValues[i])));
-            }
+            builder.addLabels(PrometheusTypes.Label.newBuilder()
+                    .setName(CortexTSS.sanitizeLabelName(MetricNameConstants.MONITOR_METRICS_LABEL_NAMES[i]))
+                    .setValue(CortexTSS.sanitizeLabelValue(labelValues[i])));
         }
     }
 }

@@ -31,6 +31,8 @@ import org.springframework.stereotype.Repository;
 public interface AzureInterfaceRepository extends JpaRepository<AzureInterface, Long> {
     List<AzureInterface> findByTenantId(String tenantId);
 
+    List<AzureInterface> findByTenantIdAndLocation(String tenantId, String location);
+
     Optional<AzureInterface> findByIdAndTenantId(long id, String tenantId);
 
     Optional<AzureInterface> findByTenantIdAndPublicIpId(String tenantId, String publicIpId);

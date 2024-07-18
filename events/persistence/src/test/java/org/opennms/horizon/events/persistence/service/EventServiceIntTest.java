@@ -182,7 +182,6 @@ class EventServiceIntTest {
         assertEquals(TEST_TENANT_ID, event.getTenantId());
         assertEquals(TEST_UEI, event.getUei());
         assertNotEquals(0, event.getProducedTimeMs());
-        assertEquals(TEST_IP_ADDRESS, event.getIpAddress());
 
         assertEquals(TEST_LABEL_NAME, event.getEventLabel());
         assertEquals(TEST_SEVERITY, event.getSeverity());

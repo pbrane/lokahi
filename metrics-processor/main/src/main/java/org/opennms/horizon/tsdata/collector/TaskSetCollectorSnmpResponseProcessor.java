@@ -60,7 +60,7 @@ public class TaskSetCollectorSnmpResponseProcessor {
         Map<String, String> labels = new HashMap<>();
         labels.put("location", location);
         labels.put("system_id", taskResult.getIdentity().getSystemId());
-        labels.put("monitor", response.getMonitorType().name());
+        labels.put("monitor", response.getMonitorType());
         labels.put("node_id", String.valueOf(response.getNodeId()));
 
         List<PrometheusTypes.TimeSeries> timeSeriesList = new ArrayList<>();

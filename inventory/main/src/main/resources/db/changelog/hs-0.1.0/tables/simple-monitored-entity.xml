@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="fooker" id="0.1.2-create-simple-monitored-entity">
+        <createTable tableName="simple_monitored_entity">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="text"/>
+
+            <column name="tenant_id" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="location_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="type" type="text" />
+
+            <column name="config" type="jsonb" />
+        </createTable>
+
+        <addPrimaryKey tableName="simple_monitored_entity" columnNames="id" constraintName="pk_simple_monitored_entity_id"/>
+    </changeSet>
+</databaseChangeLog>

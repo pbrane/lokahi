@@ -23,20 +23,20 @@ package org.opennms.horizon.inventory.service;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.opennms.horizon.inventory.dto.MonitoredServiceStatusDTO;
-import org.opennms.horizon.inventory.mapper.MonitoredServiceStatusMapper;
-import org.opennms.horizon.inventory.repository.MonitoredServiceStateRepository;
+import org.opennms.horizon.inventory.dto.MonitoredEntityStateDTO;
+import org.opennms.horizon.inventory.mapper.MonitoredEntityStateMapper;
+import org.opennms.horizon.inventory.repository.MonitoredEntityStateRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class MonitoredStatusService {
+public class MonitoredEntityStateService {
 
-    private final MonitoredServiceStateRepository monitoredServiceStateRepository;
-    private final MonitoredServiceStatusMapper monitoredServiceStatusMapper;
+    private final MonitoredEntityStateRepository monitoredEntityStateRepository;
+    private final MonitoredEntityStateMapper monitoredEntityStateMapper;
 
-    public Optional<MonitoredServiceStatusDTO> getServiceStatus(String tenantId, long serviceId) {
-        var optional = monitoredServiceStateRepository.findByTenantIdAndMonitoredServiceId(tenantId, serviceId);
-        return optional.map(monitoredServiceStatusMapper::modelToDTO);
+    public Optional<MonitoredEntityStateDTO> getMonitoredEntityState(String tenantId, String monitoredEntityId) {
+        var optional = monitoredEntityStateRepository.findByTenantIdAndMonitoredEntityId(tenantId, monitoredEntityId);
+        return optional.map(monitoredEntityStateMapper::modelToDTO);
     }
 }

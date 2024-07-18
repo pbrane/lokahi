@@ -63,8 +63,8 @@ public class TaskSetResultsConsumer {
         try {
             TenantLocationSpecificTaskSetResults message = TenantLocationSpecificTaskSetResults.parseFrom(data);
 
-            String tenantId = message.getTenantId();
-            String locationId = message.getLocationId();
+            final String tenantId = message.getTenantId();
+            final String locationId = message.getLocationId();
 
             if (Strings.isEmpty(tenantId)) {
                 throw new InventoryRuntimeException("Missing tenant id");

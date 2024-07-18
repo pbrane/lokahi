@@ -32,7 +32,6 @@ import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorManager;
 import org.opennms.horizon.minion.plugin.api.ServiceMonitorResponse;
 import org.opennms.horizon.minion.plugin.api.registries.MonitorRegistry;
-import org.opennms.inventory.service.ServiceInventory;
 import org.opennms.wsman.contract.WsmanConfiguration;
 import org.opennms.wsman.contract.WsmanMonitorRequest;
 
@@ -142,10 +141,10 @@ public class WSManMonitorCommand implements Action {
                         .build())
                 .setRule(rule)
                 .setServerVersionValue(serverVersion)
-                .setServiceInventory(ServiceInventory.newBuilder()
-                        .setNodeId(nodeId)
-                        .setMonitorServiceId(monServiceId)
-                        .build())
+                // .setServiceInventory(ServiceInventory.newBuilder()
+                //  .setNodeId(nodeId)
+                // .setMonitorServiceId(monServiceId)
+                //   .build())
                 .addSelectors(org.opennms.wsman.contract.Selector.newBuilder()
                         .setKey(String.valueOf("selector.DeviceID"))
                         .setValue(String.valueOf("C:"))

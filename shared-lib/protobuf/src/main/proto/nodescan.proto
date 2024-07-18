@@ -45,7 +45,7 @@ message NodeScanRequest {
 
 
 message DetectRequest {
-  opennms.inventory.types.ServiceType service = 1;
+  string service = 1;
   google.protobuf.Any config = 2;
 }
 
@@ -62,7 +62,7 @@ message NodeInfoResult {
 //for service detector
 message ServiceResult {
   string ip_address = 1;
-  opennms.inventory.types.ServiceType service = 2;
+  string service = 2;
   bool status = 3;
 }
 

@@ -138,7 +138,7 @@ public class TaskExecutorLocalCollectorServiceImpl implements TaskExecutorLocalS
         active.set(false);
 
         if (exc == null) {
-            resultProcessor.queueSendResult(taskDefinition.getId(), collectionSet);
+            resultProcessor.queueSendResult(taskDefinition, collectionSet);
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("error executing workflow; workflow-uuid= {}", taskDefinition.getId(), exc);

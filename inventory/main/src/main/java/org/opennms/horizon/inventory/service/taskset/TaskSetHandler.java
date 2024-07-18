@@ -30,7 +30,6 @@ import org.opennms.horizon.inventory.model.Node;
 import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery;
 import org.opennms.horizon.inventory.service.SnmpConfigService;
 import org.opennms.horizon.inventory.service.taskset.publisher.TaskSetPublisher;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.springframework.stereotype.Service;
 
@@ -44,33 +43,10 @@ public class TaskSetHandler {
     private final CollectorTaskSetService collectorTaskSetService;
     private final SnmpConfigService snmpConfigService;
 
-    public void sendMonitorTask(
-            Long locationId, MonitorType monitorType, IpInterface ipInterface, long nodeId, long monitoredServiceId) {
-        String tenantId = ipInterface.getTenantId();
-        // Currently, we only monitor interfaces that are discovered with ICMP ping
-        // which are considered as primary interfaces for Snmp scan.
-        if (ipInterface.getSnmpPrimary()) {
-            var snmpConfig = snmpConfigService.getSnmpConfig(tenantId, locationId, ipInterface.getIpAddress());
-            var task = monitorTaskSetService.getMonitorTask(
-                    monitorType, ipInterface, nodeId, monitoredServiceId, snmpConfig.orElse(null));
-            if (task != null) {
-                taskSetPublisher.publishNewTasks(tenantId, locationId, Arrays.asList(task));
-            }
-        }
-    }
-
-    public void sendAzureMonitorTasks(AzureActiveDiscovery discovery, AzureScanItem item, long nodeId) {
-        String tenantId = discovery.getTenantId();
-        Long locationId = discovery.getLocationId();
-
-        TaskDefinition task = monitorTaskSetService.addAzureMonitorTask(discovery, item, nodeId);
-        taskSetPublisher.publishNewTasks(tenantId, locationId, Arrays.asList(task));
-    }
-
-    public void sendCollectorTask(Long locationId, MonitorType monitorType, IpInterface ipInterface, Node node) {
+    public void sendCollectorTask(Long locationId, String monitorType, IpInterface ipInterface, Node node) {
         String tenantId = ipInterface.getTenantId();
         // Collectors should only be invoked for primary interface
-        if (monitorType.equals(MonitorType.SNMP) && ipInterface.getSnmpPrimary()) {
+        if (monitorType.equals("SNMP") && ipInterface.getSnmpPrimary()) {
             var snmpConfig = snmpConfigService.getSnmpConfig(tenantId, locationId, ipInterface.getIpAddress());
             var task = collectorTaskSetService.addSnmpCollectorTask(ipInterface, node, snmpConfig.orElse(null));
             if (task != null) {

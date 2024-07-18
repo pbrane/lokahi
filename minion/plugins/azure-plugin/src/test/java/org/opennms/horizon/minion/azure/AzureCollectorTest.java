@@ -50,7 +50,6 @@ import org.opennms.horizon.shared.azure.http.dto.metrics.AzureMetrics;
 import org.opennms.horizon.shared.azure.http.dto.metrics.AzureName;
 import org.opennms.horizon.shared.azure.http.dto.metrics.AzureTimeseries;
 import org.opennms.horizon.shared.azure.http.dto.metrics.AzureValue;
-import org.opennms.taskset.contract.MonitorType;
 
 public class AzureCollectorTest {
     private final AzureHttpClient client = mock(AzureHttpClient.class);
@@ -194,7 +193,6 @@ public class AzureCollectorTest {
         AzureResponseMetric results = (AzureResponseMetric) response.getResults();
         Assert.assertTrue(response.getStatus());
         Assert.assertEquals("azure-node-0", response.getIpAddress());
-        Assert.assertEquals(MonitorType.AZURE, response.getMonitorType());
         Assert.assertEquals(5, results.getResultsCount());
         Assert.assertEquals(
                 2,
@@ -235,7 +233,6 @@ public class AzureCollectorTest {
 
         Assert.assertFalse(response.getStatus());
         Assert.assertEquals("azure-node-0", response.getIpAddress());
-        Assert.assertEquals(MonitorType.AZURE, response.getMonitorType());
         Assert.assertNull(response.getResults());
     }
 
@@ -259,7 +256,6 @@ public class AzureCollectorTest {
 
         Assert.assertFalse(response.getStatus());
         Assert.assertEquals("azure-node-0", response.getIpAddress());
-        Assert.assertEquals(MonitorType.AZURE, response.getMonitorType());
         Assert.assertNull(response.getResults());
     }
 }

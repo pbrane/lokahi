@@ -64,8 +64,8 @@ public class TaskSetCollectorAzureResponseProcessor {
                         .setName(MetricNameConstants.METRIC_NAME_LABEL)
                         .setValue(CortexTSS.sanitizeMetricName(azureResult.getAlias())));
 
-                for (int i = 0; i < MetricNameConstants.MONITOR_METRICS_LABEL_NAMES.length; i++) {
-                    final var label = MetricNameConstants.MONITOR_METRICS_LABEL_NAMES[i];
+                for (int i = 0; i < MetricNameConstants.AZURE_MONITOR_METRICS_LABEL_NAMES.length; i++) {
+                    final var label = MetricNameConstants.AZURE_MONITOR_METRICS_LABEL_NAMES[i];
                     var value = labelValues[i];
                     if (METRIC_INSTANCE_LABEL.equals(label)) {
                         value = getInstance(azureResult);

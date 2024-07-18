@@ -22,19 +22,11 @@
 package org.opennms.horizon.inventory.service.taskset;
 
 import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForAzureTask;
-import static org.opennms.horizon.inventory.service.taskset.TaskUtils.identityForIpTask;
 
 import com.google.protobuf.Any;
 import org.opennms.azure.contract.AzureMonitorRequest;
 import org.opennms.horizon.azure.api.AzureScanItem;
-import org.opennms.horizon.inventory.model.IpInterface;
 import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery;
-import org.opennms.horizon.shared.utils.InetAddressUtils;
-import org.opennms.horizon.snmp.api.SnmpConfiguration;
-import org.opennms.icmp.contract.IcmpMonitorRequest;
-import org.opennms.inventory.service.ServiceInventory;
-import org.opennms.snmp.contract.SnmpMonitorRequest;
-import org.opennms.taskset.contract.MonitorType;
 import org.opennms.taskset.contract.TaskDefinition;
 import org.opennms.taskset.contract.TaskType;
 import org.slf4j.Logger;
@@ -45,61 +37,6 @@ import org.springframework.stereotype.Component;
 public class MonitorTaskSetService {
 
     private static final Logger log = LoggerFactory.getLogger(MonitorTaskSetService.class);
-
-    public TaskDefinition getMonitorTask(
-            MonitorType monitorType,
-            IpInterface ipInterface,
-            long nodeId,
-            long monitoredServiceId,
-            SnmpConfiguration snmpConfiguration) {
-
-        String monitorTypeValue = monitorType.getValueDescriptor().getName();
-        String ipAddress = InetAddressUtils.toIpAddrString(ipInterface.getIpAddress());
-
-        String name = String.format("%s-monitor", monitorTypeValue.toLowerCase());
-        String pluginName = String.format("%sMonitor", monitorTypeValue);
-        TaskDefinition taskDefinition = null;
-        Any configuration = null;
-        ServiceInventory serviceInventory = ServiceInventory.newBuilder()
-                .setNodeId(nodeId)
-                .setMonitorServiceId(monitoredServiceId)
-                .build();
-        switch (monitorType) {
-            case ICMP -> configuration = Any.pack(IcmpMonitorRequest.newBuilder()
-                    .setHost(ipAddress)
-                    .setTimeout(TaskUtils.ICMP_DEFAULT_TIMEOUT_MS)
-                    .setDscp(TaskUtils.ICMP_DEFAULT_DSCP)
-                    .setAllowFragmentation(TaskUtils.ICMP_DEFAULT_ALLOW_FRAGMENTATION)
-                    .setPacketSize(TaskUtils.ICMP_DEFAULT_PACKET_SIZE)
-                    .setRetries(TaskUtils.ICMP_DEFAULT_RETRIES)
-                    .setServiceInventory(serviceInventory)
-                    .build());
-            case SNMP -> {
-                var requestBuilder =
-                        SnmpMonitorRequest.newBuilder().setHost(ipAddress).setServiceInventory(serviceInventory);
-                if (snmpConfiguration != null) {
-                    requestBuilder.setAgentConfig(snmpConfiguration);
-                }
-                configuration = Any.pack(requestBuilder.build());
-            }
-            case UNRECOGNIZED -> log.warn("Unrecognized monitor type");
-            case UNKNOWN -> log.warn("Unknown monitor type");
-        }
-
-        if (configuration != null) {
-            String taskId = identityForIpTask(nodeId, ipAddress, name);
-            TaskDefinition.Builder builder = TaskDefinition.newBuilder()
-                    .setType(TaskType.MONITOR)
-                    .setPluginName(pluginName)
-                    .setNodeId(nodeId)
-                    .setId(taskId)
-                    .setMonitorServiceId(monitoredServiceId)
-                    .setConfiguration(configuration)
-                    .setSchedule(TaskUtils.DEFAULT_SCHEDULE);
-            taskDefinition = builder.build();
-        }
-        return taskDefinition;
-    }
 
     public TaskDefinition addAzureMonitorTask(AzureActiveDiscovery discovery, AzureScanItem scanItem, long nodeId) {
 

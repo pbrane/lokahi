@@ -28,7 +28,6 @@
 syntax = "proto3";
 
 import "google/protobuf/any.proto";
-import "service-inventory.proto";
 
 package opennms.icmp;
 option java_multiple_files = true;
@@ -51,7 +50,6 @@ message IcmpMonitorRequest {
   bool allow_fragmentation = 4;
   int32 packet_size = 5;
   int32 retries = 6;
-  opennms.inventory.service.ServiceInventory service_inventory = 7;
 }
 
 message PingSweepRequest {
@@ -67,4 +65,3 @@ message IpRange {
   string begin = 1;
   string end = 2;
 }
-

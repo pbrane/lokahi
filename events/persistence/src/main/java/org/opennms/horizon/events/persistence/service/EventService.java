@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.opennms.horizon.events.persistence.mapper.EventMapper;
 import org.opennms.horizon.events.persistence.mapper.NodeInfoMapper;
 import org.opennms.horizon.events.persistence.mapper.NodeMapper;
@@ -37,6 +38,7 @@ import org.opennms.horizon.events.proto.EventLogListResponse;
 import org.opennms.horizon.events.proto.EventsSearchBy;
 import org.opennms.horizon.inventory.dto.NodeDTO;
 import org.opennms.horizon.inventory.dto.NodeOperationProto;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -64,8 +66,13 @@ public class EventService {
 
     public EventLogListResponse searchEvents(String tenantId, EventsSearchBy searchBy, Pageable pageRequest) {
 
-        var eventPage = eventRepository.findByNodeIdAndSearchTermAndTenantId(
-                tenantId, searchBy.getNodeId(), searchBy.getSearchTerm(), pageRequest);
+        Page<org.opennms.horizon.events.persistence.model.Event> eventPage = null;
+        if (Strings.isNotBlank(searchBy.getSearchTerm())) {
+            eventPage = eventRepository.findByNodeIdAndSearchTermAndTenantId(
+                    tenantId, searchBy.getNodeId(), searchBy.getSearchTerm(), pageRequest);
+        } else {
+            eventPage = eventRepository.findByNodeIdAndTenantId(tenantId, searchBy.getNodeId(), pageRequest);
+        }
 
         List<Event> events = eventPage.getContent().stream()
                 .map(eventMapper::modelToDtoWithParams)

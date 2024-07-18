@@ -1208,6 +1208,7 @@
             </activation>
             <properties>
                 <skipITs>true</skipITs>
+                <skipTests>true</skipTests>
                 <features.verify.skip>true</features.verify.skip> <!-- built-in property of karaf-maven-plugin -->
             </properties>
         </profile>

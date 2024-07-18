@@ -29,13 +29,13 @@ import org.opennms.horizon.events.proto.Event;
 import org.opennms.horizon.events.proto.EventLog;
 import org.opennms.horizon.events.proto.EventParameter;
 import org.opennms.horizon.inventory.component.InternalEventProducer;
-import org.opennms.horizon.inventory.model.MonitoredServiceState;
+import org.opennms.horizon.inventory.model.MonitoredEntityState;
+import org.opennms.horizon.inventory.monitoring.MonitoredEntityService;
+import org.opennms.horizon.inventory.repository.MonitoredEntityStateRepository;
 import org.opennms.horizon.inventory.repository.MonitoredServiceRepository;
-import org.opennms.horizon.inventory.repository.MonitoredServiceStateRepository;
 import org.opennms.horizon.inventory.repository.MonitoringLocationRepository;
 import org.opennms.horizon.shared.events.EventConstants;
 import org.opennms.taskset.contract.MonitorResponse;
-import org.opennms.taskset.contract.MonitorType;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -43,41 +43,45 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MonitorResponseService {
 
-    private final MonitoredServiceStateRepository serviceStateRepository;
+    private final MonitoredEntityStateRepository monitoredEntityStateRepository;
 
     private final MonitoredServiceRepository monitoredServiceRepository;
 
     private final MonitoringLocationRepository monitoringLocationRepository;
 
+    private final MonitoredEntityService monitoredEntityService;
+
     private final InternalEventProducer eventProducer;
 
     public void updateMonitoredState(String tenantId, String locationId, MonitorResponse monitorResponse) {
-        if (monitorResponse.getMonitorType().equals(MonitorType.ECHO)) {
+        if (monitorResponse.getMonitorType().equals("ECHO")) {
             // No need to handle Echo monitor response
             return;
         }
-        long monitorServiceId = monitorResponse.getMonitorServiceId();
-        var optionalService = monitoredServiceRepository.findByIdAndTenantId(monitorServiceId, tenantId);
-        if (optionalService.isEmpty()) {
+
+        final var monitoredEntity = monitoredEntityService.findServiceById(
+                tenantId, Long.parseLong(locationId), monitorResponse.getMonitoredEntityId());
+        if (monitoredEntity.isEmpty()) {
+            // Did not find the monitored entity for this response
             return;
         }
-        var monitoredService = optionalService.get();
-        var optionalServiceState =
-                serviceStateRepository.findByTenantIdAndMonitoredServiceId(tenantId, monitorServiceId);
+
+        var optionalServiceState = monitoredEntityStateRepository.findByTenantIdAndMonitoredEntityId(
+                tenantId, monitorResponse.getMonitoredEntityId());
         var previousState = Boolean.TRUE;
         Boolean statusFromMonitor = "Up".equalsIgnoreCase(monitorResponse.getStatus()) ? Boolean.TRUE : Boolean.FALSE;
         if (optionalServiceState.isPresent()) {
             previousState = optionalServiceState.get().getServiceState();
             var monitorServiceState = optionalServiceState.get();
             monitorServiceState.setServiceState(statusFromMonitor);
-            serviceStateRepository.save(monitorServiceState);
+            monitoredEntityStateRepository.save(monitorServiceState);
         } else {
-            MonitoredServiceState monitoredServiceState = new MonitoredServiceState();
-            monitoredServiceState.setTenantId(tenantId);
-            monitoredServiceState.setMonitoredService(monitoredService);
-            monitoredServiceState.setServiceState(statusFromMonitor);
-            monitoredServiceState.setFirstObservationTime(LocalDateTime.now());
-            serviceStateRepository.save(monitoredServiceState);
+            MonitoredEntityState monitoredEntityState = new MonitoredEntityState();
+            monitoredEntityState.setTenantId(tenantId);
+            monitoredEntityState.setMonitoredEntityId(monitorResponse.getMonitoredEntityId());
+            monitoredEntityState.setServiceState(statusFromMonitor);
+            monitoredEntityState.setFirstObservationTime(LocalDateTime.now());
+            monitoredEntityStateRepository.save(monitoredEntityState);
         }
         if (!Objects.equals(statusFromMonitor, previousState)) {
             // State changed, send event
@@ -93,24 +97,22 @@ public class MonitorResponseService {
         } else {
             eventBuilder.setUei(EventConstants.SERVICE_UNREACHABLE_EVENT_UEI);
         }
-        eventBuilder.setIpAddress(monitorResponse.getIpAddress());
         eventBuilder.setTenantId(tenantId);
-        eventBuilder.setNodeId(monitorResponse.getNodeId());
+        if (monitorResponse.getMetricLabelsMap().containsKey("node_id")) {
+            eventBuilder.setNodeId(
+                    Long.parseLong(monitorResponse.getMetricLabelsMap().get("node_id")));
+        }
         eventBuilder.setProducedTimeMs(monitorResponse.getTimestamp());
         eventBuilder.setDescription(monitorResponse.getReason());
         eventBuilder.setLocationId(locationId);
         monitoringLocationRepository
                 .findByIdAndTenantId(Long.parseLong(locationId), tenantId)
                 .ifPresent(l -> eventBuilder.setLocationName(l.getLocation()));
-        var serviceNameParam = EventParameter.newBuilder()
-                .setName("serviceName")
-                .setValue(monitorResponse.getMonitorType().name())
-                .build();
-        var serviceIdParam = EventParameter.newBuilder()
-                .setName("serviceId")
-                .setValue(String.valueOf(monitorResponse.getMonitorServiceId()))
-                .build();
-        eventBuilder.addParameters(serviceNameParam).addParameters(serviceIdParam);
+        eventBuilder.addParameters(EventParameter.newBuilder()
+                .setName("monitoredEntityId")
+                .setValue(monitorResponse.getMonitoredEntityId()));
+        eventBuilder.addParameters(
+                EventParameter.newBuilder().setName("serviceName").setValue(monitorResponse.getMonitorType()));
         var eventLog = EventLog.newBuilder().setTenantId(tenantId).addEvents(eventBuilder.build());
         eventProducer.sendEvent(eventLog.build());
     }

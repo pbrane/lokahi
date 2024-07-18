@@ -19,15 +19,11 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.opennms.horizon.inventory.repository;
+package org.opennms.horizon.inventory.monitoring.simple.config;
 
-import java.util.Optional;
-import org.opennms.horizon.inventory.model.MonitoredServiceState;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-@Repository
-public interface MonitoredServiceStateRepository extends JpaRepository<MonitoredServiceState, Long> {
-
-    Optional<MonitoredServiceState> findByTenantIdAndMonitoredServiceId(String tenantId, long monitoredServiceId);
+public class SshMonitorConfig implements MonitorConfig {
+    @Override
+    public String getType() {
+        return "SSH";
+    }
 }

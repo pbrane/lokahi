@@ -128,6 +128,46 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <!--suppress MavenModelInspection -->
+          <skipITs>${skipITs}</skipITs>
+          <reuseForks>true</reuseForks>
+          <useSystemClassLoader>false</useSystemClassLoader>
+          <trimStackTrace>false</trimStackTrace>
+          <systemPropertyVariables>
+            <application.docker.image>${application.docker.image}</application.docker.image>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <id>lokahi-integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <excludes>
+                <exclude>none</exclude>
+              </excludes>
+              <includes>
+                <include>**/*IT.java</include>
+              </includes>
+            </configuration>
+          </execution>
+
+          <!-- Fail the build on IT Failures.  Executed as a separate step so that post-integration-test -->
+          <!--  phase executes even after an IT failure.                                                 -->
+          <execution>
+            <id>lokahi-verify-it</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
