@@ -45,6 +45,7 @@
     <module>ntp-plugin</module>
     <module>http-plugin</module>
     <module>ssh-plugin</module>
+    <module>wsman-plugin</module>
   </modules>
 
 </project>

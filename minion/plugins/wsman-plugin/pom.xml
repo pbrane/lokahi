@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+ - Licensed to The OpenNMS Group, Inc (TOG) under one or more
+ - contributor license agreements.  See the LICENSE.md file
+ - distributed with this work for additional information
+ - regarding copyright ownership.
+ -
+ - TOG licenses this file to You under the GNU Affero General
+ - Public License Version 3 (the "License") or (at your option)
+ - any later version.  You may not use this file except in
+ - compliance with the License.  You may obtain a copy of the
+ - License at:
+ -
+ -      https://www.gnu.org/licenses/agpl-3.0.txt
+ -
+ - Unless required by applicable law or agreed to in writing,
+ - software distributed under the License is distributed on an
+ - "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ - either express or implied.  See the License for the specific
+ - language governing permissions and limitations under the
+ - License.
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.opennms.lokahi.minion</groupId>
+    <artifactId>plugins</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>wsman-plugin</artifactId>
+
+  <packaging>bundle</packaging>
+  <name>OpenNMS Lokahi :: Minion :: Plugins :: WSMAN</name>
+
+  <properties>
+    <wsmanVersion>1.2.3</wsmanVersion>
+    <cxfVersion>3.5.5</cxfVersion>
+    <karaf.servicemix.specs.version>2.9.0</karaf.servicemix.specs.version>
+    <jettisonVersion>1.5.4</jettisonVersion>
+    <xercesVersion>2.12.2</xercesVersion>
+    <xalanServicemixVersion>2.7.3_3</xalanServicemixVersion>
+    <xalanSerializerServicemixVersion>2.7.3_1</xalanSerializerServicemixVersion>
+    <servletApiVersion>3.1.0</servletApiVersion>
+
+    <systemStartLevel>30</systemStartLevel>
+    <earlyStartLevel>60</earlyStartLevel>
+    <lateStartLevel>100</lateStartLevel>
+
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.opennms.core.wsman</groupId>
+      <artifactId>org.opennms.core.wsman.api</artifactId>
+      <version>${wsmanVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opennms.core.wsman</groupId>
+      <artifactId>org.opennms.core.wsman.cxf</artifactId>
+      <version>${wsmanVersion}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.cxf</groupId>
+          <artifactId>cxf-rt-bindings-soap</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.cxf</groupId>
+          <artifactId>cxf-rt-databinding-jaxb</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.cxf</groupId>
+          <artifactId>cxf-rt-frontend-jaxws</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-expression</artifactId>
+      <version>6.0.13</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opennms.lokahi.minion</groupId>
+      <artifactId>plugins-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.opennms.lokahi.shared</groupId>
+      <artifactId>lokahi-common-utils</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Start of WS-Man related dependencies -->
+    <dependency>
+      <groupId>org.apache.servicemix.specs</groupId>
+      <artifactId>org.apache.servicemix.specs.jaxb-api-2.2</artifactId>
+      <version>2.9.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-frontend-jaxws</artifactId>
+      <version>${cxf.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-impl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-http</artifactId>
+      <version>${cxf.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-impl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-ws-mex</artifactId>
+      <version>${cxf.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-impl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-ws-policy</artifactId>
+      <version>${cxf.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-impl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-local</artifactId>
+      <version>${cxf.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-impl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.12.0</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.4.11</version>
+    </dependency>
+
+    <!-- CXF Core -->
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-core</artifactId>
+      <version>${cxfVersion}</version>
+    </dependency>
+
+    <!-- CXF WS-Addressing -->
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-ws-addr</artifactId>
+      <version>${cxfVersion}</version>
+    </dependency>
+
+  </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </resource>
+      <resource>
+        <targetPath>${project.build.directory}/feature</targetPath>
+        <filtering>true</filtering>
+        <directory>${project.basedir}/src/main/feature</directory>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/feature/feature.xml</file>
+                  <classifier>features</classifier>
+                  <type>xml</type>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Verify -->
+      <plugin>
+        <groupId>org.apache.karaf.tooling</groupId>
+        <artifactId>karaf-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features</descriptor>
+                <descriptor>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features</descriptor>
+                <descriptor>mvn:org.opennms.lokahi.minion/grpc-features/${project.version}/xml/features</descriptor>
+                <descriptor>mvn:org.opennms.lokahi.minion/ipc-features/${project.version}/xml/features</descriptor>
+                <descriptor>mvn:org.opennms.lokahi.minion/observability-features/${project.version}/xml/features</descriptor>
+                <descriptor>mvn:org.opennms.lokahi.minion/plugin-features/${project.version}/xml/features</descriptor>
+                <descriptor>file:${project.build.directory}/feature/feature.xml</descriptor>
+              </descriptors>
+              <features>
+                <feature>wsman*</feature>
+              </features>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

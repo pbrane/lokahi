@@ -19,6 +19,7 @@
     <repository>mvn:org.opennms.lokahi.minion/ntp-plugin/${project.version}/xml/features</repository>
     <repository>mvn:org.opennms.lokahi.minion/http-plugin/${project.version}/xml/features</repository>
     <repository>mvn:org.opennms.lokahi.minion/ssh-plugin/${project.version}/xml/features</repository>
+    <repository>mvn:org.opennms.lokahi.minion/wsman-plugin/${project.version}/xml/features</repository>
 
 
     <feature name="minion-ng">
@@ -35,6 +36,7 @@
         <feature>minion-syslog</feature>
         <feature>http-plugins</feature>
         <feature>ssh-plugins</feature>
+        <feature>wsman-plugins</feature>
     </feature>
 
 

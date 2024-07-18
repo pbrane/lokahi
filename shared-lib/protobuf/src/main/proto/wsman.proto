@@ -1,0 +1,97 @@
+/*******************************************************************************
+ * This file is part of OpenNMS(R).
+ *
+ * Copyright (C) 2022 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ *
+ * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
+ *
+ * OpenNMS(R) is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * OpenNMS(R) is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OpenNMS(R).  If not, see:
+ *      http://www.gnu.org/licenses/
+ *
+ * For more information contact:
+ *     OpenNMS(R) Licensing <license@opennms.org>
+ *     http://www.opennms.org/
+ *     http://www.opennms.com/
+ *******************************************************************************/
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+import "service-inventory.proto";
+
+package opennms.wsman;
+option java_multiple_files = true;
+option java_package = "org.opennms.wsman.contract";
+
+
+enum WSManVersion {
+  WSMAN_1_0 = 0;
+  WSMAN_1_2 = 1;
+  WSMAN_1_1 = 2;
+  WSMAN_1_1_1 = 3;
+}
+
+message Selector {
+  string key = 1;
+  string value = 2;
+}
+
+message WSMANGroup {
+  string name=1;
+  string resource_uri_grp=2;
+  string dialect=3;
+  string filter=4;
+  string resource_type=5;
+}
+
+
+message WsmanDetectorRequest {
+  WsmanConfiguration agentConfiguration = 1;
+  WSManVersion server_version = 2;
+  opennms.inventory.service.ServiceInventory service_inventory = 3;
+}
+
+message WsmanMonitorRequest {
+
+  WsmanConfiguration agentConfiguration = 1;
+  WSManVersion server_version = 2;
+  string rule = 3;
+  opennms.inventory.service.ServiceInventory service_inventory = 4;
+  //i.e:
+  //"#IdentifyingDescriptions matches '.*ServiceTag' and #OtherIdentifyingInfo matches 'C7BBBP1'"
+  //"#IdentifyingDescriptions matches '.*ServiceTag' and #OtherIdentifyingInfo matches '{nodeLabel}'"
+  repeated Selector selectors = 5;
+  //repeated WSMANGroup wsman_config_groups = 18;
+
+}
+
+message WsmanConfiguration {
+  string host = 1;
+  string username = 2;
+  string password = 3;
+  bool gss_auth = 4;
+  bool strict_ssl = 5;
+  uint32 max_elements = 6;
+  uint32 max_envelope_size = 7;
+  uint32 connection_timeout = 8;
+  uint32 receive_timeout = 9;
+  uint32 port = 10;
+  string path = 11;
+  string resource_uri = 12;
+  uint32 retries = 13;
+
+}
+
+
+

@@ -65,6 +65,7 @@ enum MonitorType {
   AZURE = 4;
   HTTP = 5;
   NTP = 6;
+  WSMAN=7;
 }
 
 message TaskDefinition {
