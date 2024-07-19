@@ -600,6 +600,16 @@ jib_project_multi_module(
     resource_deps=['shared-lib', 'citus-worker'],
 )
 
+### Metrics Threshold Processor ###
+jib_project(
+'metrics-threshold-processor',
+'opennms/lokahi-metrics-threshold-processor',
+'metrics-threshold-processor',
+'opennms-metrics-threshold-processor',
+port_forwards=['28580:8080', '28550:5005', '28665:6565'],
+resource_deps=['shared-lib', 'citus-worker'],
+) 
+
 ### Events ###
 jib_project_multi_module(
     'events',

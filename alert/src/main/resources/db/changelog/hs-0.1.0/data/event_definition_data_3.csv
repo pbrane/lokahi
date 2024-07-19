@@ -1,0 +1,2 @@
+id,event_uei,name,reduction_key,clear_key,event_type,enterprise_id,vendor
+17270,uei.opennms.org/threshold/highThresholdExceeded,HighThresholdExceeded,%uei%:%dpname%:%nodeid%:%interface%:%monitorserviceId%:%metric_threshold_name%,,METRIC_THRESHOLD,,generic

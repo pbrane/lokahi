@@ -609,6 +609,24 @@ public enum StandardExpandableParameterResolvers implements ExpandableParameterR
         }
     },
 
+    ALERT_NAME {
+        @Override
+        public boolean matches(String parm) {
+            return AbstractAlertUtil.THRESHOLD_ALERT_NAME.equals(parm);
+        }
+
+        @Override
+        public String getValue(String parm, String parsedParm, Event event, AlertUtilService alertUtilService) {
+            if (event.hasThresholdInfo()) return event.getThresholdInfo().getAlertName();
+            return "alert-name";
+        }
+
+        @Override
+        public boolean requiresTransaction() {
+            return true;
+        }
+    },
+
     IF_ALIAS {
         @Override
         public boolean matches(String parm) {

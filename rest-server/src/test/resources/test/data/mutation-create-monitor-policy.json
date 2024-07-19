@@ -53,6 +53,11 @@
                 "id": 7,
                 "name": "Device Unreachable",
                 "eventType": "INTERNAL"
+              },
+              "thresholdMetric":{
+                "condition":"", 
+                "enabled": false, 
+                "threshold": 0
               }
             }
           ]

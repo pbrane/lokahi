@@ -55,12 +55,18 @@ message Event {
   string location_name = 12; // prevent need for inter service id lookup
   Severity severity = 13;
   string event_label = 14;
-  string host = 15;
+  optional ThresholdInfo threshold_info = 15;
+  string host = 16;
 }
 
 message EventInfo {
   optional SnmpInfo snmp = 1;
   // Any other optional event info.
+}
+
+message  ThresholdInfo {
+  string  status = 1;
+  string  alert_name = 2;
 }
 
 message SnmpInfo {

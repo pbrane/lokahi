@@ -47,6 +47,8 @@ type TState = {
   ruleEditMode: CreateEditMode,
   policyEditMode: CreateEditMode,
   cachedAffectedAlertsByRule?: Map<number, number>,
+  eventTypes: string,
+  eventTriggerThresholdMetrics: AlertEventDefinition,
 }
 
 const defaultPolicy: MonitoringPolicy = {
@@ -103,7 +105,9 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     cachedEventDefinitions: new Map(),
     ruleEditMode: CreateEditMode.None,
     policyEditMode: CreateEditMode.None,
-    cachedAffectedAlertsByRule: new Map()
+    cachedAffectedAlertsByRule: new Map(),
+    eventTypes: '',
+    eventTriggerThresholdMetrics: {} as AlertEventDefinition
   }),
   actions: {
     // used for initial population of policies
@@ -111,7 +115,6 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       const queries = useMonitoringPoliciesQueries()
       await queries.listMonitoringPolicies().then(() => {
         this.monitoringPolicies = queries.monitoringPolicies.map(mapMonitoringPolicyFromServer)
-
         this.monitoringPolicies.forEach(async (policy) => {
           if (policy.id) {
             const request: CountAffectedNodesByMonitoringPolicyVariables = {
@@ -150,12 +153,20 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
 
       const alertDefs = await queries.listAlertEventDefinitions(EventType.Internal)
       this.cachedEventDefinitions?.set('internal', alertDefs.value?.listAlertEventDefinitions ?? [])
+
+      const alertEventDefs: any = await queries.listAlertEventDefinitions(EventType.MetricThreshold)
+      this.cachedEventDefinitions?.set('metricThreshold', alertEventDefs.value?.listAlertEventDefinitions ?? [])
     },
     clearSelectedPolicy() {
       this.selectedPolicy = undefined
     },
     clearSelectedRule() {
       this.selectedRule = undefined
+    },
+    clearAlertConditions() {
+      if (this.selectedRule) {
+        this.selectedRule.alertConditions = undefined
+      }
     },
     displayRuleForm(rule?: MonitoringPolicyRule) {
       this.selectedRule = rule ? cloneDeep(rule) : cloneDeep(getDefaultRule(this.cachedEventDefinitions?.get('internal') ?? []))
@@ -190,12 +201,15 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
     },
     updateCondition(id: number, condition: PolicyAlertCondition) {
       if (this.selectedRule && this.selectedRule?.alertConditions) {
-        const index = this.selectedRule.alertConditions.findIndex(c => c.id === id)
-
-        if (index !== undefined && index >= 0) {
-          this.selectedRule.alertConditions[index] = {
-            ...this.selectedRule.alertConditions[index],
-            ...condition
+        const index = this.selectedRule.alertConditions.findIndex(c => c?.id === id)
+        if (index !== undefined && index >= 0 ) {
+          if (this.selectedRule.eventType !== EventType.MetricThreshold) {
+            this.selectedRule.alertConditions[index] = {
+              ...this.selectedRule.alertConditions[index],
+              ...condition
+            }
+          } else {
+            this.eventTriggerThresholdMetrics = condition
           }
         }
       }
@@ -244,10 +258,17 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       }
       return isValid
     },
+    isAnyAlertConditionThresholdMetricEnabled() {
+      if (this.selectedRule?.alertConditions) {
+        const isEnabled = this.selectedRule?.alertConditions.some((alertCondition: any) => alertCondition?.thresholdMetric?.enabled)
+        return isEnabled
+      }
+      return false
+    },
     async saveRule() {
-      if (this.selectedRule?.eventType === EventType.MetricThreshold || this.selectedRule?.eventType === EventType.Syslog) {
+      if (this.selectedRule?.eventType === EventType.Syslog) {
         showSnackbar({
-          msg: 'Cannot yet save Alert Rule for Syslog and Metric Threshold event types.',
+          msg: 'Cannot yet save Alert Rule for Syslog event types.',
           error: true
         })
         return
@@ -258,6 +279,17 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
             error: true
           })
           return
+        }
+        if (this.selectedRule?.eventType === EventType.MetricThreshold) {
+          const isEnabled = this.isAnyAlertConditionThresholdMetricEnabled()
+          if (!isEnabled) {
+            showSnackbar({
+              msg: 'Alert rule needs to have at least one condition enabled.',
+              error: true
+            })
+            return
+          }
+          this.eventTypes = this.selectedRule?.eventType
         }
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -289,14 +321,20 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
         }
         return false
       }
-
+      if (this.ruleEditMode === CreateEditMode.Create && this.eventTypes === EventType.MetricThreshold) {
+        this.selectedPolicy?.rules?.forEach((rule: any) => {
+          rule.alertConditions?.forEach((obj: any) => {
+            if (obj?.thresholdMetric?.id !== undefined) {
+              delete obj.thresholdMetric.id
+            }
+          })
+        })
+      }
       const { addMonitoringPolicy, error } = useMonitoringPoliciesMutations()
       const policyInput: MonitorPolicyInput = mapToMonitorPolicyInput(this.selectedPolicy)
-
       if (status !== undefined) {
         policyInput.enabled = status
       }
-
       await addMonitoringPolicy({ policy: policyInput })
 
       if (!error.value) {

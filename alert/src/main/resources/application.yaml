@@ -43,12 +43,16 @@ kafka:
     monitoring-policy: "monitoring-policy"
     node-changed: "node"
     internal-event: "internal-event"
+    threshold-rules: "metrics-threshold-rules"
+    threshold-events: "metrics-threshold-event"
     create-topics:
       enabled: true
       alert:
         name: "alerts"
       monitoring-policy:
         name: "monitoring-policy"
+      threshold-rules:
+        name: "metrics-threshold-rules"
       node-changed:
         name: "node"
         partitions: 1 # topic relies on there being a single partition for ordering

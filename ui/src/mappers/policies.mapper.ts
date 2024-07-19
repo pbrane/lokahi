@@ -32,7 +32,8 @@ export const mapPolicyAlertConditionFromServer = (condition: AlertCondition): Po
     percentage: 0.0,
     severity: condition.severity,
     triggerEvent: condition.triggerEvent,
-    unitLabel: ''
+    unitLabel: '',
+    thresholdMetric: condition.thresholdMetric
   } as PolicyAlertCondition
 }
 
@@ -46,7 +47,8 @@ export const mapPolicyAlertConditionToServer = (condition: PolicyAlertCondition)
     overtime: condition.overtime,
     overtimeUnit: condition.overtimeUnit,
     severity: condition.severity,
-    triggerEvent: condition.triggerEvent
+    triggerEvent: condition.triggerEvent,
+    thresholdMetric: condition.thresholdMetric
   } as AlertCondition
 }
 
@@ -117,7 +119,8 @@ export const mapToAlertConditionInput = (condition: PolicyAlertCondition, eventT
     overtime: condition.overtime,
     overtimeUnit: condition.overtimeUnit,
     severity: condition.severity,
-    triggerEvent: condition.triggerEvent
+    triggerEvent: condition.triggerEvent,
+    thresholdMetric: condition.thresholdMetric
   } as AlertConditionInput
 
   if (eventType === EventType.Internal || EventType.SnmpTrap) {
@@ -132,6 +135,10 @@ export const mapToAlertConditionInput = (condition: PolicyAlertCondition, eventT
       ...alertConditionInput,
       id: condition.id
     }
+  }
+
+  if (eventType === EventType.MetricThreshold) {
+    delete alertConditionInput.thresholdMetric?.severity
   }
 
   return alertConditionInput

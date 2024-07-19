@@ -52,5 +52,6 @@
     <module>notifications</module>
     <module>rest-server</module>
     <module>shared-lib</module>
+      <module>metrics-threshold-processor</module>
   </modules>
 </project>

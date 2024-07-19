@@ -60,6 +60,12 @@
       <artifactId>traps</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.opennms.lokahi.events</groupId>
+      <artifactId>threshold-consumer</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.opennms.lokahi.events</groupId>
       <artifactId>consumer</artifactId>

@@ -44,6 +44,7 @@
     <module>consumer</module>
     <module>grpc</module>
     <module>docker-it</module>
+    <module>threshold-consumer</module>
   </modules>
 
   <properties>

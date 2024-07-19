@@ -68,6 +68,11 @@
     </dependency>
     <dependency>
       <groupId>org.opennms.lokahi.shared</groupId>
+      <artifactId>metrics-threshold</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opennms.lokahi.shared</groupId>
       <artifactId>events</artifactId>
       <version>${project.version}</version>
     </dependency>

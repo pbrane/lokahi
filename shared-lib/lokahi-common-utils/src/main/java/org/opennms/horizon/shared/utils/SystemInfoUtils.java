@@ -47,6 +47,27 @@ public class SystemInfoUtils {
     public static final String SORT_BY_DEFAULT = "id";
     public static final String TAG = "tag";
 
+    /**
+     * The high threshold rearm event UEI.
+     */
+    public static final String HIGH_THRESHOLD_REARM_EVENT_UEI = "uei.opennms.org/threshold/highThresholdRearmed";
+
+    public static final String CRITICAL = "critical";
+
+    public static final String MAJOR = "major";
+
+    public static final String MINOR = "minor";
+
+    public static final String NORMAL = "normal";
+
+    public static final String SEVERITY = "severity";
+    public static final String SUMMERY = "summery";
+    public static final String DESCRIPTION = "description";
+
+    public static final String RESOLVED = "resolved";
+
+    public static final String FIRING = "firing";
+
     static {
         s_instanceId = System.getProperty(OPENNMS_INSTANCE_ID_SYS_PROP, DEFAULT_INSTANCE_ID);
 

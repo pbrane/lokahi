@@ -42,7 +42,8 @@ public class EventConsumer {
     private final AlertService alertService;
 
     @KafkaListener(
-            topics = {"${kafka.topics.trap-event}", "${kafka.topics.internal-event}"},
+            topics = {"${kafka.topics.trap-event}", "${kafka.topics.internal-event}", "${kafka.topics.threshold-events}"
+            },
             concurrency = "1")
     public void receiveMessage(@Payload byte[] data) {
         try {

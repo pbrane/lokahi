@@ -29,6 +29,14 @@ fragment MonitoringPolicyParts on MonitorPolicy {
         name
         eventType
       }
+        thresholdMetric {
+        enabled
+        threshold
+        condition
+        name,
+        expression
+        id
+      }
     }
   }
   tags

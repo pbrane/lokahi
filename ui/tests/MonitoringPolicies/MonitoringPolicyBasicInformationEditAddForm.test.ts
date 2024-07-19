@@ -11,7 +11,7 @@ const mockMonitoringPolicy: MonitoringPolicy = {
   notifyByEmail: false,
   notifyByPagerDuty: false,
   notifyByWebhooks: false,
-  tags: ['default'],
+  tags: [ 'default' ],
   rules: [],
   notifyInstruction: 'string',
   enabled: true,
@@ -31,7 +31,6 @@ const wrapper = mount({
 
 describe('Test for MonitoringPolicyBasicInformationEditAddForm', () => {
   let store
-
   beforeEach(() => {
     store = useMonitoringPoliciesStore()
     store.selectedPolicy = mockMonitoringPolicy
@@ -62,8 +61,8 @@ describe('Test for MonitoringPolicyBasicInformationEditAddForm', () => {
     expect(policyTagInput.exists()).toBe(true)
     expect(policyTagInput.vm.preselectedItems).toStrictEqual([
       {
-        id: 'default',
-        name: 'default'
+        'id': 'default',
+        'name': 'default'
       }
     ])
   })

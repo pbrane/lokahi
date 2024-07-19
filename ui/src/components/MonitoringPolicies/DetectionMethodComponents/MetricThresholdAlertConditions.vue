@@ -1,47 +1,65 @@
 <template>
-    <div class="alert-conditions">
-        <div>
-          <h2>Specify Threshold Alert Conditions</h2>
-          <p>Alert conditions are an additional set of parameters specific to the chosen detection method.</p>
-          <p>These conditions help to determine what alerts will be triggered and their assigned severity.</p>
-        </div>
-        <div class="component-type">
-          <h2>Select a Component Type</h2>
-          <FeatherRadioGroup
-            v-model="radioModel"
-            :label="''"
-            class="text-radio"
-            @update:modelValue="(e: any) => onChecked && onChecked(e)"
+  <div class="alert-conditions">
+    <div>
+      <h2>Specify Threshold Alert Conditions</h2>
+      <p>Alert conditions are an additional set of parameters specific to the chosen detection method.</p>
+      <p>These conditions help to determine what alerts will be triggered and their assigned severity.</p>
+    </div>
+    <div class="component-type">
+      <h2>Select a Component Type</h2>
+      <FeatherRadioGroup
+        v-model="selectedComponentType"
+        :label="''"
+        class="text-radio"
+        @update:modelValue="(e: any) => handleComponentChange(e)"
+      >
+        <FeatherRadio
+          :value="ManagedObjectType.Node"
+        >
+          <p>Node</p>
+         </FeatherRadio>
+         <FeatherRadio
+            :value="ManagedObjectType.Interface"
           >
-          <FeatherRadio
-            :value="node"
-            :data-test="`text-radio-button-${node}`"
-          >
-            <p>Node</p>
-          </FeatherRadio>
-          <FeatherRadio
-            :value="interFace"
-            :data-test="`text-radio-button-${interFace}`"
-          >
-            <p>Interface</p>
-          </FeatherRadio>
-        </FeatherRadioGroup>
+          <p>Interface</p>
+        </FeatherRadio>
+      </FeatherRadioGroup>
+    </div>
+  <div class="row">
+    <div class="col">
+      <h5>Select a Threshold Metric</h5>
+      <div class="select-metric">
+        <BasicSelect
+          label="Select Metric"
+          :list="thresholdMetricTypeOptions"
+          :selectedId="selectedId"
+          @item-selected="handleMetricChange"
+          :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
+        />
       </div>
-      <div class="metric-type">
-        <h4>Select a Threshold Metric</h4>
-        <div class="select-metric">
-          <FeatherSelect
-            label="Select Metric"
-            :options="thresholdMetricTypeOptions"
-            text-prop="name"
-            :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
-            @update:model-value="() => {}"
-          />
-        </div>
+  </div>
+    <div class="col">
+      <h5 class="subtitle">Select Trigger and Clear Events</h5>
+      <div class="event-trigger">
+        <FeatherSelect
+          label="Trigger Event"
+          :options="eventDefinitionOptions"
+          text-prop="name"
+          :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
+          v-model="eventTrigger"
+          @update:model-value="(e) => onUpdateTriggerEvent(e as unknown as AlertEventDefinition)"
+          class="trigger-event-input"
+        >
+          <template #pre>
+            <FeatherIcon :icon="Search" />
+          </template>
+        </FeatherSelect>
       </div>
-    <span class="subtitle" v-if="isShow">Time period</span>
-    <div class="time-period" v-if="isShow">
-      <p class="subtitle-last-any">Any</p>
+    </div>
+  </div>
+  <span class="subtitle" v-if="isShow">Time period</span>
+  <div class="time-period" v-if="isShow">
+    <p class="subtitle-last-any">Any</p>
       <div class="any-time">
         <BasicSelect
           :list="timePeriodOptions"
@@ -76,13 +94,17 @@
 <script setup lang="ts">
 
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { EventType } from '@/types/graphql'
+import { AlertEventDefinition, EventType, ManagedObjectType } from '@/types/graphql'
+import { ThresholdMetricList } from '../monitoringPolicies.constants'
+import { CreateEditMode, ThresholdMetricNames } from '../../../types/index'
+import Search from '@featherds/icon/action/Search'
+import { ISelectItemType } from '@featherds/select'
 
+const eventDefinitionOptions = ref([] as ISelectItemType[])
+const eventTrigger = ref()
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
-const node = ref<boolean>(false)
-const interFace = ref<boolean>(true)
-const radioModel = ref<boolean>()
 const isShow = ref(false)
+const selectedId = ref()
 
 const timePeriodOptions = [
   { id: 1, first: '3 minutes', last: '10 minutes'}
@@ -91,18 +113,80 @@ const notifyOptions = [
   { id: 1, name: 'Critical' },
   { id: 2, name: 'Major' }
 ]
-
 const thresholdMetricTypeOptions = [
-  { id: 1, name: 'Bandwidth Utilization' }
+  { id: 1, value: ThresholdMetricNames.NetworkInboundUtilization, name: ThresholdMetricList[ThresholdMetricNames.NetworkInboundUtilization] },
+  { id: 2, value: ThresholdMetricNames.NetworkOutboundUtilization, name: ThresholdMetricList[ThresholdMetricNames.NetworkOutboundUtilization] },
+  { id: 3, value: ThresholdMetricNames.CPU_USAGE, name: ThresholdMetricList[ThresholdMetricNames.CPU_USAGE] }
 ]
 
-const onChecked = (e: boolean) => {
-  console.log('checked', e)
+const selectThresholdName = () => {
+  if (monitoringPoliciesStore.selectedRule?.thresholdMetricName) {
+    const selected = thresholdMetricTypeOptions?.find((item) => item.value === monitoringPoliciesStore.selectedRule?.thresholdMetricName)
+    selectedId.value = selected?.id
+  } else {
+    if (monitoringPoliciesStore.selectedRule) {
+      monitoringPoliciesStore.selectedRule.thresholdMetricName =  ThresholdMetricNames.NetworkInboundUtilization
+      selectedId.value = 1
+    }
+  }
+}
+
+const getEventTriggerThresholdMetric = () => {
+  const { cachedEventDefinitions } = monitoringPoliciesStore
+  const metricThresholdDefinitions = cachedEventDefinitions?.get('metricThreshold') ?? []
+  eventDefinitionOptions.value = metricThresholdDefinitions
+  if (metricThresholdDefinitions.length > 0) {
+    eventTrigger.value = metricThresholdDefinitions[0]
+    monitoringPoliciesStore.eventTriggerThresholdMetrics = metricThresholdDefinitions[0]
+  }
+}
+
+const selectEvenetTriggerThresholdMetrics = () => {
+  const { selectedRule, cachedEventDefinitions} = monitoringPoliciesStore
+  if ( selectedRule?.alertConditions && selectedRule?.alertConditions?.length > 0) {
+    const firstAlertCondition = selectedRule.alertConditions[0]
+    eventTrigger.value = firstAlertCondition?.triggerEvent
+    monitoringPoliciesStore.eventTriggerThresholdMetrics = firstAlertCondition?.triggerEvent as AlertEventDefinition
+    eventDefinitionOptions.value =  cachedEventDefinitions?.get('metricThreshold') ?? []
+  }
+}
+onMounted(() => {
+  if (monitoringPoliciesStore.ruleEditMode === CreateEditMode.Create) {
+    getEventTriggerThresholdMetric()
+  } else {
+    selectEvenetTriggerThresholdMetrics()
+  }
+  selectThresholdName()
+})
+
+const selectedComponentType = computed(() => {
+  return monitoringPoliciesStore.selectedRule?.componentType || 'NODE'
+})
+
+const handleComponentChange = (value: ManagedObjectType) => {
+  if (monitoringPoliciesStore.selectedRule) {
+    monitoringPoliciesStore.selectedRule.componentType = value
+  }
 }
 
 const selectEventType = (eventType: EventType) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   monitoringPoliciesStore.selectedRule!.eventType = eventType
+}
+
+const handleMetricChange = (id: number) => {
+  if (monitoringPoliciesStore?.selectedRule) {
+    const thresholdMetric = thresholdMetricTypeOptions.find(value => value.id === id)
+    if (thresholdMetric) {
+      monitoringPoliciesStore.selectedRule.thresholdMetricName = thresholdMetric.value
+      selectedId.value = id
+    }
+  }
+}
+
+const onUpdateTriggerEvent = (e: any) => {
+  monitoringPoliciesStore.updateCondition(e.id, e)
+  eventTrigger.value = e
 }
 </script>
 
@@ -146,12 +230,19 @@ const selectEventType = (eventType: EventType) => {
     }
   }
 
-  .metric-type {
-    h4 {
+  .row {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap:4%;
+    .col {
+      width: 50%;
+    }
+    h5 {
       color: var(--feather-cleared);
     }
-    .select-metric {
-      width: 40%;
+    .select-metric, .event-trigger {
       margin-top: 10px;
     }
   }

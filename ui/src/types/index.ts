@@ -108,6 +108,12 @@ export enum Comparators {
   LTE = 'LTE'
 }
 
+export enum ThresholdMetricNames {
+  NetworkInboundUtilization = 'netInUtilization',
+  NetworkOutboundUtilization = 'netOutUtilization',
+  CPU_USAGE = 'cpuUtilization'
+}
+
 export enum InventoryFilter {
   TAGS = 'TAGS',
   LABELS = 'LABELS'

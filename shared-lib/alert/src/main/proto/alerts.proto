@@ -44,6 +44,7 @@ enum ManagedObjectType {
   NODE = 2;
   SNMP_INTERFACE = 3;
   SNMP_INTERFACE_LINK = 4;
+  INTERFACE = 5;
 }
 
 enum Severity {

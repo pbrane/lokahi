@@ -308,6 +308,8 @@ public abstract class AbstractAlertUtil implements AlertUtilService {
      */
     public static final String HARDWARE_END_SUFFIX = "]";
 
+    public static final String THRESHOLD_ALERT_NAME = "metric_threshold_name";
+
     /**
      * <P>
      * This method is used to escape required values from strings that may

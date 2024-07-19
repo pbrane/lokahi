@@ -1,47 +1,80 @@
 <template>
      <div class="container">
       <p class="subtitle">Set Alert Conditions</p>
-      <table class="data-table" aria-label="Events Table" data-test="data-table">
+      <table class="data-table" aria-label="Events Table">
         <thead>
           <tr>
             <th>Enable</th>
+            <th>Name</th>
             <th>Alert Severity</th>
             <th>Condition</th>
             <th>Threshold</th>
+            <th>Expression</th>
           </tr>
         </thead>
         <TransitionGroup name="data-table" tag="tbody">
-          <tr data-test="data-item" v-for="alert of alertConditions" :key="alert.id">
+          <tr v-for="(alert,index) in alertConditionsThresholdMetric"
+            :key="alert.id">
             <td class="toggle-wrapper">
-              <FeatherListSwitch class="basic-switch" v-model="alert.isEnabled" />
+              <FeatherListSwitch
+               class="basic-switch"
+               v-model="alert.enabled"
+               @update:modelValue="(e:any) => changeAlertConditionThresholdMetric(e,alert.id,'enabled')"
+               :disabled="isDefault"  />
             </td>
             <td>
-              <PillColor :item="showSeverity(alert.alertSeverity)" :isIcon="isIcon">
+              <div class="conditions-name-input">
+                <FeatherInput
+                  type="text"
+                  v-model="alert.name"
+                  label=""
+                  :readonly="isDefault"
+                  />
+              </div>
+            </td>
+            <td>
+              <div class="alert-severity">
+              <PillColor
+               :item="showSeverity(alert.severity)"
+               :isIcon="isIcon">
                 <template #actions>
-                  <FeatherIcon :icon="alert?.icon" :class="alert.alertSeverity"/>
+                  <FeatherIcon
+                  :icon="alertSeverities[index]?.icon"
+                  :class="alert.severity"/>
                 </template>
                </PillColor>
+               </div>
             </td>
             <td>
               <div class="alert-conditions">
                 <BasicSelect
                   :list="conditionsOptions"
-                  @item-selected="(cmp: any) => selectCondition(cmp, alert.id)"
-                  :selectedId="'GT'"
-                  :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
-                />
+                  @item-selected="(e:any) => {
+                    const filterCondition = conditionsOptions?.find(conditions => conditions.id === e)
+                    changeAlertConditionThresholdMetric(filterCondition?.value,alert.id,'condition')}"
+                  :selectedId="selectedAlertConditionsThresholdMetric[index]?.id || alert.condition"
+                  :disabled="isDefault"
+                  />
               </div>
             </td>
             <td>
               <div class="threshold-metric-input">
                 <FeatherInput
-                  v-model.trim="threshold"
-                  :label="alert.thresholdValue"
-                  v-focus
-                  data-test="rule-name-input"
-                  :readonly="monitoringPoliciesStore.selectedPolicy?.isDefault"
-                   />
-                   <div class="subtitle">%</div>
+                  type="number"
+                  v-model.number="alert.threshold"
+                  label=""
+                  :readonly="isDefault"
+                />
+              </div>
+            </td>
+            <td>
+            <div class="expression-input">
+              <FeatherInput
+                label=""
+                type="text"
+                v-model.number="alert.expression"
+                :readonly="isDefault"
+                />
               </div>
             </td>
           </tr>
@@ -50,48 +83,117 @@
     </div>
 </template>
 <script  setup lang="ts">
+import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import WifiNoConnection from '@featherds/icon/notification/WifiNoConnection'
 import Error from '@featherds/icon/notification/Error'
 import Warning from '@featherds/icon/notification/Warning'
-import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { Comparators } from '@/types/index'
+import { Severity, ThresholdMetric } from '@/types/graphql'
+import PillColor from '@/components/Common/PillColor.vue'
+import { Comparators, CreateEditMode } from '@/types'
 import { ComparatorSigns, ComparatorText } from '../monitoringPolicies.constants'
+import { cloneDeep } from 'lodash'
 
 const isIcon = ref<boolean>(true)
-const threshold = ref('')
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
+const alertConditionsThresholdMetric = ref<ThresholdMetric[]>([])
+const selectedAlertConditionsThresholdMetric = ref<{ id: any; value: string; name: string; }[]>([])
+
+
+const getDummyAlertConditionThresholdMetrics = () => {
+  const dummyAlertConditionThresholdMetrics = [
+    { id: 1, condition: '>', severity: 'CRITICAL', enabled: false, threshold: 0, expression: '', name: '' },
+    { id: 2, condition: '>', severity: 'MAJOR', enabled: false, threshold: 0, expression: '', name: '' },
+    { id: 3, condition: '>', severity: 'MINOR', enabled: false, threshold: 0, expression: '', name: '' },
+    { id: 4, condition: '>', severity: 'WARNING', enabled: false, threshold: 0, expression: '', name: '' }
+  ]
+  return cloneDeep(dummyAlertConditionThresholdMetrics)
+}
 
 const conditionsOptions = [
-  { id: Comparators.EQ, name: `${ComparatorSigns[Comparators.EQ]} ${ComparatorText[Comparators.EQ]}` },
-  { id: Comparators.NE, name: `${ComparatorSigns[Comparators.NE]} ${ComparatorText[Comparators.NE]}` },
-  { id: Comparators.GT, name: `${ComparatorSigns[Comparators.GT]} ${ComparatorText[Comparators.GT]}` },
-  { id: Comparators.GTE, name: `${ComparatorSigns[Comparators.GTE]} ${ComparatorText[Comparators.GTE]}` },
-  { id: Comparators.LT, name: `${ComparatorSigns[Comparators.LT]} ${ComparatorText[Comparators.LT]}` },
-  { id: Comparators.LTE, name: `${ComparatorSigns[Comparators.LTE]} ${ComparatorText[Comparators.LTE]}` }
+  { id: 1, value: ComparatorSigns[Comparators.GT], name: ComparatorText[Comparators.GT] },
+  { id: 2, value: ComparatorSigns[Comparators.EQ], name: ComparatorText[Comparators.EQ] },
+  { id: 3, value: ComparatorSigns[Comparators.LT], name: ComparatorText[Comparators.LT] },
+  { id: 4, value: ComparatorSigns[Comparators.LTE], name: ComparatorText[Comparators.LTE] },
+  { id: 5, value: ComparatorSigns[Comparators.GTE], name: ComparatorText[Comparators.GTE] }
 ]
 
-const icons = markRaw({
-  WifiNoConnection,
-  Warning,
-  Error
+const alertSeverities = reactive([
+  { id: Severity.Critical, icon: Error },
+  { id: Severity.Major, icon: WifiNoConnection },
+  { id: Severity.Minor, icon: WifiNoConnection },
+  { id: Severity.Warning, icon: Warning }
+])
+
+const filterAndPushConditions = (condition: string) => {
+  const filterAlertConditions = conditionsOptions.find(option => option.value === condition)
+  if (filterAlertConditions) {
+    selectedAlertConditionsThresholdMetric.value.push(filterAlertConditions)
+  }
+}
+
+onMounted(() => {
+  if (monitoringPoliciesStore.selectedRule?.alertConditions && monitoringPoliciesStore.ruleEditMode === CreateEditMode.Create) {
+    monitoringPoliciesStore.clearAlertConditions()
+    alertConditionsThresholdMetric.value = getDummyAlertConditionThresholdMetrics()
+  } else if (monitoringPoliciesStore.ruleEditMode === CreateEditMode.Edit) {
+    if (monitoringPoliciesStore.selectedRule?.alertConditions && monitoringPoliciesStore.selectedRule?.alertConditions?.length > 0) {
+      monitoringPoliciesStore.selectedRule?.alertConditions.forEach((alertCondition: any) => {
+        if (alertCondition?.thresholdMetric) {
+          filterAndPushConditions(alertCondition.thresholdMetric?.condition)
+          const condition = {
+            id: alertCondition.thresholdMetric?.id,
+            enabled: alertCondition.thresholdMetric?.enabled,
+            condition: alertCondition.thresholdMetric?.condition,
+            threshold: alertCondition.thresholdMetric?.threshold,
+            expression: alertCondition.thresholdMetric?.expression,
+            name: alertCondition.thresholdMetric?.name,
+            severity: alertCondition.severity
+          }
+          alertConditionsThresholdMetric.value.push(condition)
+        }
+      })
+      if (!(alertConditionsThresholdMetric.value.length > 0)) {
+        alertConditionsThresholdMetric.value = getDummyAlertConditionThresholdMetrics()
+      }
+    }
+  }
 })
 
-const alertConditions = [
-  {id: 1, isEnabled: false, alertSeverity: 'Critical', condition: '', threshold: '', thresholdValue: '90', conditionsOptions, icon: icons.Error},
-  {id: 2, isEnabled: false, alertSeverity: 'Major', condition: '', threshold: '', thresholdValue: '1', conditionsOptions, icon: icons.WifiNoConnection},
-  {id: 3, isEnabled: false, alertSeverity: 'Minor', condition: '', threshold: '', thresholdValue: '1', conditionsOptions, icon: icons.WifiNoConnection},
-  {id: 4, isEnabled: false, alertSeverity: 'Warning', condition: '', threshold: '', thresholdValue: '1', conditionsOptions, icon: icons.Warning}
-]
+watch([alertConditionsThresholdMetric, monitoringPoliciesStore.eventTriggerThresholdMetrics], () => {
+  if (monitoringPoliciesStore?.selectedRule) {
+    if (!monitoringPoliciesStore.selectedRule.alertConditions) {
+      monitoringPoliciesStore.selectedRule.alertConditions = []
+    }
+    alertConditionsThresholdMetric.value?.forEach((alertCondition, index) => {
+      if (monitoringPoliciesStore.selectedRule?.alertConditions) {
+        monitoringPoliciesStore.selectedRule.alertConditions[index] = {
+          ...monitoringPoliciesStore.selectedRule.alertConditions[index],
+          triggerEvent: monitoringPoliciesStore.eventTriggerThresholdMetrics || null,
+          severity: alertCondition.severity,
+          thresholdMetric: alertCondition
+        }
+      }
+    })
+  }
+}, { deep: true })
+
+const isDefault = computed(() => {
+  return monitoringPoliciesStore.selectedPolicy?.isDefault
+})
 
 const showSeverity = (value: any) => {
   return { style: value as string }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const selectCondition = (comparator: string, alertId: number) => {
-  console.log('select condition')
+const changeAlertConditionThresholdMetric = (value: any, id: number, key: keyof ThresholdMetric) => {
+  const index = alertConditionsThresholdMetric?.value.findIndex((condition: any) => condition.id === id)
+  if (index === -1) {
+    return
+  }
+  const conditionToUpdate = {...alertConditionsThresholdMetric.value[index]}
+  conditionToUpdate[key] = value
+  alertConditionsThresholdMetric.value[index] = conditionToUpdate
 }
-
 </script>
 <style lang="scss" scoped>
 @use '@featherds/styles/mixins/typography';
@@ -131,25 +233,31 @@ const selectCondition = (comparator: string, alertId: number) => {
         .Major {
           rotate: 180deg;
         }
-        .alert-conditions,.threshold-metric-input {
+        .alert-conditions,
+        .threshold-metric-input,
+        .conditions-name-input,
+        .expression-input {
           margin-top: 0.8em;
         }
-
-        .threshold-metric-input{
-          display: flex;
-          justify-content: flex-start;
-          align-items: center;
-          column-gap: 0.75em;
+        .expression-input,
+        .conditions-name-input,
+        .alert-severity {
+          width: 100%;
+        }
+        .threshold-metric-input {
+          width: 100%;
           .subtitle {
             align-self: baseline;
             margin-top: 0.70rem;
             color: var(--feather-cleared);
+           }
           }
-        }
-        .threshold-metric-input:last-child {
-          :deep(.label-border) {
-             width: 14.19991px !important;
-          }
+          .threshold-metric-input:last-child,
+          .conditions-name-input:last-child,
+          .expression-input:last-child {
+            :deep(.label-border) {
+               width:0px !important;
+            }
         }
       }
     }

@@ -63,8 +63,18 @@ export interface PolicyAlertCondition {
   severity?: string
   triggerEvent?: AlertEventDefinition
   unitLabel?: string
+  thresholdMetric?: ThresholdMetricCondition
 }
 
+export interface ThresholdMetricCondition {
+  id?: number
+  enabled?: boolean
+  severity?: string
+  condition?: string
+  threshold?: number
+  name?: string
+  expression?: string
+}
 /**
  * Similar to graphql.ts/PolicyRule.
  */
@@ -90,7 +100,7 @@ export interface MonitoringPolicy {
   notifyByEmail: boolean
   notifyByPagerDuty: boolean
   notifyByWebhooks: boolean
-  notifyInstruction: string
+  notifyInstruction?: string
   rules?: MonitoringPolicyRule[]
   tags?: string[]
   enabled: boolean

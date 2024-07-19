@@ -49,6 +49,12 @@ public class KafkaConfig {
                 .build();
     }
 
+    @Bean
+    public NewTopic thresholdRulesTopic(KafkaTopicProperties kafkaTopicProperties) {
+        return getTopicBuilder(kafkaTopicProperties.getCreateTopics().getThresholdRules())
+                .build();
+    }
+
     private TopicBuilder getTopicBuilder(KafkaTopicProperties.TopicConfig topic) {
         TopicBuilder builder = TopicBuilder.name(topic.getName())
                 .partitions(topic.getPartitions())

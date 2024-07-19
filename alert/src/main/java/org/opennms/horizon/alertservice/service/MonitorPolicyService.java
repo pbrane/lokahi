@@ -46,10 +46,12 @@ import org.opennms.horizon.alertservice.db.entity.AlertCondition;
 import org.opennms.horizon.alertservice.db.entity.AlertDefinition;
 import org.opennms.horizon.alertservice.db.entity.EventDefinition;
 import org.opennms.horizon.alertservice.db.entity.MonitorPolicy;
+import org.opennms.horizon.alertservice.db.entity.PolicyRule;
 import org.opennms.horizon.alertservice.db.entity.SystemPolicyTag;
 import org.opennms.horizon.alertservice.db.entity.Tag;
 import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
 import org.opennms.horizon.alertservice.db.repository.AlertRepository;
+import org.opennms.horizon.alertservice.db.repository.EventDefinitionRepository;
 import org.opennms.horizon.alertservice.db.repository.MonitorPolicyRepository;
 import org.opennms.horizon.alertservice.db.repository.PolicyRuleRepository;
 import org.opennms.horizon.alertservice.db.repository.SystemPolicyTagRepository;
@@ -58,6 +60,9 @@ import org.opennms.horizon.alertservice.db.repository.ThresholdMetricRepository;
 import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapper;
 import org.opennms.horizon.alertservice.service.routing.MonitoringPolicyProducer;
 import org.opennms.horizon.alertservice.service.routing.TagOperationProducer;
+import org.opennms.horizon.alertservice.service.routing.ThresholdRuleProducer;
+import org.opennms.horizon.metrics.threshold.proto.AlertRule;
+import org.opennms.horizon.metrics.threshold.proto.MetricsThresholdAlertRule;
 import org.opennms.horizon.shared.common.tag.proto.Operation;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationList;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationProto;
@@ -83,6 +88,8 @@ public class MonitorPolicyService {
     private final TagRepository tagRepository;
     private final TagOperationProducer tagOperationProducer;
     private final MonitoringPolicyProducer monitoringPolicyProducer;
+    private final EventDefinitionRepository eventDefinitionRepository;
+    private final ThresholdRuleProducer thresholdRuleProducer;
 
     private void validatePolicyName(MonitorPolicyProto request, String tenantId) {
         if (StringUtils.isBlank(request.getName())) {
@@ -130,6 +137,10 @@ public class MonitorPolicyService {
                 throw new IllegalArgumentException(message);
             } else if (!policy.get().getName().equals(request.getName())) {
                 validatePolicyName(request, tenantId);
+                // delete associated cortex rule with policy name
+                MetricsThresholdAlertRule metricsThresholdAlertRule = buildMetricsThresholdAlertRule(
+                        tenantId, "", policy.get().getName());
+                thresholdRuleProducer.sendThresholdAlertRule(metricsThresholdAlertRule);
             }
         } else if (!DEFAULT_POLICY.equals(request.getName())) {
             validatePolicyName(request, tenantId);
@@ -148,6 +159,9 @@ public class MonitorPolicyService {
             newPolicy.setTags(tags);
             handleTagOperationUpdate(existingTags, tags);
             monitoringPolicyProducer.sendMonitoringPolicy(newPolicy);
+
+            mapMonitoringPolicyToMetricsThresholdAlertRule(newPolicy)
+                    .forEach(thresholdRuleProducer::sendThresholdAlertRule);
             return policyMapper.map(newPolicy);
         }
     }
@@ -158,8 +172,43 @@ public class MonitorPolicyService {
 
     private void createOrUpdateThresholdMetric(AlertCondition alertCondition) {
         if (alertCondition.getRule().getEventType().equals(EventType.METRIC_THRESHOLD)
-                && alertCondition.getThresholdMetric() != null)
+                && alertCondition.getThresholdMetric() != null) {
             alertCondition.setThresholdMetric(thresholdMetricRepository.save(alertCondition.getThresholdMetric()));
+        }
+    }
+
+    private List<MetricsThresholdAlertRule> mapMonitoringPolicyToMetricsThresholdAlertRule(
+            MonitorPolicy monitoringPolicy) {
+
+        List<MetricsThresholdAlertRule> metricsThresholdAlertRules = new ArrayList<>();
+        for (PolicyRule rule : monitoringPolicy.getRules()) {
+            if (rule.getEventType().equals(EventType.METRIC_THRESHOLD)) {
+                MetricsThresholdAlertRule.Builder alertRuleBuilder = MetricsThresholdAlertRule.newBuilder();
+                alertRuleBuilder.setTenantId(rule.getTenantId());
+                alertRuleBuilder.setRuleNamespace(monitoringPolicy.getName().replaceAll("\\s", ""));
+                alertRuleBuilder.setMetricThresholdName(rule.getThresholdMetricName());
+                alertRuleBuilder.setAlertGroup(rule.getName().replaceAll("\\s", ""));
+                for (AlertCondition alertCondition : rule.getAlertConditions()) {
+                    if (alertCondition.getThresholdMetric().isEnabled()) {
+                        AlertRule.Builder ruleBuilder = AlertRule.newBuilder();
+                        ruleBuilder.setAlertName(rule.getThresholdMetricName() + "-" + alertCondition.getId());
+                        ruleBuilder.setDescription(
+                                alertCondition.getThresholdMetric().getName());
+                        ruleBuilder.setDuration("5s");
+                        ruleBuilder.setAlertExpression(
+                                alertCondition.getThresholdMetric().getExpression());
+                        ruleBuilder.setSeverity(alertCondition.getSeverity().toString());
+                        ruleBuilder.setCondition(
+                                alertCondition.getThresholdMetric().getCondition());
+                        ruleBuilder.setThresholdValue(String.valueOf(
+                                alertCondition.getThresholdMetric().getThreshold()));
+                        alertRuleBuilder.addAlertRules(ruleBuilder);
+                    }
+                }
+                metricsThresholdAlertRules.add(alertRuleBuilder.build());
+            }
+        }
+        return metricsThresholdAlertRules;
     }
 
     private MonitorPolicyProto handleDefaultTagOperationUpdate(Set<Tag> requestedNewTags, final String tenantId) {
@@ -322,6 +371,13 @@ public class MonitorPolicyService {
         if (alerts != null && !alerts.isEmpty()) {
             alertRepository.deleteAll(alerts);
         }
+
+        // delete  cortex namespace by monitoring policy name
+        var monitoringPolicy = repository.findByIdAndTenantId(id, tenantId);
+        MetricsThresholdAlertRule metricsThresholdAlertRule = buildMetricsThresholdAlertRule(
+                tenantId, "", monitoringPolicy.get().getName().replaceAll("\\s", ""));
+        thresholdRuleProducer.sendThresholdAlertRule(metricsThresholdAlertRule);
+
         repository.deleteByIdAndTenantId(id, tenantId);
     }
 
@@ -335,6 +391,13 @@ public class MonitorPolicyService {
         if (alerts != null && !alerts.isEmpty()) {
             alertRepository.deleteAll(alerts);
         }
+
+        // delete cortex alert group by policy  rule name
+        var policyRule = policyRuleRepository.findByIdAndTenantId(id, tenantId);
+        MetricsThresholdAlertRule metricsThresholdAlertRule = buildMetricsThresholdAlertRule(
+                tenantId, policyRule.get().getName().replaceAll("\\s", ""), "");
+        thresholdRuleProducer.sendThresholdAlertRule(metricsThresholdAlertRule);
+
         policyRuleRepository.deleteByIdAndTenantId(id, tenantId);
     }
 
@@ -365,38 +428,34 @@ public class MonitorPolicyService {
     }
 
     private void createOrUpdateAlertDefinition(AlertCondition condition) {
-        if (!condition.getRule().getEventType().equals(EventType.METRIC_THRESHOLD)
-                && condition.getTriggerEvent() != null) {
-            String uei = condition.getTriggerEvent().getEventUei();
-            definitionRepo
-                    .findFirstByAlertConditionId(condition.getId())
-                    .ifPresentOrElse(
-                            definition -> {
-                                if (!uei.equals(definition.getUei())) {
-                                    log.info("update alert definition for event {} ", condition.getTriggerEvent());
-                                    definition.setReductionKey(
-                                            condition.getTriggerEvent().getReductionKey());
-                                    definition.setUei(uei);
-                                    definition.setType(getAlertTypeFromEventDefinition(condition.getTriggerEvent()));
-                                    definition.setClearKey(
-                                            condition.getTriggerEvent().getClearKey());
-                                    definitionRepo.save(definition);
-                                }
-                            },
-                            () -> {
-                                log.info("creating alert definition for event {}", condition.getTriggerEvent());
-                                AlertDefinition definition = new AlertDefinition();
-                                definition.setUei(uei);
-                                definition.setTenantId(condition.getTenantId());
+        String uei = condition.getTriggerEvent().getEventUei();
+        definitionRepo
+                .findFirstByAlertConditionId(condition.getId())
+                .ifPresentOrElse(
+                        definition -> {
+                            if (!uei.equals(definition.getUei())) {
+                                log.info("update alert definition for event {} ", condition.getTriggerEvent());
                                 definition.setReductionKey(
                                         condition.getTriggerEvent().getReductionKey());
+                                definition.setUei(uei);
                                 definition.setType(getAlertTypeFromEventDefinition(condition.getTriggerEvent()));
                                 definition.setClearKey(
                                         condition.getTriggerEvent().getClearKey());
-                                definition.setAlertCondition(condition);
                                 definitionRepo.save(definition);
-                            });
-        }
+                            }
+                        },
+                        () -> {
+                            log.info("creating alert definition for event {}", condition.getTriggerEvent());
+                            AlertDefinition definition = new AlertDefinition();
+                            definition.setUei(uei);
+                            definition.setTenantId(condition.getTenantId());
+                            definition.setReductionKey(
+                                    condition.getTriggerEvent().getReductionKey());
+                            definition.setType(getAlertTypeFromEventDefinition(condition.getTriggerEvent()));
+                            definition.setClearKey(condition.getTriggerEvent().getClearKey());
+                            definition.setAlertCondition(condition);
+                            definitionRepo.save(definition);
+                        });
     }
 
     private AlertType getAlertTypeFromEventDefinition(EventDefinition eventDefinition) {
@@ -413,5 +472,15 @@ public class MonitorPolicyService {
                 .stream()
                 .map(policyMapper::map)
                 .toList();
+    }
+
+    private MetricsThresholdAlertRule buildMetricsThresholdAlertRule(
+            final String tenantId, final String alertGroup, final String alertNameSpace) {
+        MetricsThresholdAlertRule.Builder alertRuleBuilder = MetricsThresholdAlertRule.newBuilder();
+        alertRuleBuilder.setTenantId(tenantId);
+        alertRuleBuilder.setRuleNamespace(alertNameSpace);
+        alertRuleBuilder.setAlertGroup(alertGroup);
+        alertRuleBuilder.setOperation(org.opennms.horizon.metrics.threshold.proto.Operation.DELETE_RULE_OR_NAMESPACE);
+        return alertRuleBuilder.build();
     }
 }

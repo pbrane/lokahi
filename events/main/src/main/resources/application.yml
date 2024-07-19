@@ -31,6 +31,7 @@ kafka:
   trap-events-topic: "events"
   node-changed: "node"
   internal-events-topic: "internal-event"
+  threshold-events: "metrics-threshold-event"
 
 keycloak:
   realm: opennms

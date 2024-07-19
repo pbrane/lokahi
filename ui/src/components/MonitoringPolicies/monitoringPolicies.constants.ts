@@ -1,4 +1,4 @@
-import { Comparators, InventoryFilter, KeyValueStringType } from '@/types/index'
+import { Comparators, InventoryFilter, KeyValueStringType, ThresholdMetricNames } from '@/types/index'
 
 export enum ThresholdMetrics {
   OVER_UTILIZATION = 'OVER_UTILIZATION',
@@ -38,7 +38,14 @@ export const ComparatorText: KeyValueStringType = Object.freeze({
   [Comparators.LTE]: 'less than or equal to'
 })
 
+export const ThresholdMetricList: KeyValueStringType = Object.freeze({
+  [ThresholdMetricNames.NetworkInboundUtilization]: 'Network Inbound Utilization',
+  [ThresholdMetricNames.NetworkOutboundUtilization]: 'Network Outbound Utilization',
+  [ThresholdMetricNames.CPU_USAGE]: 'Cpu Utilization'
+})
+
 export const InventoryComparator: KeyValueStringType = Object.freeze({
   [InventoryFilter.TAGS]: 'tags',
   [InventoryFilter.LABELS]: 'labels'
 })
+

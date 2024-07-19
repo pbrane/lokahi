@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.alerts.proto.Alert;
@@ -121,12 +123,19 @@ public class AlertEventProcessor {
     }
 
     protected List<org.opennms.horizon.alertservice.db.entity.Alert> addOrReduceEventAsAlert(Event event) {
-        List<AlertDefinition> alertDefinitions =
-                alertDefinitionRepository.findByTenantIdAndUei(event.getTenantId(), event.getUei());
-        if (alertDefinitions.isEmpty()) {
-            alertDefinitions =
-                    alertDefinitionRepository.findByTenantIdAndUei(SystemInfoUtils.SYSTEM_TENANT, event.getUei());
+        List<AlertDefinition> alertDefinitions;
+        if (event.hasThresholdInfo()) {
+            alertDefinitions = alertDefinitionRepository.findByTenantIdAndAlertConditionId(
+                    event.getTenantId(),
+                    getAlerConditionIdFromAlertName(event.getThresholdInfo().getAlertName()));
+        } else {
+            alertDefinitions = alertDefinitionRepository.findByTenantIdAndUei(event.getTenantId(), event.getUei());
+            if (alertDefinitions.isEmpty()) {
+                alertDefinitions =
+                        alertDefinitionRepository.findByTenantIdAndUei(SystemInfoUtils.SYSTEM_TENANT, event.getUei());
+            }
         }
+
         if (alertDefinitions.isEmpty()) {
             // No alert definition matching, no alert to create
             eventsWithoutAlertDataCounter.increment();
@@ -230,7 +239,7 @@ public class AlertEventProcessor {
             }
 
             alert.setType(alertData.type());
-            if (AlertType.CLEAR.equals(alert.getType())) {
+            if (AlertType.CLEAR.equals(alert.getType()) || isThresholdResolved(event)) {
                 // Set the severity to CLEARED when reducing alerts
                 alert.setSeverity(Severity.CLEARED);
             } else {
@@ -367,5 +376,21 @@ public class AlertEventProcessor {
                     e.getTenantId(),
                     ex.getMessage());
         }
+    }
+
+    public Long getAlerConditionIdFromAlertName(String alertName) {
+        Pattern pattern = Pattern.compile(".*-(\\d+).*");
+        Matcher matcher = pattern.matcher(alertName);
+        if (matcher.matches()) {
+            return Long.parseLong(matcher.group(1));
+        }
+        return 0L;
+    }
+
+    private boolean isThresholdResolved(Event event) {
+        if (event.hasThresholdInfo()) {
+            return event.getThresholdInfo().getStatus().equalsIgnoreCase("resolved");
+        }
+        return false; // If event does not have threshold info, consider it not resolved
     }
 }

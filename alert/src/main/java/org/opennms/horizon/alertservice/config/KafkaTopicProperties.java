@@ -32,6 +32,8 @@ public class KafkaTopicProperties {
 
     private String tagOperation;
 
+    private String thresholdRules;
+
     private String alert;
 
     private String nodeChanged;
@@ -48,6 +50,7 @@ public class KafkaTopicProperties {
         private final TopicConfig alert = new TopicConfig();
         private final TopicConfig monitoringPolicy = new TopicConfig();
         private final TopicConfig nodeChanged = new TopicConfig();
+        private final TopicConfig thresholdRules = new TopicConfig();
     }
 
     @Data

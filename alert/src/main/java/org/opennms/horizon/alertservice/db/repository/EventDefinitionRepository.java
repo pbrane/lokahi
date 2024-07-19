@@ -27,6 +27,7 @@ import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alertservice.db.entity.EventDefinition;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -39,4 +40,7 @@ public interface EventDefinitionRepository extends JpaRepository<EventDefinition
     List<String> findDistinctVendors();
 
     List<EventDefinition> findByEventTypeAndVendor(EventType eventType, String vendor);
+
+    @Query(value = "SELECT * FROM event_definition WHERE event_uei = :eventUei", nativeQuery = true)
+    Optional<EventDefinition> findByEventUei(@Param("eventUei") String eventUei);
 }

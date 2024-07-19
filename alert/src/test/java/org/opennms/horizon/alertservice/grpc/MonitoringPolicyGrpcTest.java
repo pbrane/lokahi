@@ -24,6 +24,7 @@ package org.opennms.horizon.alertservice.grpc;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -71,6 +72,7 @@ import org.opennms.horizon.alertservice.db.entity.SystemPolicyTag;
 import org.opennms.horizon.alertservice.db.entity.Tag;
 import org.opennms.horizon.alertservice.db.repository.AlertDefinitionRepository;
 import org.opennms.horizon.alertservice.db.repository.AlertRepository;
+import org.opennms.horizon.alertservice.db.repository.EventDefinitionRepository;
 import org.opennms.horizon.alertservice.db.repository.MonitorPolicyRepository;
 import org.opennms.horizon.alertservice.db.repository.PolicyRuleRepository;
 import org.opennms.horizon.alertservice.db.repository.SystemPolicyTagRepository;
@@ -83,6 +85,7 @@ import org.opennms.horizon.alertservice.mapper.MonitorPolicyMapperImpl;
 import org.opennms.horizon.alertservice.service.MonitorPolicyService;
 import org.opennms.horizon.alertservice.service.routing.MonitoringPolicyProducer;
 import org.opennms.horizon.alertservice.service.routing.TagOperationProducer;
+import org.opennms.horizon.alertservice.service.routing.ThresholdRuleProducer;
 import org.opennms.horizon.shared.common.tag.proto.Operation;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationList;
 import org.opennms.horizon.shared.common.tag.proto.TagOperationProto;
@@ -99,7 +102,9 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
     private AlertRepository mockAlertRepository;
     private TagRepository mockTagRepository;
     private ThresholdMetricRepository mockThresholdMetricRepository;
+    private EventDefinitionRepository mockEventDefinitionRepository;
     private TagOperationProducer mockTagOperationProducer;
+    private ThresholdRuleProducer mockThresholdRuleProducer;
     private Alert alert1, alert2;
     private ManagedChannel channel;
     protected TenantLookup tenantLookup = new GrpcTenantLookupImpl();
@@ -128,6 +133,8 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
         mockTagOperationProducer = mock(TagOperationProducer.class);
         mockSystemPolicyTagRepository = mock(SystemPolicyTagRepository.class);
         mockThresholdMetricRepository = mock(ThresholdMetricRepository.class);
+        mockEventDefinitionRepository = mock(EventDefinitionRepository.class);
+        mockThresholdRuleProducer = mock(ThresholdRuleProducer.class);
 
         spyMonitorPolicyService = spy(new MonitorPolicyService(
                 policyMapper,
@@ -139,7 +146,9 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
                 mockThresholdMetricRepository,
                 mockTagRepository,
                 mockTagOperationProducer,
-                monitoringPolicyProducer));
+                monitoringPolicyProducer,
+                mockEventDefinitionRepository,
+                mockThresholdRuleProducer));
         MonitorPolicyGrpc grpcService = new MonitorPolicyGrpc(spyMonitorPolicyService, tenantLookup);
         startServer(grpcService);
         channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
@@ -447,12 +456,23 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
         List<Alert> alerts = List.of(alert1, alert2);
         doReturn(alerts).when(mockAlertRepository).findByPolicyIdAndTenantId(10L, tenantId);
 
+        MonitorPolicy monitorPolicy = new MonitorPolicy();
+        monitorPolicy.setId(10L);
+        monitorPolicy.setName("PolicyName");
+        monitorPolicy.setTenantId(tenantId);
+        doReturn(Optional.of(monitorPolicy)).when(mockMonitorPolicyRepository).findByIdAndTenantId(10L, tenantId);
+
+        // Mock thresholdRuleProducer behavior (if needed)
+        doNothing().when(mockThresholdRuleProducer).sendThresholdAlertRule(any());
+
         BoolValue result = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createHeaders()))
-                .deletePolicyById(Int64Value.of(10));
+                .deletePolicyById(Int64Value.of(10L));
 
         assertThat(result.getValue()).isTrue();
         verify(spyMonitorPolicyService).deletePolicyById(10L, tenantId);
         verify(mockAlertRepository).findByPolicyIdAndTenantId(10L, tenantId);
+        verify(mockMonitorPolicyRepository, times(1)).findByIdAndTenantId(eq(10L), eq(tenantId));
+        verify(mockThresholdRuleProducer, times(1)).sendThresholdAlertRule(any());
         verify(mockAlertRepository).deleteAll(alerts);
         verify(mockMonitorPolicyRepository).deleteByIdAndTenantId(10L, tenantId);
 
@@ -484,10 +504,21 @@ class MonitoringPolicyGrpcTest extends AbstractGrpcUnitTest {
         List<Alert> alerts = List.of(alert1, alert2);
         doReturn(alerts).when(mockAlertRepository).findByRuleIdAndTenantId(10L, tenantId);
 
+        PolicyRule policyRule = new PolicyRule();
+        policyRule.setId(10L);
+        policyRule.setName("rule1");
+        policyRule.setTenantId(tenantId);
+        doReturn(Optional.of(policyRule)).when(mockPolicyRuleRepository).findByIdAndTenantId(10L, tenantId);
+
+        // Mock thresholdRuleProducer behavior (if needed)
+        doNothing().when(mockThresholdRuleProducer).sendThresholdAlertRule(any());
+
         BoolValue result = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(createHeaders()))
                 .deleteRuleById(Int64Value.of(10));
 
         assertThat(result.getValue()).isTrue();
+        verify(mockPolicyRuleRepository, times(1)).findByIdAndTenantId(eq(10L), eq(tenantId));
+        verify(mockThresholdRuleProducer, times(1)).sendThresholdAlertRule(any());
         verify(spyMonitorPolicyService).deleteRuleById(10L, tenantId);
         verify(mockAlertRepository).findByRuleIdAndTenantId(10L, tenantId);
         verify(mockAlertRepository).deleteAll(alerts);

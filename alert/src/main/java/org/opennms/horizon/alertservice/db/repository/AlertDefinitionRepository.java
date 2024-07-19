@@ -42,4 +42,10 @@ public interface AlertDefinitionRepository extends JpaRepository<AlertDefinition
             + "WHERE d.tenantId = :tenantId "
             + "AND d.uei = :uei ")
     List<AlertDefinition> findByTenantIdAndUei(@Param("tenantId") String tenantId, @Param("uei") String uei);
+
+    @Query("SELECT d " + "FROM AlertDefinition d "
+            + " JOIN FETCH d.alertCondition  AS ad "
+            + "WHERE d.tenantId = :tenantId "
+            + "AND ad.id = :id ")
+    List<AlertDefinition> findByTenantIdAndAlertConditionId(@Param("tenantId") String tenantId, @Param("id") Long id);
 }

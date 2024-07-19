@@ -57,6 +57,19 @@ OpenNMS: # we might be able to remove this
     flowIngestorUrl: SOME-EXTERNAL-FLOW-SERVER:80
     flowTlsEnabled: false
     kafkaSecretName: ~
+  metricsthresholdprocessor:
+    serviceName: opennms-metrics-threshold-processor
+    imageShortName: lokahi-metrics-threshold-processor
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    resources:
+      limits:
+        cpu: "2"
+        memory: 4Gi # MaxRAMPercentage=50,avg-usage=400MB
+      requests:
+        cpu: "1"
+        memory: 2Gi
+    privateRepoEnabled: false
   ui:
     path: /
     serviceName: opennms-ui

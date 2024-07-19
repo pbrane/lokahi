@@ -61,6 +61,7 @@
     <module>lokahi-common-tag</module>
     <module>spring-boot-logback-json</module>
     <module>event-conf</module>
+    <module>metrics-threshold</module>
   </modules>
 
   <properties>
