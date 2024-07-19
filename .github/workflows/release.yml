@@ -123,6 +123,7 @@ jobs:
           'lokahi-inventory',
           'lokahi-keycloak',
           'lokahi-metrics-processor',
+          'lokahi-metrics-threshold-processor',
           'lokahi-minion-gateway',
           'lokahi-minion-certificate-manager',
           'lokahi-minion-certificate-verifier',

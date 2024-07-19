@@ -76,6 +76,13 @@ jobs:
     with:
       image-tag: ${{ inputs.image-tag || github.sha }}
       image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
+  metrics-threshold-processor:
+    name: Metrics Threshold Processor Service
+    uses: ./.github/workflows/feature-metrics-threshold-processor.yml
+    secrets: inherit
+    with:
+      image-tag: ${{ inputs.image-tag || github.sha }}
+      image-registry: ${{ inputs.image-registry || 'ghcr.io' }}
   minion:
     name: Minion
     uses: ./.github/workflows/feature-minion.yml
@@ -143,6 +150,7 @@ jobs:
       inventory,
       keycloak-ui,
       metrics-processor,
+      metrics-threshold-processor,
       minion,
       minion-gateway,
       minion-certificate-manager,
