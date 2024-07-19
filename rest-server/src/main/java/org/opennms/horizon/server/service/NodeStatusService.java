@@ -25,8 +25,6 @@ import static java.util.Objects.isNull;
 import static org.opennms.horizon.server.service.metrics.Constants.AVG_RESPONSE_TIME;
 import static org.opennms.horizon.server.service.metrics.Constants.AZURE_SCAN_TYPE;
 import static org.opennms.horizon.server.service.metrics.Constants.INSTANCE_KEY;
-import static org.opennms.horizon.server.service.metrics.Constants.MONITOR_KEY;
-import static org.opennms.horizon.server.service.metrics.Constants.NODE_ID_KEY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.leangen.graphql.execution.ResolutionEnvironment;
@@ -223,9 +221,15 @@ public class NodeStatusService {
             NodeDTO node, Integer timeRange, TimeRangeUnit timeRangeUnit, ResolutionEnvironment env) {
         IpInterfaceDTO ipInterface = getPrimaryInterface(node);
         Map<String, String> labels = new HashMap<>();
-        labels.put(NODE_ID_KEY, String.valueOf(node.getId()));
-        labels.put(MONITOR_KEY, Constants.DEFAULT_MONITOR_TYPE);
-        labels.put(INSTANCE_KEY, ipInterface.getIpAddress());
+        var monitoredService = client.getMonitoredService(
+                MonitoredServiceQuery.newBuilder()
+                        .setMonitoredServiceType(Constants.DEFAULT_MONITOR_TYPE)
+                        .setNodeId(node.getId())
+                        .setIpAddress(ipInterface.getIpAddress())
+                        .setTenantId(ipInterface.getTenantId())
+                        .build(),
+                headerUtil.getAuthHeader(env));
+        labels.put(INSTANCE_KEY, monitoredService.getMonitoredEntityId());
 
         try {
             return graphQLTSDBMetricsService
