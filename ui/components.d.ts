@@ -159,6 +159,7 @@ declare module 'vue' {
     TableChart: typeof import('./src/components/Flows/TableChart.vue')['default']
     TextBadge: typeof import('./src/components/Common/TextBadge.vue')['default']
     TextRadioButtons: typeof import('./src/components/Common/TextRadioButtons.vue')['default']
+    ToggleCard: typeof import('./src/components/Settings/ToggleCard.vue')['default']
     TopologyLeftDrawer: typeof import('./src/components/Topology/TopologyLeftDrawer.vue')['default']
     TopologyModal: typeof import('./src/components/Topology/TopologyModal.vue')['default']
     TopologyRightDrawer: typeof import('./src/components/Topology/TopologyRightDrawer.vue')['default']
