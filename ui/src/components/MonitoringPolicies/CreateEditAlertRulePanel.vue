@@ -1,7 +1,7 @@
 <template>
   <div v-if="monitoringPoliciesStore.selectedRule && monitoringPoliciesStore.selectedPolicy" :class="['main-alert', { 'main': !title }]">
     <div :class="['header', { 'main-heading': !title }]">
-      <h2>{{ title || 'Create New Alert Rule' }}</h2>
+      <h2>{{ title || alertRuleTitle }}</h2>
       <p> {{ subTitle || 'A rule is a condition or set of conditions that triggers an alert.' }}</p>
     </div>
     <div :class="['content', { 'scroll-bar': !scrollBar }]">
@@ -66,6 +66,7 @@
 <script setup lang="ts">
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { EventType } from '@/types/graphql'
+import { CreateEditMode } from '@/types'
 
 defineProps({
   title: String,
@@ -74,7 +75,6 @@ defineProps({
 })
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
-
 const eventTypeOptions = [
   { id: EventType.Internal, name: 'Internal' },
   { id: EventType.SnmpTrap, name: 'SNMP Trap' },
@@ -86,6 +86,11 @@ const disableSaveRuleBtn = computed(
   () => monitoringPoliciesStore?.selectedPolicy?.isDefault || !monitoringPoliciesStore?.selectedRule?.name
 )
 
+const alertRuleTitle = computed(() => {
+  return monitoringPoliciesStore.ruleEditMode === CreateEditMode.Edit
+    ? 'Edit Alert Rule'
+    : 'Create New Alert Rule'
+})
 const selectEventType = (eventType: EventType) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   monitoringPoliciesStore.selectedRule!.eventType = eventType
