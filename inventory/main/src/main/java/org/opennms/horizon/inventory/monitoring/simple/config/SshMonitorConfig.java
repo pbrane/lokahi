@@ -21,7 +21,18 @@
  */
 package org.opennms.horizon.inventory.monitoring.simple.config;
 
+import lombok.Data;
+
+@Data
 public class SshMonitorConfig implements MonitorConfig {
+
+    private String address;
+    private int port;
+    private int retry;
+    private String banner;
+    private String clientBanner;
+    private int timeout;
+
     @Override
     public String getType() {
         return "SSH";
