@@ -93,6 +93,8 @@ spec:
               value: "{{ .Values.OpenNMS.api.packagedminionFile }}"
             - name: MINION_ENDPOINT
               value: "{{ .Values.OpenNMS.api.minionEndpoint }}"
+            - name: GRPC_CLIENT_OVERRIDE_AUTHORITY
+              value: "{{ .Values.OpenNMS.api.grpcClientOverrideAuthority }}"
             {{- with .Values.OpenNMS.api.corsAllowed }}
             - name: LOKAHI_BFF_CORS_ALLOWED
               value: "{{ . }}"

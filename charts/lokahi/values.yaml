@@ -34,6 +34,7 @@ OpenNMS: # we might be able to remove this
     certificateManagerUrl: ""
     packagedminionFile: run-minion-docker-compose.yaml
     minionEndpoint: host.docker.internal
+    grpcClientOverrideAuthority: "minion.onmshs.local"
     introspectionEnabled: false
     maxAliasOccurrence: 5
     maxComplexity: 60

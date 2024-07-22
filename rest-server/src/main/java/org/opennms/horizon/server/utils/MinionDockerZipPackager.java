@@ -98,6 +98,11 @@ public class MinionDockerZipPackager {
             minionEndpointPort = "1443";
         }
 
+        String grpcClientOverrideAuthority = System.getenv("GRPC_CLIENT_OVERRIDE_AUTHORITY");
+        if (grpcClientOverrideAuthority == null) {
+            grpcClientOverrideAuthority = "minion.onmshs.local";
+        }
+
         String dockerTxt = new BufferedReader(new InputStreamReader(dockerStream))
                 .lines()
                 .parallel()
@@ -106,6 +111,7 @@ public class MinionDockerZipPackager {
         dockerTxt = dockerTxt.replace("[MINION_NAME]", minionName);
         dockerTxt = dockerTxt.replace("[MINION_ENDPOINT]", minionEndpoint);
         dockerTxt = dockerTxt.replace("[MINION_ENDPOINT_PORT]", minionEndpointPort);
+        dockerTxt = dockerTxt.replace("[GRPC_CLIENT_OVERRIDE_AUTHORITY]", grpcClientOverrideAuthority);
         dockerTxt = dockerTxt.replace("[CERT_FILE]", minionName + ".p12");
         return dockerTxt.getBytes();
     }
