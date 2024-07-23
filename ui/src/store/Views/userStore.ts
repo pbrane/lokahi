@@ -54,7 +54,11 @@ export const useUserStore = defineStore('userStore', {
     },
     createUser() {
       this.userEditMode = CreateEditMode.Create
-      this.selectedUser = cloneDeep(defaultUser)
+      this.selectedUser = {
+        ...cloneDeep(defaultUser),
+        id: `${createId()}`,
+        createdTimestamp: new Date().getTime()
+      }
     },
     checkForDuplicateUsernameOrEmail(): boolean {
       let userList: User[] | undefined
