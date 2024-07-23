@@ -38,5 +38,5 @@ public class SnmpAgentConfig {
 
     private String writeCommunity = "private";
 
-    private String version = "v1";
+    private String version = "v2";
 }
