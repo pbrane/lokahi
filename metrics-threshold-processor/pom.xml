@@ -29,9 +29,12 @@
     <version>0.1.0-SNAPSHOT</version>
     <relativePath>../parent-pom</relativePath>
   </parent>
-  <artifactId>metrics-threshold-processor</artifactId>
 
+  <artifactId>metrics-threshold-processor</artifactId>
   <version>0.1.0-SNAPSHOT</version>
+
+  <name>OpenNMS Lokahi :: Metrics Threshold Processor</name>
+  <description>A microservice responsible for processing metrics threshold.</description>
 
   <properties>
     <application.docker.image.name>opennms/lokahi-metrics-threshold-processor</application.docker.image.name>
