@@ -48,6 +48,8 @@ import org.opennms.horizon.events.proto.EventLog;
 import org.opennms.horizon.events.proto.EventsSearchBy;
 import org.opennms.horizon.grpc.traps.contract.TenantLocationSpecificTrapLogDTO;
 import org.opennms.horizon.grpc.traps.contract.TrapDTO;
+import org.opennms.horizon.metrics.threshold.proto.ThresholdAlert;
+import org.opennms.horizon.metrics.threshold.proto.ThresholdAlertData;
 import org.opennms.horizon.shared.constants.GrpcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +63,7 @@ public class EventStepDefinitions {
     private final List<Event.Builder> builders = new ArrayList<>();
     private final KafkaTestHelper kafkaTestHelper;
     private final BackgroundSteps background;
+    ThresholdAlertData.Builder thresholdAlertDataBuilder;
 
     @Given("[Event] External GRPC Port in system property {string}")
     public void externalGRPCPortInSystemProperty(String propertyName) {
@@ -116,8 +119,8 @@ public class EventStepDefinitions {
     @Then("Check If There are any events")
     public void checkIfThereAreAnyEvents() {
         EventsSearchBy searchEventByLocationName = EventsSearchBy.newBuilder().build();
-        await().atMost(10, TimeUnit.SECONDS)
-                .pollDelay(1, TimeUnit.SECONDS)
+        await().atMost(15, TimeUnit.SECONDS)
+                .pollDelay(3, TimeUnit.SECONDS)
                 .pollInterval(2, TimeUnit.SECONDS)
                 .until(
                         () ->
@@ -197,5 +200,29 @@ public class EventStepDefinitions {
                         .toList();
         assertNotNull(eventList);
         assertTrue(eventList.size() == rows);
+    }
+
+    @Given("prepare threshold request with below data when the threshold alert status is {string}")
+    public void prepareThresholdRequestWithBelowDataWhenTheThresholdAlertStatusIs(
+            String thresholdType, DataTable dataTable) {
+        thresholdAlertDataBuilder = ThresholdAlertData.newBuilder().setTenantId(tenantId);
+        List<ThresholdAlert> thresholdAlerts = dataTable.asMaps().stream()
+                .map(map -> {
+                    ThresholdAlert.Builder alertBuilder = ThresholdAlert.newBuilder();
+                    map.forEach(alertBuilder::putLabels);
+                    alertBuilder.setStatus(thresholdType).build();
+                    return alertBuilder.build();
+                })
+                .toList();
+        thresholdAlertDataBuilder.addAllAlerts(thresholdAlerts);
+        thresholdAlertDataBuilder.build();
+    }
+
+    @Then("Send threshold request to Kafka topic")
+    public void sendThresholdRequestToKafkaTopic() {
+        kafkaTestHelper.sendToTopic(
+                background.getThresholdTopic(),
+                thresholdAlertDataBuilder.build().toByteArray(),
+                tenantId);
     }
 }

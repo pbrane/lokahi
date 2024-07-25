@@ -46,6 +46,8 @@ public class ThresholdAlertToEventMapperImpl implements ThresholdAlertToEventMap
 
     public static final String HIGH_THRESHOLD_EVENT_UEI = "uei.opennms.org/threshold/highThresholdExceeded";
 
+    private final String NODE_LABEL = "node_id";
+
     ThresholdAlertToEventMapperImpl(@Autowired InventoryClient inventoryClient) {
         this.inventoryClient = inventoryClient;
     }
@@ -56,10 +58,13 @@ public class ThresholdAlertToEventMapperImpl implements ThresholdAlertToEventMap
     public Event convert(ThresholdAlert alert) {
         Map<String, String> labels = alert.getLabelsMap();
         String tenantId = labels.get("tenant_id");
-        NodeDTO nodeDTO = inventoryClient.getNodeById(tenantId, Long.parseLong(labels.get("node_id")));
+        NodeDTO nodeDTO = NodeDTO.newBuilder().build();
         Event.Builder eventBuilder = Event.newBuilder();
+        if (labels.containsKey(NODE_LABEL)) {
+            nodeDTO = inventoryClient.getNodeById(tenantId, Long.parseLong(labels.get(NODE_LABEL)));
+            eventBuilder.setNodeId(Long.parseLong(labels.get(NODE_LABEL)));
+        }
         eventBuilder
-                .setNodeId(Long.parseLong(labels.get("node_id")))
                 .setSeverity(
                         alert.getStatus().equalsIgnoreCase(FIRING)
                                 ? getSeverity(labels.get("severity").toLowerCase())

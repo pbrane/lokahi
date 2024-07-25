@@ -36,6 +36,7 @@ public class BackgroundSteps {
 
     private String kafkaBootstrapUrl;
     private String eventTopic;
+    private String thresholdTopic;
 
     @Given("Kafka bootstrap URL in system property {string}")
     public void kafkaRestServerURLInSystemProperty(String systemProperty) {
@@ -48,5 +49,11 @@ public class BackgroundSteps {
     public void createKafkaTopicForEvents(String eventTopic) {
         this.eventTopic = eventTopic;
         kafkaTestHelper.startConsumerAndProducer(eventTopic, eventTopic);
+    }
+
+    @Given("Kafka threshold topic {string}")
+    public void kafkaThresholdTopic(String thresholdTopic) {
+        this.thresholdTopic = thresholdTopic;
+        kafkaTestHelper.startConsumerAndProducer(thresholdTopic, thresholdTopic);
     }
 }

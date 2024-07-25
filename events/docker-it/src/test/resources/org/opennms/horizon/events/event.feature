@@ -8,6 +8,7 @@ Feature: Event Service Basic Functionality
     Given Kafka bootstrap URL in system property "kafka.bootstrap-servers"
     Given Kafka node topic "node"
     Given Kafka event topic "events"
+    Given Kafka threshold topic "metrics-threshold-event"
 
   Scenario:
     Given Initialize Trap Producer With Topic "traps" and BootstrapServer "kafka.bootstrap-servers"
@@ -32,3 +33,13 @@ Feature: Event Service Basic Functionality
       | event-tenant-stream-id  | uei-internal | 1           | 127.0.0.1  |
     When Send events message to Kafka topic "internal-event" and tenant "event-tenant-stream-id"
     Then verify events persisted with uei "uei-internal" with total rows 3
+
+    @node
+    Scenario: Create Events once the threshold alert are received
+      Given [Event] Grpc TenantId "threshold-tenant"
+      Given [Event] Create Grpc Connection for Events
+      Given  prepare threshold request with below data when the threshold alert status is "firing"
+        | tenant_id   | location | alertname | severity |
+        | threshold-tenant  | 1  | HighCPUUtilization  | CRITICAL    |
+      Then Send threshold request to Kafka topic
+     Then verify events persisted with uei "uei.opennms.org/threshold/highThresholdExceeded" with total rows 1
