@@ -242,6 +242,8 @@ public class AlertEventProcessor {
             if (AlertType.CLEAR.equals(alert.getType()) || isThresholdResolved(event)) {
                 // Set the severity to CLEARED when reducing alerts
                 alert.setSeverity(Severity.CLEARED);
+                alert.setAcknowledgedAt(new Date());
+                alert.setAcknowledgedByUser("admin");
             } else {
                 alert.setSeverity(alertData.alertCondition().getSeverity());
             }
