@@ -41,7 +41,7 @@ export const ComparatorText: KeyValueStringType = Object.freeze({
 export const ThresholdMetricList: KeyValueStringType = Object.freeze({
   [ThresholdMetricNames.NetworkInboundUtilization]: 'Network Inbound Utilization',
   [ThresholdMetricNames.NetworkOutboundUtilization]: 'Network Outbound Utilization',
-  [ThresholdMetricNames.CPU_USAGE]: 'Cpu Utilization'
+  [ThresholdMetricNames.CPU_USAGE]: 'CPU Utilization'
 })
 
 export const InventoryComparator: KeyValueStringType = Object.freeze({

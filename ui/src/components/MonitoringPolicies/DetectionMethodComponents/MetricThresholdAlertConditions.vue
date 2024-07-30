@@ -47,7 +47,7 @@
           text-prop="name"
           :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
           v-model="eventTrigger"
-          @update:model-value="(e) => onUpdateTriggerEvent(e as unknown as AlertEventDefinition)"
+          @update:model-value="(e: any) => onUpdateTriggerEvent(e as unknown as AlertEventDefinition)"
           class="trigger-event-input"
         >
           <template #pre>

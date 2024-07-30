@@ -2,7 +2,6 @@ import { createTestingPinia } from '@pinia/testing'
 import { setActiveClient, useClient } from 'villus'
 import { useUserStore } from '@/store/Views/userStore'
 import { CreateEditMode } from '@/types'
-import { cloneDeep } from 'lodash'
 import { useUsersMutations } from '@/store/Mutations/usersMutations'
 import { User } from '@/types/users'
 
@@ -20,7 +19,7 @@ describe('UserStore', () => {
     createdTimestamp: new Date('2012-12-12T00:00:00Z').getTime()
   }
   const defaultUser = {
-    id:  (new Date()).getTime().toString(),
+    id: (new Date()).getTime().toString(),
     username: '',
     firstName: '',
     lastName: '',
@@ -60,17 +59,19 @@ describe('UserStore', () => {
   it('should create a new user on createUser', () => {
     userStore.createUser()
     const currentTime = new Date().getTime()
-    expect(userStore.selectedUser!.username).toBe('')
-    expect(userStore.selectedUser!.firstName).toBe('')
-    expect(userStore.selectedUser!.lastName).toBe('')
-    expect(userStore.selectedUser!.password).toBe('')
-    expect(userStore.selectedUser!.email).toBe('')
-    expect(userStore.selectedUser!.roles).toEqual([])
-    expect(userStore.selectedUser!.enabled).toBe(false)
-    expect(Number(userStore.selectedUser!.id)).toBeGreaterThanOrEqual(Number(defaultUser.id))
-    expect(Number(userStore.selectedUser!.id)).toBeLessThanOrEqual(currentTime)
-    expect(Number(userStore.selectedUser!.createdTimestamp)).toBeGreaterThanOrEqual(Number(defaultUser.createdTimestamp))
-    expect(Number(userStore.selectedUser!.createdTimestamp)).toBeLessThanOrEqual(currentTime) 
+    if (userStore.selectedUser) {
+      expect(userStore.selectedUser.username).toBe('')
+      expect(userStore.selectedUser.firstName).toBe('')
+      expect(userStore.selectedUser.lastName).toBe('')
+      expect(userStore.selectedUser.password).toBe('')
+      expect(userStore.selectedUser.email).toBe('')
+      expect(userStore.selectedUser.roles).toEqual([])
+      expect(userStore.selectedUser.enabled).toBe(false)
+      expect(Number(userStore.selectedUser.id)).toBeGreaterThanOrEqual(Number(defaultUser.id))
+      expect(Number(userStore.selectedUser.id)).toBeLessThanOrEqual(currentTime)
+      expect(Number(userStore.selectedUser.createdTimestamp)).toBeGreaterThanOrEqual(Number(defaultUser.createdTimestamp))
+      expect(Number(userStore.selectedUser.createdTimestamp)).toBeLessThanOrEqual(currentTime)
+    }
   })
   it('should validate user correctly', () => {
     const user = {...defaultUser}

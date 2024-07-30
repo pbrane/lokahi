@@ -401,6 +401,7 @@ describe('Monitoring Policies Store', () => {
         await store.savePolicy()
         expect(store.validationErrors.policyName).toBe('Policy name cannot be blank.')
       })
+
     })
 
     describe('monitoringPolicies.resetDefaultConditions all Functionality Tests', () => {
@@ -640,6 +641,142 @@ describe('Monitoring Policies Store', () => {
       store.setPolicyEditMode(CreateEditMode.Edit)
 
       expect(store.policyEditMode).toBe(CreateEditMode.Edit)
+    })
+
+    test('should initialize with an empty object for eventTriggerThresholdMetrics', async () => {
+      const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
+      const store = useMonitoringPoliciesStore()
+      expect(store.eventTriggerThresholdMetrics).toEqual({})
+    })
+
+    it('should update the condition when eventType is not MetricThreshold', async () => {
+      const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
+      const store = useMonitoringPoliciesStore()
+
+
+      const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
+        componentType: ManagedObjectType.Node,
+        detectionMethod: DetectionMethod.Event,
+        eventType: EventType.Internal,
+        alertConditions: [
+          {
+            id: 1,
+            isNew: true,
+            count: 1,
+            severity: 'high',
+            overtimeUnit: 'minutes',
+            triggerEvent: {
+              id: 1,
+              name: 'Dummy Alert Event'
+            }
+          }
+        ],
+        id: 1,
+        isNew: false,
+        name: 'Dummy Rule',
+        thresholdMetricName: 'Dummy Metric'
+      }]})
+
+      store.selectedPolicy = mockMonitoringPolicy
+      const dummyRule = (dummy && dummy.rules !== undefined) ? { ...dummy.rules[0] } : undefined
+      store.selectedRule = dummyRule
+      store.updateCondition(1, mockCondition )
+      // @ts-ignore
+      expect(store.selectedRule.alertConditions[0]).toEqual({
+        id: 1,
+        isNew: false,
+        count: 1,
+        overtimeUnit: 'minutes',
+        percentage: 70,
+        severity: 'Major',
+        triggerEvent: {
+          id: 1,
+          name: 'Dummy Alert Event'
+        }
+      })
+    })
+
+    it('should update eventTriggerThresholdMetrics when eventType is MetricThreshold', async () => {
+      const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
+      const store = useMonitoringPoliciesStore()
+
+      const dummy = cloneDeep({...mockMonitoringPolicy, rules: [{
+        componentType: ManagedObjectType.Node,
+        detectionMethod: DetectionMethod.Event,
+        eventType: EventType.MetricThreshold,
+        alertConditions: [
+          {
+            id: 1,
+            isNew: true,
+            count: 1,
+            severity: 'high',
+            overtimeUnit: 'minutes',
+            triggerEvent: {
+              id: 1,
+              name: 'Dummy Alert Event'
+            }
+          }
+        ],
+        id: 1,
+        isNew: false,
+        name: 'Dummy Rule',
+        thresholdMetricName: 'Dummy Metric'
+      }]})
+
+      store.selectedPolicy = mockMonitoringPolicy
+      const dummyRule = (dummy && dummy.rules !== undefined) ? { ...dummy.rules[0] } : undefined
+      store.selectedRule = dummyRule
+      store.updateCondition(1, {id: 1, isNew: false} )
+      expect(store.eventTriggerThresholdMetrics).toEqual({id: 1, isNew: false})
+    })
+
+    it('should not update anything when rule is Empty', async () => {
+      const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
+      const store = useMonitoringPoliciesStore()
+      store.updateCondition(1, {id: 1, isNew: false} )
+      expect(store.eventTriggerThresholdMetrics).toEqual({})
+    })
+
+    it('should initialize with an empty string for eventTypes', async () => {
+      const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
+      const store = useMonitoringPoliciesStore()
+
+      expect(store.eventTypes).toBe('')
+    })
+
+    it('should update eventTypes', async () => {
+      const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
+      const store = useMonitoringPoliciesStore()
+
+      const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
+        componentType: ManagedObjectType.Node,
+        detectionMethod: DetectionMethod.Event,
+        eventType: EventType.MetricThreshold,
+        alertConditions: [
+          {
+            id: 1,
+            isNew: false,
+            severity: 'CRITICAL',
+            thresholdMetric: {
+              id: 1,
+              condition: '<',
+              enabled: true,
+              threshold: 88,
+              expression: '',
+              name: 'test'
+            }
+          }
+        ],
+        id: 1,
+        isNew: false,
+        name: 'Dummy Rule',
+        thresholdMetricName: 'Dummy Metric'
+      }]})
+      store.selectedPolicy = mockMonitoringPolicy
+      const dummyRule = (dummy && dummy.rules !== undefined) ? { ...dummy.rules[0] } : undefined
+      store.selectedRule = dummyRule
+      await store.saveRule()
+      expect(store.eventTypes).toBe('METRIC_THRESHOLD')
     })
   })
 
