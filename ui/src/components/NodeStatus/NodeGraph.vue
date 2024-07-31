@@ -34,6 +34,9 @@
         type="percentage"
         @has-data="displayEmptyMsgIfNoData"
       />
+      <div v-if="!hasMetricData" class="empty">
+          Currently no data available.
+      </div>
     </section>
   </div>
 </template>
@@ -53,16 +56,14 @@ const props = defineProps<{
 }>()
 
 const graphProps = computed<GraphProps>(() => {
-  // TODO: once we start getting actual metric data graph props needs to change
   return {
     label: props.title,
-    // TODO: This here is a temporary metric for cpu and memory we still need to configure the actual one
-    metrics: props.type === 'cpu' ? ['CpuRawIdle'] : ['Memory'],
+    metrics: [props.type],
     monitor: 'SNMP',
     nodeId: route.params.id as string,
-    instance: '',
-    timeRange: 10,
-    timeRangeUnit: TimeRangeUnit.Minute,
+    instance: '0',
+    timeRange: 24,
+    timeRangeUnit: TimeRangeUnit.Hour,
     ifName: ''
   }
 })
@@ -101,5 +102,13 @@ const displayEmptyMsgIfNoData = (hasData: boolean) => {
   flex-direction: row;
   justify-content: space-between;
   gap: 2rem;
+}
+
+.empty {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  height: 85px;
+  align-items: center;
 }
 </style>

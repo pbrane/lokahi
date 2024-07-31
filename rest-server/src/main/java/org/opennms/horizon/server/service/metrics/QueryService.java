@@ -21,28 +21,7 @@
  */
 package org.opennms.horizon.server.service.metrics;
 
-import static org.opennms.horizon.server.service.metrics.Constants.AVG_RESPONSE_TIME;
-import static org.opennms.horizon.server.service.metrics.Constants.AZURE_SCAN_TYPE;
-import static org.opennms.horizon.server.service.metrics.Constants.BW_IN_PERCENTAGE;
-import static org.opennms.horizon.server.service.metrics.Constants.BW_OUT_PERCENTAGE;
-import static org.opennms.horizon.server.service.metrics.Constants.NETWORK_ERRORS_IN;
-import static org.opennms.horizon.server.service.metrics.Constants.NETWORK_ERRORS_OUT;
-import static org.opennms.horizon.server.service.metrics.Constants.NETWORK_IN_BITS;
-import static org.opennms.horizon.server.service.metrics.Constants.NETWORK_OUT_BITS;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_AZURE_TOTAL_NETWORK_IN_BITS;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_AZURE_TOTAL_NETWORK_OUT_BITS;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_BW_IN_UTIL_PERCENTAGE;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_BW_OUT_UTIL_PERCENTAGE;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_NETWORK_ERRORS_IN;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_NETWORK_ERRORS_OUT;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_TOTAL_NETWORK_BITS_IN;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_TOTAL_NETWORK_BITS_OUT;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_TOTAL_NETWORK_IN_BITS;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_FOR_TOTAL_NETWORK_OUT_BITS;
-import static org.opennms.horizon.server.service.metrics.Constants.QUERY_PREFIX;
-import static org.opennms.horizon.server.service.metrics.Constants.REACHABILITY_PERCENTAGE;
-import static org.opennms.horizon.server.service.metrics.Constants.TOTAL_NETWORK_BITS_IN;
-import static org.opennms.horizon.server.service.metrics.Constants.TOTAL_NETWORK_BITS_OUT;
+import static org.opennms.horizon.server.service.metrics.Constants.*;
 
 import com.google.common.base.Strings;
 import java.net.URLEncoder;
@@ -79,7 +58,9 @@ public class QueryService {
                 || BW_IN_PERCENTAGE.equals(metricName)
                 || BW_OUT_PERCENTAGE.equals(metricName)
                 || NETWORK_ERRORS_IN.equals(metricName)
-                || NETWORK_ERRORS_OUT.equals(metricName);
+                || NETWORK_ERRORS_OUT.equals(metricName)
+                || CPU_UTILIZATION.equals(metricName)
+                || MEMORY_UTILIZATION.equals(metricName);
     }
 
     public String getQueryString(
@@ -152,6 +133,32 @@ public class QueryService {
                     } else {
                         var query = String.format(QUERY_FOR_NETWORK_ERRORS_OUT, getLabelsQueryString(labels));
                         return QUERY_PREFIX + query + rangeQuerySuffix;
+                    }
+                case CPU_UTILIZATION:
+                    if (isAzureNode(node)) {
+                        throw new RuntimeException(OPERATION_NOT_SUPPORTED_FOR_AZURE_NODE + NETWORK_ERRORS_OUT);
+                    } else {
+                        var query = String.format(QUERY_FOR_CPU_UTILIZATION, getLabelsQueryString(labels));
+                        try {
+                            String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
+                            return QUERY_PREFIX + encodedQuery + rangeQuerySuffix;
+                        } catch (Exception e) {
+                            LOG.error(e.getMessage());
+                        }
+                    }
+
+                case MEMORY_UTILIZATION:
+                    if (isAzureNode(node)) {
+                        throw new RuntimeException(OPERATION_NOT_SUPPORTED_FOR_AZURE_NODE + NETWORK_ERRORS_OUT);
+                    } else {
+                        var query = String.format(QUERY_FOR_MEMORY_UTILIZATION, getLabelsQueryString(labels));
+                        try {
+                            var encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
+
+                            return QUERY_PREFIX + encodedQuery + rangeQuerySuffix;
+                        } catch (Exception e) {
+                            LOG.error(e.getMessage());
+                        }
                     }
             }
         } else if (REACHABILITY_PERCENTAGE.equals(metricName)) {

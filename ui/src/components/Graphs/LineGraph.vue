@@ -24,6 +24,7 @@ import { add, format } from 'date-fns'
 import { PropType } from 'vue'
 import { downloadCanvas } from './utils'
 import { getChartGridColor, getColorFromFeatherVar, humanFileSizeFromBits } from '../utils'
+import { GRAPH_TYPE_CPU_UTILIZATION, GRAPH_TYPE_MEMORY_UTILIZATION } from '../NodeStatus/NodeStatus.constants'
 
 const emits = defineEmits(['has-data'])
 const graphs = useGraphs()
@@ -36,7 +37,7 @@ const props = defineProps({
   type: { type: String, default: 'latency' },
   metricType: { type: String }
 })
-const isCpuOrMemoryUtilizationGraph = computed(() => props.metricType === 'cpu' || props.metricType === 'memory')
+const isCpuOrMemoryUtilizationGraph = computed(() => props.metricType === GRAPH_TYPE_CPU_UTILIZATION || props.metricType === GRAPH_TYPE_MEMORY_UTILIZATION)
 
 const colorFromFeatherVar = computed(() =>
   isDark.value ? getColorFromFeatherVar('primary-text-on-color') : getColorFromFeatherVar('primary-text-on-surface')
@@ -47,7 +48,7 @@ const formatAxisBasedOnType = (context: number) => {
   if (props.type === 'bytes') {
     formattedAxis = humanFileSizeFromBits(context)
   } else if (props.type === 'percentage') {
-    formattedAxis = (context * 100).toFixed(2) + '%'
+    formattedAxis = isCpuOrMemoryUtilizationGraph.value ? (context).toFixed(2) + '%' : (context * 100).toFixed(2) + '%'
   }
   return formattedAxis
 }
@@ -156,6 +157,9 @@ const chartData = computed<ChartData<any>>(() => {
 })
 const render = async (update?: boolean) => {
   try {
+    if (isCpuOrMemoryUtilizationGraph.value) {
+      options.value.scales.y.max = 100
+    }
     if (update || chart?.update) {
       chart.data = chartData.value
       chart.options = options.value

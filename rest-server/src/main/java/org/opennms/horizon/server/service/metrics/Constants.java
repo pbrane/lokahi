@@ -50,6 +50,8 @@ public final class Constants {
 
     public static final String REACHABILITY_PERCENTAGE = "reachability_percentage";
     public static final String AVG_RESPONSE_TIME = "avg_response_time_msec";
+    public static final String CPU_UTILIZATION = "cpu_utilization";
+    public static final String MEMORY_UTILIZATION = "memory_utilization";
 
     public static final String QUERY_FOR_BW_IN_UTIL_PERCENTAGE =
             "(irate(ifHCInOctets%1$s[4m])*8) " + "/ (ifHighSpeed%1$s *1000000) * 100 unless ifHighSpeed%1$s == 0";
@@ -79,4 +81,19 @@ public final class Constants {
                     unless
                 count(irate(ifHCOutOctets[4m])) == 0 and count(sum_over_time(network_out_total_bytes[1m])) == 0
         """;
+
+    public static final String QUERY_FOR_CPU_UTILIZATION =
+            """
+
+                (100 -  (irate(CpuRawIdle%1$s[4m]) / (irate(CpuRawIdle%1$s[4m]) + irate(CpuRawInterrupt%1$s[4m]) + irate(CpuRawUser%1$s[4m])
+                + irate(CpuRawWait%1$s[4m]) + irate(CpuRawNice%1$s[4m]) + irate(CpuRawSystem%1$s[4m]) + irate(CpuRawKernel%1$s[4m]) + irate(CpuRawSoftIRQ%1$s[4m])  + irate(CpuRawSteal%1$s[4m]) + irate(CpuRawGuest%1$s[4m]) + irate(CpuRawGuestNice%1$s[4m])))  * 100 )
+        """;
+
+    public static final String QUERY_FOR_MEMORY_UTILIZATION =
+            """
+               ((memTotalReal%1$s - memAvailReal%1$s
+                - memBuffer%1$s
+                - memCached%1$s) / memTotalReal%1$s) * 100
+
+           """;
 }
