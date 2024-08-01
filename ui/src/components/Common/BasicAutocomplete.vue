@@ -157,8 +157,10 @@ const search = (q: string) => {
 
   try {
     props.getItems(q)
+  } catch (error) {
+    console.error('Error fetching tags items:', error)
   } finally {
-    loading.value = true
+    loading.value = false // Ensure loading is set to false after the request
   }
 }
 
