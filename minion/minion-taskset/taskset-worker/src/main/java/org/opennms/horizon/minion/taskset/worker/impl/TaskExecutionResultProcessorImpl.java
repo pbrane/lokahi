@@ -175,13 +175,14 @@ public class TaskExecutionResultProcessorImpl implements TaskExecutionResultProc
 
     private CollectorResponse formatCollectorResponse(TaskDefinition taskDefinition, CollectionSet collectionSet) {
 
+        String monitorType = taskDefinition.getPluginName().replace("Collector", "");
         return CollectorResponse.newBuilder()
                 .setStatus(collectionSet.getStatus())
                 .setNodeId(collectionSet.getNodeId())
                 .setIpAddress(collectionSet.getIpAddress())
                 .setTimestamp(collectionSet.getTimeStamp())
                 .setResult(Any.pack(collectionSet.getResults()))
-                .setMonitorType(taskDefinition.getPluginName())
+                .setMonitorType(monitorType)
                 .build();
     }
 }

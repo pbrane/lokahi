@@ -64,18 +64,17 @@ public class TaskSetCollectorResultProcessorTest {
         var testResultAny = Any.getDefaultInstance();
 
         testCollectorResponseAzure = templateCollectoResponse.toBuilder()
-                .setMonitorType("AZURECollector")
+                .setMonitorType("AZURE")
                 .setResult(testResultAny)
                 .build();
 
         testCollectorResponseSnmp = templateCollectoResponse.toBuilder()
-                .setMonitorType("SNMPCollector")
+                .setMonitorType("SNMP")
                 .setResult(testResultAny)
                 .build();
 
-        testCollectorResponseMissingResult = templateCollectoResponse.toBuilder()
-                .setMonitorType("SNMPCollector")
-                .build();
+        testCollectorResponseMissingResult =
+                templateCollectoResponse.toBuilder().setMonitorType("SNMP").build();
 
         testCollectorResponseUnrecognizedMonitorType = templateCollectoResponse.toBuilder()
                 .setMonitorType("UNKNOWN")
@@ -105,7 +104,7 @@ public class TaskSetCollectorResultProcessorTest {
                         Mockito.eq("x-tenant-id-x"),
                         Mockito.eq("x-location-x"),
                         Mockito.same(testCollectorResponseAzure),
-                        Mockito.eq(new String[] {"x-ip-address-x", "x-location-x", "x-system-id-x", "AZURECollector"}));
+                        Mockito.eq(new String[] {"x-ip-address-x", "x-location-x", "x-system-id-x", "AZURE"}));
     }
 
     @Test

@@ -64,9 +64,9 @@ public class TaskSetCollectorResultProcessor {
 
         if (collectorResponse.hasResult()) {
             final var monitorType = collectorResponse.getMonitorType();
-            if (monitorType.equals("SNMPCollector")) {
+            if (monitorType.equals("SNMP")) {
                 taskSetCollectorSnmpResponseProcessor.processSnmpCollectorResponse(tenantId, location, taskResult);
-            } else if (monitorType.equals("AZURECollector")) {
+            } else if (monitorType.equals("AZURE")) {
                 taskSetCollectorAzureResponseProcessor.processAzureCollectorResponse(
                         tenantId, location, collectorResponse, labelValues);
             } else {
