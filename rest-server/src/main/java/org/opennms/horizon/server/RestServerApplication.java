@@ -22,6 +22,8 @@
 package org.opennms.horizon.server;
 
 import lombok.extern.slf4j.Slf4j;
+import org.opennms.horizon.server.model.JsonMetricsLabelLoader;
+import org.opennms.horizon.server.model.MetricsLabelResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -29,6 +31,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerA
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 
 @SpringBootApplication(
@@ -48,5 +51,10 @@ public class RestServerApplication {
     @EventListener(ApplicationReadyEvent.class)
     public void testNodeRepo() {
         log.info("Application is ready");
+    }
+
+    @Bean
+    public static MetricsLabelResponse loadMetricsLabel() {
+        return JsonMetricsLabelLoader.load();
     }
 }

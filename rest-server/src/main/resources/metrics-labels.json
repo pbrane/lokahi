@@ -1,0 +1,63 @@
+{
+  "metricList": [
+    {
+      "displayName": "CPU Utilization",
+      "metricName": "cpuUtilization",
+      "category": "threshold",
+      "labels": [
+        { "value": "SNMP", "name": "SNMP" }
+      ],
+      "unitType": "bytes"
+    },
+    {
+      "displayName": "Network Inbound Utilization",
+      "metricName": "netInUtilization",
+      "category": "threshold",
+      "labels": [
+        { "value": "SNMP", "name": "SNMP" }
+      ],
+      "unitType": "bytes"
+    },
+    {
+      "displayName": "Network Outbound Utilization",
+      "metricName": "netOutUtilization",
+      "category": "threshold",
+      "labels": [
+        { "value": "SNMP", "name": "SNMP" }
+      ],
+      "unitType": "bytes"
+    },
+    {
+      "displayName": "Response Time",
+      "metricName": "response_time_msec",
+      "category": "threshold",
+      "labels": [
+        { "value": "HTTPMonitor", "name": "HTTP" },
+        { "value": "HTTPSMonitor", "name": "HTTPS" },
+        { "value": "SSHMonitor", "name": "SSH" },
+        { "value": "NTPMonitor", "name": "NTP" },
+        { "value": "SNMPMonitor", "name": "SNMP" },
+        { "value": "ICMPMonitor", "name": "ICMP" }
+      ],
+      "unitType": "ms"
+    },
+    {
+      "displayName": "CPU Utilization (%) 24h",
+      "metricName": "cpu_utilization",
+      "category": "nodestatus",
+      "labels": [
+        { "value": "SNMP", "name": "SNMP" }
+      ],
+      "unitType": "bytes"
+    },
+    {
+      "displayName": "Memory Utilization (%) 24h",
+      "metricName": "memory_utilization",
+      "category": "nodestatus",
+      "labels": [
+        { "value": "SNMP", "name": "SNMP" }
+      ],
+      "unitType": "bytes"
+    }
+  ]
+}

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.opennms.horizon.inventory.dto.NodeDTO;
+import org.opennms.horizon.server.model.MetricsLabelResponse;
 import org.opennms.horizon.server.model.TimeRangeUnit;
 import org.opennms.horizon.server.model.TimeSeriesQueryResult;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
@@ -56,12 +57,15 @@ public class GraphQLTSDBMetricsService {
     private final WebClient tsdbQueryWebClient;
     private final WebClient tsdbrangeQueryWebClient;
 
+    private final MetricsLabelResponse metricsResponse;
+
     public GraphQLTSDBMetricsService(
             ServerHeaderUtil headerUtil,
             MetricLabelUtils metricLabelUtils,
             QueryService queryService,
             InventoryClient inventoryClient,
-            @Value("${tsdb.url}") String tsdbURL) {
+            @Value("${tsdb.url}") String tsdbURL,
+            MetricsLabelResponse metricsResponse) {
 
         this.headerUtil = headerUtil;
         this.metricLabelUtils = metricLabelUtils;
@@ -79,6 +83,7 @@ public class GraphQLTSDBMetricsService {
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .build();
+        this.metricsResponse = metricsResponse;
     }
 
     @GraphQLQuery
@@ -149,5 +154,10 @@ public class GraphQLTSDBMetricsService {
                 .bodyValue(queryString)
                 .retrieve()
                 .bodyToMono(TimeSeriesQueryResult.class);
+    }
+
+    @GraphQLQuery
+    public Mono<MetricsLabelResponse> getMetricsLabels(@GraphQLEnvironment ResolutionEnvironment env) {
+        return Mono.just(metricsResponse);
     }
 }
