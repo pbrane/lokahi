@@ -26,8 +26,8 @@
           >Monitored Nodes
           <FeatherTextBadge
             :type="BadgeTypes.info"
-            v-if="tabMonitoredContent.length > 0"
-            >{{ tabMonitoredContent.length }}</FeatherTextBadge
+            v-if="totalCountNodes > 0"
+            >{{ totalCountNodes}}</FeatherTextBadge
           >
         </FeatherTab>
         <FeatherTab
@@ -170,6 +170,7 @@ const inventoryStore = useInventoryStore()
 const tabMonitoredContent = computed((): InventoryItem[] =>
   inventoryStore.nodes.filter((d) => d.monitoredState === MonitoredStates.MONITORED)
 )
+const totalCountNodes = computed(() => inventoryStore.totalInventoryNodes)
 const tabUnmonitoredContent = computed((): InventoryItem[] =>
   inventoryStore.nodes.filter((d) => d.monitoredState === MonitoredStates.UNMONITORED)
 )
