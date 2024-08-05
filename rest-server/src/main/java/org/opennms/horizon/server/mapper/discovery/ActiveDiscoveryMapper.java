@@ -24,6 +24,7 @@ package org.opennms.horizon.server.mapper.discovery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.inventory.dto.ActiveDiscoveryDTO;
+import org.opennms.horizon.server.mapper.SimpleMonitoredEntityMapper;
 import org.opennms.horizon.server.model.inventory.discovery.active.ActiveDiscovery;
 import org.springframework.stereotype.Component;
 
@@ -32,8 +33,10 @@ import org.springframework.stereotype.Component;
 public class ActiveDiscoveryMapper {
     private static final String AZURE_DISCOVERY_TYPE = "AZURE";
     private static final String ICMP_DISCOVERY_TYPE = "ICMP";
+    private static final String SIMPLE_MONITOR_DISCOVERY_TYPE = "SIMPLE_MONITOR";
     private final IcmpActiveDiscoveryMapper icmpMapper;
     private final AzureActiveDiscoveryMapper azureMapper;
+    private final SimpleMonitoredEntityMapper simpleMonitoredEntityMapper;
     private final ObjectMapper objectMapper;
 
     public ActiveDiscovery dtoToActiveDiscovery(ActiveDiscoveryDTO activeDiscoveryDTO) {
@@ -46,6 +49,10 @@ public class ActiveDiscoveryMapper {
             discovery.setDetails(
                     objectMapper.valueToTree(icmpMapper.dtoToIcmpActiveDiscovery(activeDiscoveryDTO.getIcmp())));
             discovery.setDiscoveryType(ICMP_DISCOVERY_TYPE);
+        } else if (activeDiscoveryDTO.hasSimpleMonitor()) {
+            discovery.setDetails(objectMapper.valueToTree(
+                    simpleMonitoredEntityMapper.toTransport(activeDiscoveryDTO.getSimpleMonitor())));
+            discovery.setDiscoveryType(SIMPLE_MONITOR_DISCOVERY_TYPE);
         } else {
             throw new RuntimeException("Invalid Active Discovery type returned");
         }

@@ -24,8 +24,12 @@ package org.opennms.horizon.inventory.monitoring.simple;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.Empty;
 import com.google.protobuf.StringValue;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
 import io.grpc.Context;
+import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +39,7 @@ import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityResponseList;
 import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityServiceGrpc;
 import org.opennms.horizon.inventory.grpc.TenantLookup;
 import org.opennms.horizon.inventory.monitoring.MonitoredEntityService;
+import org.opennms.horizon.inventory.monitoring.simple.config.SimpleMonitorDiscoveryService;
 import org.opennms.horizon.inventory.repository.SimpleMonitoredEntityRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +55,7 @@ public class SimpleMonitoredEntityGrpcService
     private final TenantLookup tenantLookup;
 
     private final MonitoredEntityService monitoredEntityService;
+    private final SimpleMonitorDiscoveryService simpleMonitorDiscoveryService;
 
     @Override
     public void list(final Empty request, final StreamObserver<SimpleMonitoredEntityResponseList> responseObserver) {
@@ -66,15 +72,28 @@ public class SimpleMonitoredEntityGrpcService
     public void upsert(
             final SimpleMonitoredEntityRequest request,
             final StreamObserver<SimpleMonitoredEntityResponse> responseObserver) {
-        final var tenantId = this.tenantLookup.lookupTenantId(Context.current()).orElseThrow();
 
-        final var sme = this.mapper.map(tenantId, request);
-        final var response = this.mapper.map(this.repository.save(sme));
+        var tenantId = this.tenantLookup.lookupTenantId(Context.current()).orElseThrow();
 
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+        if (!tenantId.isEmpty()) {
 
-        this.monitoredEntityService.publishTaskSet(sme.getTenantId(), sme.getLocationId());
+            final SimpleMonitoredEntityResponse response;
+
+            SimpleMonitoredActiveDiscovery sme;
+
+            sme = this.mapper.map(tenantId, request);
+            sme.setTenantId(tenantId);
+            sme.setCreateTime(LocalDateTime.now());
+            sme.setName(request.getName());
+
+            response = simpleMonitorDiscoveryService.createActiveDiscovery(sme, tenantId);
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+            this.monitoredEntityService.publishTaskSet(sme.getTenantId(), sme.getLocationId());
+        } else {
+            responseObserver.onError(StatusProto.toStatusRuntimeException(createMissingTenant()));
+        }
     }
 
     @Override
@@ -97,5 +116,12 @@ public class SimpleMonitoredEntityGrpcService
         responseObserver.onCompleted();
 
         this.monitoredEntityService.publishTaskSet(sme.getTenantId(), sme.getLocationId());
+    }
+
+    private Status createMissingTenant() {
+        return Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage("Missing tenantId")
+                .build();
     }
 }

@@ -38,4 +38,7 @@
     <include file="db/changelog/hs-0.1.0/tables/ip-interface-add-new-column.xml"/>
     <include file="db/changelog/hs-0.1.0/tables/monitored-service-add-monitor-type.xml"/>
 
+    <include file="db/changelog/hs-0.1.0/tables/simple-monitored-active-discovery.xml"/>
+
+
 </databaseChangeLog>

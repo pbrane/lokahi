@@ -23,23 +23,17 @@ package org.opennms.horizon.inventory.monitoring.simple;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import java.util.UUID;
+import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.opennms.horizon.inventory.model.discovery.active.ActiveDiscovery;
 import org.opennms.horizon.inventory.monitoring.MonitoredEntity;
 
 @Entity
 @Data
-public class SimpleMonitoredEntity {
-    @Id
-    private UUID id;
-
-    private String name;
-
-    private String tenantId;
-    private long locationId;
+@Table(name = "simple_monitored_active_discovery")
+public class SimpleMonitoredActiveDiscovery extends ActiveDiscovery {
 
     private String type;
 
@@ -48,7 +42,6 @@ public class SimpleMonitoredEntity {
     private String config;
 
     public String getMonitoredEntityId() {
-        return MonitoredEntity.joinId(
-                SimpleMonitoredEntityProvider.PROVIDER_ID, this.getId().toString());
+        return MonitoredEntity.joinId(SimpleMonitoredEntityProvider.PROVIDER_ID, String.valueOf(this.getId()));
     }
 }

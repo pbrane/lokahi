@@ -22,17 +22,20 @@
 package org.opennms.horizon.inventory.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import org.opennms.horizon.inventory.monitoring.simple.SimpleMonitoredEntity;
+import org.opennms.horizon.inventory.monitoring.simple.SimpleMonitoredActiveDiscovery;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SimpleMonitoredEntityRepository extends JpaRepository<SimpleMonitoredEntity, UUID> {
+public interface SimpleMonitoredEntityRepository extends JpaRepository<SimpleMonitoredActiveDiscovery, Long> {
 
-    SimpleMonitoredEntity getByTenantIdAndId(final String tenantId, final UUID id);
+    SimpleMonitoredActiveDiscovery getByTenantIdAndId(final String tenantId, final UUID id);
 
-    List<SimpleMonitoredEntity> findByTenantId(final String tenantId);
+    List<SimpleMonitoredActiveDiscovery> findByTenantId(final String tenantId);
 
-    List<SimpleMonitoredEntity> findByTenantIdAndLocationId(final String tenantId, final long locationId);
+    List<SimpleMonitoredActiveDiscovery> findByTenantIdAndLocationId(final String tenantId, final long locationId);
+
+    Optional<SimpleMonitoredActiveDiscovery> findByIdAndTenantId(long id, String tenantId);
 }

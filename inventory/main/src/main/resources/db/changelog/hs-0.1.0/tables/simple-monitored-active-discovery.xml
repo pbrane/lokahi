@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="Junaid-Khan" id="0.1.3-create-simple-monitored-active-discovery">
+
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="simple_monitored_entity"/>
+        </preConditions>
+
+        <dropTable tableName="simple_monitored_entity"/>
+
+        <createTable tableName="simple_monitored_active_discovery">
+
+            <column name="id" type="BIGINT"/>
+
+            <column name="type" type="text" />
+
+            <column name="config" type="jsonb" />
+
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_simple_monitored_entity_discovery_id" onDelete="CASCADE"
+                                 baseTableName="simple_monitored_active_discovery" baseColumnNames="id"
+                                 referencedTableName="active_discovery" referencedColumnNames="id"/>
+
+    </changeSet>
+
+</databaseChangeLog>

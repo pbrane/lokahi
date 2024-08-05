@@ -27,6 +27,8 @@ import org.opennms.horizon.inventory.dto.ActiveDiscoveryDTO;
 import org.opennms.horizon.inventory.model.discovery.active.ActiveDiscovery;
 import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery;
 import org.opennms.horizon.inventory.model.discovery.active.IcmpActiveDiscovery;
+import org.opennms.horizon.inventory.monitoring.simple.SimpleMonitoredActiveDiscovery;
+import org.opennms.horizon.inventory.monitoring.simple.SimpleMonitoredEntityMapper;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Component;
 public class ActiveDiscoveryMapper {
     private final IcmpActiveDiscoveryMapper icmpActiveDiscoveryMapper;
     private final AzureActiveDiscoveryMapper azureActiveDiscoveryMapper;
+    private final SimpleMonitoredEntityMapper simpleMonitoredEntityMapper;
 
     public List<ActiveDiscoveryDTO> modelToDto(List<ActiveDiscovery> list) {
         return list.stream().map(this::modelToDto).toList();
@@ -45,6 +48,8 @@ public class ActiveDiscoveryMapper {
             builder.setIcmp(icmpActiveDiscoveryMapper.modelToDto(icmp));
         } else if (discovery instanceof AzureActiveDiscovery azure) {
             builder.setAzure(azureActiveDiscoveryMapper.modelToDto(azure));
+        } else if (discovery instanceof SimpleMonitoredActiveDiscovery simpleMonitoredEntity) {
+            builder.setSimpleMonitor(simpleMonitoredEntityMapper.map(simpleMonitoredEntity));
         }
         return builder.build();
     }

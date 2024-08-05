@@ -24,7 +24,6 @@ package org.opennms.horizon.inventory.monitoring.simple;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.util.List;
-import java.util.UUID;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
@@ -37,21 +36,21 @@ import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityResponseList;
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
 public interface SimpleMonitoredEntityMapper {
-    SimpleMonitoredEntityResponse map(SimpleMonitoredEntity entity);
+    SimpleMonitoredEntityResponse map(SimpleMonitoredActiveDiscovery entity);
 
-    SimpleMonitoredEntity map(String tenantId, SimpleMonitoredEntityRequest request);
+    SimpleMonitoredActiveDiscovery map(String tenantId, SimpleMonitoredEntityRequest request);
 
-    default SimpleMonitoredEntityResponseList map(List<SimpleMonitoredEntity> entities) {
+    default SimpleMonitoredEntityResponseList map(List<SimpleMonitoredActiveDiscovery> entities) {
         return SimpleMonitoredEntityResponseList.newBuilder()
                 .addAllEntry(Lists.transform(entities, this::map))
                 .build();
     }
 
-    default UUID map(String id) {
+    default Long map(String id) {
         if (Strings.isNullOrEmpty(id)) {
-            return UUID.randomUUID();
+            return 0L;
         } else {
-            return UUID.fromString(id);
+            return Long.parseLong(id);
         }
     }
 }

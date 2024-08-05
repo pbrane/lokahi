@@ -31,6 +31,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "azureActiveDiscovery.proto";
 import "icmpActiveDiscovery.proto";
+import "simpleMonitoredEntity.proto";
 
 package opennms.inventory;
 option java_multiple_files = true;
@@ -41,6 +42,8 @@ message ActiveDiscoveryDTO {
   oneof activeDiscovery {
     opennms.inventory.AzureActiveDiscoveryDTO azure = 1;
     opennms.inventory.IcmpActiveDiscoveryDTO icmp = 2;
+    opennms.inventory.SimpleMonitoredEntityResponse simple_monitor = 3;
+
   }
 }
 

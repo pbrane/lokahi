@@ -31,20 +31,23 @@ import org.opennms.horizon.inventory.discovery.IcmpActiveDiscoveryDTO;
 import org.opennms.horizon.inventory.dto.AzureActiveDiscoveryDTO;
 import org.opennms.horizon.inventory.model.discovery.active.AzureActiveDiscovery;
 import org.opennms.horizon.inventory.model.discovery.active.IcmpActiveDiscovery;
+import org.opennms.horizon.inventory.monitoring.simple.SimpleMonitoredEntityMapper;
 
 public class ActiveDiscoveryMapperTest {
 
     private IcmpActiveDiscoveryMapper mockIcmpActiveDiscoveryMapper;
     private AzureActiveDiscoveryMapper mockAzureActiveDiscoveryMapper;
-
+    private SimpleMonitoredEntityMapper simpleMonitoredEntityMapper;
     private ActiveDiscoveryMapper target;
 
     @BeforeEach
     public void setUp() {
         mockIcmpActiveDiscoveryMapper = Mockito.mock(IcmpActiveDiscoveryMapper.class);
         mockAzureActiveDiscoveryMapper = Mockito.mock(AzureActiveDiscoveryMapper.class);
+        simpleMonitoredEntityMapper = Mockito.mock(SimpleMonitoredEntityMapper.class);
 
-        target = new ActiveDiscoveryMapper(mockIcmpActiveDiscoveryMapper, mockAzureActiveDiscoveryMapper);
+        target = new ActiveDiscoveryMapper(
+                mockIcmpActiveDiscoveryMapper, mockAzureActiveDiscoveryMapper, simpleMonitoredEntityMapper);
     }
 
     @Test

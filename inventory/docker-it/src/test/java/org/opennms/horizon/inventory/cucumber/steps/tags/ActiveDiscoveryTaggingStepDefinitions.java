@@ -317,6 +317,8 @@ public class ActiveDiscoveryTaggingStepDefinitions {
                     switch (discoveryDTO.getActiveDiscoveryCase()) {
                         case AZURE -> discoveryDTO.getAzure().getId();
                         case ICMP -> discoveryDTO.getIcmp().getId();
+                        case SIMPLE_MONITOR -> Long.parseLong(
+                                discoveryDTO.getSimpleMonitor().getId());
                         case ACTIVEDISCOVERY_NOT_SET -> throw new NotImplementedException(
                                 "Other types not implemented here yet");
                     };

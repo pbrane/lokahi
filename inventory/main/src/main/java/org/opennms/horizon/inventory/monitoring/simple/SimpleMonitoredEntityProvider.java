@@ -65,7 +65,7 @@ public class SimpleMonitoredEntityProvider implements MonitoredEntityProvider {
                 .map(entity -> MonitoredEntity.builder()
                         .source(this)
                         .locationId(locationId)
-                        .entityId(entity.getId().toString())
+                        .entityId(String.valueOf(entity.getId()))
                         .type(entity.getType())
                         .config(
                                 switch (entity.getType()) {
