@@ -22,7 +22,6 @@
 package org.opennms.horizon.minion.icmp.shell;
 
 import com.google.protobuf.Any;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -67,7 +66,7 @@ public class NtpCommand implements Action {
 
         Any configuration = Any.pack(NTPMonitorRequest.newBuilder()
                 .setInetAddress(ipAddress)
-                .addAllPort(Arrays.asList(port))
+                .setPort(port)
                 .setRetries(retries)
                 .setTimeout(timeout)
                 .build());

@@ -29,6 +29,7 @@ syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
 import "monitoredService.proto";
+import "google/protobuf/empty.proto";
 
 package opennms.inventory;
 option java_multiple_files = true;
@@ -42,6 +43,11 @@ message MonitoredEntityStateDTO {
   int64 first_observation_time = 5;
 }
 
+message ListMonitoredEntityStateDTO {
+  repeated MonitoredEntityStateDTO entry = 1;
+}
+
 service MonitoredEntityStatusService {
   rpc getMonitoredEntityState(google.protobuf.StringValue) returns (MonitoredEntityStateDTO) {};
+  rpc listAllMonitors(google.protobuf.Empty) returns(ListMonitoredEntityStateDTO){};
 }

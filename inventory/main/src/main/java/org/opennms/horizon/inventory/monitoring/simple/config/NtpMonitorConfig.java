@@ -21,14 +21,13 @@
  */
 package org.opennms.horizon.inventory.monitoring.simple.config;
 
-import java.util.List;
 import lombok.Data;
 
 @Data
 public class NtpMonitorConfig implements MonitorConfig {
 
     private String inetAddress;
-    private List<Integer> ports;
+    private int port;
     private int retries;
     private int timeout;
     private String hostName;

@@ -705,4 +705,14 @@ public class InventoryClient {
                 .delete(StringValue.of(id))
                 .getValue();
     }
+
+    public List<MonitoredEntityStateDTO> listAllSimpleMonitors(String accessToken) {
+        Metadata metadata = new Metadata();
+        metadata.put(GrpcConstants.AUTHORIZATION_METADATA_KEY, accessToken);
+        return monitoredEntityStatusServiceBlockingStub
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .withDeadlineAfter(deadline, TimeUnit.MILLISECONDS)
+                .listAllMonitors(Empty.getDefaultInstance())
+                .getEntryList();
+    }
 }

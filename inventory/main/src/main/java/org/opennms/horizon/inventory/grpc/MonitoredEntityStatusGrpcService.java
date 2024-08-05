@@ -21,13 +21,16 @@
  */
 package org.opennms.horizon.inventory.grpc;
 
+import com.google.protobuf.Empty;
 import com.google.protobuf.StringValue;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.opennms.horizon.inventory.dto.ListMonitoredEntityStateDTO;
 import org.opennms.horizon.inventory.dto.MonitoredEntityStateDTO;
 import org.opennms.horizon.inventory.dto.MonitoredEntityStatusServiceGrpc;
 import org.opennms.horizon.inventory.service.MonitoredEntityStateService;
@@ -56,5 +59,16 @@ public class MonitoredEntityStatusGrpcService
                     .build();
             responseObserver.onError(StatusProto.toStatusRuntimeException(status));
         }
+    }
+
+    @Override
+    public void listAllMonitors(Empty request, StreamObserver<ListMonitoredEntityStateDTO> responseObserver) {
+        final var tenantId = this.tenantLookup.lookupTenantId(Context.current()).orElseThrow();
+        List<MonitoredEntityStateDTO> monitoredEntityStateDTOS = monitorStatusService.listAllSimpleMonitor(tenantId);
+        ListMonitoredEntityStateDTO builder = ListMonitoredEntityStateDTO.newBuilder()
+                .addAllEntry(monitoredEntityStateDTOS)
+                .build();
+        responseObserver.onNext(builder);
+        responseObserver.onCompleted();
     }
 }

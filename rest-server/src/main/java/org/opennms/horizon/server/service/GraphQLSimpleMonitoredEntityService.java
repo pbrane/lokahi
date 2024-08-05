@@ -29,7 +29,9 @@ import io.leangen.graphql.execution.ResolutionEnvironment;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.opennms.horizon.server.mapper.MonitoredEntityStateMapper;
 import org.opennms.horizon.server.mapper.SimpleMonitoredEntityMapper;
+import org.opennms.horizon.server.model.inventory.MonitoredEntityState;
 import org.opennms.horizon.server.model.inventory.SimpleMonitoredEntity;
 import org.opennms.horizon.server.service.grpc.InventoryClient;
 import org.opennms.horizon.server.utils.ServerHeaderUtil;
@@ -45,6 +47,7 @@ public class GraphQLSimpleMonitoredEntityService {
     private final InventoryClient inventoryClient;
     private final ServerHeaderUtil headerUtil;
     private final SimpleMonitoredEntityMapper mapper;
+    private final MonitoredEntityStateMapper stateMapper;
 
     @GraphQLQuery(name = "getAllSimpleMonitoredEntities")
     public Flux<SimpleMonitoredEntity> getAll(@GraphQLEnvironment ResolutionEnvironment env) {
@@ -66,5 +69,12 @@ public class GraphQLSimpleMonitoredEntityService {
     public Mono<Boolean> delete(@GraphQLArgument(name = "id") UUID id, @GraphQLEnvironment ResolutionEnvironment env) {
         return Mono.just(
                 this.inventoryClient.deleteSimpleMonitoredEntity(id.toString(), this.headerUtil.getAuthHeader(env)));
+    }
+
+    @GraphQLQuery(name = "listAllSimpleMonitors")
+    public Flux<MonitoredEntityState> listAllSimpleMonitors(@GraphQLEnvironment ResolutionEnvironment env) {
+        return Flux.fromIterable(inventoryClient.listAllSimpleMonitors(headerUtil.getAuthHeader(env)).stream()
+                .map(stateMapper::protoToModel)
+                .toList());
     }
 }

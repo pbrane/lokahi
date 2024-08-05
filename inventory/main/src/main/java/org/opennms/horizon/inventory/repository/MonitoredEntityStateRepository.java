@@ -21,13 +21,22 @@
  */
 package org.opennms.horizon.inventory.repository;
 
+import java.util.List;
 import java.util.Optional;
 import org.opennms.horizon.inventory.model.MonitoredEntityState;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MonitoredEntityStateRepository extends JpaRepository<MonitoredEntityState, Long> {
 
     Optional<MonitoredEntityState> findByTenantIdAndMonitoredEntityId(String tenantId, String monitoredEntityId);
+
+    @Query("SELECT m FROM MonitoredEntityState m "
+            + " WHERE m.tenantId = :tenantId "
+            + " AND LOWER(m.monitoredEntityId) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    List<MonitoredEntityState> findAllBySimpleMonitor(
+            @Param("tenantId") String tenantId, @Param("searchTerm") String searchTerm);
 }

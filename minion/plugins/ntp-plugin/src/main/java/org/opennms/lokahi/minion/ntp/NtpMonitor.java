@@ -129,7 +129,7 @@ public class NtpMonitor implements ServiceMonitor {
     private void sendNtpRequest(DatagramSocket socket, InetAddress ipAddr, NTPMonitorRequest request)
             throws IOException {
         byte[] data = new NtpMessage().toByteArray();
-        DatagramPacket outgoing = createDatagramPacket(data, ipAddr, request.getPort(0));
+        DatagramPacket outgoing = createDatagramPacket(data, ipAddr, request.getPort());
         socket.send(outgoing);
     }
 

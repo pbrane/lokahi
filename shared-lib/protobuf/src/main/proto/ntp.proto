@@ -10,9 +10,10 @@ option java_package = "org.opennms.monitors.ntp.contract";
 
 message NTPMonitorRequest {
   string inet_address = 1;
-  repeated int32 port = 2;
+  int32  port = 2;
   int32 retries = 3;
   int32 timeout = 4;
   string host_name = 5;
 }
+
 

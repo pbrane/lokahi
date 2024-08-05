@@ -63,7 +63,7 @@ class MonitorsCommandTest {
     @Test
     void testNtpMonitor() throws Exception {
         String monitorName = "NTPMonitor";
-        String jsonString = "{\"inet_address\":\"time2.google.com\",\"port\":[123]}";
+        String jsonString = "{\"inet_address\":\"time2.google.com\",\"port\":123}";
         ServiceMonitorManager realManager = mock(ServiceMonitorManager.class);
         when(monitorRegistry.getService(monitorName)).thenReturn(realManager);
         ServiceMonitor monitor = mock(ServiceMonitor.class);
@@ -150,7 +150,7 @@ class MonitorsCommandTest {
     @Test
     void testSshMonitor() throws Exception {
 
-        String monitorName = "HTTPSMonitor";
+        String monitorName = "SSHMonitor";
         String jsonString = "{\"timeout\":300,\"retry\":2,\"address\":\"127.0.0.1\",\"port\":22,\"banner\":\"*\"}";
 
         ServiceMonitorManager realManager = mock(ServiceMonitorManager.class);

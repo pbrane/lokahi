@@ -25,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.google.protobuf.Any;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.junit.Before;
 import org.junit.Test;
@@ -106,7 +105,7 @@ public class NtpMonitorTest {
     public NTPMonitorRequest getNtpMonitorRequest(String ipAddress, int port, int retries, int timeout) {
         return NTPMonitorRequest.newBuilder()
                 .setInetAddress(ipAddress)
-                .addAllPort(List.of(port))
+                .setPort(port)
                 .setRetries(retries)
                 .setTimeout(timeout)
                 .build();

@@ -21,10 +21,12 @@
  */
 package org.opennms.horizon.inventory.service;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.opennms.horizon.inventory.dto.MonitoredEntityStateDTO;
 import org.opennms.horizon.inventory.mapper.MonitoredEntityStateMapper;
+import org.opennms.horizon.inventory.model.MonitoredEntityState;
 import org.opennms.horizon.inventory.repository.MonitoredEntityStateRepository;
 import org.springframework.stereotype.Service;
 
@@ -38,5 +40,15 @@ public class MonitoredEntityStateService {
     public Optional<MonitoredEntityStateDTO> getMonitoredEntityState(String tenantId, String monitoredEntityId) {
         var optional = monitoredEntityStateRepository.findByTenantIdAndMonitoredEntityId(tenantId, monitoredEntityId);
         return optional.map(monitoredEntityStateMapper::modelToDTO);
+    }
+
+    public List<MonitoredEntityStateDTO> listAllSimpleMonitor(String tenantId) {
+
+        List<MonitoredEntityState> allBySimpleMonitor =
+                monitoredEntityStateRepository.findAllBySimpleMonitor(tenantId, "simple:");
+
+        return allBySimpleMonitor.stream()
+                .map(monitoredEntityStateMapper::modelToDTO)
+                .toList();
     }
 }
