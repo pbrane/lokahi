@@ -35,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-import { GRAPH_TYPE_CPU_UTILIZATION, GRAPH_TYPE_MEMORY_UTILIZATION } from './NodeStatus.constants';
+import { GRAPH_TYPE_CPU_UTILIZATION, GRAPH_TYPE_MEMORY_UTILIZATION } from './NodeStatus.constants'
 
 </script>
 

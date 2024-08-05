@@ -5,26 +5,6 @@
       <p>Alert conditions are an additional set of parameters specific to the chosen detection method.</p>
       <p>These conditions help to determine what alerts will be triggered and their assigned severity.</p>
     </div>
-    <div class="component-type">
-      <h2>Select a Component Type</h2>
-      <FeatherRadioGroup
-        v-model="selectedComponentType"
-        :label="''"
-        class="text-radio"
-        @update:modelValue="(e: any) => handleComponentChange(e)"
-      >
-        <FeatherRadio
-          :value="ManagedObjectType.Node"
-        >
-          <p>Node</p>
-         </FeatherRadio>
-         <FeatherRadio
-            :value="ManagedObjectType.Interface"
-          >
-          <p>Interface</p>
-        </FeatherRadio>
-      </FeatherRadioGroup>
-    </div>
   <div class="row">
     <div class="col">
       <h5>Select a Threshold Metric</h5>
@@ -94,7 +74,7 @@
 <script setup lang="ts">
 
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { AlertEventDefinition, EventType, ManagedObjectType } from '@/types/graphql'
+import { AlertEventDefinition, EventType } from '@/types/graphql'
 import { ThresholdMetricList } from '../monitoringPolicies.constants'
 import { CreateEditMode, ThresholdMetricNames } from '../../../types/index'
 import Search from '@featherds/icon/action/Search'
@@ -159,16 +139,6 @@ onMounted(() => {
   selectThresholdName()
 })
 
-const selectedComponentType = computed(() => {
-  return monitoringPoliciesStore.selectedRule?.componentType || 'NODE'
-})
-
-const handleComponentChange = (value: ManagedObjectType) => {
-  if (monitoringPoliciesStore.selectedRule) {
-    monitoringPoliciesStore.selectedRule.componentType = value
-  }
-}
-
 const selectEventType = (eventType: EventType) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   monitoringPoliciesStore.selectedRule!.eventType = eventType
@@ -192,21 +162,6 @@ const onUpdateTriggerEvent = (e: any) => {
 
 <style lang="scss" scoped>
 .alert-conditions {
-  .component-type {
-    padding-top: 1rem;
-
-    :deep(.feather-radio-group) {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      flex-direction: column;
-      row-gap: 5px;
-    }
-    h2 {
-      color: var(--feather-cleared);
-    }
-  }
-
   .notify {
     margin-top: 1em;
     width: 25%;

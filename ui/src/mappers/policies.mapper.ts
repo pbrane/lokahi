@@ -55,7 +55,6 @@ export const mapPolicyAlertConditionToServer = (condition: PolicyAlertCondition)
 export const mapMonitoringPolicyRuleFromServer = (rule: PolicyRule): MonitoringPolicyRule => {
   return {
     alertConditions: rule.alertConditions?.map(mapPolicyAlertConditionFromServer),
-    componentType: rule.componentType,
     detectionMethod: rule.detectionMethod,
     eventType: rule.eventType,
     id: rule.id,
@@ -69,7 +68,6 @@ export const mapMonitoringPolicyRuleFromServer = (rule: PolicyRule): MonitoringP
 export const mapMonitoringPolicyRuleToServer = (rule: MonitoringPolicyRule): PolicyRule => {
   return {
     alertConditions: rule.alertConditions?.map(mapPolicyAlertConditionToServer),
-    componentType: rule.componentType,
     detectionMethod: rule.detectionMethod,
     eventType: rule.eventType,
     id: rule.id,
@@ -149,7 +147,6 @@ export const mapToPolicyRuleInput = (rule: MonitoringPolicyRule): PolicyRuleInpu
 
   let policyRuleInput = {
     alertConditions: rule.alertConditions?.map((condition) => mapToAlertConditionInput(condition, rule.eventType)),
-    componentType: rule.componentType,
     detectionMethod: rule.detectionMethod,
     eventType: rule.eventType,
     name: rule.name,

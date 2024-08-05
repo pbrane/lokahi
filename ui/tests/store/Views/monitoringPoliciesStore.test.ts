@@ -5,7 +5,7 @@ import { createTestingPinia } from '@pinia/testing'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
 import { buildFetchList } from '../../utils'
 import { CreateEditMode } from '@/types'
-import { AlertEventDefinition, DetectionMethod, EventType, ManagedObjectType, Severity } from '@/types/graphql'
+import { AlertEventDefinition, DetectionMethod, EventType, Severity } from '@/types/graphql'
 import { MonitoringPolicy, MonitoringPolicyRule, PolicyAlertCondition } from '@/types/policies'
 
 const mockMonitoringPolicy: MonitoringPolicy = {
@@ -47,7 +47,6 @@ const mockMonitoringPolicy: MonitoringPolicy = {
           }
         }
       ],
-      componentType: ManagedObjectType.Node,
       detectionMethod: DetectionMethod.Threshold,
       eventType: EventType.Internal,
       id: 1,
@@ -64,7 +63,6 @@ const mockPolicyRule: MonitoringPolicyRule = {
   id: 1,
   isNew: false,
   name: 'Mock Rule',
-  componentType: ManagedObjectType.Node,
   detectionMethod: DetectionMethod.Threshold,
   eventType: EventType.Internal,
   alertConditions: []
@@ -292,7 +290,6 @@ describe('Monitoring Policies Store', () => {
             id: 1,
             isNew: false,
             name: 'Existing Rule',
-            componentType: ManagedObjectType.Node,
             detectionMethod: DetectionMethod.Threshold,
             eventType: EventType.Internal,
             alertConditions: []
@@ -304,7 +301,6 @@ describe('Monitoring Policies Store', () => {
         id: 1,
         isNew: false,
         name: 'This Is Edited Rule',
-        componentType: ManagedObjectType.Node,
         detectionMethod: DetectionMethod.Threshold,
         eventType: EventType.Internal,
         alertConditions: [
@@ -421,7 +417,6 @@ describe('Monitoring Policies Store', () => {
         const store = useMonitoringPoliciesStore()
 
         const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
-          componentType: ManagedObjectType.Node,
           detectionMethod: DetectionMethod.Threshold,
           eventType: EventType.Internal,
           alertConditions: [],
@@ -445,7 +440,6 @@ describe('Monitoring Policies Store', () => {
         const { useMonitoringPoliciesStore } = await import('@/store/Views/monitoringPoliciesStore')
         const store = useMonitoringPoliciesStore()
         const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
-          componentType: ManagedObjectType.Node,
           detectionMethod: DetectionMethod.Event,
           eventType: EventType.Internal,
           alertConditions: [],
@@ -487,7 +481,6 @@ describe('Monitoring Policies Store', () => {
         const store = useMonitoringPoliciesStore()
 
         const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
-          componentType: ManagedObjectType.Node,
           detectionMethod: DetectionMethod.Threshold,
           eventType: EventType.Internal,
           alertConditions: [],
@@ -512,7 +505,6 @@ describe('Monitoring Policies Store', () => {
         const store = useMonitoringPoliciesStore()
 
         const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
-          componentType: ManagedObjectType.Node,
           detectionMethod: DetectionMethod.Event,
           eventType: EventType.Internal,
           alertConditions: [],
@@ -655,7 +647,6 @@ describe('Monitoring Policies Store', () => {
 
 
       const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
-        componentType: ManagedObjectType.Node,
         detectionMethod: DetectionMethod.Event,
         eventType: EventType.Internal,
         alertConditions: [
@@ -701,7 +692,6 @@ describe('Monitoring Policies Store', () => {
       const store = useMonitoringPoliciesStore()
 
       const dummy = cloneDeep({...mockMonitoringPolicy, rules: [{
-        componentType: ManagedObjectType.Node,
         detectionMethod: DetectionMethod.Event,
         eventType: EventType.MetricThreshold,
         alertConditions: [
@@ -749,7 +739,6 @@ describe('Monitoring Policies Store', () => {
       const store = useMonitoringPoliciesStore()
 
       const dummy = cloneDeep({...mockMonitoringPolicy, rules: [ {
-        componentType: ManagedObjectType.Node,
         detectionMethod: DetectionMethod.Event,
         eventType: EventType.MetricThreshold,
         alertConditions: [

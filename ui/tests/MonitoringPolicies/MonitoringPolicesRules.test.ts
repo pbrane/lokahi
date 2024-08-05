@@ -4,7 +4,7 @@ import featherInputFocusDirective from '@/directives/v-focus'
 import { MonitoringPolicy } from '@/types/policies'
 import MonitoringPoliciesAlertsRulesTable from '@/components/MonitoringPolicies/MonitoringPoliciesAlertsRulesTable.vue'
 import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStore'
-import { DetectionMethod, EventType, ManagedObjectType } from '@/types/graphql'
+import { DetectionMethod, EventType } from '@/types/graphql'
 import { CreateEditMode } from '@/types'
 import MonitoringPoliciesCreateAlertRules from '@/components/MonitoringPolicies/MonitoringPoliciesCreateAlertRules.vue'
 import { cloneDeep } from 'lodash'
@@ -48,7 +48,6 @@ const mockMonitoringPolicy: MonitoringPolicy = {
           }
         }
       ],
-      componentType: ManagedObjectType.Node,
       detectionMethod: DetectionMethod.Threshold,
       eventType: EventType.Internal,
       id: 1,

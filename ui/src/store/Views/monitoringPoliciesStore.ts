@@ -17,7 +17,6 @@ import {
   DownloadCSVMonitoringPoliciesVariables,
   EventDefsByVendorRequest,
   EventType,
-  ManagedObjectType,
   MonitorPolicyInput,
   Severity
 } from '@/types/graphql'
@@ -80,7 +79,6 @@ export const getDefaultRule = (alertDefs: Array<AlertEventDefinition>): Monitori
   return {
     id: createId(),
     name: '',
-    componentType: ManagedObjectType.Node,
     detectionMethod: DetectionMethod.Event,
     eventType: EventType.Internal,
     alertConditions: [getDefaultEventCondition(alertDefs)],

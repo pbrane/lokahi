@@ -6,7 +6,7 @@ import { useMonitoringPoliciesStore } from '@/store/Views/monitoringPoliciesStor
 import { CreateEditMode } from '@/types'
 import router from '@/router'
 import { cloneDeep } from 'lodash'
-import { DetectionMethod, EventType, ManagedObjectType } from '@/types/graphql'
+import { DetectionMethod, EventType } from '@/types/graphql'
 
 const mockMonitoringPolicy: MonitoringPolicy = {
   id: 1,
@@ -128,7 +128,6 @@ describe('Monitoring Policy Detail Panel', () => {
             }
           }
         ],
-        componentType: ManagedObjectType.Node,
         detectionMethod: DetectionMethod.Threshold,
         eventType: EventType.Internal,
         id: 1,

@@ -80,7 +80,6 @@ export interface ThresholdMetricCondition {
  */
 export interface MonitoringPolicyRule {
   alertConditions?: PolicyAlertCondition[]
-  componentType?: ManagedObjectType
   detectionMethod?: DetectionMethod
   eventType?: EventType
   id: number
