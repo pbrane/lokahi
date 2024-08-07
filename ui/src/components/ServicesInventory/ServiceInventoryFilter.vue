@@ -131,11 +131,6 @@ const updateSearchType = (newType: any) => {
   }
 }
 
-.push-right {
-  margin-left: auto;
-  margin-right: 0;
-}
-
 .margin-bottom {
   margin-bottom: var(variables.$spacing-s);
 }

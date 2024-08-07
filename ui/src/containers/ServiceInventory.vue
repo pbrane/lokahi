@@ -17,24 +17,24 @@
       <FeatherTabContainer class="tab-container" data-test="tab-container">
         <template v-slot:tabs>
           <FeatherTab>
-            All Services
-            <FeatherTextBadge type="info">(324)</FeatherTextBadge>
+            Network Services
+            <FeatherTextBadge type="info">{{ store.pagination?.total ?? 0 }}</FeatherTextBadge>
           </FeatherTab>
-          <FeatherTab>
+          <FeatherTab v-if="!componentsUnderDevelopment">
             Windows Services
             <FeatherTextBadge type="info">(24)</FeatherTextBadge>
           </FeatherTab>
-          <FeatherTab>
+          <FeatherTab v-if="!componentsUnderDevelopment">
             Hosted Services
             <FeatherTextBadge type="info">(34)</FeatherTextBadge>
           </FeatherTab>
-          <FeatherTab>
+          <FeatherTab v-if="!componentsUnderDevelopment">
             Standalone Services
             <FeatherTextBadge type="info">(32)</FeatherTextBadge>
           </FeatherTab>
         </template>
         <FeatherTabPanel>
-          <div class="tab-navigation">
+          <div class="tab-navigation" v-if="!componentsUnderDevelopment">
             <p class="search-node"> Search by name/tag or use additional filters to filter nodes </p>
             <div class="tab-menu">
               <FeatherButton secondary :class="{ 'active-tab': view === 'table' }" @click="toggleView('table')" :active="view === 'table'">
@@ -45,10 +45,24 @@
               </FeatherButton>
             </div>
           </div>
-          <ServiceInventoryFilter />
-          <AllServicesTabTable :tab-content="tabContentOfWindowsServices" :columns="columns"/>
+          <ServiceInventoryFilter v-if="!componentsUnderDevelopment"/>
+          <EmptyList
+            data-test="unmonitored-empty"
+            v-if="!store.monitoredEntityStatesList.length && !store.loading"
+            bg
+            :content="{
+              msg: 'No services available. Add some on the Discovery page.',
+              btn: {
+                label: 'Visit Discovery Page',
+                action: () => {
+                  $router.push('/discovery')
+                }
+              }
+            }"
+          />
+          <NetworkServices />
         </FeatherTabPanel>
-        <FeatherTabPanel>
+        <FeatherTabPanel v-if="!componentsUnderDevelopment">
           <div class="tab-navigation">
             <p class="search-node"> Search by name/tag or use additional filters to filter nodes </p>
             <div class="tab-menu">
@@ -61,9 +75,9 @@
             </div>
           </div>
           <ServiceInventoryFilter />
-          <AllServicesTabTable :tabContent="tabContentOfAllServices" :columns="columns"/>
+          <NetworkServices :tabContent="tabContentOfAllServices" :columns="columns"/>
         </FeatherTabPanel>
-        <FeatherTabPanel>
+        <FeatherTabPanel v-if="!componentsUnderDevelopment">
           <div class="tab-navigation">
             <p class="search-node"> Search by name/tag or use additional filters to filter nodes </p>
             <div class="tab-menu">
@@ -76,9 +90,9 @@
             </div>
           </div>
           <ServiceInventoryFilter />
-          <AllServicesTabTable :tab-content="tabContentOfHostedServices" :columns="columns"/>
+          <NetworkServices :tab-content="tabContentOfHostedServices" :columns="columns"/>
         </FeatherTabPanel>
-        <FeatherTabPanel>
+        <FeatherTabPanel v-if="!componentsUnderDevelopment">
           <div class="tab-navigation">
             <p class="search-node"> Search by name/tag or use additional filters to filter nodes </p>
             <div class="tab-menu">
@@ -91,31 +105,27 @@
             </div>
           </div>
           <ServiceInventoryFilter />
-          <AllServicesTabTable :tab-content="tabContentOfStandAloneServices" :columns="columns"/>
+          <NetworkServices :tab-content="tabContentOfStandAloneServices" :columns="columns"/>
         </FeatherTabPanel>
       </FeatherTabContainer>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, markRaw } from 'vue'
+import { tabContentOfAllServices, tabContentOfHostedServices, tabContentOfStandAloneServices } from '@/components/ServicesInventory/MockData'
+import { columns } from '@/components/ServicesInventory/serviceinventory.constants'
+import { useServiceInventoryStore } from '@/store/Views/serviceInventoryStore'
 import { IIcon } from '@/types'
+import { FeatherTextBadge } from '@featherds/badge'
 import Warning from '@featherds/icon/notification/Warning'
 import { FeatherTab, FeatherTabContainer, FeatherTabPanel } from '@featherds/tabs'
-import { FeatherTextBadge } from '@featherds/badge'
-import { tabContentOfAllServices, tabContentOfWindowsServices, tabContentOfHostedServices, tabContentOfStandAloneServices} from '@/components/ServicesInventory/MockData'
+import { markRaw, ref } from 'vue'
 
-const columns = [
-  { id: 'type', label: 'Type' },
-  { id: 'service', label: 'Service' },
-  { id: 'node', label: 'Node' },
-  { id: 'description', label: 'Description' },
-  { id: 'reachability', label: 'Reachability' },
-  { id: 'uptime', label: 'Uptime' },
-  { id: 'latency', label: 'Latency' },
-  { id: 'actions', label: 'Actions' }
-]
+const store = useServiceInventoryStore()
+
 const view = ref('card')
+
+const componentsUnderDevelopment = ref(true)
 
 const warningIcon: IIcon = {
   image: markRaw(Warning),

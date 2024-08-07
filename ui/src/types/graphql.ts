@@ -974,6 +974,15 @@ export type User = {
   createdTimestamp?: Scalars['Long'];
 }
 
+export type MonitoredEntityState = {
+  __typename?: 'MonitoredEntityState';
+  id?: Maybe<Scalars['Long']>;
+  tenantId?: Maybe<Scalars['String']>;
+  monitoredEntityId?: Maybe<Scalars['String']>;
+  state?: Scalars['Boolean'];
+  firstObservationTime?: Scalars['Long'];
+}
+
 export type UserRepresentationInput = {
   id?: Maybe<Scalars['String']>;
   firstName?: Maybe<Scalars['String']>;
@@ -1358,6 +1367,8 @@ export type ListVendorQuery = { __typename?: 'Query', listVendors: string[] }
 
 export type ListGetAllUsersQuery = { __typename?: 'Query', getAllUsers: [{ __typename: 'User', id?: string, username?: string, firstName?: string, lastName?: string, enabled?: boolean, email?: string, createdTimestamp?: number }] }
 
+export type ListGetAllMonitoredEntityStatesQuery = { __typename?: 'Query', listAllSimpleMonitors: [{ __typename: 'MonitoredEntityState', id?: string, tenantId?: string, monitoredEntityId?: string, state?: boolean, firstObservationTime?: number }] }
+
 export type ListAlertEventDefinitionsByVendorQuery = { __typename?: 'Query', alertEventDefsByVendor?: { vendor: string, alertEventDefinitionList: Array<{ __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType, uei?: string, clearKey?: string, reductionKey?: string }> } }
 
 export type ListAlertEventDefinitionsQuery = { __typename?: 'Query', listAlertEventDefinitions?: Array<{ __typename?: 'AlertEventDefinition', id?: any, name?: string, eventType?: EventType, uei: string }> }
@@ -1543,6 +1554,13 @@ export type NodeLatencyMetricQueryVariables = Exact<{
   timeRangeUnit: TimeRangeUnit;
 }>
 
+export type ServiceMetricsVariable = Exact<{
+  monitoredEntityId: Scalars['String'];
+  metricName: Scalars['String'];
+  timeRange: Scalars['Int'];
+  timeRangeUnit: TimeRangeUnit;
+}>
+
 export type NodeLatencyMetricQuery = { __typename?: 'Query', nodeLatency?: { __typename?: 'TimeSeriesQueryResult', status?: string, data?: { __typename?: 'TSData', result?: Array<{ __typename?: 'TSResult', metric?: any, values?: Array<Array<number>> }> } }, nodeStatus?: { __typename?: 'NodeStatus', id: any, status?: string } }
 
 export type FindAllNodesByNodeLabelSearchQueryVariables = Exact<{
@@ -1606,6 +1624,8 @@ export type ListEventsQueryVariables = Exact<{
 }>
 
 export type ListNodeStatusQuery = { __typename?: 'Query', node?: { __typename?: 'Node', id: any, nodeLabel?: string, nodeAlias?: string, objectId?: string, systemContact?: string, systemDescr?: string, systemLocation?: string, systemName?: string, scanType?: string, location?: { __typename?: 'MonitoringLocation', location?: string }, ipInterfaces?: Array<{ __typename?: 'IpInterface', id: any, hostname?: string, ipAddress?: string, netmask?: string, nodeId: any, snmpPrimary?: boolean, azureInterfaceId?: any }>, snmpInterfaces?: Array<{ __typename?: 'SnmpInterface', id: any, ifAdminStatus?: string, ifAlias?: string, ifDescr?: string, ifIndex: number, ifName?: string, ifOperatorStatus?: string, ifSpeed: any, ifType: number, ipAddress?: string, nodeId: any, physicalAddr?: string }>, azureInterfaces?: Array<{ __typename?: 'AzureInterface', id: any, nodeId: any, interfaceName?: string, privateIpId?: string, publicIpAddress?: string, publicIpId?: string, location?: string }> } }
+
+export type ServiceMetricsQuery = { __typename?: 'Query', metric?: { __typename?: 'TimeSeriesQueryResult', status?: string, data?: { __typename?: 'TSData', resultType?: string, result?: Array<{ __typename?: 'TSResult', metric?: any, value?: Array<number>, values?: Array<Array<number>> }> } } }
 
 export type FindExportersForNodeStatusQueryVariables = Exact<{
   requestCriteria: RequestCriteriaInput;
@@ -1739,4 +1759,6 @@ export const CountAffectedNodesByMonitoingPolicy = { 'kind': 'Document', 'defini
 export const ListGetAllUsersDocument = {'kind': 'Document','definitions': [{'kind': 'OperationDefinition','operation': 'query','name': {'kind': 'Name','value': 'getAllUsers'},'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'getAllUsers'},'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'id'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'firstName'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'lastName'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'username'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'enabled'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'email'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'createdTimestamp'}}]}}]}}]} as unknown as DocumentNode < ListGetAllUsersQuery, unknown >
 export const AddUserDocument = {'kind': 'Document','definitions': [{'kind': 'OperationDefinition','operation': 'mutation','name': {'kind': 'Name','value': 'AddUser'},'variableDefinitions': [{'kind': 'VariableDefinition','variable': {'kind': 'Variable','name': {'kind': 'Name','value': 'user'}},'type': {'kind': 'NonNullType','type': {'kind': 'NamedType','name': {'kind': 'Name','value': 'UserRepresentationInput'}}}}],'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'addUser'},'arguments': [{'kind': 'Argument','name': {'kind': 'Name','value': 'user'},'value': {'kind': 'Variable','name': {'kind': 'Name','value': 'user'}}}]}]}}]} as unknown as DocumentNode< AddUserMutation, AddUserVariables >
 export const UpdateUserDocument = {'kind': 'Document','definitions': [{'kind': 'OperationDefinition','operation': 'mutation','name': {'kind': 'Name','value': 'UpdateUser'},'variableDefinitions': [{'kind': 'VariableDefinition','variable': {'kind': 'Variable','name': {'kind': 'Name','value': 'user'}},'type': {'kind': 'NonNullType','type': {'kind': 'NamedType','name': {'kind': 'Name','value': 'UserRepresentationInput'}}}}],'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'updateUser'},'arguments': [{'kind': 'Argument','name': {'kind': 'Name','value': 'user'},'value': {'kind': 'Variable','name': {'kind': 'Name','value': 'user'}}}]}]}}]} as unknown as DocumentNode< UpdateUserMutation, UpdateUserVariables >
+export const ListGetAllMonitoredEntityStatesDocument = {'kind': 'Document','definitions': [{'kind': 'OperationDefinition','operation': 'query','name': {'kind': 'Name','value': 'listAllSimpleMonitors'},'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'listAllSimpleMonitors'},'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': {'kind': 'Name','value': 'id'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'monitoredEntityId'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'state'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'tenantId'}}, {'kind': 'Field','name': {'kind': 'Name','value': 'firstObservationTime'}}]}}]}}]} as unknown as DocumentNode < ListGetAllMonitoredEntityStatesQuery, unknown >
+export const ServiceMetricsDocument = {'kind': 'Document','definitions': [{'kind': 'OperationDefinition','operation': 'query','name': { 'kind': 'Name', 'value': 'Metric' },'variableDefinitions': [{'kind': 'VariableDefinition','variable': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'monitoredEntityId' } },'type': { 'kind': 'NamedType', 'name': { 'kind': 'Name', 'value': 'String' } }},{'kind': 'VariableDefinition','variable': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'metricName' } },'type': { 'kind': 'NamedType', 'name': { 'kind': 'Name', 'value': 'String' } }},{'kind': 'VariableDefinition','variable': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'timeRangeUnit' } },'type': { 'kind': 'NamedType', 'name': { 'kind': 'Name', 'value': 'TimeRangeUnit' } }},{'kind': 'VariableDefinition','variable': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'timeRange' } },'type': { 'kind': 'NamedType', 'name': { 'kind': 'Name', 'value': 'Int' } }}],'selectionSet': {'kind': 'SelectionSet','selections': [{'kind': 'Field','name': { 'kind': 'Name', 'value': 'metric' },'arguments': [{ 'kind': 'Argument', 'name': { 'kind': 'Name', 'value': 'name' }, 'value': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'metricName' } } },{ 'kind': 'Argument', 'name': { 'kind': 'Name', 'value': 'labels' }, 'value': { 'kind': 'ObjectValue', 'fields': [{ 'kind': 'ObjectField', 'name': { 'kind': 'Name', 'value': 'instance' }, 'value': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'monitoredEntityId' } } }] } },{ 'kind': 'Argument', 'name': { 'kind': 'Name', 'value': 'timeRangeUnit' }, 'value': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'timeRangeUnit' } } },{ 'kind': 'Argument', 'name': { 'kind': 'Name', 'value': 'timeRange' }, 'value': { 'kind': 'Variable', 'name': { 'kind': 'Name', 'value': 'timeRange' } } }],'selectionSet': {'kind': 'SelectionSet','selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'status' } },{'kind': 'Field','name': { 'kind': 'Name', 'value': 'data' },'selectionSet': {'kind': 'SelectionSet','selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'resultType' } },{'kind': 'Field','name': { 'kind': 'Name', 'value': 'result' },'selectionSet': {'kind': 'SelectionSet','selections': [{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'metric' } },{ 'kind': 'Field', 'name': { 'kind': 'Name', 'value': 'value' }}]}}]}}]}}]}}]} as unknown as DocumentNode < ServiceMetricsQuery, ServiceMetricsVariable >
 /* eslint-enable @stylistic/comma-spacing, @stylistic/key-spacing */
