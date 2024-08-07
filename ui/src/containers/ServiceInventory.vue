@@ -148,8 +148,6 @@ const toggleView = (selectedView: string) => {
   .table-heading {
     font-weight: bold;
     font-size: 20px;
-    padding-left: 20px;
-    margin-top: 40px;
     margin-bottom: 50px;
   }
 

@@ -14,9 +14,9 @@
               >
                 {{ col.label }}
               </FeatherSortHeader>
-              <th>Reachability</th>
               <th>Status</th>
               <th>Latency</th>
+              <th>Reachability</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -24,12 +24,7 @@
             <tr class="policies-table-row" v-for="service of monitoredEntityStatesList" :key="service?.id">
               <td>{{ extractMetricValue('monitor', service) }}</td>
               <td>{{ service.monitoredEntityId }}</td>
-              <td>{{ fnsFormat(service.firstObservationTime, 'M/dd/yyyy HH:mm:ssxxx') }}</td>
-              <td>
-                <TextBadge :type="getBadgeType('reachability', extractMetricValue('reachability', service))">
-                  {{ extractMetricValue('reachability', service) ? `${extractMetricValue('reachability', service)}%` : `--` }}
-                </TextBadge>
-              </td>
+              <td>--</td>
               <td>
                 <TextBadge :type="getBadgeType('status', extractMetricValue('status', service))">
                   {{ extractMetricValue('status', service) }}
@@ -38,6 +33,11 @@
               <td>
                 <TextBadge :type="getBadgeType('latency', extractMetricValue('latency', service))">
                   {{ extractMetricValue('reachability', service) ? `${extractMetricValue('latency', service)}ms` : `--` }}
+                </TextBadge>
+              </td>
+              <td>
+                <TextBadge :type="getBadgeType('reachability', extractMetricValue('reachability', service))">
+                  {{ extractMetricValue('reachability', service) ? `${extractMetricValue('reachability', service)}%` : `--` }}
                 </TextBadge>
               </td>
               <td class="actions-icons">
@@ -66,7 +66,6 @@ import useSpinner from '@/composables/useSpinner'
 import { useServiceInventoryStore } from '@/store/Views/serviceInventoryStore'
 import { MonitoredEntityState } from '@/types/monitoredEntityState'
 import { SORT } from '@featherds/table'
-import { format as fnsFormat } from 'date-fns'
 import { reactive } from 'vue'
 import TextBadge from '../Common/TextBadge.vue'
 import { columns } from './serviceinventory.constants'
