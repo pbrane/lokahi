@@ -31,6 +31,13 @@ query TopNNodes(
   nodeCount
 }
 
+query getAllNodeStatus {
+  allNodeStatus {
+    id
+    status
+  }
+}
+
 query DownloadTopN(
   $downloadFormat: DownloadFormat!
   $timeRange: Int!, 

@@ -39,32 +39,47 @@ export const useInventoryStore = defineStore('inventoryStore', {
     isEditMode: false,
     inventoryNodesDefaultFilter: cloneDeep(inventoryNodesFilterDefault),
     inventoryNodesPagination: cloneDeep(defaultPagination),
-    totalInventoryNodes: 0
+    totalInventoryNodes: 0,
+    nodeStatusMap: new Map<string, string | undefined>()
   }),
   actions: {
     async init() {
       this.loading = true
-      const { buildNetworkInventory } = useInventoryQueries()
-      const page = this.inventoryNodesPagination.page > 0 ? this.inventoryNodesPagination.page - 1 : 0
-      const pagination = {
-        ...this.inventoryNodesPagination,
-        page
-      }
-      const data = await buildNetworkInventory(this.inventoryNodesDefaultFilter, pagination)
-      if (data && data.searchNodes && data.allMetrics) {
-        const nodelist = {
-          findAllNodes: data.searchNodes.nodesList,
-          allMetrics: data.allMetrics,
-          lastPage: data.searchNodes.lastPage,
-          nextPage: data.searchNodes.nextPage
+      const { buildNetworkInventory, getAllNodeStatus } = useInventoryQueries()
+      try {
+        const page = this.inventoryNodesPagination.page > 0 ? this.inventoryNodesPagination.page - 1 : 0
+        const pagination = {
+          ...this.inventoryNodesPagination,
+          page
         }
-        this.totalInventoryNodes = data.searchNodes.totalNodes || 0
-        if (this.inventoryNodesPagination.total !== this.totalInventoryNodes) {
-          this.inventoryNodesPagination.total = this.totalInventoryNodes
+        const [data, allNodesStatus] = await Promise.all([
+          buildNetworkInventory(this.inventoryNodesDefaultFilter, pagination),
+          getAllNodeStatus()
+        ])
+
+        if (allNodesStatus.value?.allNodeStatus && allNodesStatus.value.allNodeStatus.length > 0) {
+          this.nodeStatusMap = new Map(
+            allNodesStatus.value.allNodeStatus.map(status => [String(status.id), status.status ?? ''])
+          )
         }
-        this.receivedNetworkInventory(nodelist as any)
+
+        if (data && data.searchNodes && data.allMetrics) {
+          const nodelist = {
+            findAllNodes: data.searchNodes.nodesList,
+            allMetrics: data.allMetrics,
+            lastPage: data.searchNodes.lastPage,
+            nextPage: data.searchNodes.nextPage
+          }
+          this.totalInventoryNodes = data.searchNodes.totalNodes || 0
+          if (this.inventoryNodesPagination.total !== this.totalInventoryNodes) {
+            this.inventoryNodesPagination.total = this.totalInventoryNodes
+          }
+          this.receivedNetworkInventory(nodelist as any)
+        }
+        this.loadingTimeout = window.setTimeout(() => { this.loading = false }, 3000)
+      } catch (error) {
+        console.log('inventory error: ', error)
       }
-      this.loadingTimeout = window.setTimeout(() => { this.loading = false }, 3000)
     },
     async filterNodesByTags() {
       const {getNodesByTags} = useInventoryQueries()

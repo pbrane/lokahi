@@ -32,7 +32,7 @@
               <td>--</td>
               <td>--</td>
               <td v-if="state === MonitoredStates.MONITORED">
-                <div v-for="badge, index in metricsAsTextBadges(node?.metrics)" :key="index">
+                <div v-for="badge, index in metricsAsTextBadges(node?.metrics, String(node?.id))" :key="index">
                   <TextBadge v-if="badge.label" :type="badge.type">{{ badge.label }}</TextBadge>
                 </div>
               </td>
@@ -64,13 +64,13 @@
 </template>
 
 <script setup lang="ts">
-import { InventoryItem, RawMetric, MonitoredStates } from '@/types'
+import { InventoryItem, MonitoredStates } from '@/types'
 import { PropType } from 'vue'
 import { SORT } from '@featherds/table'
-import { BadgeTypes } from '../Common/commonTypes'
 import TextBadge from '../Common/TextBadge.vue'
 import { useInventoryStore } from '@/store/Views/inventoryStore'
 import useSpinner from '@/composables/useSpinner'
+import {metricsAsTextBadges} from './inventory.utils'
 
 const { startSpinner, stopSpinner } = useSpinner()
 const store = useInventoryStore()
@@ -139,15 +139,6 @@ const onPageSizeChanged = (p: number) => {
   stopSpinner()
 }
 
-const metricsAsTextBadges = (metrics?: RawMetric) => {
-  const badges = []
-  if (metrics?.value?.[1]) {
-    badges.push({ type: BadgeTypes.success, label: 'Up' })
-  } else {
-    badges.push({ type: BadgeTypes.error, label: 'Down' })
-  }
-  return badges
-}
 </script>
 
 <style lang="scss" scoped>

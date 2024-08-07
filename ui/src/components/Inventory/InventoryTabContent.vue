@@ -5,7 +5,7 @@
         <h5 data-test="heading" class="node-label pointer" @click="() => onNodeClick(node.id)">{{ node?.nodeAlias || node?.nodeLabel }}</h5>
         <div class="card-chip-list">
           <div class="text-badge-row" v-if="state === MonitoredStates.MONITORED">
-            <div v-for="badge, index in metricsAsTextBadges(node?.metrics)" :key="index">
+            <div v-for="badge, index in metricsAsTextBadges(node?.metrics,String(node?.id))" :key="index">
               <TextBadge v-if="badge.label" :type="badge.type">{{ badge.label }}</TextBadge>
             </div>
           </div>
@@ -40,12 +40,12 @@
 
 <script lang="ts" setup>
 import { PropType } from 'vue'
-import { NewInventoryNode, RawMetric, InventoryItem, MonitoredStates } from '@/types'
+import { NewInventoryNode, InventoryItem, MonitoredStates } from '@/types'
 import { useTagStore } from '@/store/Components/tagStore'
 import { useInventoryStore } from '@/store/Views/inventoryStore'
-import { BadgeTypes } from '../Common/commonTypes'
 import TextBadge from '../Common/TextBadge.vue'
 import useSpinner from '@/composables/useSpinner'
+import {metricsAsTextBadges} from './inventory.utils'
 
 defineProps({
   tabContent: {
@@ -70,6 +70,7 @@ const data = computed(() => inventoryStore.nodes || [])
 const hasNodes = computed(() => {
   return (data.value || []).length > 0
 })
+
 const router = useRouter()
 
 watch(isTagManagerReset, (isReset) => {
@@ -97,18 +98,7 @@ const openModalForDeletingTags = (node: NewInventoryNode) => {
   tagStore.openModal()
 }
 
-const metricsAsTextBadges = (metrics?: RawMetric) => {
-  const badges = []
 
-  if (metrics?.value?.[1]) {
-    badges.push({ type: BadgeTypes.success, label: metrics.value?.[1] + 'ms' })
-    badges.push({ type: BadgeTypes.success, label: 'Up' })
-  } else {
-    badges.push({ type: BadgeTypes.error, label: 'Down' })
-  }
-
-  return badges
-}
 
 const onPageChanged = (p: number) => {
   startSpinner()

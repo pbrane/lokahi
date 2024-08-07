@@ -3,7 +3,8 @@ import { defineStore } from 'pinia'
 import {
   BuildNetworkInventoryPageDocument,
   FindAllNodesByTagsDocument,
-  FindAllNodesByNodeLabelSearchDocument
+  FindAllNodesByNodeLabelSearchDocument,
+  AllNodesStatusDocument
 } from '@/types/graphql'
 import { Pagination } from '@/types/alerts'
 import { InventoryItemFilters } from '@/types'
@@ -34,6 +35,15 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
     return data
   }
 
+  const getAllNodeStatus = async () => {
+    const { execute, data } = useQuery({
+      query: AllNodesStatusDocument,
+      cachePolicy: 'network-only'
+    })
+    await execute()
+    return data
+  }
+
   const buildNetworkInventory = async (filters?: InventoryItemFilters, paginations?: Pagination) => {
     const { execute, data } = useQuery({
       query: BuildNetworkInventoryPageDocument,
@@ -55,6 +65,7 @@ export const useInventoryQueries = defineStore('inventoryQueries', () => {
   return {
     buildNetworkInventory,
     getNodesByTags,
-    getNodesByLabel
+    getNodesByLabel,
+    getAllNodeStatus
   }
 })
