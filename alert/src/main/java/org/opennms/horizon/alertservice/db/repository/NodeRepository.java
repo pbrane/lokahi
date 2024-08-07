@@ -31,5 +31,5 @@ import org.springframework.stereotype.Repository;
 public interface NodeRepository extends JpaRepository<Node, Long> {
     Optional<Node> findByIdAndTenantId(long id, String tenantId);
 
-    List<Node> findAllByNodeLabelAndTenantId(String nodeLabel, String tenantId);
+    List<Node> findAllByNodeLabelContainingIgnoreCaseAndTenantId(String nodeLabel, String tenantId);
 }

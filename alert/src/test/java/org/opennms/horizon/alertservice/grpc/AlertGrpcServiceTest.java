@@ -158,7 +158,9 @@ class AlertGrpcServiceTest extends AbstractGrpcUnitTest {
                 .when(mockAlertRepository)
                 .findBySeverityInAndLastEventTimeBetweenAndManagedObjectTypeAndManagedObjectInstanceInAndTenantId(
                         any(), any(), any(), any(), any(), any(), any());
-        doReturn(Arrays.asList(mock(Node.class))).when(mockNodeRepository).findAllByNodeLabelAndTenantId(any(), any());
+        doReturn(Arrays.asList(mock(Node.class)))
+                .when(mockNodeRepository)
+                .findAllByNodeLabelContainingIgnoreCaseAndTenantId(any(), any());
         when(mockAlertMapper.toProto(any(org.opennms.horizon.alertservice.db.entity.Alert.class)))
                 .thenReturn(alertProto1, alertProto2);
         when(mockAlertMapper.toProto(any(org.opennms.horizon.alertservice.db.entity.Alert.class)))

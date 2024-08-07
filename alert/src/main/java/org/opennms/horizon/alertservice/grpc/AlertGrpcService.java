@@ -454,7 +454,8 @@ public class AlertGrpcService extends AlertServiceGrpc.AlertServiceImplBase {
             }
             if (filter.hasNodeLabel()) {
                 List<Node> nodes = lookupTenantId
-                        .map(tenantId -> nodeRepository.findAllByNodeLabelAndTenantId(filter.getNodeLabel(), tenantId))
+                        .map(tenantId -> nodeRepository.findAllByNodeLabelContainingIgnoreCaseAndTenantId(
+                                filter.getNodeLabel(), tenantId))
                         .orElseThrow();
 
                 for (Node node : nodes) {

@@ -32,6 +32,7 @@ bin/
 dependency-reduced-pom.xml
 
 # Editors
+.vscode
 .idea
 idea
 .settings
