@@ -39,14 +39,28 @@
                 data-test="data-item"
               >
                 <td class="alert-details-wrapper">
-                  <div class="name headline alert-type" data-test="name">{{ alert?.type || alert?.label || 'Unknown' }}</div>
+                    <div class="name headline alert-type" data-test="name" >{{  displayAlertUei(alert)  }}
+                      <FeatherTooltip :title="alert?.uei || ''" v-slot="{ attrs, on }">
+                        <FeatherIcon
+                          v-bind="attrs"
+                          v-on="on"
+                          :icon="icons.Info"
+                          class=""
+                          data-test="check-icon"
+                          />
+                      </FeatherTooltip>
+                    </div>
                   <div v-if="isRowExpanded(alert.databaseId)">
+                    <div>Name: {{ alert?.uei }}</div>
                     <div>Location: {{ alert.location }}</div>
                     <div>Description: {{ alert.description }}</div>
                     <div>Started: {{ fnsFormat(alert.firstEventTimeMs, 'HH:mm:ssxxx') }}</div>
                     <div>RuleName: {{ alert.ruleNameList?.join(', ') }}</div>
                     <div>PolicyName: {{ alert.policyNameList?.join(', ') }}</div>
                   </div>
+                </td>
+                <td>
+                  <div class="name headline alert-type" data-test="counter" >{{ alert?.counter }}</div>
                 </td>
                 <td>
                   <PillColor :item="showSeverity(alert?.severity)" data-test="severity-label" />
@@ -106,6 +120,7 @@
 <script lang="ts" setup>
 import { format as fnsFormat } from 'date-fns'
 import CheckCircle from '@featherds/icon/action/CheckCircle'
+import Info from '@featherds/icon/action/Info'
 import DownloadFile from '@featherds/icon/action/DownloadFile'
 import ArrowDropDown from '@featherds/icon/navigation/ArrowDropDown'
 import ExpandLess from '@featherds/icon/navigation/ExpandLess'
@@ -116,6 +131,7 @@ import useSpinner from '@/composables/useSpinner'
 import { useNodeStatusStore } from '@/store/Views/nodeStatusStore'
 import { IAlert } from '@/types/alerts'
 import { Ack, UnAck } from '../Alerts/alerts.constants'
+import MoreHoriz from '@featherds/icon/navigation/MoreHoriz'
 
 const icons = markRaw({
   ArrowDropDown,
@@ -123,7 +139,9 @@ const icons = markRaw({
   DownloadFile,
   ExpandLess,
   ExpandMore,
-  Refresh
+  Refresh,
+  Info,
+  MoreHoriz
 })
 
 const { startSpinner, stopSpinner } = useSpinner()
@@ -133,9 +151,10 @@ const alertsData = ref<IAlert[]>([])
 const expandedIds = ref(new Set<number>())
 
 const columns = [
-  { id: 'type', label: 'Alert Type' },
+  { id: 'eventUei', label: 'UEI' },
+  { id: 'counter', label: 'Count' },
   { id: 'severity', label: 'Severity' },
-  { id: 'lastEventTime', label: 'Time' }
+  { id: 'lastEventTime', label: 'Last Updated' }
 ]
 
 const emptyListContent = {
@@ -158,6 +177,13 @@ const hasAlerts = computed(() => {
   return (data.value?.alerts || []).length > 0
 })
 
+const displayAlertUei = (alert: { uei?: string; label?: string }): string => {
+      if (alert.uei) {
+        return alert.uei.length <= 20 ? alert.uei : alert.uei.slice(0, 20) + '...';
+      }
+      return alert.label || 'Unknown';
+};
+  
 const isRowExpanded = (id: any) => {
   const num = id ? Number(id) : 0
 
@@ -178,7 +204,6 @@ const onExpandRow = (id: any) => {
 
 const sortChanged = (columnId: string, sortObj: Record<string, string>) => {
   startSpinner()
-
   if (sortObj.value === 'asc' || sortObj.value === 'desc') {
     const sortAscending = sortObj.value === 'asc'
     const sortByAlerts = { sortAscending, sortBy: columnId }
@@ -308,7 +333,6 @@ watch(() => nodeStatusStore.fetchAlertsByNodeData, () => {
         white-space: nowrap;
         box-shadow: none;
         margin-top: var(variables.$spacing-s);
-
         .description,
         .alert-type {
           margin-top: var(variables.$spacing-s);
@@ -361,6 +385,17 @@ watch(() => nodeStatusStore.fetchAlertsByNodeData, () => {
   :deep(.panel-content) {
     padding: 1rem 0 0 0 !important;
     width: 90%;
+  }
+
+}
+
+</style>
+
+<style lang="scss">
+
+.feather-tooltip-container {
+  .tooltip {
+    word-wrap: break-word;
   }
 }
 </style>
