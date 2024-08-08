@@ -24,9 +24,10 @@ package org.opennms.horizon.server.model;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
-public class MetricLabelKeyValue {
-    private String name;
-    private String value;
+@Getter
+public class Expression {
+    String serviceType;
+    String expression;
+    ;
 }

@@ -22,6 +22,7 @@
 package org.opennms.horizon.server.model;
 
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,6 +32,7 @@ public class MetricLabel {
     private String displayName;
     private String metricName;
     private String category;
-    private List<MetricLabelKeyValue> labels;
+    private List<Expression> expressions;
+    private Map<String, List<String>> labels;
     private String unitType;
 }

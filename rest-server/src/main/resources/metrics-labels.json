@@ -4,60 +4,158 @@
       "displayName": "CPU Utilization",
       "metricName": "cpuUtilization",
       "category": "threshold",
-      "labels": [
-        { "value": "SNMP", "name": "SNMP" }
+      "expressions": [
+        {
+          "serviceType": "SNMP",
+          "expression": "avg by (node_id) (              (100 -                 (CpuRawIdle%1$s / (                   CpuRawIdle%1$s +                  CpuRawInterrupt%1$s +                   CpuRawUser%1$s+                   CpuRawWait%1$s +                  CpuRawNice%1$s +                   CpuRawSystem%1$s+                   CpuRawKernel%1$s +                   CpuRawSoftIRQ%1$s +                   CpuRawSteal%1$s +                   CpuRawGuest%1$s +                   CpuRawGuestNice%1$s                 )               ) * 100          ))"
+        },
+        {
+          "serviceType": "WSMAN",
+          "expression": ""
+        }
       ],
-      "unitType": "bytes"
+      "labels": {
+        "serviceTypes": [
+          "SNMP",
+          "WSMAN"
+        ],
+        "nodeIds": []
+      },
+      "unitType": "percentage"
     },
     {
       "displayName": "Network Inbound Utilization",
       "metricName": "netInUtilization",
       "category": "threshold",
-      "labels": [
-        { "value": "SNMP", "name": "SNMP" }
+      "expressions": [
+        {
+          "serviceType": "SNMP",
+          "expression": "avg by(node_id, instance)  (           (irate(ifHCInOctets%1$s[4m])*8 / (ifHighSpeed * 1000000) * 100 unless ifHighSpeed == 0) )"
+        },
+        {
+          "serviceType": "WSMAN",
+          "expression": ""
+        }
       ],
-      "unitType": "bytes"
+      "labels": {
+        "serviceTypes": [
+          "SNMP",
+          "WSMAN"
+        ],
+        "nodeIds": []
+      },
+      "unitType": "percentage"
     },
     {
       "displayName": "Network Outbound Utilization",
       "metricName": "netOutUtilization",
       "category": "threshold",
-      "labels": [
-        { "value": "SNMP", "name": "SNMP" }
+      "expressions": [
+        {
+          "serviceType": "SNMP",
+          "expression": "avg by(node_id, instance)  (          (irate(ifHCOutOctets%1$s[4m])*8 / (ifHighSpeed * 1000000) * 100 unless ifHighSpeed == 0) )"
+        },
+        {
+          "serviceType": "WSMAN",
+          "expression": ""
+        }
       ],
-      "unitType": "bytes"
+      "labels": {
+        "serviceTypes": [
+          "SNMP",
+          "WSMAN"
+        ],
+        "nodeIds": []
+      },
+      "unitType": "percentage"
     },
     {
       "displayName": "Response Time",
       "metricName": "response_time_msec",
       "category": "threshold",
-      "labels": [
-        { "value": "HTTPMonitor", "name": "HTTP" },
-        { "value": "HTTPSMonitor", "name": "HTTPS" },
-        { "value": "SSHMonitor", "name": "SSH" },
-        { "value": "NTPMonitor", "name": "NTP" },
-        { "value": "SNMPMonitor", "name": "SNMP" },
-        { "value": "ICMPMonitor", "name": "ICMP" }
+      "expressions": [
+        {
+          "serviceType": "HTTPS",
+          "expression": "response_time_msec%1$s"
+        },
+        {
+          "serviceType": "HTTP",
+          "expression": "response_time_msec%1$s"
+        },
+        {
+          "serviceType": "SSH",
+          "expression": "response_time_msec%1$s"
+        },
+        {
+          "serviceType": "NTP",
+          "expression": "response_time_msec%1$s"
+        },
+        {
+          "serviceType": "SNMP",
+          "expression": "response_time_msec%1$s"
+        },
+        {
+          "serviceType": "ICMP",
+          "expression": "response_time_msec%1$s"
+        }
       ],
+      "labels": {
+        "serviceTypes": [
+          "HTTP",
+          "HTTPS",
+          "SSH",
+          "NTP",
+          "SNMP",
+          "ICMP"
+        ]
+      },
       "unitType": "ms"
     },
     {
       "displayName": "CPU Utilization (%) 24h",
       "metricName": "cpu_utilization",
       "category": "nodestatus",
-      "labels": [
-        { "value": "SNMP", "name": "SNMP" }
+      "expressions": [
+        {
+          "serviceType": "SNMP",
+          "expression": "(100 -  (irate(CpuRawIdle%1$s[4m]) / (irate(CpuRawIdle%1$s[4m]) + irate(CpuRawInterrupt%1$s[4m]) + irate(CpuRawUser%1$s[4m])                + irate(CpuRawWait%1$s[4m]) + irate(CpuRawNice%1$s[4m]) + irate(CpuRawSystem%1$s[4m]) + irate(CpuRawKernel%1$s[4m]) + irate(CpuRawSoftIRQ%1$s[4m])  + irate(CpuRawSteal%1$s[4m]) + irate(CpuRawGuest%1$s[4m]) + irate(CpuRawGuestNice%1$s[4m])))  * 100 )"
+        },
+        {
+          "serviceType": "WSMAN",
+          "expression": ""
+        }
       ],
-      "unitType": "bytes"
+      "labels": {
+        "serviceTypes": [
+          "SNMP",
+          "WSMAN"
+        ],
+        "nodeIds": []
+      },
+      "unitType": "percentage"
     },
     {
       "displayName": "Memory Utilization (%) 24h",
       "metricName": "memory_utilization",
       "category": "nodestatus",
-      "labels": [
-        { "value": "SNMP", "name": "SNMP" }
+      "expressions": [
+        {
+          "serviceType": "SNMP",
+          "expression": "((memTotalReal%1$s - memAvailReal%1$s\n                - memBuffer%1$s                - memCached%1$s) / memTotalReal%1$s) * 100"
+        },
+        {
+          "serviceType": "WSMAN",
+          "expression": ""
+        }
       ],
-      "unitType": "bytes"
+      "labels": {
+        "serviceTypes": [
+          "SNMP",
+          "WSMAN"
+        ],
+        "nodeIds": []
+      },
+      "unitType": "percentage "
     }
   ]
 }
