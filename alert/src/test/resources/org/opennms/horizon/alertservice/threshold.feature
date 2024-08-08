@@ -5,6 +5,7 @@ Feature: Alert Service Thresholding Functionality
     Given Kafka bootstrap URL in system property "kafka.bootstrap-servers"
     Given Kafka event topic "events"
     Given Kafka alert topic "alerts"
+    Given Kafka metrics threshold  topic "metrics-threshold-rules"
     Given A new tenant
     And A monitoring policy named "my-policy" with tag "tag1"
     And The policy has a rule named "my-rule" with component type "NODE" and trap definitions
@@ -86,3 +87,36 @@ Feature: Alert Service Thresholding Functionality
       | alerts[0].severity == CLEARED |
       | alerts[1].counter == 1        |
       | alerts[1].severity == MAJOR   |
+
+
+    Scenario:  Create Monitor policy with Alert threshold data and verify the threshold ruler request sent to kafka
+       Given Tenant id "threshold-tenant"
+      Given A monitoring policy named "threshold-policy" with tag "threshold-tag"
+      Given The policy has a rule named "my-rule" with component type "NODE", trap Type "METRIC_THRESHOLD" and trap definitions
+        | trigger_event_name | count | overtime | overtime_unit | severity | clear_event_name |
+        | HighThresholdExceeded | 1     | 0        | MINUTE        | CRITICAL    |                  |
+     And   the threshold metric data as below with threshold name as "test-threshold"
+       | name | enabled | threshold | condition | expression  |
+       | HighThresholdExceeded | 1     | 4    | > | test-expression     |
+      And The policy is created in the tenant
+    Then Verify metric threshold topic has 1 messages for the tenant with Operation type "ADD_RULE"
+
+
+    Scenario:  When threshold alert is trigger an alert should be created and cleared
+    Given Tenant id "threshold-tenant"
+    Given  prepare event from below threshold data when the threshold alert status is "firing"
+      |event_uei  | tenant_id   | location | alertname | severity | node_id |
+      | uei.opennms.org/threshold/highThresholdExceeded | threshold-tenant  | 1  | HighCPUUtilization  | CRITICAL | 10 |
+      Then  send event through kafka
+      Then List alerts for the tenant, until JSON response matches the following JSON path expressions
+        | alerts.size() == 1          |
+        | alerts[0].counter == 1      |
+        | alerts[0].severity == CRITICAL |
+      When   prepare event from below threshold data when the threshold alert status is "resolved"
+        |event_uei  | tenant_id   | location | alertname | severity | node_id |
+        | uei.opennms.org/threshold/highThresholdExceeded | threshold-tenant  | 1  | HighCPUUtilization  | CRITICAL | 10 |
+      Then  send event through kafka
+      Then List alerts for the tenant, until JSON response matches the following JSON path expressions
+        | alerts.size() == 1            |
+        | alerts[0].counter == 2        |
+        | alerts[0].severity == CLEARED |

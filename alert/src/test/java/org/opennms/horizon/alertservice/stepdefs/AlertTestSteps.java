@@ -23,12 +23,16 @@ package org.opennms.horizon.alertservice.stepdefs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.opennms.horizon.shared.utils.SystemInfoUtils.FIRING;
 
+import com.google.protobuf.Empty;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.JsonFormat;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.restassured.RestAssured;
 import io.restassured.config.HttpClientConfig;
@@ -42,6 +46,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -49,8 +54,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.opennms.horizon.alerts.proto.Alert;
+import org.opennms.horizon.alerts.proto.AlertConditionProto;
 import org.opennms.horizon.alerts.proto.AlertRequest;
 import org.opennms.horizon.alerts.proto.AlertRequestByNode;
+import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alerts.proto.Filter;
 import org.opennms.horizon.alerts.proto.ListAlertsRequest;
 import org.opennms.horizon.alerts.proto.ListAlertsResponse;
@@ -59,6 +66,9 @@ import org.opennms.horizon.alerts.proto.TimeRangeFilter;
 import org.opennms.horizon.alertservice.AlertGrpcClientUtils;
 import org.opennms.horizon.alertservice.RetryUtils;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
+import org.opennms.horizon.events.proto.Event;
+import org.opennms.horizon.events.proto.EventLog;
+import org.opennms.horizon.events.proto.ThresholdInfo;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -82,7 +92,7 @@ public class AlertTestSteps {
     private JsonPath parsedJsonResponse;
     private List<Alert> alertsFromLastResponse;
     private Alert firstAlertFromLastResponse;
-
+    EventLog eventLog;
     // ========================================
     // Gherkin Rules
     // ========================================
@@ -472,5 +482,50 @@ public class AlertTestSteps {
                 alerts.stream().filter(a -> a.getUei().equals(downUie)).findFirst();
 
         assertEquals(upAlertOpt.get().getClearKey(), downAlertOpt.get().getReductionKey());
+    }
+
+    @Given("prepare event from below threshold data when the threshold alert status is {string}")
+    public void prepareEventFromBelowThresholdDataWhenTheThresholdAlertStatusIs(
+            String alertStatus, DataTable alerDataTable) {
+        Optional<AlertConditionProto> alertConditionProto =
+                clientUtils.getPolicyStub().listPolicies(Empty.newBuilder().build()).getPoliciesList().stream()
+                        .filter(policy -> policy.getName().equals("threshold-policy"))
+                        .flatMap(policy -> policy.getRulesList().stream()
+                                .filter(rule -> rule.getEventType() == EventType.METRIC_THRESHOLD)
+                                .flatMap(rule -> rule.getSnmpEventsList().stream()))
+                        .findFirst();
+
+        assertTrue(alertConditionProto.isPresent());
+        eventLog = EventLog.newBuilder()
+                .setTenantId(tenantSteps.getTenantId())
+                .addAllEvents(alerDataTable.asMaps().stream()
+                        .map(data -> Event.newBuilder()
+                                .setTenantId(tenantSteps.getTenantId())
+                                .setProducedTimeMs(System.currentTimeMillis())
+                                .setNodeId(Long.parseLong(data.get("node_id")))
+                                .setUei(data.get("event_uei"))
+                                .setLocationId(String.valueOf(data.get("location")))
+                                .setSeverity(
+                                        alertStatus.equalsIgnoreCase(FIRING)
+                                                ? org.opennms.horizon.events.proto.Severity.valueOf(
+                                                        data.get("severity"))
+                                                : org.opennms.horizon.events.proto.Severity.NORMAL)
+                                .setEventLabel(
+                                        Arrays.stream(data.get("event_uei").split("/"))
+                                                .reduce((first, second) -> second)
+                                                .orElse(""))
+                                .setThresholdInfo(ThresholdInfo.newBuilder()
+                                        .setAlertName(data.get("alertname") + "-"
+                                                + alertConditionProto.get().getId())
+                                        .setStatus(alertStatus)
+                                        .build())
+                                .build())
+                        .toList())
+                .build();
+    }
+
+    @Then("send event through kafka")
+    public void sendEventThroughKafka() {
+        kafkaTestHelper.sendToTopic(background.getEventTopic(), eventLog.toByteArray(), tenantSteps.getTenantId());
     }
 }

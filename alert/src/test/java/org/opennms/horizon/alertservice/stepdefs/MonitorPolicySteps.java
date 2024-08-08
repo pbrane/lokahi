@@ -64,8 +64,11 @@ import org.opennms.horizon.alerts.proto.MonitorPolicySearchBy;
 import org.opennms.horizon.alerts.proto.OverTimeUnit;
 import org.opennms.horizon.alerts.proto.PolicyRuleProto;
 import org.opennms.horizon.alerts.proto.Severity;
+import org.opennms.horizon.alerts.proto.ThresholdMetricProto;
 import org.opennms.horizon.alertservice.AlertGrpcClientUtils;
 import org.opennms.horizon.alertservice.kafkahelper.KafkaTestHelper;
+import org.opennms.horizon.metrics.threshold.proto.MetricsThresholdAlertRule;
+import org.opennms.horizon.metrics.threshold.proto.Operation;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 @Slf4j
@@ -89,6 +92,7 @@ public class MonitorPolicySteps {
 
     private MonitorPolicyProto defaultPolicy;
     private Exception lastException;
+    List<MetricsThresholdAlertRule> metricsThresholdAlertRules = new ArrayList<>();
 
     @Given("A monitoring policy named {string} with tag {string}, notifying by email")
     public void defineNewPolicyNotifyViaEmail(String name, String tag) {
@@ -121,11 +125,19 @@ public class MonitorPolicySteps {
 
     @Given("The policy has a rule named {string} with component type {string} and trap definitions")
     public void setPolicyRules(String ruleName, String type, DataTable alertConditions) {
+        thePolicyHasARuleNamedWithComponentTypeTrapTypeAndTrapDefinitions(
+                ruleName, type, EventType.SNMP_TRAP.toString(), alertConditions);
+    }
+
+    @And("The policy has a rule named {string} with component type {string}, trap Type {string} and trap definitions")
+    public void thePolicyHasARuleNamedWithComponentTypeTrapTypeAndTrapDefinitions(
+            String ruleName, String type, String trapType, DataTable alertConditions) {
         ruleBuilder = PolicyRuleProto.newBuilder()
                 .setName(ruleName)
+                .setEventType(EventType.valueOf(trapType))
                 .setComponentType(ManagedObjectType.valueOf(type.toUpperCase()));
 
-        snmpTrapDefinitions = this.loadSnmpTrapDefinitions();
+        snmpTrapDefinitions = this.loadSnmpTrapDefinitions(trapType);
 
         alertConditions.asMaps().stream()
                 .map(map -> {
@@ -173,9 +185,9 @@ public class MonitorPolicySteps {
         }
     }
 
-    private Map<String, AlertEventDefinitionProto> loadSnmpTrapDefinitions() {
+    private Map<String, AlertEventDefinitionProto> loadSnmpTrapDefinitions(String trapType) {
         ListAlertEventDefinitionsRequest request = ListAlertEventDefinitionsRequest.newBuilder()
-                .setEventType(EventType.SNMP_TRAP)
+                .setEventType(EventType.valueOf(trapType))
                 .build();
         List<AlertEventDefinitionProto> eventDefinitionsList = this.grpcClient
                 .getAlertEventDefinitionStub()
@@ -367,6 +379,18 @@ public class MonitorPolicySteps {
                 .toList();
     }
 
+    public List<MetricsThresholdAlertRule> getConsumerMessagesForTenant() {
+        return kafkaTestHelper.getConsumedMessages(background.getMetricsThresholdRulesTopic()).stream()
+                .map(b -> {
+                    try {
+                        return MetricsThresholdAlertRule.parseFrom(b.value());
+                    } catch (InvalidProtocolBufferException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+    }
+
     @Then("Verify exception {string} thrown with message {string}")
     public void monitoringLocationVerifyException(String exceptionName, String message) {
         if (lastException == null) {
@@ -480,5 +504,36 @@ public class MonitorPolicySteps {
                 .setSortBy(column)
                 .build();
         return searchBy;
+    }
+
+    @And("the threshold metric data as below with threshold name as {string}")
+    public void theThresholdMetricDataAsBelowWithThresholdNameAs(String thresholdName, DataTable thresholdMetricData) {
+        ruleBuilder.setThresholdMetricName(thresholdName);
+        Optional<ThresholdMetricProto> thresholdMetricProtoOption = thresholdMetricData.asMaps().stream()
+                .map(data -> ThresholdMetricProto.newBuilder()
+                        .setName(data.get("name"))
+                        .setEnabled(Integer.parseInt(data.get("enabled")) == 1)
+                        .setThreshold(Float.parseFloat(data.get("threshold")))
+                        .setCondition(data.get("condition"))
+                        .setExpression(data.get("expression"))
+                        .build())
+                .findFirst();
+        triggerBuilders.forEach(builder -> builder.setThresholdMetric(thresholdMetricProtoOption.get()));
+    }
+
+    @Then("Verify metric threshold topic has {int} messages for the tenant with Operation type {string}")
+    public void verifyMetricThresholdTopicHasMessagesForTheTenantWithOperationType(int message, String operationType) {
+        Awaitility.await()
+                .atMost(20, TimeUnit.SECONDS)
+                .pollDelay(3, TimeUnit.SECONDS)
+                .pollInterval(1, TimeUnit.SECONDS)
+                .until(() -> {
+                    List<MetricsThresholdAlertRule> metricsThresholdAlertRules1 = getConsumerMessagesForTenant();
+                    metricsThresholdAlertRules1 = metricsThresholdAlertRules1.stream()
+                            .filter(x -> x.getOperation() == Operation.valueOf(operationType))
+                            .toList();
+                    assertEquals(message, metricsThresholdAlertRules1.size());
+                    return message == metricsThresholdAlertRules1.size();
+                });
     }
 }

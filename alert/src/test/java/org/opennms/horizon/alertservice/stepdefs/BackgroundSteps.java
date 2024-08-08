@@ -42,6 +42,7 @@ public class BackgroundSteps {
     private String alertTopic;
     private String monitoringPolicyTopic;
     private String tagTopic;
+    private String metricsThresholdRulesTopic;
 
     @Given("Kafka event topic {string}")
     public void createKafkaTopicForEvents(String eventTopic) {
@@ -86,5 +87,11 @@ public class BackgroundSteps {
         this.kafkaBootstrapUrl = System.getProperty(systemProperty);
         log.info("Using Kafka base URL: {}", this.kafkaBootstrapUrl);
         kafkaTestHelper.setKafkaBootstrapUrl(kafkaBootstrapUrl);
+    }
+
+    @Given("Kafka metrics threshold  topic {string}")
+    public void kafkaMetricsThresholdTopic(String topic) {
+        this.metricsThresholdRulesTopic = topic;
+        kafkaTestHelper.startConsumerAndProducer(topic, topic);
     }
 }
