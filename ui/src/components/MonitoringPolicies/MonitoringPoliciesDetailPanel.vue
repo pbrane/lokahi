@@ -167,6 +167,7 @@ const savePolicy = async () => {
   const result = await store?.savePolicy({status: isPolicyEnabled.value})
   if (result) {
     emit('onRefresh')
+    emit('onClose')
     router.push('/monitoring-policies')
   }
 }
