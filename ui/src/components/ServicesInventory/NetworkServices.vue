@@ -5,7 +5,7 @@
         <table class="data-table" aria-label="All Services Table">
           <thead>
             <tr class="header-row">
-              <FeatherSortHeader 
+              <FeatherSortHeader
                 v-for="col of columns"
                 :key="col.label"
                 scope="col"
@@ -53,7 +53,7 @@
           :total="store.pagination.total"
           @update:modelValue="onPageChanged"
           @update:pageSize="onPageSizeChanged"
-          v-if="hasMonitoredEntityStates && store.pagination.total" 
+          v-if="hasMonitoredEntityStates && store.pagination.total"
         />
       </div>
     </TableCard>

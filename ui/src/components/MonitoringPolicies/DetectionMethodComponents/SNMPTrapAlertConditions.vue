@@ -30,13 +30,14 @@
             text-prop="name"
             :disabled="monitoringPoliciesStore.selectedPolicy?.isDefault"
             v-model="condition.triggerEvent"
-            @update:model-value="(e) => onUpdateTriggerEvent(e as unknown as AlertEventDefinition)"
+            @update:model-value="(e: any) => onUpdateTriggerEvent(e as AlertEventDefinition)"
           ><template #pre>
             <FeatherIcon :icon="Search" />
           </template></FeatherSelect>
         </div>
         <div class="col event-clear">
           <FeatherInput
+            v-if="clearEvent"
             label="Clear Event"
             v-model.trim="clearEvent"
             readonly

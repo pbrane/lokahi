@@ -178,12 +178,12 @@ const hasAlerts = computed(() => {
 })
 
 const displayAlertUei = (alert: { uei?: string; label?: string }): string => {
-      if (alert.uei) {
-        return alert.uei.length <= 20 ? alert.uei : alert.uei.slice(0, 20) + '...';
-      }
-      return alert.label || 'Unknown';
-};
-  
+  if (alert.uei) {
+    return alert.uei.length <= 20 ? alert.uei : alert.uei.slice(0, 20) + '...'
+  }
+  return alert.label || 'Unknown'
+}
+
 const isRowExpanded = (id: any) => {
   const num = id ? Number(id) : 0
 

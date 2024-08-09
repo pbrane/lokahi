@@ -1,7 +1,7 @@
 export const columns = [
   { id: 'type', label: 'Service Type' },
   { id: 'monitorId', label: 'Service Id' },
-  { id: 'hostname', label: 'Hostname' },
+  { id: 'hostname', label: 'Hostname' }
 ]
 
 export const LATENCY = 'avg_response_time_msec'

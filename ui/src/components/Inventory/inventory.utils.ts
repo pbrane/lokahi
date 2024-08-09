@@ -10,7 +10,7 @@ export const metricsAsTextBadges = (metrics?: RawMetric, nodeId?: string) => {
 
   const inventoryStore = useInventoryStore()
   const nodeStatus = computed(() => inventoryStore.nodeStatusMap)
-  
+
   if (!nodeId) {
     return []
   }

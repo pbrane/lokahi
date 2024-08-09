@@ -35,7 +35,7 @@ const onLineChart = () => {
 }
 
 const onDelete = () => {
-  console.log("Delete Action Clicked");
+  console.log('Delete Action Clicked')
 }
 
 const lineChartIcon: IIcon = {

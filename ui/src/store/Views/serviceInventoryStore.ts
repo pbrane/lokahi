@@ -25,7 +25,7 @@ export const useServiceInventoryStore = defineStore('serviceInventoryStore', {
     monitoredEntityStatesList: [],
     pagination: cloneDeep(defaultPagination),
     monitoredEntityStatesMetric: new Map<string, MonitoredEntityStateMetrics>(),
-    loading: false,
+    loading: false
   }),
   actions: {
     async getMonitoredEntityStatesList(): Promise<MonitoredEntityState[]> {
