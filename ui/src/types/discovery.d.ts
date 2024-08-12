@@ -47,8 +47,9 @@ export interface DiscoveryAzureMeta {
   directoryId?: string;
 }
 
-export interface DiscoveryServices {
-  discoveryTargets?: string | string[];
+export interface DiscoveryServicesMeta {
+  discoveryTargets?: string;
+  services: Service
 }
 
 export interface DiscoveryWindowServerMeta {
@@ -58,7 +59,7 @@ export interface DiscoveryWindowServerMeta {
   discoveryTarget?: Array<string>
 }
 
-export type DiscoveryMeta = DiscoveryServices | DiscoverySNMPMeta | DiscoveryTrapMeta | DiscoveryAzureMeta | DiscoveryWindowServerMeta
+export type DiscoveryMeta = DiscoveryServicesMeta | DiscoverySNMPMeta | DiscoveryTrapMeta | DiscoveryAzureMeta | DiscoveryWindowServerMeta
 
 export interface NewOrUpdatedDiscovery {
   id?: number;
@@ -86,7 +87,8 @@ export interface DiscoveryStoreErrors {
   username?: string,
   context?: string,
   privacy?: string,
-  windowsProtocol?: string
+  windowsProtocol?: string,
+  discoveryTargets? : string,
 }
 
 export interface DiscoveryStore {
@@ -111,7 +113,6 @@ export interface DiscoveryStore {
   disableSave: boolean;
   validateOnKeyUp: boolean;
 }
-
 export interface ServerDiscovery {
   discoveryType?: string;
   details?: {
@@ -147,4 +148,10 @@ export interface ServerDiscoveries {
 
 export interface IcmpActiveDiscoveryPlusTags extends IcmpActiveDiscovery {
   tags: Array<Tag>
+}
+
+export interface Service {
+  label?: string;
+  type?: string;
+  port?: number;
 }

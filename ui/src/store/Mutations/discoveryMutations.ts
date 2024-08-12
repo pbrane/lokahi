@@ -7,12 +7,20 @@ import {
   TogglePassiveDiscoveryDocument,
   CreateOrUpdateActiveIcmpDiscoveryDocument,
   DeleteActiveIcmpDiscoveryDocument,
-  DeletePassiveDiscoveryDocument
+  DeletePassiveDiscoveryDocument,
+  UpsertSimpleMonitoredEntityDocument
 } from '@/types/graphql'
 
 export const useDiscoveryMutations = defineStore('discoveryMutations', () => {
   // Create Azure
   const { execute: addAzureCreds, error: azureError, isFetching } = useMutation(CreateAzureActiveDiscoveryDocument)
+
+  // Create Services Discoveries
+  const {
+    execute: upsertSimpleMonitoredEntity,
+    error: simpleMonitoredEntityError,
+    isFetching: isFetchingSimpleMonitoredEntity
+  } = useMutation(UpsertSimpleMonitoredEntityDocument)
 
   // Create ICMP Discoveries
   const {
@@ -69,6 +77,9 @@ export const useDiscoveryMutations = defineStore('discoveryMutations', () => {
     upsertPassiveDiscovery,
     passiveDiscoveryError: computed(() => passiveDiscoveryError.value),
     isFetchingPassiveDiscovery: computed(() => isFetchingPassiveDiscovery.value),
-    togglePassiveDiscovery
+    togglePassiveDiscovery,
+    upsertSimpleMonitoredEntity,
+    simpleMonitoredEntityError,
+    isFetchingSimpleMonitoredEntity
   }
 })

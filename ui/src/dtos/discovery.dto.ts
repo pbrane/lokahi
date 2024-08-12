@@ -1,6 +1,6 @@
 import { DiscoveryType, REGEX_EXPRESSIONS } from '@/components/Discovery/discovery.constants'
 import { validationErrorsToStringRecord } from '@/services/validationService'
-import { DiscoveryAzureMeta, DiscoverySNMPMeta, DiscoveryTrapMeta, DiscoveryWindowServerMeta, NewOrUpdatedDiscovery, ServerDiscoveries } from '@/types/discovery'
+import { DiscoveryAzureMeta, DiscoveryServicesMeta, DiscoverySNMPMeta, DiscoveryTrapMeta, DiscoveryWindowServerMeta, NewOrUpdatedDiscovery, ServerDiscoveries } from '@/types/discovery'
 import * as yup from 'yup'
 
 export const splitStringOnSemiCommaOrDot = (inString?: string) => {
@@ -22,6 +22,9 @@ export const discoveryFromClientToServer = (discovery: NewOrUpdatedDiscovery) =>
 
   if (discovery.type === DiscoveryType.WindowsServer) {
     return discoveryFromWindowsServerClientToServer(discovery)
+  }
+  if (discovery.type === DiscoveryType.ServiceDiscovery) {
+    return discoveryFromServicesServerClientToServer(discovery)
   }
   return {}
 }
@@ -61,6 +64,16 @@ export const discoveryFromTrapClientToServer = (discovery: NewOrUpdatedDiscovery
     snmpPorts: splitStringOnSemiCommaOrDot(meta.udpPorts),
     snmpCommunities: splitStringOnSemiCommaOrDot(meta.communityStrings),
     tags: discovery.tags?.map((t) => ({name: t.name}))
+  }
+}
+
+export const discoveryFromServicesServerClientToServer = (discovery: NewOrUpdatedDiscovery) => {
+  const meta = discovery.meta as DiscoveryServicesMeta
+  return {
+    name: discovery.name,
+    type: meta.services.type,
+    config: `{"inetAddress":"${meta.discoveryTargets}","responseCode":"200-201","url":"${meta.services.type?.toLocaleLowerCase()}://${meta.discoveryTargets}/","ports":[${meta.services?.port}],"hostName":"${meta.discoveryTargets}"}`,
+    locationId: discovery.locations?.[0]?.id
   }
 }
 
@@ -192,11 +205,18 @@ const WindowsServerDiscoveryValidation = yup.object().shape({
   discoveryTarget: yup.string().trim().required('Client secret is required.')
 }).required()
 
+const ServiceDiscoveryValidation = yup.object().shape({
+  name: yup.string().trim().required('Please enter a name.'),
+  locationId: yup.string().trim().required('Location required.')
+  
+}).required()
+
 const validatorMap: Record<string, yup.Schema> = {
   [DiscoveryType.Azure]: azureDiscoveryValidation,
   [DiscoveryType.ICMP]: activeDiscoveryValidation,
   [DiscoveryType.SyslogSNMPTraps]: passiveDiscoveryValidation,
-  [DiscoveryType.WindowsServer]: WindowsServerDiscoveryValidation
+  [DiscoveryType.WindowsServer]: WindowsServerDiscoveryValidation,
+  [DiscoveryType.ServiceDiscovery]: ServiceDiscoveryValidation
 }
 
 // customValidator should throw { message, path } on validation error

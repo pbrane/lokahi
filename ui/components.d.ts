@@ -15,6 +15,7 @@ declare module 'vue' {
     AlertsSeverityCard: typeof import('./src/components/Alerts/AlertsSeverityCard.vue')['default']
     AlertsSeverityFilters: typeof import('./src/components/Alerts/AlertsSeverityFilters.vue')['default']
     AlertsStatusCard: typeof import('./src/components/Alerts/AlertsStatusCard.vue')['default']
+    AllServicesTabTable: typeof import('./src/components/ServicesInventory/AllServicesTabTable.vue')['default']
     AtomicAutocomplete: typeof import('./src/components/Common/AtomicAutocomplete.vue')['default']
     BasicAutocomplete: typeof import('./src/components/Common/BasicAutocomplete.vue')['default']
     BasicSelect: typeof import('./src/components/Common/BasicSelect.vue')['default']

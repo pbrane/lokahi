@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { useDiscoveryQueries } from '../Queries/discoveryQueries'
 import { DiscoveryType, InstructionsType } from '@/components/Discovery/discovery.constants'
-import { DiscoveryStore, DiscoveryTrapMeta, NewOrUpdatedDiscovery } from '@/types/discovery'
-import { clientToServerValidation, discoveryFromClientToServer, discoveryFromServerToClient } from '@/dtos/discovery.dto'
+import { DiscoveryServicesMeta, DiscoveryStore, DiscoveryTrapMeta, NewOrUpdatedDiscovery } from '@/types/discovery'
+import { clientToServerValidation, discoveryFromClientToServer, discoveryFromServerToClient} from '@/dtos/discovery.dto'
 import { useDiscoveryMutations } from '../Mutations/discoveryMutations'
-import { MonitoringLocation } from '@/types/graphql'
+import { MonitoringLocation} from '@/types/graphql'
 import useSnackbar from '@/composables/useSnackbar'
 const { showSnackbar } = useSnackbar()
 export const useDiscoveryStore = defineStore('discoveryStore', {
@@ -233,7 +233,6 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
       // check if discovery name is a duplicate, using only client side data
       const id = discovery.id || 0
       const name = (discovery.name || '').toLowerCase()
-
       if (name && this.loadedDiscoveries.some(d => (d.id != id) && d.name && d.name.toLowerCase() === name)) {
         this.disableSave = true
         throw {
@@ -247,20 +246,28 @@ export const useDiscoveryStore = defineStore('discoveryStore', {
     async validateDiscovery() {
       const { isValid, validationErrors } = await clientToServerValidation(this.selectedDiscovery, this.customValidator)
       this.validationErrors = validationErrors
-
       return isValid
     },
     async saveSelectedDiscovery() {
       const discoveryMutations = useDiscoveryMutations()
       this.loading = true
       const isValid = await this.validateDiscovery()
-
       if (isValid) {
         if (this.selectedDiscovery.type === DiscoveryType.SyslogSNMPTraps) {
           await discoveryMutations.upsertPassiveDiscovery({passiveDiscovery: discoveryFromClientToServer(this.selectedDiscovery)})
         } else if (this.selectedDiscovery.type === DiscoveryType.Azure) {
           await discoveryMutations.addAzureCreds({ discovery: discoveryFromClientToServer(this.selectedDiscovery)})
-        } else if (this.selectedDiscovery.type === DiscoveryType.ServiceDiscovery || this.selectedDiscovery.type === DiscoveryType.WindowsServer) {
+        } else if (this.selectedDiscovery.type === DiscoveryType.ServiceDiscovery) {
+          const services = (this.selectedDiscovery.meta as DiscoveryServicesMeta).services
+          if (services?.port === 80 || services?.port === 443) {
+            await discoveryMutations.upsertSimpleMonitoredEntity(discoveryFromClientToServer(this.selectedDiscovery))
+          } else {
+            this.loading = false
+            return showSnackbar({
+              msg: `${this.selectedDiscovery.type} Discovery cannot be saved yet!`
+            })
+          }
+        } else if ( this.selectedDiscovery.type === DiscoveryType.WindowsServer) {
           this.loading = false
           return showSnackbar({
             msg: `${this.selectedDiscovery.type} Discovery cannot be saved yet!`
