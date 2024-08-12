@@ -266,6 +266,10 @@ message PolicyRuleProto {
   DetectionMethod detectionMethod = 6;
   EventType eventType = 7;
   string thresholdMetricName = 8;
+  map<string, string> labels = 9;
+  string metrics_expression = 10;
+  string service_type = 11;
+
 }
 
 enum DetectionMethod {

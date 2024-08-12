@@ -24,6 +24,7 @@ package org.opennms.metrics.threshold.api;
 import static org.opennms.horizon.shared.utils.SystemInfoUtils.DESCRIPTION;
 import static org.opennms.horizon.shared.utils.SystemInfoUtils.SEVERITY;
 import static org.opennms.horizon.shared.utils.SystemInfoUtils.SUMMERY;
+import static org.opennms.horizon.shared.utils.SystemInfoUtils.TENANT_ID;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +54,7 @@ public class CortexRulerAlertFactory {
 
                 // Populate labels for the rule
                 Map<String, String> labels = new HashMap<>();
-                labels.put("tenant_id", metricsThresholdAlertRule.getTenantId());
+                labels.put(TENANT_ID, metricsThresholdAlertRule.getTenantId());
                 labels.put(SEVERITY, alertRule.getSeverity());
 
                 // Populate annotations for the rule

@@ -21,9 +21,11 @@
  */
 package org.opennms.horizon.server.mapper.alert;
 
+import org.mapstruct.BeforeMapping;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValueCheckStrategy;
 import org.opennms.horizon.alerts.proto.PolicyRuleProto;
 import org.opennms.horizon.server.model.alerts.PolicyRule;
@@ -38,5 +40,13 @@ public interface PolicyRuleMapper {
     PolicyRule map(PolicyRuleProto proto);
 
     @Mapping(target = "snmpEventsList", source = "alertConditions")
+    @Mapping(target = "labels", ignore = true)
     PolicyRuleProto map(PolicyRule rule);
+
+    @BeforeMapping
+    default void ensureLabelsInitialized(@MappingTarget PolicyRuleProto.Builder targetBuilder, PolicyRule source) {
+        if (source.getLabels() != null) {
+            targetBuilder.putAllLabels(source.getLabels()); // Initialize with an empty map if necessary
+        }
+    }
 }

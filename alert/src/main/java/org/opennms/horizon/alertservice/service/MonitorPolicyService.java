@@ -160,7 +160,7 @@ public class MonitorPolicyService {
             handleTagOperationUpdate(existingTags, tags);
             monitoringPolicyProducer.sendMonitoringPolicy(newPolicy);
 
-            mapMonitoringPolicyToMetricsThresholdAlertRule(newPolicy)
+            mapMonitoringPolicyToMetricsThresholdAlertRule(policy)
                     .forEach(thresholdRuleProducer::sendThresholdAlertRule);
             return policyMapper.map(newPolicy);
         }
@@ -188,6 +188,7 @@ public class MonitorPolicyService {
                 alertRuleBuilder.setRuleNamespace(monitoringPolicy.getName().replaceAll("\\s", ""));
                 alertRuleBuilder.setMetricThresholdName(rule.getThresholdMetricName());
                 alertRuleBuilder.setAlertGroup(rule.getName().replaceAll("\\s", ""));
+
                 for (AlertCondition alertCondition : rule.getAlertConditions()) {
                     if (alertCondition.getThresholdMetric().isEnabled()) {
                         AlertRule.Builder ruleBuilder = AlertRule.newBuilder();
@@ -202,6 +203,10 @@ public class MonitorPolicyService {
                                 alertCondition.getThresholdMetric().getCondition());
                         ruleBuilder.setThresholdValue(String.valueOf(
                                 alertCondition.getThresholdMetric().getThreshold()));
+                        ruleBuilder.putAllLabels(rule.getLabels());
+                        ruleBuilder.setAlertExpression(rule.getMetricsExpression());
+                        ruleBuilder.setServiceType(rule.getServiceType());
+
                         alertRuleBuilder.addAlertRules(ruleBuilder);
                     }
                 }

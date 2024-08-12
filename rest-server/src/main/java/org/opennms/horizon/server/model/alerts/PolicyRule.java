@@ -22,6 +22,7 @@
 package org.opennms.horizon.server.model.alerts;
 
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.opennms.horizon.alerts.proto.DetectionMethod;
@@ -38,4 +39,7 @@ public class PolicyRule extends BaseModel {
     private EventType eventType;
     private String thresholdMetricName;
     private List<AlertCondition> alertConditions;
+    private Map<String, String> labels;
+    private String metricsExpression;
+    private String serviceType;
 }

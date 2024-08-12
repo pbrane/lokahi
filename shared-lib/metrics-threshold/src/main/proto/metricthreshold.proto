@@ -53,7 +53,9 @@ message AlertRule {
   string alert_expression = 5;
   string severity = 6;
   string condition = 7;
-  string thresholdValue = 8;
+  string threshold_value = 8;
+  map<string, string> labels = 9;
+  string service_type = 10;
 }
 
 enum Operation {

@@ -34,10 +34,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.opennms.horizon.alerts.proto.DetectionMethod;
 import org.opennms.horizon.alerts.proto.EventType;
 import org.opennms.horizon.alerts.proto.ManagedObjectType;
@@ -78,4 +82,14 @@ public class PolicyRule {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_id", referencedColumnName = "id")
     private MonitorPolicy policy;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "labels", columnDefinition = "jsonb")
+    private Map<String, String> labels;
+
+    @Transient
+    private String metricsExpression;
+
+    @Transient
+    private String serviceType;
 }

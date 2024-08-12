@@ -21,79 +21,44 @@
  */
 package org.opennms.metrics.threshold.api;
 
+import static org.opennms.metrics.threshold.api.Constants.*;
+
+import java.util.Map;
 import org.opennms.horizon.metrics.threshold.proto.AlertRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MetricsRulerExpressionGenerator {
+    private static final Logger LOG = LoggerFactory.getLogger(MetricsRulerExpressionGenerator.class);
+    private static final String OPERATION_NOT_SUPPORTED_FOR_WSMAN_SERVICE = "Operation not supported for WSMAN service";
+    private static final String CONDITION_THRESHOLD_FORMAT = "%s   %s ";
 
     public String generateMetricsRulerExpression(AlertRule alertRule, String metricsThresholdName) {
-
-        switch (metricsThresholdName) {
-            case "cpuUtilization":
-                return generateCpuUtilizationExpression(alertRule);
-            case "netInUtilization":
-                return generateNetworkInBandwidthExpression(alertRule);
-            case "netOutUtilization":
-                return generateNetworkOutBandwidthExpression(alertRule);
-                // Add more cases for other input strings if needed
-            default:
-                return "";
+        if (alertRule == null) {
+            throw new IllegalArgumentException("AlertRule must not be null.");
         }
+        String condition = alertRule.getCondition();
+        String thresholdValue = alertRule.getThresholdValue();
+        String labelsQuery = getLabelsQueryString(alertRule.getLabelsMap());
+        String expression = String.format(alertRule.getAlertExpression(), labelsQuery) + CONDITION_THRESHOLD_FORMAT;
+        return String.format(expression, condition, thresholdValue);
     }
 
-    private String generateCpuUtilizationExpression(AlertRule alertRule) {
-        String baseExpression =
-                """
-                        avg by (node_id) (
-                          (100 -
-                             (CpuRawIdle{monitor='SNMP'} / (
-                              CpuRawIdle{monitor='SNMP'} +
-                              CpuRawInterrupt{monitor='SNMP'} +
-                              CpuRawUser{monitor='SNMP'} +
-                              CpuRawWait{monitor='SNMP'} +
-                              CpuRawNice{monitor='SNMP'} +
-                              CpuRawSystem{monitor='SNMP'} +
-                              CpuRawKernel{monitor='SNMP'} +
-                              CpuRawSoftIRQ{monitor='SNMP'} +
-                              CpuRawSteal{monitor='SNMP'} +
-                              CpuRawGuest{monitor='SNMP'} +
-                              CpuRawGuestNice{monitor='SNMP'}
-                            )
-                          ) * 100
-                        ))  *condition *thresholdValue
-                """;
-        // Replace placeholders with actual values from alertRule
-        baseExpression = baseExpression
-                .replace("*condition", alertRule.getCondition())
-                .replace("*thresholdValue", alertRule.getThresholdValue());
-        return baseExpression;
-    }
+    public String getLabelsQueryString(Map<String, String> labels) {
+        StringBuilder sb = new StringBuilder("{");
 
-    private String generateNetworkInBandwidthExpression(AlertRule alertRule) {
-        String baseExpression =
-                """
-                 avg by(node_id, instance)  (
-                       (irate(ifHCInOctets[*duration])*8 / (ifHighSpeed * 1000000) * 100 unless ifHighSpeed == 0) )  *condition  *thresholdValue""";
-        // Replace placeholders with actual values from alertRule
-        baseExpression = baseExpression
-                .replace("*condition", alertRule.getCondition())
-                .replace("*thresholdValue", alertRule.getThresholdValue())
-                .replace("*duration", alertRule.getDuration());
-        return baseExpression;
-    }
+        int index = 0;
+        for (Map.Entry<String, String> param : labels.entrySet()) {
+            sb.append(String.format("%s=\"%s\"", param.getKey(), param.getValue()));
+            if (index != labels.size() - 1) {
+                sb.append(",");
+            }
+            index++;
+        }
 
-    private String generateNetworkOutBandwidthExpression(AlertRule alertRule) {
-        String baseExpression =
-                """
-                  avg by(node_id, instance)  (
-                       (irate(ifHCOutOctets[*duration])*8 / (ifHighSpeed * 1000000) * 100 unless ifHighSpeed == 0) )  *condition  *thresholdValue
-            """;
-        // Replace placeholders with actual values from alertRule
-        baseExpression = baseExpression
-                .replace("*condition", alertRule.getCondition())
-                .replace("*thresholdValue", alertRule.getThresholdValue())
-                .replace("*duration", alertRule.getDuration());
-        return baseExpression;
+        sb.append("}");
+        return sb.toString();
     }
 }
