@@ -20,7 +20,7 @@ export const useAlertEventDefinitionQueries = defineStore('alertEventDefinitionQ
 
     await execute()
 
-    return data
+    return data.value?.listAlertEventDefinitions
   }
 
   const listAlertEventDefinitionsByVendor = async (request: EventDefsByVendorRequest) => {

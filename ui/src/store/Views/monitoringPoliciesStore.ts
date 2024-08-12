@@ -150,10 +150,10 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
       this.cachedEventDefinitions?.set('generic', alertDefsByVendor ?? [])
 
       const alertDefs = await queries.listAlertEventDefinitions(EventType.Internal)
-      this.cachedEventDefinitions?.set('internal', alertDefs.value?.listAlertEventDefinitions ?? [])
+      this.cachedEventDefinitions?.set('internal', alertDefs ?? [])
 
       const alertEventDefs: any = await queries.listAlertEventDefinitions(EventType.MetricThreshold)
-      this.cachedEventDefinitions?.set('metricThreshold', alertEventDefs.value?.listAlertEventDefinitions ?? [])
+      this.cachedEventDefinitions?.set('metricThreshold', alertEventDefs ?? [])
     },
     clearSelectedPolicy() {
       this.selectedPolicy = undefined
@@ -491,9 +491,14 @@ export const useMonitoringPoliciesStore = defineStore('monitoringPoliciesStore',
           }
         }
       }
-      if (this.eventDefinitions && this.eventDefinitions.length > 0) {
+      if (this.eventDefinitions && this.eventDefinitions.length > 0 && this.ruleEditMode === CreateEditMode.Create) {
         this.selectedRule?.alertConditions?.map((item) => {
           item.triggerEvent = this.eventDefinitions?.[0]
+          return item
+        })
+      } else if (this.eventDefinitions && this.eventDefinitions.length > 0 && this.ruleEditMode === CreateEditMode.Edit) {
+        this.selectedRule?.alertConditions?.map((item) => {
+          item.triggerEvent = this.eventDefinitions?.find((x) => x.id === item.triggerEvent?.id)
           return item
         })
       } else {

@@ -46,14 +46,10 @@ import router from '@/router'
 import { CreateEditMode } from '@/types'
 
 const monitoringPoliciesStore = useMonitoringPoliciesStore()
-const isCheckAlertRule = ref()
+const isCheckAlertRule = computed(() => (monitoringPoliciesStore.selectedPolicy?.rules?.length ?? 0) <= 0)
 const savePolicyEnableDisable = computed(
   () => !monitoringPoliciesStore.selectedPolicy?.rules?.length || !monitoringPoliciesStore.selectedPolicy?.name || monitoringPoliciesStore.selectedPolicy.isDefault
 )
-
-watchEffect(() => {
-  isCheckAlertRule.value = (monitoringPoliciesStore.selectedPolicy?.rules?.length ?? 0) <= 0
-})
 
 const handleCancel = () => {
   monitoringPoliciesStore.clearSelectedPolicy()
