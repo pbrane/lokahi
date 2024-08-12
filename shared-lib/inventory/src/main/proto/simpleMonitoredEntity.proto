@@ -30,6 +30,7 @@ syntax = "proto3";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/any.proto";
+import "tag.proto";
 
 package opennms.inventory;
 option java_multiple_files = true;
@@ -44,6 +45,7 @@ message SimpleMonitoredEntityResponse {
   string config = 5; // JSON config
 
   string monitoredEntityId = 6;
+  repeated opennms.inventory.TagCreateDTO tags = 7;
 }
 
 message SimpleMonitoredEntityResponseList {
@@ -56,6 +58,7 @@ message SimpleMonitoredEntityRequest {
   int64 locationId = 3;
   string type = 4;
   string config = 5;
+  repeated opennms.inventory.TagCreateDTO tags = 6;
 }
 
 service SimpleMonitoredEntityService {

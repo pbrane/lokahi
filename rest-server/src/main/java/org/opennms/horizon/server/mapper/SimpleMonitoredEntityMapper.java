@@ -21,16 +21,24 @@
  */
 package org.opennms.horizon.server.mapper;
 
+import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityRequest;
 import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityResponse;
 import org.opennms.horizon.server.model.inventory.SimpleMonitoredEntity;
 
-@Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+@Mapper(
+        componentModel = "spring",
+        uses = {TagMapper.class},
+        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
 public interface SimpleMonitoredEntityMapper {
 
+    @Mapping(source = "tagsList", target = "tags", ignore = true)
     SimpleMonitoredEntity toTransport(SimpleMonitoredEntityResponse response);
 
+    @Mapping(source = "id", target = "id", ignore = true)
+    @Mapping(target = "tagsList", source = "tags", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     SimpleMonitoredEntityRequest toRequest(SimpleMonitoredEntity entity);
 }

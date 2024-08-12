@@ -21,10 +21,14 @@
  */
 package org.opennms.horizon.inventory.monitoring.simple.config;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityRequest;
 import org.opennms.horizon.inventory.dto.SimpleMonitoredEntityResponse;
+import org.opennms.horizon.inventory.dto.TagCreateListDTO;
+import org.opennms.horizon.inventory.dto.TagEntityIdDTO;
 import org.opennms.horizon.inventory.monitoring.simple.SimpleMonitoredActiveDiscovery;
 import org.opennms.horizon.inventory.monitoring.simple.SimpleMonitoredEntityMapper;
 import org.opennms.horizon.inventory.repository.SimpleMonitoredEntityRepository;
@@ -47,21 +51,26 @@ public class SimpleMonitorDiscoveryService implements ActiveDiscoveryValidationS
     private final TagService tagService;
 
     @Transactional
-    public SimpleMonitoredEntityResponse createActiveDiscovery(SimpleMonitoredActiveDiscovery entity, String tenantId) {
+    public SimpleMonitoredEntityResponse createActiveDiscovery(SimpleMonitoredEntityRequest request, String tenantId) {
 
-        validateActiveDiscoveryName(entity.getName(), tenantId);
-        validateLocation(entity.getLocationId().toString(), tenantId);
+        SimpleMonitoredActiveDiscovery sme;
 
-        return this.mapper.map(this.repository.save(entity));
+        sme = this.mapper.map(tenantId, request);
+        sme.setCreateTime(LocalDateTime.now());
 
-        // Todo : implement logic for tags LOK: 2720
-        /*tagService.addTags(
-        tenantId,
-        TagCreateListDTO.newBuilder()
-            .addEntityIds(TagEntityIdDTO.newBuilder().setActiveDiscoveryId(Long.parseLong(response.getId())))
-            .addAllTags(List.of(TagCreateDTO.newBuilder().setName("default").build()))
-            .build());*/
+        validateActiveDiscoveryName(sme.getName(), tenantId);
+        validateLocation(sme.getLocationId().toString(), tenantId);
 
+        var response = this.mapper.map(this.repository.save(sme));
+
+        tagService.addTags(
+                tenantId,
+                TagCreateListDTO.newBuilder()
+                        .addEntityIds(
+                                TagEntityIdDTO.newBuilder().setActiveDiscoveryId(Long.parseLong(response.getId())))
+                        .addAllTags(request.getTagsList())
+                        .build());
+        return response;
     }
 
     public Optional<SimpleMonitoredEntityResponse> getDiscoveryById(long id, String tenantId) {

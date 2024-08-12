@@ -29,7 +29,6 @@ import com.google.rpc.Status;
 import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,18 +78,11 @@ public class SimpleMonitoredEntityGrpcService
 
             final SimpleMonitoredEntityResponse response;
 
-            SimpleMonitoredActiveDiscovery sme;
-
-            sme = this.mapper.map(tenantId, request);
-            sme.setTenantId(tenantId);
-            sme.setCreateTime(LocalDateTime.now());
-            sme.setName(request.getName());
-
-            response = simpleMonitorDiscoveryService.createActiveDiscovery(sme, tenantId);
+            response = simpleMonitorDiscoveryService.createActiveDiscovery(request, tenantId);
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
-            this.monitoredEntityService.publishTaskSet(sme.getTenantId(), sme.getLocationId());
+            this.monitoredEntityService.publishTaskSet(tenantId, response.getLocationId());
         } else {
             responseObserver.onError(StatusProto.toStatusRuntimeException(createMissingTenant()));
         }

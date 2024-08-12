@@ -21,7 +21,9 @@
  */
 package org.opennms.horizon.server.model.inventory;
 
+import java.util.List;
 import lombok.Data;
+import org.opennms.horizon.server.model.inventory.tag.TagCreate;
 
 @Data
 public class SimpleMonitoredEntity {
@@ -35,4 +37,5 @@ public class SimpleMonitoredEntity {
     private String config; // JSON config
 
     private String monitoredEntityId;
+    private List<TagCreate> tags;
 }
